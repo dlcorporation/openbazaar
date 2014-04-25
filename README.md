@@ -30,7 +30,7 @@ sudo ifconfig lo0 alias 127.0.0.4 up
 
 ## List of libraries used
 1. https://github.com/warner/python-ecdsa
-
+2. https://github.com/darkwallet/python-obelisk
 
 ## Screenshot
 
