@@ -2,6 +2,9 @@
 
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the GPL.
 
+Currently soliciting feedback on the project. http://www.reddit.com/r/Bitcoin/comments/23y80c/solicitation_of_darkmarketbased_alternative/
+Also official site will be at http://openbazaar.org
+
 `pip install pyzmq`
 `pip install tornado`
 `pip install pyelliptic`
@@ -28,3 +31,6 @@ sudo ifconfig lo0 alias 127.0.0.4 up
 ## Screenshot
 
 ![Screen 1](http://i.imgur.com/PaemnhJ.png)
+=======
+
+
