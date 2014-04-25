@@ -6,7 +6,7 @@ from p2p import PeerConnection, TransportLayer
 from multiprocessing import Process
 import traceback
 
-from protocol import hello, response_pubkey
+from protocol import hello, proto_response_pubkey
 import obelisk
 
 # Check if user specified a crypto file to load for their marketplace
@@ -27,10 +27,11 @@ def load_crypto_details():
     assert len(data["pubkey"]) == 2 * 33
     return data["nickname"], data["secret"].decode("hex"), data["pubkey"].decode("hex")
 
+# Look in crypto file for market details
 NICKNAME, SECRET, PUBKEY = load_crypto_details()
 
-
 class CryptoPeerConnection(PeerConnection):
+
     def __init__(self, address, transport, pub):
         self._transport = transport
         self._priv = transport._myself
@@ -48,6 +49,7 @@ class CryptoPeerConnection(PeerConnection):
         pass
 
 class CryptoTransportLayer(TransportLayer):
+
     def __init__(self, port=None):
         TransportLayer.__init__(self, port)
         self._myself = ec.ECC(curve='secp256k1')
@@ -61,35 +63,41 @@ class CryptoTransportLayer(TransportLayer):
         return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'), 'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
+        
         if ident_pubkey != PUBKEY:
-            print "Not my ident."
+            print "Public key does not match your identity"
             return
+        
+        # Return signed pubkey     
         pubkey = self._myself.get_pubkey()
         ec_key = obelisk.EllipticCurveKey()
         ec_key.set_secret(SECRET)
         digest = obelisk.Hash(pubkey)
         signature = ec_key.sign(digest)
-        self.send(response_pubkey(nickname, pubkey, signature))
+        
+        # Send array of nickname, pubkey, signature to transport layer
+        self.send(proto_response_pubkey(nickname, pubkey, signature))
+
 
     def create_peer(self, uri, pub):
         if pub:
-            self.log("init peer " + uri + " " + pub[0:8], '*')
+            self.log("Creating peer " + uri + " " + pub[0:16] + "...", '*')
             pub = pub.decode('hex')
         else:
-            self.log("init peer [seed] " + uri, '*')
+            self.log("Creating peer [seed] " + uri, '*')
 
-        # create the peer
+        # Create the peer
         self._peers[uri] = CryptoPeerConnection(uri, self, pub)
 
-        # call 'peer' callbacks on listeners
+        # Call 'peer' callbacks on listeners
         self.trigger_callbacks('peer', self._peers[uri])
 
-        # now send a hello message to the peer
+        # Now send a hello message to the peer
         if pub:
             self.log("Sending encrypted profile to %s" % uri)
             self._peers[uri].send(hello(self.get_profile()))
         else:
-            # Will send clear profile on initial creation
+            # Will send clear profile on initial if no pub
             self.log("Sending unencrypted profile to %s" % uri)
             profile = hello(self.get_profile())
             self._peers[uri].send_raw(json.dumps(profile))
@@ -100,7 +108,7 @@ class CryptoTransportLayer(TransportLayer):
         if not uri in self._peers:
             self.create_peer(uri, pub)
         elif pub and not self._peers[uri]._pub:
-            self.log("setting pub for seed node")
+            self.log("Setting public key for seed node")
             self._peers[uri]._pub = pub.decode('hex')
 
     def on_raw_message(self, serialized):
@@ -124,5 +132,3 @@ class CryptoTransportLayer(TransportLayer):
             self.log("Update peer table [%s peers]" % len(self._peers))
         else:
             self.on_message(msg)
-
-

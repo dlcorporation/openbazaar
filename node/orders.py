@@ -1,5 +1,5 @@
 import json
-from protocol import reputation, query_reputation, order
+from protocol import proto_reputation, proto_query_reputation, order
 from collections import defaultdict
 from pyelliptic import ECC
 import random

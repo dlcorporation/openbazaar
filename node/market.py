@@ -10,6 +10,7 @@ import lookup
 class Market(object):
 
     def __init__(self, transport):
+        
         transport.log("[Market] Initializing")
 
         # for now we have the id in the transport
@@ -21,7 +22,6 @@ class Market(object):
         self.reputation = Reputation(self._transport)
         self.orders = Orders(self._transport)
 
-
         # if something comes in, store it:
         self.nicks = {}
         self.pages = {}
@@ -31,7 +31,7 @@ class Market(object):
         transport.add_callback('query_page', self.on_query_page)
         transport.add_callback('page', self.on_page)
         transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
-        transport.add_callback('response_pubkey', self.on_response_pubkey)
+        transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
         self.load_page()
 

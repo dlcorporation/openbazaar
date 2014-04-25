@@ -11,14 +11,14 @@ def shout(data):
     data['type'] = 'shout'
     return data
 
-def reputation(pubkey, reviews):
+def proto_reputation(pubkey, reviews):
     data = {}
     data['type'] = 'reputation'
     data['pubkey'] = pubkey.encode('hex')
     data['reviews'] = reviews
     return data
 
-def query_reputation(pubkey):
+def proto_query_reputation(pubkey):
     data = {}
     data['type'] = 'query_reputation'
     data['pubkey'] = pubkey.encode('hex')
@@ -65,9 +65,9 @@ def negotiate_pubkey(nickname, ident_pubkey):
     data['ident_pubkey'] = ident_pubkey.encode("hex")
     return data
 
-def response_pubkey(nickname, pubkey, signature):
+def proto_response_pubkey(nickname, pubkey, signature):
     data = {}
-    data['type'] = "response_pubkey"
+    data['type'] = "proto_response_pubkey"
     data['nickname'] = nickname
     data['pubkey'] = pubkey.encode("hex")
     data['signature'] = signature.encode("hex")
