@@ -73,7 +73,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       case 'reputation':
          $scope.parse_reputation(msg)
          break;
-      case 'response_pubkey':
+      case 'proto_response_pubkey':
          $scope.parse_response_pubkey(msg)
          break;
       default:
@@ -82,7 +82,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     }
   })
 
-  var add_review = function(pubkey, review) {
+  var add_review_to_page = function(pubkey, review) {
     var found = false;
     if (!$scope.reviews.hasOwnProperty(pubkey)) {
         $scope.reviews[pubkey] = []
@@ -136,7 +136,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   // Peer information has arrived
   $scope.parse_reputation = function(msg) {
     msg.reviews.forEach(function(review) {
-        add_review(review.subject, review);
+        add_review_to_page(review.subject, review);
     });
     if (!$scope.$$phase) {
        $scope.$apply();
@@ -166,18 +166,20 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
        $scope.$apply();
     }
   }
+  
   $scope.review= {rating:5, text:""}
   $scope.addReview = function() {
      var query = {'type': 'review', 'pubkey': $scope.page.pubkey, 'text': $scope.review.text, 'rating': parseInt($scope.review.rating)}
      socket.send('review', query)
 
      // store in appropriate format (its different than push format :P)
-     add_review($scope.page.pubkey, {type: 'review', 'pubkey': $scope.myself.pubkey, 'subject': $scope.page.pubkey, 'rating': query.rating, text: query.text})
+     add_review_to_page($scope.page.pubkey, {type: 'review', 'pubkey': $scope.myself.pubkey, 'subject': $scope.page.pubkey, 'rating': query.rating, text: query.text})
 
      $scope.review.rating = 5;
      $scope.review.text = '';
      $scope.showReviewForm = false;
   }
+  
   // My information has arrived
   $scope.parse_myself = function(msg) {
     $scope.myself = msg;
@@ -185,7 +187,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
        $scope.$apply();
     }
     msg.reputation.forEach(function(review) {
-       add_review($scope.myself.pubkey, review)
+       add_review_to_page($scope.myself.pubkey, review)
     });
     msg.peers.forEach(function(peer) {
        $scope.parse_peer(peer)
