@@ -15,8 +15,8 @@ import traceback
 DEFAULT_PORT=12345
 
 # Get some command line pars
-#SEED_URI = False
-SEED_URI = "tcp://127.0.0.1:12345"
+SEED_URI = False
+#SEED_URI = "tcp://127.0.0.2:12345"
 if len(sys.argv) > 2:
     MY_IP = sys.argv[2]
 else:
@@ -24,7 +24,7 @@ else:
 if len(sys.argv) > 3:
     SEED_URI = sys.argv[3] # like tcp://127.0.0.1:12345
 else:
-    print "warning no seed!! you should call like [market myip seeduri]"
+    print "You provided no SEED_URI. You should call like [market myip seeduri]"
 
 # Connection to one peer
 class PeerConnection(object):

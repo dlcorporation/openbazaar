@@ -46,6 +46,6 @@ if __name__ == "__main__":
             error = False
         except:
             port += 1
-    print " - started user port on %s" % port
+    print " - Started user app at http://%s:%s" % (sys.argv[2], port)
     tornado.ioloop.IOLoop.instance().start()
 
