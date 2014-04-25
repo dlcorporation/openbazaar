@@ -8,8 +8,9 @@ import lookup
 
 
 class Market(object):
+
     def __init__(self, transport):
-        transport.log("[market] Initializing")
+        transport.log("[Market] Initializing")
 
         # for now we have the id in the transport
         self._myself = transport._myself

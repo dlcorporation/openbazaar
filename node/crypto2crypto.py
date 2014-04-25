@@ -9,10 +9,14 @@ import traceback
 from protocol import hello, response_pubkey
 import obelisk
 
+# Check if user specified a crypto file to load for their marketplace
+# This is located in the ppl/ folder 
 if len(sys.argv) < 2:
-    print >> sys.stderr, "Error, you need the filename of your crypto stuff."
+    print >> sys.stderr, "[Error] You need to specify a user crypto file in `ppl/` folder"
     sys.exit(-1)
 
+# Return data array with details from the crypto file
+# TODO: This needs to be protected better; potentially encrypted file or DB
 def load_crypto_details():
     with open(sys.argv[1]) as f:
         data = json.loads(f.read())
@@ -82,11 +86,11 @@ class CryptoTransportLayer(TransportLayer):
 
         # now send a hello message to the peer
         if pub:
-            self.log("sending encrypted profile to %s" % uri)
+            self.log("Sending encrypted profile to %s" % uri)
             self._peers[uri].send(hello(self.get_profile()))
         else:
-            # this is needed for the first connection
-            self.log("sending  normal profile to %s" % uri)
+            # Will send clear profile on initial creation
+            self.log("Sending unencrypted profile to %s" % uri)
             profile = hello(self.get_profile())
             self._peers[uri].send_raw(json.dumps(profile))
 
