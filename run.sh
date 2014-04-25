@@ -1,5 +1,5 @@
 # Store config file
-STOREFILE=ppl/caedes
+STOREFILE=ppl/default
 
 # Location of log directory
 LOGDIR=logs
