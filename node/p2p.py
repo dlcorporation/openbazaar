@@ -15,7 +15,8 @@ import traceback
 DEFAULT_PORT=12345
 
 # Get some command line pars
-SEED_URI = False
+#SEED_URI = False
+SEED_URI = "tcp://127.0.0.1:12345"
 if len(sys.argv) > 2:
     MY_IP = sys.argv[2]
 else:
