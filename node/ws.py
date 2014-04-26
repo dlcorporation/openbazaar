@@ -99,6 +99,7 @@ class ProtocolHandler:
     # handler a request
     def handle_request(self, socket_handler, request):
         command = request["command"]
+        print command
         if command not in self._handlers:
             return False
         params = request["params"]

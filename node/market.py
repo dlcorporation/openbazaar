@@ -81,7 +81,7 @@ class Market(object):
         
 
     def on_query_page(self, peer):
-        self._transport.log("[market] query page " + str(peer))
+        self._transport.log("[Market] Query Market Page " + str(peer))
         self._transport.send(page(self._transport._myself.get_pubkey(), self.mypage, self.signature))
 
     def on_peer(self, peer):

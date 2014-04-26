@@ -40,6 +40,7 @@ class Reputation(object):
     def create_review(self, pubkey, text, rating):
         
         signature = self._priv.sign(self._build_review(pubkey, text, rating))
+
         new_review = review(self._priv.get_pubkey(), pubkey, signature, text, rating)
         self._reviews[pubkey].append(new_review)
         
@@ -70,8 +71,14 @@ class Reputation(object):
         valid = ECC(pubkey=pubkey).verify(signature, self._build_review(subject, str(text), rating))
         
         if valid:            
-            newreview = review(pubkey, subject, signature, text, rating)            
-            self._reviews[subject].append(newreview)
+            newreview = review(pubkey, subject, signature, text, rating)                     
+            
+            if newreview in self._reviews[subject]:
+                print 'This review already exists'
+            else:
+                self._reviews[subject].append(newreview)
+            
+            
         else:
             self._transport.log("[reputation] Invalid review!")
 

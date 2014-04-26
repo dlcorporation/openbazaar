@@ -113,14 +113,15 @@ class TransportLayer(object):
         print " %s [%s] %s" % (pointer, self._id, msg)
 
     def send(self, data, send_to=None):
-        self.log("sending %s..." % data.keys())
+        self.log("Sending %s..." % data.keys())
+        self.log(data);
         # directed message
         if send_to:
             for peer in self._peers.values():
                 if peer._pub == send_to:
                     peer.send(data)
                     return
-            print "peer not found!", send_to, self._myself.get_pubkey()
+            print "Peer not found!", send_to, self._myself.get_pubkey()
             return
         # broadcast
         for peer in self._peers.values():
@@ -131,7 +132,7 @@ class TransportLayer(object):
                     serialized = json.dumps(data)
                     peer.send_raw(serialized)
             except:
-                print "error sending over peer!"
+                print "Error sending over peer!"
                 traceback.print_exc()
 
     def on_message(self, msg):
