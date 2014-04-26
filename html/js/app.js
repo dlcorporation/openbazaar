@@ -169,6 +169,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   
   $scope.review= {rating:5, text:""}
   $scope.addReview = function() {
+     
      var query = {'type': 'review', 'pubkey': $scope.page.pubkey, 'text': $scope.review.text, 'rating': parseInt($scope.review.rating)}
      socket.send('review', query)
 
@@ -193,6 +194,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
        $scope.parse_peer(peer)
     });
   }
+  
   // A shout has arrived
   $scope.parse_shout = function(msg) {
     $scope.shouts.push(msg)
