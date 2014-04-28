@@ -53,7 +53,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
 
  // Open the websocket connection and handle messages
-  var socket = new Connection(function(msg) {
+  var socket = new Connection(function(msg) {   
    switch(msg.type) {
       case 'peer':
          $scope.parse_peer(msg)
@@ -77,24 +77,30 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
          $scope.parse_response_pubkey(msg)
          break;
       default:
-         console.log("unhandled message!",msg)
+         console.log("Unhandled message!",msg)
          break;
     }
   })
 
   var add_review_to_page = function(pubkey, review) {
     var found = false;
+    
+    console.log('REVIEWS',$scope.reviews)
+    
     if (!$scope.reviews.hasOwnProperty(pubkey)) {
         $scope.reviews[pubkey] = []
     }
     $scope.reviews[pubkey].forEach(function(_review) {
+    	console.log("Review: ",_review)
         if (_review.sig == review.sig && _review.subject == review.subject && _review.pubkey == review.pubkey) {
+           console.log("Found the review")
            found = true
         }
     });
     if (!found) {
         // check if the review is about me
         if ($scope.myself.pubkey == review.subject) {
+        	console.log("Found review for myself")
             $scope.myReviews.push(review)
         }
         $scope.reviews[pubkey].push(review)
@@ -135,7 +141,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   // Peer information has arrived
   $scope.parse_reputation = function(msg) {
+    console.log('Parsing reputation', msg.reviews)
     msg.reviews.forEach(function(review) {
+    
         add_review_to_page(review.subject, review);
     });
     if (!$scope.$$phase) {
@@ -187,7 +195,11 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     if (!$scope.$$phase) {
        $scope.$apply();
     }
-    msg.reputation.forEach(function(review) {
+    
+    console.log('Reputation for myself', msg);
+    console.log('Reviews: ', $scope.reviews);
+    
+    msg.reputation.forEach(function(review) {       
        add_review_to_page($scope.myself.pubkey, review)
     });
     msg.peers.forEach(function(peer) {

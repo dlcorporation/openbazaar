@@ -27,6 +27,7 @@ def eligius_pushtx(tx):
         if len(quote) >= 5: return quote[1:-1]
 
 def gateway_broadcast(tx):
+	
     ws = websocket.create_connection("ws://gateway.unsystem.net:8888/")
     request = {"id": 110, "command": "broadcast_transaction", "params": [tx]}
     ws.send(json.dumps(request))
@@ -39,11 +40,19 @@ def gateway_broadcast(tx):
     ws.close()
 
 def broadcast(tx):
+
     raw_tx = tx.serialize().encode("hex")
-    print "Tx data:", raw_tx
+    print "Raw transaction data:", raw_tx
+
     #print "TEMP DISABLED BROADCAST"
+    
+    # Send tx to Eligius pool through web form
     eligius_pushtx(raw_tx)
+    
+    # Send through Unsystem gateway
     gateway_broadcast(raw_tx)
+    
+    # Send through Blockchain.info 
     #bci_pushtx(raw_tx)
 
 if __name__ == "__main__":

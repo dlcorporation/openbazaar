@@ -29,6 +29,7 @@ class ProtocolHandler:
 
 
     def send_opening(self):
+
         peers = []
         for uri, peer in self._transport._peers.items():
             peer_item = {'uri': uri}
@@ -43,6 +44,7 @@ class ProtocolHandler:
             'peers': peers,
             'reputation': self.node.reputation.get_my_reputation()
         }
+        
         self.send_to_client(None, message)
 
     # requests coming from the client
@@ -61,7 +63,7 @@ class ProtocolHandler:
         self.node.reputation.create_review(pubkey, text, rating)
 
     def client_search(self, socket_handler, msg):
-        print "search", msg
+        print "[Search]", msg
         response = self.node.lookup(msg)
         if response:
             print "yuea", response
@@ -99,7 +101,6 @@ class ProtocolHandler:
     # handler a request
     def handle_request(self, socket_handler, request):
         command = request["command"]
-        print command
         if command not in self._handlers:
             return False
         params = request["params"]
@@ -116,13 +117,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     listen_lock = threading.Lock()
 
     def initialize(self, transport, node):
-        transport.log("initialize websockethandler")
+        transport.log("Initialize websockethandler")
         self._app_handler = ProtocolHandler(transport, node, self)
         self.node = node
         self._transport = transport
 
     def open(self):
-        self._transport.log("websocket open")
+        self._transport.log("Websocket open")
+        print 'Websocket open'
         self._app_handler.send_opening()
         with WebSocketHandler.listen_lock:
             self.listeners.add(self)

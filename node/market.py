@@ -1,4 +1,4 @@
-from protocol import shout, page, query_page
+from protocol import shout, proto_page, query_page
 from reputation import Reputation
 from orders import Orders
 import protocol
@@ -22,11 +22,11 @@ class Market(object):
         self.reputation = Reputation(self._transport)
         self.orders = Orders(self._transport)
 
-        # if something comes in, store it:
+        # TODO: Persistent storage of nicknames and pages
         self.nicks = {}
         self.pages = {}
 
-        # register callbacks for incoming events
+        # Register callbacks for incoming events
         transport.add_callback('peer', self.on_peer)
         transport.add_callback('query_page', self.on_query_page)
         transport.add_callback('page', self.on_page)
@@ -35,14 +35,17 @@ class Market(object):
 
         self.load_page()
 
-        # send something
-        transport.send(shout({'text': 'xxxxx'}))
+        # Send Market Shout
+        transport.send(shout({'text': 'Market Initialized'}))
+        
 
     def lookup(self, msg):
-        print "search", msg
+           
         if self.query_ident is None:
-            print "Initializing"
+            self._transport.log("Initializing identity query")
             self.query_ident = lookup.QueryIdent()
+            
+            
         nickname = str(msg["text"])
         key = self.query_ident.lookup(nickname)
         if key is None:
@@ -59,15 +62,26 @@ class Market(object):
         self._transport.send(protocol.negotiate_pubkey(nickname, key))
 
 
+	# Load default information for your market from your file
     def load_page(self):
+    
+    	self._transport.log("[Market] Loading market config from " + sys.argv[1])
+    
         with open(sys.argv[1]) as f:
             data = json.loads(f.read())
+            
+        self._transport.log("[Market] Configuration data: " + json.dumps(data))    
+            
         assert "desc" in data
         nickname = data["nickname"]
         desc = data["desc"]
+        
         tagline = "%s: %s" % (nickname, desc)
         self.mypage = tagline
         self.signature = self._transport._myself.sign(tagline)
+        
+        self._transport.log("[Market] Tagline signature: " + self.signature.encode("hex"))
+        
 
     def query_page(self, pubkey):
         self._transport.send(query_page(pubkey))
@@ -79,16 +93,16 @@ class Market(object):
         if pubkey and page:
             self.pages[pubkey] = page
         
-
+	# Return your page info if someone requests it on the network
     def on_query_page(self, peer):
-        self._transport.log("[Market] Query Market Page " + str(peer))
-        self._transport.send(page(self._transport._myself.get_pubkey(), self.mypage, self.signature))
+        self._transport.log("[Market] Someone is querying for your page")
+        self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature))
 
     def on_peer(self, peer):
-        self._transport.log("[market] new peer")
+        self._transport.log("[Market] New peer")
 
     def on_negotiate_pubkey(self, ident_pubkey):
-        self._transport.log("[market] asking my real pubkey")
+        self._transport.log("[Market] Someone is asking for your real pubKey")
         assert "nickname" in ident_pubkey
         assert "ident_pubkey" in ident_pubkey
         nickname = ident_pubkey['nickname']
@@ -96,7 +110,7 @@ class Market(object):
         self._transport.respond_pubkey_if_mine(nickname, ident_pubkey)
 
     def on_response_pubkey(self, response):
-        self._transport.log("[market] got a pubkey!")
+        self._transport.log("[Market] got a pubkey!")
         assert "pubkey" in response
         assert "nickname" in response
         assert "signature" in response
