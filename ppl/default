@@ -1,7 +1,7 @@
 {
   "nickname": "Default Marketplace",
   "secret": "70a4863b19407f4a872855f2b2b9062c8e18e1563a73efbe15f1df24b035e814",
-  "pubkey": "9e55dd799fac2ca83451dd1b5296412547c18566b321231f5d5e1222bfcb02fb",
-  "desc": "This is a default marketplace. Public address is 1Dark7Qx6DCX3y4qQRZDxLcqy8Mait3MQk."
+  "pubkey": "039e55dd799fac2ca83451dd1b5296412547c18566b321231f5d5e1222bfcb02fb",
+  "desc": "This is a default marketplace. Public address is <a href=\"https://blockchain.info/address/1Dark7Qx6DCX3y4qQRZDxLcqy8Mait3MQk\">1Dark7Qx6DCX3y4qQRZDxLcqy8Mait3MQk</a>."
 }
 

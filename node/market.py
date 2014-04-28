@@ -21,6 +21,7 @@ class Market(object):
 
         self.reputation = Reputation(self._transport)
         self.orders = Orders(self._transport)
+        
 
         # TODO: Persistent storage of nicknames and pages
         self.nicks = {}
@@ -78,6 +79,7 @@ class Market(object):
         
         tagline = "%s: %s" % (nickname, desc)
         self.mypage = tagline
+        self.nickname = nickname
         self.signature = self._transport._myself.sign(tagline)
         
         self._transport.log("[Market] Tagline signature: " + self.signature.encode("hex"))
@@ -87,16 +89,20 @@ class Market(object):
         self._transport.send(query_page(pubkey))
 
     def on_page(self, page):
-        self._transport.log("[market] got page " + str(page))
+        self._transport.log("[Market] Page returned: " + str(page))
+        
         pubkey = page.get('pubkey')
         page = page.get('text')
+        
+        print "Orders: ", self.orders.print_orders()
+        
         if pubkey and page:
             self.pages[pubkey] = page
         
 	# Return your page info if someone requests it on the network
     def on_query_page(self, peer):
-        self._transport.log("[Market] Someone is querying for your page")
-        self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature))
+        self._transport.log("[Market] Someone is querying for your page")        
+        self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature, self.nickname))
 
     def on_peer(self, peer):
         self._transport.log("[Market] New peer")

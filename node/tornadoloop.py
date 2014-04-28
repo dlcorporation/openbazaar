@@ -24,7 +24,7 @@ class MarketApplication(tornado.web.Application):
         self.transport = CryptoTransportLayer(12345)
         self.transport.join_network()
         #self.protocol_handler = ProtocolHandler(self.transport)
-        self.market = Market(self.transport)
+        self.market = Market(self.transport)        
         
         handlers = [
             (r"/", MainHandler),

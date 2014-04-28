@@ -10,7 +10,8 @@ class Orders(object):
     def __init__(self, transport):
         self._transport = transport
         self._priv = transport._myself
-        # my escrows
+        
+        # TODO: Make user configurable escrow addresses
         self._escrows = ["02ca0020a9de236b47ca19e147cf2cd5b98b6600f168481da8ec0ca9ec92b59b76db1c3d0020f9038a585b93160632f1edec8278ddaeacc38a381c105860d702d7e81ffaa14d",
                          "02ca0020c0d9cd9bdd70c8565374ed8986ac58d24f076e9bcc401fc836352da4fc21f8490020b59dec0aff5e93184d022423893568df13ec1b8352e5f1141dbc669456af510c"]
         self._orders = {}
@@ -18,16 +19,26 @@ class Orders(object):
         transport.add_callback('order', self.on_order)
 
 
-    # create a review
+    # Create a new order
     def create_order(self, seller, text): # action
+        
         id = random.randint(0,1000000)
         buyer = self._transport._myself.get_pubkey()
         new_order = order(id, buyer, seller, 'new', text, self._escrows)
+        
+        # Store the order
         self._orders[id] = new_order
-        # announce the new reputation
+        print "Orders: ", self._orders
+        
+        # Announce the new order
         self._transport.send(new_order, seller)
+        
+    def print_orders(self):
+        print self._orders
 
-    def accept_order(self, new_order): # auto
+    def accept_order(self, new_order): 
+    
+    	# TODO: Need to have a check for the vendor to agree to the order
         new_order['state'] = 'accepted'
         seller = new_order['seller'].decode('hex')
         buyer = new_order['buyer'].decode('hex')
@@ -51,28 +62,32 @@ class Orders(object):
         new_order['state'] = 'received'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
-    # callbacks for messages
-    # a new order has arrived
+    # Order callbacks
     def on_order(self, msg):
+    
         state = msg.get('state')
         self._transport.log("Order " + state)
+        
         buyer = msg.get('buyer').decode('hex')
         seller = msg.get('seller').decode('hex')
         myself = self._transport._myself.get_pubkey()
+        
         if not buyer or not seller or not state:
             self._transport.log("Malformed order")
             return
+        
         if not state == 'new' and not msg.get('id'):
             self._transport.log("Order with no id")
             return
-        # check order state
+        
+        # Check order state
         if state == 'new':
             if myself == buyer:
                 self.create_order(seller, msg.get('text', 'no comments'))
             elif myself == seller:
                 self.accept_order(msg)
             else:
-                self._transport.log("Order not for us")
+                self._transport.log("Not a party to this order")
         elif state == 'accepted':
             if myself == seller:
                 self._transport.log("Bad subjects [%s]" % state)
@@ -105,6 +120,8 @@ class Orders(object):
                 self.receive_order(msg)
             else:
                 self._transport.log("Order not for us")
+        
+        # Store order        
         if msg.get('id'):
             if msg['id'] in self._orders:
                 self._orders[msg['id']]['state'] = msg['state']

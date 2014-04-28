@@ -1,219 +1,264 @@
 <html ng-app='app'>
 <head>
-<script src="/html/vendors/angular.min.js"></script>
-<script src="/html/vendors/identicon.js"></script>
-<script src="/html/vendors/pnglib.js"></script>
-<script src="/html/vendors/jquery.min.js"></script>
-<script src="/html/vendors/bootstrap.min.js"></script>
-<script src="/html/js/ws.js"></script>
-<script src="/html/js/app.js"></script>
-<link href="/html/css/bootstrap.min.css" rel="stylesheet">
-<link href="/html/css/dark.css" rel="stylesheet">
-<link href="/html/less/css/app.css" rel="stylesheet">
 
+    <script src="/html/vendors/angular.min.js" type="text/javascript"></script>
+    <script src="/html/vendors/identicon.js" type="text/javascript"></script>
+    <script src="/html/vendors/pnglib.js" type="text/javascript"></script>
+    <script src="/html/vendors/jquery.min.js" type="text/javascript"></script>
+    <script src="/html/vendors/bootstrap.min.js" type="text/javascript"></script>
+    <script src="/html/js/ws.js" type="text/javascript"></script>
+    <script src="/html/js/app.js" type="text/javascript"></script>
+    
+    <link href="/html/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/html/css/dark.css" rel="stylesheet" type="text/css">
+    <link href="/html/less/css/app.css" rel="stylesheet" type="text/css">
 
-
+    <title></title>
 </head>
 
 <body ng-controller="Market">
-	
-	<div ng-show="warningMessage" class="alert alert-warning"></div>
-	<div class="container">
+    <div ng-show="warningMessage" class="alert alert-warning"></div>
 
+    <div class="container">
+        <!-- MOVE APP INSIDE THIS AREA -->
 
+        <div class="site-wrapper" ng-show="!started">
+            <div class="site-wrapper-inner">
+                <div class="cover-container">
+                    <div class="masthead clearfix">
+                        <div class="inner">
+                            <h3 class="masthead-brand">OpenBazaar</h3>
 
-<!-- MOVE APP INSIDE THIS AREA -->
-    <div class="site-wrapper" ng-show="!started">
+                            <ul class="nav masthead-nav">
+                                <li class="active"><a href="#">Home</a></li>
 
-      <div class="site-wrapper-inner">
+                                <li><a ng-click="started=true">Search</a></li>
 
-        <div class="cover-container">
+                                <li><a ng-click="started=true">Sell</a></li>
+                            </ul>
+                        </div>
+                    </div>
 
-          <div class="masthead clearfix">
-            <div class="inner">
-              <h3 class="masthead-brand">OpenBazaar</h3>
-              <ul class="nav masthead-nav">
-                <li class="active"><a href="#">Home</a></li>
-                <li><a ng-click="started=true">Search</a></li>
-                <li><a ng-click="started=true">Sell</a></li>
-              </ul>
+                    <div class="inner cover">
+                        <h1 class="cover-heading">OpenBazaar is a decentralized marketplace for the masses.</h1>
+
+                        <p class="lead">Help us build a free and open marketplace for trade across borders.</p>
+
+                        <p class="lead"><a ng-show="!started" ng-click="started=true" class="btn btn-lg btn-success">Enter the Market</a></p>
+                    </div>
+
+                    <div class="mastfoot">
+                        <div class="inner">
+                            <p>2014 - OpenBazaar <a href="http://openbazaar.org">http://openbazaar.org</a></p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
+        </div><!-- /MOVE APP INSIDE THIS AREA -->
 
-          <div class="inner cover">
-            <h1 class="cover-heading">OpenBazaar is a decentralized marketplace for the masses.</h1>            
-
-            <p class="lead">Help us build a free and open marketplace for trade across borders.</p>
-            <p class="lead">
-              <a ng-show="!started" ng-click="started=true" class="btn btn-lg btn-success">Enter the Market</a>
-            </p>
-          </div>
-
-          <div class="mastfoot">
-            <div class="inner">
-              <p>2014 - OpenBazaar <a href="http://openbazaar.org">http://openbazaar.org</a></p>
+        <div id="search" class="search-area" ng-show="started">
+            <div style="float:left;">
+                <h1>OpenBazaar</h1>
             </div>
-          </div>
 
-        </div>
-
-      </div>
-
-    </div>
-<!-- /MOVE APP INSIDE THIS AREA -->
-
-
-<div id="search" class="search-area" ng-show="started">
-  <div style="float:left;">
-    <h1>OpenBazaar</h1>
-  </div>
-  <div class="search-area panel panel-default" style="text-align:right;margin-left:275px">
-   <form class="search-form form-inline panel-body">
-    <label class="sr-only" for="search">Search:</label>
-    <input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for nicknames.."></input>
-    <input class="btn btn-success" ng-click="searchNickname()" type="submit" value="Search"></input>
-   </form>
-  </div>
+            <div class="search-area panel panel-default" style="text-align:right;margin-left:275px">
+                <form class="search-form form-inline panel-body">
+                    <label class="sr-only" for="search">Search:</label> <input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for nicknames.."> <input class="btn btn-success" ng-click="searchNickname()" type="submit" value="Search">
+                </form>
+            </div><!--
 <div class="row">
   <div class="col-sm-8">
-    <h3>Markets</h3>
-    <div class="peers-area" ng-repeat="peer in peers">
-           <table class="peers-table">
-           	<tr>
-           		<td width="40"><identicon icon-size="38" hash="peer.pubkey" title="{{peer.pubkey}}"></identicon></td>
-           		<td>
-           			<span title="{{peer.pubkey}}">URI: {{peer.uri}} <BR> <span style="font-style:italic;">PubKey: {{peer.nickname ? peer.nickname : peer.pubkey?peer.pubkey.slice(0,56):'unknown'}}...</span></span>            		
-            	</td>
-            	<td align=right><button ng-click="queryShop(peer)" class="btn btn-sm btn-primary">Visit Shop</button>
-            </tr>
-            </table>
-    </div>
-  </div>
+      </div>
   <div class="anon-profile-area col-sm-4">
-    <h3>My Store</h3>
-    <table>
-    	<tr>
-    		<td width=64><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}"></identicon></td>
-    		<td valign=top>
-    			Reputation: TBD<BR>
-    			<div title="{{myself.pubkey}}">PubKey: {{myself.pubkey.slice(0,16)}}... {{myself.uri}}</div>    
-    		</td>
-    	</tr>
-    </table>
     
-    <div class="reviews-area">
-    
-      <h4>Reviews</h4>
-      <div ng-repeat="review in myself.reputation">[{{review.rating}}] {{review.text}}</div>
-    </div>
   </div>
 </div>
-<div class="row">
-  <div class="col-sm-8">
-    <div ng-show="page" class="panel panel-default">
-      
-    <identicon icon-size="64" hash="page.pubkey" title="{{page.pubkey}}"></identicon> 
-      
-      
-      <!-- Buy -->
-      <button ng-click="creatingOrder=true" class="btn btn-success btn-xl navbar-btn">Buy Now</button>
-      <form ng-show="creatingOrder">
-         Text: <input class="form-control" type="text" ng-model="newOrder.text" placeholder="Friendly message"></input>
-         <a class="btn btn-primary navbar-btn" ng-click="createOrder()" type="submit">Order</a>
-         <a class="btn btn-warning navbar-btn" ng-click="creatingOrder=false" type="cancel">Cancel</a>
-       </form>
+-->
+
+            <div class="row">
+                <div class="col-sm-8">
+                    <div ng-show="page" class="panel panel-default">
+                    	<identicon icon-size="64" hash="page.pubkey" title="{{page.pubkey}}"></identicon> 
+                        <span id="store-nickname" style="font-weight:100;font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:24px;">{{page.nickname}}</span>
+
+                        <div class="panel-body" ng-show="page">
+                            
+                            <!-- Buy -->
+                            <button ng-click="creatingOrder=true" class="btn btn-success btn-xl navbar-btn">Buy Now</button>
+
+                            <form ng-show="creatingOrder">
+                                Text: <input class="form-control" type="text" ng-model="newOrder.text" placeholder="Friendly message"> <a class="btn btn-primary navbar-btn" ng-click="createOrder()" type="submit">Order</a> <a class="btn btn-warning navbar-btn" ng-click="creatingOrder=false" type="cancel">Cancel</a>
+                            </form>
 
 
-     
-   
-    <h3 ng-show="Object.keys(orders).length">Orders</h3>
-    <!-- Orders -->
-    <div class='panel-body' ng-repeat="(orderId, order) in orders" ng-show="order.seller == page.pubkey || order.seller == myself.pubkey">
-      {{order.id}} {{order.state}} {{order.text}}
-      <!-- Buy -->
-      <!-- Pay -->
-      <form ng-show="order && order.state == 'accepted' && order.buyer == myself.pubkey">
-        Pay to: {{order.address}}
-        Tx: <input class="form-control" type="text" ng-model="newOrder.tx" placeholder="Transaction with the spend"></input>
-        <a class="btn btn-primary navbar-btn" ng-click="payOrder(order)" type="submit">Payed</a>
-        <a class="btn btn-warning navbar-btn" ng-click="showReviewForm=false" type="cancel">Cancel</a>
-      </form>
-      <!-- Sent -->
-      <form ng-show="order && order.state == 'payed' && order.seller == myself.pubkey">
-        <a  class="btn btn-primary navbar-btn" ng-click="sendOrder(order)" type="submit">Sent</a>
-      </form>
-      <!-- Received -->
-      <form ng-show="order && order.state == 'sent' && order.buyer == myself.pubkey">
-        <a class="btn btn-primary navbar-btn" ng-click="receiveOrder(order)" type="submit">Received</a>
-      </form>
 
+                            <h3 ng-show="Object.keys(orders).length">Orders</h3><!-- Orders -->
+                            
+                            
 
-    </div>
+                            <div class='panel-body' ng-repeat="(orderId, order) in orders" ng-show="order.seller == page.pubkey || order.seller == myself.pubkey">
+                                {{order.id}} {{order.state}} {{order.text}} <!-- Buy -->
+                                 <!-- Pay -->
 
-      <div class="panel-body" ng-show="page">
-        <div id="page-content"></div>
-        
-        
-        <!-- TODO: Pagination of comments -->
-        <h3>Reviews</h3>
-        <div ng-repeat="review in currentReviews.slice().reverse()" style="padding:3px;background-color:#333;margin-bottom:5px;">
-        	<table><tr><td><identicon icon-size="50" hash="review.pubkey" title="{{review.pubkey}}"></identicon></td><td>
-        		<div style="word-wrap:break-word;width:600px;font-size:14px;"><span style="color:#999;"><em>{{review.pubkey}}</em></span></div>
-        	</td></tr></table>
-        	<div>
-        		<table><tr><td width=60 valign=top style="font-size:200%">{{review.rating}}</td><td>"{{review.text}}"</td></tr></table></div>
+                                <form ng-show="order && order.state == 'accepted' && order.buyer == myself.pubkey">
+                                    Pay to: {{order.address}}<BR>Tx: <input class="form-control" type="text" ng-model="newOrder.tx" placeholder="Transaction with the spend"> <a class="btn btn-primary navbar-btn" ng-click="payOrder(order)" type="submit">Payed</a> <a class="btn btn-warning navbar-btn" ng-click="showReviewForm=false" type="cancel">Cancel</a>
+                                </form><!-- Sent -->
+
+                                <form ng-show="order && order.state == 'payed' && order.seller == myself.pubkey">
+                                    <a class="btn btn-primary navbar-btn" ng-click="sendOrder(order)" type="submit">Sent</a>
+                                </form><!-- Received -->
+
+                                <form ng-show="order && order.state == 'sent' && order.buyer == myself.pubkey">
+                                    <a class="btn btn-primary navbar-btn" ng-click="receiveOrder(order)" type="submit">Received</a>
+                                </form>
+                            </div>
+
+                            <div id="page-content"></div><!-- TODO: Pagination of comments -->
+
+                            <h3>Reviews</h3>
+
+                            <div ng-repeat="review in currentReviews.slice().reverse()" style="padding:3px;background-color:#333;margin-bottom:5px;">
+                                <table>
+                                    <tr>
+                                        <td><identicon icon-size="50" hash="review.pubkey" title="{{review.pubkey}}"></identicon></td>
+
+                                        <td>
+                                            <div style="word-wrap:break-word;width:600px;font-size:14px;">
+                                                <span style="color:#999;"><em>{{review.pubkey}}</em></span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <div>
+                                    <table>
+                                        <tr>
+                                            <td width="60" valign="top" style="font-size:200%">{{review.rating}}</td>
+
+                                            <td>"{{review.text}}"</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div><button ng-click="showReviewForm=true" ng-show="!showReviewForm" class="btn btn-default navbar-btn">Add Review</button>
+
+                            <form ng-show="showReviewForm">
+                                <div style="margin:20px 10px">
+                                    <h4>Add a Review</h4><select class="form-control" type="number" ng-model="review.rating" placeholder="Rating" style="width:10%;">
+                                        <option value="1">
+                                            1
+                                        </option>
+
+                                        <option value="2">
+                                            2
+                                        </option>
+
+                                        <option value="3">
+                                            3
+                                        </option>
+
+                                        <option value="4">
+                                            4
+                                        </option>
+
+                                        <option value="5">
+                                            5
+                                        </option>
+
+                                        <option value="6">
+                                            6
+                                        </option>
+
+                                        <option value="7">
+                                            7
+                                        </option>
+
+                                        <option value="8">
+                                            8
+                                        </option>
+
+                                        <option value="9">
+                                            9
+                                        </option>
+
+                                        <option value="10">
+                                            10
+                                        </option>
+                                    </select>
+
+                                    <div style="margin-top:5px">
+                                        <textarea class="form-control" ng-model="review.text" cols="50" id="new-review" name="comment" placeholder="Enter your review here..." rows="5">
+</textarea>
+                                    </div><a class="btn btn-default navbar-btn" ng-click="addReview()" type="submit">Submit</a> <a class="btn btn-default navbar-btn" ng-click="showReviewForm=false" type="cancel">Cancel</a>
+                                </div>
+                            </form>
+
+                            <div title="page.pubkey" style="word-wrap:break-word">
+                                <h2>Owner:</h2>{{page.pubkey}}
+                            </div>
+
+                            <div title="{{page.signature}}" style="word-wrap:break-word">
+                                <h2>Signature</h2>{{page.signature}}
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- Right Col - Sidebar -->
+
+                <div class="shoutbox-area col-sm-4">
+                    <h3>My Store</h3>
+
+                    <table>
+                        <tr>
+                            <td width="64"><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}"></identicon></td>
+
+                            <td valign="top">
+                                Reputation:{{myself.reputation}} <br>
+
+                                <div title="{{myself.nickname}}">
+                                    {{myself.pubkey.slice(0,16)}}... {{myself.uri}}
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="reviews-area">
+                        <h4>Reviews</h4>
+
+                        <div ng-repeat="review in myself.reputation">
+                            [{{review.rating}}] {{review.text}}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Shout</h3>
+
+                        <form class="form-inline">
+                            <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Say something anonymously"> <button ng-click="createShout(newShout)" class="btn btn-danger">Shout!</button>
+                        </form>
+
+                        <div class="shout-chats">
+                            <div ng-repeat="shout in shouts.slice().reverse()">
+                                {{shout.text}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>Markets</h3>
+
+                    <div class="peers-area" ng-repeat="peer in peers">
+                        <table class="peers-table">
+                            <tr>
+                                <td width="40"><identicon icon-size="38" hash="peer.pubkey" title="{{peer.pubkey}}"></identicon></td>
+
+                                <td><span title="{{peer.pubkey}}">{{peer.uri}}<br>
+                                <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.pubkey?peer.pubkey.slice(0,20):'unknown'}}...</span></span></td>
+
+                                <td align="right"><button ng-click="queryShop(peer)" class="btn btn-sm btn-primary">Visit Shop</button></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-		<button ng-click="showReviewForm=true" ng-show="!showReviewForm" class="btn btn-default navbar-btn">Add Review</button>
-		<form ng-show="showReviewForm">
-		
-			<div style="margin:20px 10px">
-			<h4>Add a Review</h4> 
-				<select class="form-control" type="number" ng-model="review.rating" placeholder="Rating" style="width:10%;">
-					<option value="1">1</option>
-					<option value="2">2</option>
-					<option value="3">3</option>
-					<option value="4">4</option>
-					<option value="5">5</option>
-					<option value="6">6</option>
-					<option value="7">7</option>
-					<option value="8">8</option>
-					<option value="9">9</option>
-					<option value="10">10</option>
-				</select>
-				<div style="margin-top:5px">
-				<textarea class="form-control" ng-model="review.text" cols="50" id="new-review" name="comment" placeholder="Enter your review here..." rows="5"></textarea>
-				</div>
-				<a class="btn btn-default navbar-btn" ng-click="addReview()" type="submit">Submit</a>
-				<a class="btn btn-default navbar-btn" ng-click="showReviewForm=false" type="cancel">Cancel</a>
-			</div>
-			
-		  </form>
-		  
-		
-		
-        <div title="page.pubkey" style="word-wrap:break-word"><h2>Owner:</h2> {{page.pubkey}}</div>
-        <div title="{{page.signature}}" style="word-wrap:break-word"><h2>Signature</h2> {{page.signature}}</div>
-      </div>
-       </div>
-      
-  </div>
-  <div class="shoutbox-area col-sm-4">
-    <div>
-      <h3>Shout</h3>
-      <form class="form-inline">
-        <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Say something anonymously"></input>
-        <button ng-click="createShout(newShout)" class="btn btn-danger">Shout!</button>
-      </form>
-      <div class="shout-chats">
-        <div ng-repeat="shout in shouts.slice().reverse()">{{shout.text}}</div>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-
-</div> <!-- container -->
-
-
+    </div><!-- container -->
 </body>
 </html>
