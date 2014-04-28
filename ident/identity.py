@@ -71,7 +71,7 @@ class Blockchain:
             print >> sys.stderr, "Tx outputs not 2, incorrect."
             return
             
-        
+        # Incorrect output size
         if len(tx.outputs[0].script) != 22:
             print >> sys.stderr, "Incorrect output script size."
             return
@@ -100,19 +100,25 @@ class Blockchain:
         forge.client.fetch_transaction_index(tx_hash, txidx_fetched)
 
     def _txidx_fetched(self, block, height, offset):
+        
         # Continue on... Block seems fine...
         # Check prev hash is in the list.
         if not self._block_hash_exists(block.prev_hash):
             print >> sys.stderr, "Previous block does not exist. Re-processing later."
             reactor.callLater(5, self.accept, block)
             return
+        
+        # Check for duplicate priority
         block.priority = height * 10**8 + offset
         if self._priority_exists(block.priority):
             print >> sys.stderr, "Blocks cannot have matching priorities."
             return
+            
+        # Add new block and sort on priority
         self.blocks.append(block)
         self.blocks.sort(key=lambda b: b.priority)
         self._regenerate_lookup()
+        
         # add to blockchain
         print "Done!"
         db = shelve.open("blockchain")
@@ -158,6 +164,7 @@ class Blockchain:
         return False
 
     def lookup(self, name):
+        print self.registry
         return self.registry.get(name)
 
 class Pool:
@@ -167,7 +174,9 @@ class Pool:
         self.chain = chain
 
     def add(self, tx):
+        
         self.txs.append(tx)
+        
         # TODO: Wait for more registrations and then forge block
         # add timeout/limit logic here.
         # for now create new block for every new registration.
@@ -197,10 +206,14 @@ class Block:
         self.complete = False
 
     def register(self):
-        # register block in the bitcoin blockchain
+        
+        """Register block in the bitcoin blockchain
+        """
+        
         # Calculate Merkle root
         root_hash = self.calculate_root_hash()
-        # create tx with root_hash as output
+        
+        # Create tx with root_hash as output
         self.header = BlockHeader("", root_hash)
         forge.send_root_hash(root_hash, self._registered)
 
@@ -256,7 +269,12 @@ class ZmqPoller:
         value = self.recvr.recv()
         self.pool.add((name_reg, value))
 
+	
     def _recv_query(self):
+    
+        """ Receive query for identity
+	    """
+	
         try:
             name = self.query.recv(flags=zmq.NOBLOCK)
         except zmq.ZMQError:
@@ -267,6 +285,7 @@ class ZmqPoller:
             self.query.send("__NONE__")
             return
         self.query.send(value)
+
 
 def main(argv):
     

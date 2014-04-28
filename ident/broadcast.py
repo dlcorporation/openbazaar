@@ -5,6 +5,14 @@ import urllib2, re, random
 import websocket
 import json
 
+"""Broadcast transactions to appropriate gateways
+
+   Currently supported:
+	- Blockchain.info
+	- Eligius
+	- Unsystem gateway
+"""
+
 # Makes a request to a given URL (first argument) and optional params (second argument)
 def make_request(*args):
     opener = urllib2.build_opener()

@@ -1,7 +1,7 @@
 {
   "nickname": "Default Marketplace",
-  "secret": "4196a69555f599b75744029867f39a36258090f79dc616541e174d3f72ff50c2",
-  "pubkey": "03960478444a2c18b0cd82b461c2654fc3b96dd117ddd524558268be3044192b97",
-  "desc": "This is the default peer"
+  "secret": "70a4863b19407f4a872855f2b2b9062c8e18e1563a73efbe15f1df24b035e814",
+  "pubkey": "9e55dd799fac2ca83451dd1b5296412547c18566b321231f5d5e1222bfcb02fb",
+  "desc": "This is a default marketplace. Public address is 1Dark7Qx6DCX3y4qQRZDxLcqy8Mait3MQk."
 }
 

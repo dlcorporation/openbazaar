@@ -1,7 +1,7 @@
 import obelisk
 import broadcast
 
-
+# TODO: Change this over to development address if using TESTNET
 secret = "8cd252b8a48abb98aed387b204a417ae38e4a928b0e997654bdd742dd044659c".decode("hex")
 address = "1PRBVdCHoPPD3bz8sCZRTm6iAtuoqFctvx"
 
