@@ -24,12 +24,13 @@ def proto_query_reputation(pubkey):
     data['pubkey'] = pubkey.encode('hex')
     return data
 
-def proto_page(pubkey, text, signature):
+def proto_page(pubkey, text, signature, nickname):
     data = {}
     data['type'] = 'page'
     data['pubkey'] = pubkey.encode('hex')
     data['signature'] = signature.encode('hex')
     data['text'] = text
+    data['nickname'] = nickname
     return data
 
 def query_page(pubkey):

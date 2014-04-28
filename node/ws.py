@@ -47,8 +47,9 @@ class ProtocolHandler:
         
         self.send_to_client(None, message)
 
-    # requests coming from the client
+    # Requests coming from the client
     def client_query_page(self, socket_handler, msg):
+        print "Message: ", msg
         pubkey = msg['pubkey'].decode('hex')
         self.node.query_page(pubkey)
         self.node.reputation.query_reputation(pubkey)

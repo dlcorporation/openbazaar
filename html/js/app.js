@@ -33,6 +33,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   $scope.newShout = ""
   $scope.searching = ""
   $scope.currentReviews = []
+  $scope.orders = []
   $scope.myReviews = []
   $scope.createShout = function() {
      // launch a shout
@@ -85,15 +86,12 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   var add_review_to_page = function(pubkey, review) {
     var found = false;
     
-    console.log('REVIEWS',$scope.reviews)
-    
     if (!$scope.reviews.hasOwnProperty(pubkey)) {
         $scope.reviews[pubkey] = []
     }
-    $scope.reviews[pubkey].forEach(function(_review) {
-    	console.log("Review: ",_review)
+    $scope.reviews[pubkey].forEach(function(_review) {    	
         if (_review.sig == review.sig && _review.subject == review.subject && _review.pubkey == review.pubkey) {
-           console.log("Found the review")
+           console.log("Found a review for this market")
            found = true
         }
     });
@@ -108,8 +106,11 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
 
   $scope.parse_order = function(msg) {
+  	  
+  	  console.log("Order update");
+  	  
       if ($scope.orders.hasOwnProperty(msg.id)) {
-          console.log("updating order!")
+          console.log("Updating order!")
           $scope.orders[msg.id].state = msg.state
           $scope.orders[msg.id].tx = msg.tx
           $scope.orders[msg.id].escrows = msg.escrows
@@ -118,7 +119,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
           $scope.orders[msg.id] = msg;
       }
       if (!$scope.$$phase) {
-         $scope.$apply();
+      	 console.log($scope.orders);
+         //$scope.$apply();
       }
   }
 
@@ -135,6 +137,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
           }
       });
       if (!$scope.$$phase) {
+      	
          $scope.$apply();
       }
   }
@@ -152,6 +155,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
 
   $scope.parse_page = function(msg) {
+    
     if (msg.pubkey != $scope.awaitingShop)
        return
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
@@ -159,8 +163,13 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     }
     $scope.currentReviews = $scope.reviews[msg.pubkey]
     $scope.page = msg
+    
+    // Write in store content into the HTML
     var contentDiv = document.getElementById('page-content')
     contentDiv.innerHTML = msg.text;
+    
+    console.log($scope.orders);
+    
     if (!$scope.$$phase) {
        $scope.$apply();
     }
@@ -222,8 +231,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
      $scope.search = ""
   }
 
+  // Create a new order and send to the network
   $scope.newOrder = {text:'', tx: ''}
-  $scope.orders = {}
   $scope.createOrder = function() {
       $scope.creatingOrder = false;
       var newOrder = {
@@ -232,8 +241,10 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
           'buyer': $scope.myself.pubkey,
           'seller': $scope.page.pubkey
       }
-      $scope.newOrder.text = '';
-     //  $scope.orders.push(newOrder) no id...
+      $scope.newOrder.text = '';		
+      // TODO: Need to persist orders somewhere
+      console.log(newOrder);
+      //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
       socket.send('order', newOrder);
   }
   $scope.payOrder = function(order) {
