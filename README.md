@@ -32,6 +32,16 @@ sudo ifconfig lo0 alias 127.0.0.4 up
 1. https://github.com/warner/python-ecdsa
 2. https://github.com/darkwallet/python-obelisk
 
+###Vagrant VM
+
+# Quick dev setup:
+- Install Vagrant (http://www.vagrantup.com/downloads.html)
+- `git clone https://github.com/darkwallet/darkmarket.git && cd darkmarket`
+- `vagrant up && vagrant ssh`
+- `cd /vagrant && ./run_dev.sh`
+- Open http://localhost:8888
+
+
 ## Screenshot
 
 ![Screen 1](http://i.imgur.com/PaemnhJ.png)
