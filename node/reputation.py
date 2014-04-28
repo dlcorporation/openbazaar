@@ -19,22 +19,29 @@ def review(pubkey, subject, signature, text, rating):
 
 class Reputation(object):
     def __init__(self, transport):
+        
         self._transport = transport
         self._priv = transport._myself
+        
+        # TODO: Pull reviews out of persistent storage
         self._reviews = defaultdict(list)
 
         transport.add_callback('reputation', self.on_reputation)
         transport.add_callback('query_reputation', self.on_query_reputation)
 
-        # REMOVED BECAUSE ITS JUST A SAMPLE REVIEW
-        # self.create_review(self._priv.get_pubkey(), "Initial Review", 10)
+        # SAMPLE Review because there is no persistence of reviews ATM
+        self.create_review(self._priv.get_pubkey(), "Initial Review", 10)
+
 
     # getting reputation from inside the application
     def get_reputation(self, pubkey):
         return self._reviews[pubkey]
 
+
     def get_my_reputation(self):
+    	print 'My Public Key: ', self._priv
         return self._reviews[self._priv.get_pubkey()]
+
 
     # Create a new review and broadcast to the network
     def create_review(self, pubkey, text, rating):

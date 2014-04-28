@@ -22,11 +22,13 @@ class Blockchain:
             pass
         db.close()
         self._regenerate_lookup()
-        print "Starting blockchain:", self.blocks
+        print "[Blockchain] Starting identity blockchain:", self.blocks
 
+	# Accept block(s) for processing
     def accept(self, block):
         self.processor.append(block)
 
+	# 
     def update(self):
         process = self.processor
         self.processor = []
@@ -38,45 +40,63 @@ class Blockchain:
             self.postpone(block)
             return
         print "Processing block...", block
-        # check hash of keys + values matches root hash
+        
+        # Check hash of keys + values matches root hash
         if not block.verify():
             # Invalid block so reject it.
             print >> sys.stderr, "Rejecting invalid block."
             return
-        # fetch tx to check it's valid
+        
+        # Fetch tx to check it's valid
         assert block.header.tx_hash
+        
+        # Forging callback
         def tx_fetched(ec, tx):
+            print ec
             if ec is not None:
                 print >> sys.stderr, "Block doesn't exist (yet)."
                 self.postpone(block)
                 return
             self._tx_fetched(block, tx, block.header.tx_hash)
+        
         if forge.client is None:
-            forge.client = obelisk.ObeliskOfLightClient("tcp://obelisk.unsystem.net:9091")
+            forge.client = obelisk.ObeliskOfLightClient("tcp://obelisk.unsystem.net:8081")
         forge.client.fetch_transaction(block.header.tx_hash, tx_fetched)
 
     def _tx_fetched(self, block, tx, tx_hash):
+        
         # Continuing on with block validation...
         tx = obelisk.Transaction.deserialize(tx)
         if len(tx.outputs) != 2:
             print >> sys.stderr, "Tx outputs not 2, incorrect."
             return
+            
+        
         if len(tx.outputs[0].script) != 22:
             print >> sys.stderr, "Incorrect output script size."
             return
+            
+        # Transaction scriptPubKey doesn't start with OP_RETURN + push    
         if tx.outputs[0].script[:2] != "\x6a\x14":
             print >> sys.stderr, "OP_RETURN + push"
             return
+            
         root_hash = tx.outputs[0].script[2:]
+        
+        # Root hashes don't match
         if block.header.root_hash != root_hash:
             print >> sys.stderr, "Non matching root hash with tx."
             return
+            
+        # Fetch tx height/index associated with block
+        
+        # Fetch tx callback
         def txidx_fetched(ec, height, offset):
             if ec is not None:
                 print >> sys.stderr, "Dodgy error, couldn't find tx off details."
                 return
             self._txidx_fetched(block, height, offset)
-        # fetch tx height/index associated with block
+        
         forge.client.fetch_transaction_index(tx_hash, txidx_fetched)
 
     def _txidx_fetched(self, block, height, offset):
@@ -99,15 +119,18 @@ class Blockchain:
         db["chain"] = self.blocks
         db.close()
 
+	# 
     def _regenerate_lookup(self):
         for block in self.blocks:
             for name, key in block.txs:
                 if name not in self.registry:
                     print "Adding:", name
                     self.registry[name] = key
+                else:
+                    print "Name already in registry"
 
     def postpone(self, block):
-        # readd for later processing
+        # read for later processing
         self.accept(block)
 
     def _priority_exists(self, priority):
@@ -145,12 +168,14 @@ class Pool:
 
     def add(self, tx):
         self.txs.append(tx)
+        # TODO: Wait for more registrations and then forge block
         # add timeout/limit logic here.
         # for now create new block for every new registration.
+        
         self.fabricate_block()
 
     def fabricate_block(self):
-        print "Fabricating new block!"
+        print "[Pool] Fabricating new block!"
         txs = self.txs
         self.txs = []
         block = Block(txs, self.chain.last_hash)
@@ -173,6 +198,7 @@ class Block:
 
     def register(self):
         # register block in the bitcoin blockchain
+        # Calculate Merkle root
         root_hash = self.calculate_root_hash()
         # create tx with root_hash as output
         self.header = BlockHeader("", root_hash)
@@ -235,7 +261,7 @@ class ZmqPoller:
             name = self.query.recv(flags=zmq.NOBLOCK)
         except zmq.ZMQError:
             return
-        print "Lookup:", name
+        print "[ZMQ] Lookup:", name
         value = self.chain.lookup(name)
         if value is None:
             self.query.send("__NONE__")
@@ -243,6 +269,7 @@ class ZmqPoller:
         self.query.send(value)
 
 def main(argv):
+    
     chain = Blockchain()
     pool = Pool(chain)
     zmq_poller = ZmqPoller(pool, chain)
