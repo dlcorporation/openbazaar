@@ -5,8 +5,15 @@ OpenBazaar is a decentralized marketplace proof of concept. It is based off of t
 Currently soliciting feedback on the project. http://www.reddit.com/r/Bitcoin/comments/23y80c/solicitation_of_darkmarketbased_alternative/
 Also official site will be at http://openbazaar.org
 
+## Features (Notional)
+- Full market editor for management of items catalog
+- Order management system
+- Escrow-based transactions
+- Arbiter management
+- Private messaging
+- Identity/Reputation system
 
-## List of dependencies
+## Dependencies
 - https://github.com/warner/python-ecdsa
 - https://github.com/darkwallet/python-obelisk
 - MongoDB
@@ -21,7 +28,7 @@ Also official site will be at http://openbazaar.org
 3. python setup.py install
 
 
-## MongoDB
+### MongoDB
 
 OpenBazaar now uses MongoDB as the backend for storing persistent data. At the moment only orders are being tracked there, but this will be fleshed out ongoing. You will need to set up a MongoDB instance on your machine outside of this software and create a database called 'openbazaar'. There is no authentication or encryption configured, but I will be adding in support for this soon.
 
@@ -34,13 +41,23 @@ From command line:
 `use openbazaar`
 
 
-## OSX Users
+###Vagrant VM
+
+# Quick dev setup:
+- Install Vagrant (http://www.vagrantup.com/downloads.html)
+- `git clone https://github.com/OpenBazaar/OpenBazaar.git && cd OpenBazaar`
+- `vagrant up && vagrant ssh`
+- `cd /vagrant && ./run_dev.sh`
+- Open http://localhost:8888
+
+
+### OSX Users
 
 For OSX there is a CLANG error when installing pyzmq but you can use the following command to ignore warnings:
 
 `sudo ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future easy_install pyzmq`
 
-## Issues with ./run_dev.sh
+### Issues with ./run_dev.sh
 If you're getting errors saying `ZMQError: Can't assign requested address` then you probably need to bring up some loopback adapters for those 
 IPs higher than 127.0.0.1.
 
@@ -50,14 +67,10 @@ sudo ifconfig lo0 alias 127.0.0.4 up
 
 
 
-###Vagrant VM
 
-# Quick dev setup:
-- Install Vagrant (http://www.vagrantup.com/downloads.html)
-- `git clone https://github.com/OpenBazaar/OpenBazaar.git && cd OpenBazaar`
-- `vagrant up && vagrant ssh`
-- `cd /vagrant && ./run_dev.sh`
-- Open http://localhost:8888
+
+
+
 
 
 ## Screenshot
