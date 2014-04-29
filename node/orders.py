@@ -70,7 +70,7 @@ class Orders(object):
         new_order['state'] = 'received'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
         
-
+        
     # Order callbacks
     def on_order(self, msg):    
     
@@ -97,6 +97,12 @@ class Orders(object):
                 self.accept_order(msg)
             else:
                 self._transport.log("Not a party to this order")
+        elif state == 'cancelled':
+            if myself == seller or myself == buyer:
+                print 'Order cancelled'
+                #self.cancel_order(msg)
+            else:
+                self._transport.log("Order not for us")
         elif state == 'accepted':
             if myself == seller:
                 self._transport.log("Bad subjects [%s]" % state)
