@@ -100,7 +100,7 @@
                                 {{order.id}} {{order.state}} {{order.text}} <!-- Buy -->
                                  <!-- Pay -->
 
-                                <form ng-show="order && order.state == 'accepted' && order.buyer == myself.pubkey">
+                                <form ng-show="order && (order.state == 'accepted' || order.state == 'new') && order.buyer == myself.pubkey">
                                     Pay to: {{order.address}}<BR>Tx: <input class="form-control" type="text" ng-model="newOrder.tx" placeholder="Transaction with the spend"> <a class="btn btn-primary navbar-btn" ng-click="payOrder(order)" type="submit">Payed</a> <a class="btn btn-warning navbar-btn" ng-click="cancelOrder(order)" type="cancel">Cancel</a>
                                 </form><!-- Sent -->
 
@@ -211,7 +211,7 @@
                             <td width="64"><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}"></identicon></td>
 
                             <td valign="top">
-                                Reputation:{{myself.reputation}} <br>
+                                Reputation: 23 points <br>
 
                                 <div title="{{myself.nickname}}">
                                     {{myself.pubkey.slice(0,16)}}... {{myself.uri}}

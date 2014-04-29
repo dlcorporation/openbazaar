@@ -119,8 +119,6 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       } else {
           console.log(msg);
           $scope.myOrders.push(msg);          
-          console.log($scope.myOrders);
-          return;
       }
       if (!$scope.$$phase) {
       	 console.log($scope.myOrders);
