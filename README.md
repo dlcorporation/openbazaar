@@ -36,7 +36,7 @@ sudo ifconfig lo0 alias 127.0.0.4 up
 
 # Quick dev setup:
 - Install Vagrant (http://www.vagrantup.com/downloads.html)
-- `git clone https://github.com/darkwallet/darkmarket.git && cd darkmarket`
+- `git clone https://github.com/OpenBazaar/OpenBazaar.git && cd OpenBazaar`
 - `vagrant up && vagrant ssh`
 - `cd /vagrant && ./run_dev.sh`
 - Open http://localhost:8888
