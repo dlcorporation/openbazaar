@@ -8,7 +8,7 @@ ioloop.install()
 from crypto2crypto import CryptoTransportLayer
 from market import Market
 from ws import WebSocketHandler, ProtocolHandler
-
+import pymongo
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -20,6 +20,8 @@ class MarketApplication(tornado.web.Application):
     
     	# TODO: Move debug settings to configuration location
         settings = dict(debug=True)
+        
+              
     
         self.transport = CryptoTransportLayer(12345)
         self.transport.join_network()

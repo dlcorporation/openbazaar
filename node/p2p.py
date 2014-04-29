@@ -113,16 +113,21 @@ class TransportLayer(object):
         print " %s [%s] %s" % (pointer, self._id, msg)
 
     def send(self, data, send_to=None):
-        self.log("Sending %s..." % data.keys())
-        self.log(data);
-        # directed message
+
+        self.log("Data sent to p2p: %s" % data);
+
+        # directed message        
         if send_to:
             for peer in self._peers.values():
-                if peer._pub == send_to:
-                    peer.send(data)
+                if peer._pub == send_to:                    
+                    if peer.send(data):
+                        print 'Success'
+                    else:
+                        print 'Failed'                         
                     return
             print "Peer not found!", send_to, self._myself.get_pubkey()
             return
+            
         # broadcast
         for peer in self._peers.values():
             try:
@@ -138,6 +143,7 @@ class TransportLayer(object):
     def on_message(self, msg):
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
+        self.log("Data received: %s" % msg)
         self.trigger_callbacks(msg.get('type'), msg)
 
     def on_raw_message(self, serialized):

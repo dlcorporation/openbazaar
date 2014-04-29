@@ -80,9 +80,7 @@ class Reputation(object):
         if valid:            
             newreview = review(pubkey, subject, signature, text, rating)                     
             
-            if newreview in self._reviews[subject]:
-                print 'This review already exists'
-            else:
+            if newreview not in self._reviews[subject]:               
                 self._reviews[subject].append(newreview)
             
             

@@ -3,8 +3,9 @@ from protocol import proto_reputation, proto_query_reputation, order
 from collections import defaultdict
 from pyelliptic import ECC
 import random
-
+from pymongo import MongoClient
 from multisig import Multisig
+
 
 class Orders(object):
     def __init__(self, transport):
@@ -14,60 +15,80 @@ class Orders(object):
         # TODO: Make user configurable escrow addresses
         self._escrows = ["02ca0020a9de236b47ca19e147cf2cd5b98b6600f168481da8ec0ca9ec92b59b76db1c3d0020f9038a585b93160632f1edec8278ddaeacc38a381c105860d702d7e81ffaa14d",
                          "02ca0020c0d9cd9bdd70c8565374ed8986ac58d24f076e9bcc401fc836352da4fc21f8490020b59dec0aff5e93184d022423893568df13ec1b8352e5f1141dbc669456af510c"]
-        self._orders = {}
+        #self._orders = {}
+
+        MONGODB_URI = 'mongodb://localhost:27017'         
+        _dbclient = MongoClient()
+        self._db = _dbclient.openbazaar
+        self._orders = self._db.orders
+
+        print self._orders.find_one()
 
         transport.add_callback('order', self.on_order)
 
 
     # Create a new order
-    def create_order(self, seller, text): # action
+    def create_order(self, seller, text): 
         
         id = random.randint(0,1000000)
         buyer = self._transport._myself.get_pubkey()
-        new_order = order(id, buyer, seller, 'new', text, self._escrows)
+        new_order = order(id, buyer, seller, 'new', text, self._escrows)        
         
-        # Store the order
-        self._orders[id] = new_order
-        print "Orders: ", self._orders
-        
-        # Announce the new order
         self._transport.send(new_order, seller)
+        
+        self._orders.insert(new_order)
+
+        
         
     def print_orders(self):
         print self._orders
 
     def accept_order(self, new_order): 
     
-    	# TODO: Need to have a check for the vendor to agree to the order
+    	# TODO: Need to have a check for the vendor to agree to the order        
+		
         new_order['state'] = 'accepted'
         seller = new_order['seller'].decode('hex')
         buyer = new_order['buyer'].decode('hex')
-        print "accept order", new_order
+        
         new_order['escrows'] = [new_order.get('escrows')[0]]
         escrow = new_order['escrows'][0].decode('hex')
+        
         self._multisig = Multisig(None, 2, [buyer, seller, escrow])
+        
         new_order['address'] = self._multisig.address
-        self._orders[new_order['id']] = new_order
+        
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
+        
+        # Push to MongoDB
+        self._orders.update({'id': new_order['id']}, { "$set": new_order }, True)
     
     def pay_order(self, new_order): # action
         new_order['state'] = 'payed'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
+        
+        # Push to MongoDB
+        self._orders.update({'id': new_order['id']}, { "$set": new_order }, True)
 
     def send_order(self, new_order): # action
         new_order['state'] = 'sent'
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
+        
+        # Push to MongoDB
+        self._orders.update({'id': new_order['id']}, { "$set": new_order }, True)
 
     def receive_order(self, new_order): # action
         new_order['state'] = 'received'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
+        
+        # Push to MongoDB
+        self._orders.update({'id': new_order['id']}, { "$set": new_order }, True)
 
     # Order callbacks
-    def on_order(self, msg):
+    def on_order(self, msg):    
     
         state = msg.get('state')
-        self._transport.log("Order " + state)
-        
+            
         buyer = msg.get('buyer').decode('hex')
         seller = msg.get('seller').decode('hex')
         myself = self._transport._myself.get_pubkey()
@@ -85,6 +106,7 @@ class Orders(object):
             if myself == buyer:
                 self.create_order(seller, msg.get('text', 'no comments'))
             elif myself == seller:
+                print msg
                 self.accept_order(msg)
             else:
                 self._transport.log("Not a party to this order")
@@ -121,12 +143,12 @@ class Orders(object):
             else:
                 self._transport.log("Order not for us")
         
-        # Store order        
+        # Store order     
         if msg.get('id'):
-            if msg['id'] in self._orders:
-                self._orders[msg['id']]['state'] = msg['state']
+            if self._orders.find( {id:msg['id']}):
+                self._orders.update({'id':msg['id']}, { "$set": { 'state':msg['state'] } }, True)
             else:
-                self._orders[msg['id']] = msg
+                self._orders.update({'id':msg['id']}, { "$set": { msg } }, True)
 
 if __name__ == '__main__':
     seller = ECC(curve='secp256k1')
