@@ -43,7 +43,7 @@ From command line:
 
 ###Vagrant VM
 
-# Quick dev setup:
+#### Quick dev setup:
 - Install Vagrant (http://www.vagrantup.com/downloads.html)
 - `git clone https://github.com/OpenBazaar/OpenBazaar.git && cd OpenBazaar`
 - `vagrant up && vagrant ssh`
