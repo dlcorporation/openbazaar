@@ -94,7 +94,7 @@ class Market(object):
         pubkey = page.get('pubkey')
         page = page.get('text')
         
-        print "Orders: ", self.orders.print_orders()
+        #print "Orders: ", self.orders.print_orders()
         
         if pubkey and page:
             self.pages[pubkey] = page

@@ -92,11 +92,11 @@
 
 
 
-                            <h3 ng-show="Object.keys(orders).length">Orders</h3><!-- Orders -->
+                            <h3 ng-show="Object.keys(myOrders).length">Orders</h3><!-- Orders -->
                             
                             
 
-                            <div class='panel-body' ng-repeat="(orderId, order) in orders" ng-show="order.seller == page.pubkey || order.seller == myself.pubkey">
+                            <div class='panel-body' ng-repeat="(orderId, order) in myOrders" ng-show="order.seller == page.pubkey || order.seller == myself.pubkey">
                                 {{order.id}} {{order.state}} {{order.text}} <!-- Buy -->
                                  <!-- Pay -->
 
