@@ -33,7 +33,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   $scope.newShout = ""
   $scope.searching = ""
   $scope.currentReviews = []
-  $scope.orders = []
+  $scope.myOrders = []
   $scope.myReviews = []
   $scope.createShout = function() {
      // launch a shout
@@ -109,17 +109,21 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   	  
   	  console.log("Order update");
   	  
-      if ($scope.orders.hasOwnProperty(msg.id)) {
+      if ($scope.myOrders.hasOwnProperty(msg.id)) {
           console.log("Updating order!")
-          $scope.orders[msg.id].state = msg.state
-          $scope.orders[msg.id].tx = msg.tx
-          $scope.orders[msg.id].escrows = msg.escrows
-          $scope.orders[msg.id].address = msg.address
+          $scope.myOrders[msg.id].state = msg.state
+          $scope.myOrders[msg.id].tx = msg.tx
+          $scope.myOrders[msg.id].escrows = msg.escrows
+          $scope.myOrders[msg.id].address = msg.address
+          return;
       } else {
-          $scope.orders[msg.id] = msg;
+          console.log(msg);
+          $scope.myOrders.push(msg);          
+          console.log($scope.myOrders);
+          return;
       }
       if (!$scope.$$phase) {
-      	 console.log($scope.orders);
+      	 console.log($scope.myOrders);
          //$scope.$apply();
       }
   }
@@ -168,7 +172,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     var contentDiv = document.getElementById('page-content')
     contentDiv.innerHTML = msg.text;
     
-    console.log($scope.orders);
+    console.log("Parse orders:"+$scope.myOrders);
     
     if (!$scope.$$phase) {
        $scope.$apply();
@@ -242,8 +246,6 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
           'seller': $scope.page.pubkey
       }
       $scope.newOrder.text = '';		
-      // TODO: Need to persist orders somewhere
-      console.log(newOrder);
       //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
       socket.send('order', newOrder);
   }

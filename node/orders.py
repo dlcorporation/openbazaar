@@ -22,8 +22,6 @@ class Orders(object):
         self._db = _dbclient.openbazaar
         self._orders = self._db.orders
 
-        print self._orders.find_one()
-
         transport.add_callback('order', self.on_order)
 
 
