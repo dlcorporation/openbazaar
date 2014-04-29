@@ -11,9 +11,6 @@ Also official site will be at http://openbazaar.org
 - https://github.com/darkwallet/python-obelisk
 - MongoDB
 
-
-
-
 `pip install pyzmq`
 `pip install tornado`
 `pip install pyelliptic`

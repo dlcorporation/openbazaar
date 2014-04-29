@@ -59,30 +59,19 @@ class Orders(object):
         new_order['address'] = self._multisig.address
         
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
-        
-        # Push to MongoDB
-        self._orders.update({'id': new_order['id']}, { "$set": new_order }, True)
     
     def pay_order(self, new_order): # action
         new_order['state'] = 'payed'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
-        
-        # Push to MongoDB
-        self._orders.update({'id': new_order['id']}, { "$set": new_order }, True)
 
     def send_order(self, new_order): # action
         new_order['state'] = 'sent'
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
-        
-        # Push to MongoDB
-        self._orders.update({'id': new_order['id']}, { "$set": new_order }, True)
 
     def receive_order(self, new_order): # action
         new_order['state'] = 'received'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
         
-        # Push to MongoDB
-        self._orders.update({'id': new_order['id']}, { "$set": new_order }, True)
 
     # Order callbacks
     def on_order(self, msg):    
