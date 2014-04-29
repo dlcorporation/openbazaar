@@ -8,11 +8,20 @@ Also official site will be at http://openbazaar.org
 `pip install pyzmq`
 `pip install tornado`
 `pip install pyelliptic`
+`pip install pymongo`
 
 1. Install python-obelisk
 2. git clone https://github.com/darkwallet/python-obelisk
 3. python setup.py install
 
+
+## MongoDB
+- Install MongoDB with OpenSSL
+- Configure parameters for connecting 
+- Start MongoDB 
+- Create database named openbazaar
+`use openbazaar`
+`db.createCollection("orders")`
 
 ## OSX Users
 

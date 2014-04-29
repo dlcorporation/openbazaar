@@ -5,7 +5,7 @@ import protocol
 import sys
 import json
 import lookup
-
+from pymongo import MongoClient
 
 class Market(object):
 

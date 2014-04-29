@@ -55,6 +55,7 @@ def order(id, buyer, seller, state, text, escrows=[], tx=None):
     # some text
     data['text'] = text
     # some text
+    data['address'] = ''
     data['state'] = state # new -> accepted/rejected -> payed -> sent -> received
     return data
 
