@@ -147,6 +147,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         try:
             request = json.loads(message)
+            print request
         except:
             logging.error("Error decoding message: %s", message, exc_info=True)
 
