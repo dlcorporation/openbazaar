@@ -100,7 +100,6 @@ class Orders(object):
         elif state == 'cancelled':
             if myself == seller or myself == buyer:
                 print 'Order cancelled'
-                #self.cancel_order(msg)
             else:
                 self._transport.log("Order not for us")
         elif state == 'accepted':
