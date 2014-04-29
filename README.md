@@ -5,6 +5,15 @@ OpenBazaar is a decentralized marketplace proof of concept. It is based off of t
 Currently soliciting feedback on the project. http://www.reddit.com/r/Bitcoin/comments/23y80c/solicitation_of_darkmarketbased_alternative/
 Also official site will be at http://openbazaar.org
 
+
+## List of dependencies
+- https://github.com/warner/python-ecdsa
+- https://github.com/darkwallet/python-obelisk
+- MongoDB
+
+
+
+
 `pip install pyzmq`
 `pip install tornado`
 `pip install pyelliptic`
@@ -16,12 +25,17 @@ Also official site will be at http://openbazaar.org
 
 
 ## MongoDB
+
+OpenBazaar now uses MongoDB as the backend for storing persistent data. At the moment only orders are being tracked there, but this will be fleshed out ongoing. You will need to set up a MongoDB instance on your machine outside of this software and create a database called 'openbazaar'. There is no authentication or encryption configured, but I will be adding in support for this soon.
+
 - Install MongoDB with OpenSSL
-- Configure parameters for connecting 
 - Start MongoDB 
 - Create database named openbazaar
+
+From command line:
+`mongo`
 `use openbazaar`
-`db.createCollection("orders")`
+
 
 ## OSX Users
 
@@ -37,9 +51,7 @@ sudo ifconfig lo0 alias 127.0.0.2 up
 sudo ifconfig lo0 alias 127.0.0.3 up
 sudo ifconfig lo0 alias 127.0.0.4 up
 
-## List of libraries used
-1. https://github.com/warner/python-ecdsa
-2. https://github.com/darkwallet/python-obelisk
+
 
 ###Vagrant VM
 
