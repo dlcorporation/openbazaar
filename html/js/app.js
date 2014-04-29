@@ -124,7 +124,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       }
       if (!$scope.$$phase) {
       	 console.log($scope.myOrders);
-         //$scope.$apply();
+         $scope.$apply();
       }
   }
 
@@ -263,5 +263,12 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       order.state = 'sent'
       socket.send('order', order);
   }
+  
+  $scope.cancelOrder = function(order) {
+  	order.state = 'cancelled'
+  	socket.send('order', order)
+  }
+  
+  
 
 }])

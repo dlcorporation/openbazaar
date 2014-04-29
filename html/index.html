@@ -101,7 +101,7 @@
                                  <!-- Pay -->
 
                                 <form ng-show="order && order.state == 'accepted' && order.buyer == myself.pubkey">
-                                    Pay to: {{order.address}}<BR>Tx: <input class="form-control" type="text" ng-model="newOrder.tx" placeholder="Transaction with the spend"> <a class="btn btn-primary navbar-btn" ng-click="payOrder(order)" type="submit">Payed</a> <a class="btn btn-warning navbar-btn" ng-click="showReviewForm=false" type="cancel">Cancel</a>
+                                    Pay to: {{order.address}}<BR>Tx: <input class="form-control" type="text" ng-model="newOrder.tx" placeholder="Transaction with the spend"> <a class="btn btn-primary navbar-btn" ng-click="payOrder(order)" type="submit">Payed</a> <a class="btn btn-warning navbar-btn" ng-click="cancelOrder(order)" type="cancel">Cancel</a>
                                 </form><!-- Sent -->
 
                                 <form ng-show="order && order.state == 'payed' && order.seller == myself.pubkey">
