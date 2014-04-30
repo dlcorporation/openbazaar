@@ -77,7 +77,7 @@ sudo ifconfig lo0 alias 127.0.0.4 up
 
 This screen shot looks horrible and is just a placeholder ATM. Designers wanted. Apply to brian@openbazaar.org if you're interested in helping out.
 
-![Screen 1](http://i.imgur.com/PaemnhJ.png)
+![Screen 1](http://i.imgur.com/hYliE45.png)
 =======
 
 
