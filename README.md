@@ -28,6 +28,12 @@ Also official site will be at http://openbazaar.org
 3. python setup.py install
 
 
+## Identity Server
+
+To get the identity server running for querying nicknames in the UI you need to start the identity server. From the base directory of the software run the following:
+
+`python identy/identity.py`
+
 ### MongoDB
 
 OpenBazaar now uses MongoDB as the backend for storing persistent data. At the moment only orders are being tracked there, but this will be fleshed out ongoing. You will need to set up a MongoDB instance on your machine outside of this software and create a database called 'openbazaar'. There is no authentication or encryption configured, but I will be adding in support for this soon.
@@ -64,11 +70,6 @@ IPs higher than 127.0.0.1.
 sudo ifconfig lo0 alias 127.0.0.2 up
 sudo ifconfig lo0 alias 127.0.0.3 up
 sudo ifconfig lo0 alias 127.0.0.4 up
-
-
-
-
-
 
 
 
