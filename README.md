@@ -28,11 +28,7 @@ Also official site will be at http://openbazaar.org
 3. python setup.py install
 
 
-## Identity Server
 
-To get the identity server running for querying nicknames in the UI you need to start the identity server. From the base directory of the software run the following:
-
-`python identy/identity.py`
 
 ### MongoDB
 
@@ -71,7 +67,11 @@ sudo ifconfig lo0 alias 127.0.0.2 up
 sudo ifconfig lo0 alias 127.0.0.3 up
 sudo ifconfig lo0 alias 127.0.0.4 up
 
+## Identity Server
 
+To get the identity server running for querying nicknames in the UI you need to start the identity server. From the base directory of the software run the following:
+
+`python identy/identity.py`
 
 
 ## Screenshot
