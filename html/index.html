@@ -58,23 +58,36 @@
         </div><!-- /MOVE APP INSIDE THIS AREA -->
 
         <div id="search" class="search-area" ng-show="!started">
-            <div style="float:left;">
-                <h1><a href="/">OpenBazaar</a></h1>
-            </div>
+            
+            <div  style="border-bottom:1px solid #bbb;height:120px;">
+            
+	            <div style="float:left;">
+	                <a href="/"><img src="img/logo.png" height="100"/></a>
+	            </div>
+	
+	            <div class="search-area " style="text-align:right;margin-left:250px;">
+	                
+	                <form class="search-form form-inline">
+	                    <label class="sr-only" for="search">Search:</label> <input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for markets or products..."> <input class="btn btn-success" ng-click="searchNickname()" type="submit" value="Search">
+	                </form>
+	                
 
-            <div class="search-area panel panel-default" style="text-align:right;margin-left:275px">
-                <form class="search-form form-inline panel-body">
-                    <label class="sr-only" for="search">Search:</label> <input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for nicknames.."> <input class="btn btn-success" ng-click="searchNickname()" type="submit" value="Search">
-                </form>
-            </div><!--
-<div class="row">
-  <div class="col-sm-8">
-      </div>
-  <div class="anon-profile-area col-sm-4">
-    
-  </div>
-</div>
--->
+	                <div style="float:right;margin-top:30px;width:700px;">
+	                <identicon icon-size="50" hash="myself.pubkey" title="{{myself.pubkey}}" style="float:left;margin-right:10px;"></identicon>
+	                
+	                <ul class="nav nav-pills">
+						  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">My Market</a></li>
+						  <li><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
+						  <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
+						  <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Product Catalog</a></li>
+						  <li><a href="#messages" ng-click="showDashboardPanel('messages')">Messages</a></li>
+						  <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
+						</ul>
+					</div>
+	                
+	            </div>
+            
+            </div>
 
             <div class="row">
                 <div class="col-sm-8">
@@ -82,20 +95,14 @@
                     
                     <!-- Merchant Dashboard -->
                     <div ng-show="dashboard" style="padding:10px;">
-                    	<h2><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}"></identicon> Merchant Dashboard</h2>
                     	
-                    	<ul class="nav nav-pills">
-						  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">My Info</a></li>
-						  <li><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
-						  <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
-						  <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Product Catalog</a></li>
-						  <li><a href="#messages" ng-click="showDashboardPanel('messages')">Messages</a></li>
-						  <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
-						</ul>
-
+                    	
+                    	
                     	<div class="dashboard-panel">
                     	
                     		<div ng-show="myInfoPanel" class="animated fadeInLeft">
+                    	
+                    			<h2><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}" style="margin-right:10px;"></identicon> My Market</h2>
                     			
                     			<table width=700>
                     				<tr>
