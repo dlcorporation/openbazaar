@@ -11,6 +11,7 @@
     
     <link href="/html/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="/html/css/dark.css" rel="stylesheet" type="text/css">
+    <link href="/html/css/animate.css" rel="stylesheet" type="text/css">
     <link href="/html/less/css/app.css" rel="stylesheet" type="text/css">
 
     <title></title>
@@ -22,12 +23,12 @@
     <div class="container">
         <!-- MOVE APP INSIDE THIS AREA -->
 
-        <div class="site-wrapper" ng-show="!started">
+        <div class="site-wrapper" ng-show="started">
             <div class="site-wrapper-inner">
                 <div class="cover-container">
                     <div class="masthead clearfix">
                         <div class="inner">
-                            <h3 class="masthead-brand">OpenBazaar</h3>
+                            <h3 class="masthead-brand"><a href="/">OpenBazaar</a></h3>
 
                             <ul class="nav masthead-nav">
                                 <li class="active"><a href="#">Home</a></li>
@@ -56,9 +57,9 @@
             </div>
         </div><!-- /MOVE APP INSIDE THIS AREA -->
 
-        <div id="search" class="search-area" ng-show="started">
+        <div id="search" class="search-area" ng-show="!started">
             <div style="float:left;">
-                <h1>OpenBazaar</h1>
+                <h1><a href="/">OpenBazaar</a></h1>
             </div>
 
             <div class="search-area panel panel-default" style="text-align:right;margin-left:275px">
@@ -84,14 +85,41 @@
                     	<h2><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}"></identicon> Merchant Dashboard</h2>
                     	
                     	<ul class="nav nav-pills">
-						  <li class="active"><a href="#">Orders</a></li>
-						  <li><a href="#">Product Catalog</a></li>
-						  <li><a href="#" ng-click="showMessages(self)">Messages</a></li>
+						  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">My Info</a></li>
+						  <li><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
+						  <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
+						  <li><a href="#catalog" ng-click="showDashboardPanel('catalog')">Product Catalog</a></li>
+						  <li><a href="#messages" ng-click="showDashboardPanel('messages')">Messages</a></li>
 						</ul>
 
                     	<div class="dashboard-panel">
                     	
-                    		<div ng-show="messagesPanel"><p>This will be all your personal messages from peers.</p></div>
+                    		<div ng-show="myInfoPanel" class="animated fadeInLeft">
+                    			
+                    			<table width=700>
+                    				<tr>
+                    					<td width=150 valign=top><strong>Public Key:</strong></td>
+                    					<td style="word-break:break-all">{{myself.pubkey}}</td>
+                    				</tr>
+                    			</table>
+                    			 
+								
+			
+			                    
+
+                    		</div>
+                    		
+                    		
+                    		<div ng-show="reviewsPanel">
+		                        <h4>Reviews</h4>
+		
+		                        <div ng-repeat="review in myself.reputation">
+		                            [{{review.rating}}] {{review.text}}
+		                        </div>
+		                    </div>
+                    	
+                    	
+                    		<div ng-show="messagesPanel"><p>This will be all your private messages from peers.</p></div>
                     	
                     	
                     	</div>
@@ -105,11 +133,23 @@
                     
                     
                     
-                    <div ng-show="page" class="panel panel-default">
-                    	<identicon icon-size="64" hash="page.pubkey" title="{{page.pubkey}}"></identicon> 
-                        <span id="store-nickname" style="font-weight:100;font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:24px;">{{page.nickname}}</span>
+                    <div ng-show="page" class="" style="margin-top:40px;">
+                    	
+                    	
+                        <h2><identicon icon-size="64" hash="page.pubkey" title="{{page.pubkey}}"></identicon>  {{page.nickname}}</h2>
 
-                        <div class="panel-body" ng-show="page">
+						<ul class="nav nav-pills">
+						  <li class="active" ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
+						  <li><a href="#storeOrderHistory" ng-click="showStorePanel('storeOrderHistory')">Orders</a></li>
+						  <li><a href="#storeReviews" ng-click="showStorePanel('storeReviews')">Reviews</a></li>
+						  <li><a href="#storeInfo" ng-click="showStorePanel('storeInfo')">Store Info</a></a></li>
+						</ul>
+
+
+                        <div class="panel-bod3y" ng-show="page" style="border-top:1px solid #999;margin-top:10px;padding:20px;" >
+                            
+                            
+                            <div ng-show="storeProductsPanel"  class="animated bounceInLeft">
                             
                             <!-- Buy -->
                             <button ng-click="creatingOrder=true" class="btn btn-success btn-xl navbar-btn">Buy Now</button>
@@ -159,8 +199,14 @@
                             </div>
 
                             <div id="page-content"></div><!-- TODO: Pagination of comments -->
-
-                            <h3>Reviews</h3>
+							
+							</div>
+                            
+                            <div ng-show="storeReviewsPanel"  class="animated bounceInLeft">
+                            
+                            
+                            
+                            	<h3>Reviews</h3>
 
                             <div ng-repeat="review in currentReviews.slice().reverse()" style="padding:3px;background-color:#333;margin-bottom:5px;">
                                 <table>
@@ -237,61 +283,30 @@
                                 </div>
                             </form>
 
-                            <div title="page.pubkey" style="word-wrap:break-word">
+
+                            
+                            </div>
+                            
+                            <div ng-show="storeInfoPanel">
+                            	<div title="page.pubkey" style="word-wrap:break-word">
                                 <h2>Owner:</h2>{{page.pubkey}}
                             </div>
 
                             <div title="{{page.signature}}" style="word-wrap:break-word">
                                 <h2>Signature</h2>{{page.signature}}
                             </div>
+                            </div>
+                            
+                            
+                                                        
                         </div>
                     </div>
                 </div><!-- Right Col - Sidebar -->
 
-                <div class="shoutbox-area col-sm-4">
-                    <h2>My Store</h2>
-
-                    <table>
-                        <tr>
-                            
-
-                            <td valign="top">
-                                
-                                <div title="{{myself.nickname}}">
-                                    {{myself.pubkey.slice(0,16)}}... {{myself.uri}}
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
-
-					
-					
-					
-					<h3 ng-show="Object.keys(myOrders).length">Orders</h3>
-
-                    <div class="reviews-area">
-                        <h4>Reviews</h4>
-
-                        <div ng-repeat="review in myself.reputation">
-                            [{{review.rating}}] {{review.text}}
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3>Shout</h3>
-
-                        <form class="form-inline">
-                            <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Say something anonymously"> <button ng-click="createShout(newShout)" class="btn btn-danger">Shout!</button>
-                        </form>
-
-                        <div class="shout-chats">
-                            <div ng-repeat="shout in shouts.slice().reverse()">
-                                {{shout.text}}
-                            </div>
-                        </div>
-                    </div>
-
-                    <h3>Markets</h3>
+                <div class="shoutbox-area col-sm-4" style="margin-top:20px;">
+                    
+                    
+                    <h3>Online Markets</h3>
 					
 
                     <div class="peers-area" ng-repeat="peer in peers">
@@ -306,6 +321,23 @@
                             </tr>
                         </table>
                     </div>
+                    
+                    
+                    <div>
+                        <h3>Chat Stream</h3>
+
+                        <form class="form-inline">
+                            <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Type a message"> <button ng-click="createShout(newShout)" class="btn btn-danger">Shout!</button>
+                        </form>
+
+                        <div class="shout-chats">
+                            <div ng-repeat="shout in shouts.slice().reverse()" style="padding-bottom:5px;">
+                                {{shout.text}}
+                            </div>
+                        </div>
+                    </div>
+
+                    
                 </div>
             </div>
         </div>
