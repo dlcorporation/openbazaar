@@ -30,6 +30,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   $scope.page = false
   $scope.dashboard = true
+  $scope.myInfoPanel = true
   $scope.shouts = [];
   $scope.newShout = ""
   $scope.searching = ""
@@ -49,6 +50,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   $scope.reviews = {};
   $scope.awaitingShop = null;
   $scope.queryShop = function(peer) {
+     
+     $scope.dashboard = false;
+     $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.pubkey;
      var query = {'type': 'query_page', 'pubkey': peer.pubkey}
      socket.send('query_page', query)
@@ -276,10 +280,53 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
   
   
-  $scope.showMessages = function(button) {
-    
-  	$scope.messagesPanel = true;
+  function resetPanels() {
+  	$scope.messagesPanel = false;
+  	$scope.reviewsPanel = false;
+  	$scope.catalogPanel = false;
+  	$scope.ordersPanel = false;
+  	$scope.myInfoPanel = false;
   }
+  
+  $scope.showDashboardPanel = function(panelName) {
+    resetPanels();
+  	
+  	switch(panelName) {
+  		case 'messages':
+  			$scope.messagesPanel = true;
+  			break;
+  		case 'myInfo':
+  			$scope.myInfoPanel = true;
+  	
+  	}
+  }
+  
+  
+  function resetStorePanels() {
+  	$scope.storeProductsPanel = false;
+  	$scope.storeReviewsPanel = false;
+  	$scope.storeInfoPanel = false;
+  	$scope.storeOrderHistoryPanel = false;
+  }
+  
+  $scope.showStorePanel = function(panelName) {
+    resetStorePanels();
+  	
+  	switch(panelName) {
+  		case 'storeProducts':
+  			$scope.storeProductsPanel = true;
+  			break;
+  		case 'storeReviews':
+  			$scope.storeReviewsPanel = true;
+  			break;
+  		case 'storeInfo':
+  			$scope.storeInfoPanel = true;
+  			break;
+  	
+  	}
+  }
+
+  
   
   $('ul.nav.nav-pills li a').click(function() {           
 	    $(this).parent().addClass('active').siblings().removeClass('active').blur();           
