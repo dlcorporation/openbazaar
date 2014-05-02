@@ -18,6 +18,7 @@ if len(sys.argv) < 2:
 # Return data array with details from the crypto file
 # TODO: This needs to be protected better; potentially encrypted file or DB
 def load_crypto_details():
+    print sys.argv[1]
     with open(sys.argv[1]) as f:
         data = json.loads(f.read())
     assert "nickname" in data
@@ -103,15 +104,19 @@ class CryptoTransportLayer(TransportLayer):
             self._peers[uri].send_raw(json.dumps(profile))
 
     def init_peer(self, msg):
+        print "Initialize Peer: ", msg
         uri = msg['uri']
-        pub = msg.get('pub')
+        pub = msg.get('pub')        
         if not uri in self._peers:
+            print 'Create New Peer: ',uri
             self.create_peer(uri, pub)
         elif pub and not self._peers[uri]._pub:
             self.log("Setting public key for seed node")
             self._peers[uri]._pub = pub.decode('hex')
 
+	
     def on_raw_message(self, serialized):
+        
         try:
             msg = json.loads(serialized)
             self.log("receive [%s]" % msg.get('type', 'unknown'))
@@ -124,11 +129,16 @@ class CryptoTransportLayer(TransportLayer):
                 traceback.print_exc()
                 return
 
-        msg_type = msg.get('type')
-        if msg_type == 'hello' and msg.get('uri'):
+        msg_type = msg.get('type')              
+        
+        if msg_type == 'hello' and msg.get('uri') :
             self.init_peer(msg)
             for uri, pub in msg.get('peers', {}).iteritems():
-                self.init_peer({'uri': uri, 'pub': pub})
+                # Check if yourself is a peer
+                if uri != 'tcp://127.0.0.2:12345':
+                    self.init_peer({'uri': uri, 'pub': pub})
             self.log("Update peer table [%s peers]" % len(self._peers))
         else:
             self.on_message(msg)
+            
+            

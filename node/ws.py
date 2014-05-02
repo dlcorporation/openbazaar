@@ -31,6 +31,7 @@ class ProtocolHandler:
     def send_opening(self):
 
         peers = []
+        
         for uri, peer in self._transport._peers.items():
             peer_item = {'uri': uri}
             if peer._pub:

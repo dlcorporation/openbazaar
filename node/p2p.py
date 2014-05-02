@@ -84,6 +84,7 @@ class TransportLayer(object):
 
     def join_network(self):
         self.listen()
+        
         if SEED_URI:
             self.init_peer({'uri': SEED_URI})
 
@@ -103,18 +104,18 @@ class TransportLayer(object):
     def closed(self, *args):
         print "client left"
 
-    def init_peer(self, msg):
+    def _init_peer(self, msg):
         uri = msg['uri']
         self.log("init peer %s" %  msg)
         if not uri in self._peers:
-            self._peers[uri] = PeerConnection(uri)
+            self._peers[uri] = PeerConnection(uri)            
 
     def log(self, msg, pointer='-'):
         print " %s [%s] %s" % (pointer, self._id, msg)
 
     def send(self, data, send_to=None):
 
-        self.log("Data sent to p2p: %s" % data);
+        #self.log("Data sent to p2p: %s" % data);
 
         # directed message        
         if send_to:
