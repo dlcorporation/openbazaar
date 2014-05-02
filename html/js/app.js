@@ -295,7 +295,11 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
   
   $scope.showDashboardPanel = function(panelName) {
+    
     resetPanels();
+    
+    $scope.dashboard = true;
+    $scope.page = false;
   	
   	switch(panelName) {
   		case 'messages':
@@ -326,7 +330,11 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
   
   $scope.showStorePanel = function(panelName) {
+    
     resetStorePanels();
+  	
+  	$scope.dashboard = false;
+    $scope.page = true;
   	
   	switch(panelName) {
   		case 'storeProducts':
