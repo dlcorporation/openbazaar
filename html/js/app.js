@@ -29,6 +29,7 @@ angular.module('app').directive('identicon', function () {
 angular.module('app').controller('Market', ['$scope', function($scope) {
 
   $scope.page = false
+  $scope.dashboard = true
   $scope.shouts = [];
   $scope.newShout = ""
   $scope.searching = ""
@@ -52,6 +53,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
      var query = {'type': 'query_page', 'pubkey': peer.pubkey}
      socket.send('query_page', query)
   }
+  
+  
 
  // Open the websocket connection and handle messages
   var socket = new Connection(function(msg) {   
@@ -158,6 +161,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   $scope.parse_page = function(msg) {
     
+    console.log('Parsing page: ', msg);
+    
     if (msg.pubkey != $scope.awaitingShop)
        return
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
@@ -177,6 +182,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     }
   }
   $scope.parse_peer = function(msg) {
+  
+    console.log('PARSE PEER: ',msg);
+  
     if ($scope.peerIds.indexOf(msg.uri) == -1) {
       $scope.peers.push(msg)
       $scope.peerIds.push(msg.uri)
@@ -266,6 +274,16 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   	order.state = 'cancelled'
   	socket.send('order', order)
   }
+  
+  
+  $scope.showMessages = function(button) {
+    
+  	$scope.messagesPanel = true;
+  }
+  
+  $('ul.nav.nav-pills li a').click(function() {           
+	    $(this).parent().addClass('active').siblings().removeClass('active').blur();           
+	});
   
   
 

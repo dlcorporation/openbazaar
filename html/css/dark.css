@@ -166,3 +166,8 @@ body {
 
 .panel-default{border-color:#696969}
 .panel { background-color:#696969;}
+
+.dashboard-panel { min-height:500px; padding:20px; border-top:1px solid #666; margin-top:10px;}
+
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus { background-color: #666}
+.nav-pills > li > a:hover { background-color: #999; }

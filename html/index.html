@@ -77,6 +77,34 @@
 
             <div class="row">
                 <div class="col-sm-8">
+                    
+                    
+                    <!-- Merchant Dashboard -->
+                    <div ng-show="dashboard" style="padding:10px;">
+                    	<h2><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}"></identicon> Merchant Dashboard</h2>
+                    	
+                    	<ul class="nav nav-pills">
+						  <li class="active"><a href="#">Orders</a></li>
+						  <li><a href="#">Product Catalog</a></li>
+						  <li><a href="#" ng-click="showMessages(self)">Messages</a></li>
+						</ul>
+
+                    	<div class="dashboard-panel">
+                    	
+                    		<div ng-show="messagesPanel"><p>This will be all your personal messages from peers.</p></div>
+                    	
+                    	
+                    	</div>
+                    
+                    </div>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                     <div ng-show="page" class="panel panel-default">
                     	<identicon icon-size="64" hash="page.pubkey" title="{{page.pubkey}}"></identicon> 
                         <span id="store-nickname" style="font-weight:100;font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:24px;">{{page.nickname}}</span>
@@ -97,7 +125,24 @@
                             
 
                             <div class='panel-body' ng-repeat="(orderId, order) in myOrders" ng-show="order.seller == page.pubkey || order.seller == myself.pubkey">
-                                {{order.id}} {{order.state}} {{order.text}} <!-- Buy -->
+                                
+                                <table cellpadding="5" cellspacing="5" width="100%">
+                                	<tr>
+                                		<th>ID</th>
+                                		<th>State</th>
+                                		<th>Description of Order</th>
+                                	</tr>
+                                	<tr>
+                                		<td>{{order.id}}</td>
+                                		<td>{{order.state}}</td>
+                                		<td>{{order.text}}</td>
+                                	</tr>
+                                </table>
+                                
+                                <br/>   
+                                
+                                
+                                <!-- Buy -->
                                  <!-- Pay -->
 
                                 <form ng-show="order && (order.state == 'accepted' || order.state == 'new') && order.buyer == myself.pubkey">
@@ -204,21 +249,25 @@
                 </div><!-- Right Col - Sidebar -->
 
                 <div class="shoutbox-area col-sm-4">
-                    <h3>My Store</h3>
+                    <h2>My Store</h2>
 
                     <table>
                         <tr>
-                            <td width="64"><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}"></identicon></td>
+                            
 
                             <td valign="top">
-                                Reputation: 23 points <br>
-
+                                
                                 <div title="{{myself.nickname}}">
                                     {{myself.pubkey.slice(0,16)}}... {{myself.uri}}
                                 </div>
                             </td>
                         </tr>
                     </table>
+
+					
+					
+					
+					<h3 ng-show="Object.keys(myOrders).length">Orders</h3>
 
                     <div class="reviews-area">
                         <h4>Reviews</h4>
@@ -243,6 +292,7 @@
                     </div>
 
                     <h3>Markets</h3>
+					
 
                     <div class="peers-area" ng-repeat="peer in peers">
                         <table class="peers-table">

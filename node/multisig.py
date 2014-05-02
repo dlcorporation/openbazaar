@@ -51,20 +51,25 @@ class Multisig:
         raw_addr = obelisk.hash_160(self.script)
         return obelisk.hash_160_to_bc_address(raw_addr, addrtype=0x05)
 
+    # 
     def create_unsigned_transaction(self, destination, finished_cb):
         def fetched(ec, history):
+            print history
             if ec is not None:
                 print >> sys.stderr, "Error fetching history:", ec
-                return
+                return    
             self._fetched(history, destination, finished_cb)
         self.client.fetch_history(self.address, fetched)
 
+    #
     def _fetched(self, history, destination, finished_cb):
         unspent = [row[:4] for row in history if row[4] is None]
         tx = self._build_actual_tx(unspent, destination)
         finished_cb(tx)
 
+    # 
     def _build_actual_tx(self, unspent, destination):
+        
         # Send all unspent outputs (everything in the address) minus the fee
         tx = obelisk.Transaction()
         total_amount = 0
@@ -76,6 +81,7 @@ class Multisig:
             value = row[3]
             total_amount += value
             add_input(tx, outpoint)
+        
         # Constrain fee so we don't get negative amount to send
         fee = min(total_amount, 10000)
         send_amount = total_amount - fee
@@ -156,6 +162,7 @@ class Escrow:
         return tx
 
 def main():
+
     ##########################################################
     # ESCROW TEST
     ##########################################################
@@ -164,26 +171,31 @@ def main():
         "0351e400c871e08f96246458dae79a55a59730535b13d6e1d4858035dcfc5f16e2".decode("hex"),
         "02d53a92e3d43db101db55e351e9b42b4f711d11f6a31efbd4597695330d75d250".decode("hex")
     ]
-    client = obelisk.ObeliskOfLightClient("tcp://85.25.198.97:9091")
+    client = obelisk.ObeliskOfLightClient("tcp://85.25.198.97:8081")
     escrow = Escrow(client, pubkeys[0], pubkeys[1], pubkeys[2])
     def finished(tx):
+
         buyer_sigs = escrow.release_funds(tx,
             "b28c7003a7b6541cd1cd881928863abac0eff85f5afb40ff5561989c9fb95fb2".decode("hex"))
         completed_tx = escrow.claim_funds(tx,
             "5b05667dac199c48051932f14736e6f770e7a5917d2994a15a1508daa43bc9b0".decode("hex"),
             buyer_sigs)
-        print completed_tx.serialize().encode("hex")
+        print 'COMPLETED TX: ', completed_tx.serialize().encode("hex")
+		
+		# TODO: Send to the bitcoin network
+		
     escrow.initiate("1Fufjpf9RM2aQsGedhSpbSCGRHrmLMJ7yY", finished)
-    reactor.run()
-    return
+
     ##########################################################
     # MULTISIGNATURE TEST
     ##########################################################
     msig = Multisig(client, 2, pubkeys)
-    print msig.address
+    print "Multisig address: ", msig.address
     def finished(tx):
         print tx
+        print ''
         print tx.serialize().encode("hex")
+        print ''
         sigs1 = msig.sign_all_inputs(tx, "b28c7003a7b6541cd1cd881928863abac0eff85f5afb40ff5561989c9fb95fb2".decode("hex"))
         sigs3 = msig.sign_all_inputs(tx, "b74dbef0909c96d5c2d6971b37c8c71d300e41cad60aeddd6b900bba61c49e70".decode("hex"))
         for i, input in enumerate(tx.inputs):

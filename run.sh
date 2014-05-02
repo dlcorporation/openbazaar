@@ -1,5 +1,6 @@
 # Store config file
 STOREFILE=ppl/default
+STOREFILE2=ppl/s_tec
 
 # Location of log directory
 LOGDIR=logs
@@ -34,9 +35,9 @@ else
 	$PYTHON node/tornadoloop.py $STOREFILE $MY_MARKET_IP > $LOGDIR/server.log &
 	
 	# Demo Peer Market
-	sleep 1
+	sleep 2
 	touch $LOGDIR/demo_peer.log
-	$PYTHON node/tornadoloop.py $STOREFILE 127.0.0.2 tcp://$MY_MARKET_IP:$MY_MARKET_PORT > $LOGDIR//demo_peer.log &
+	$PYTHON node/tornadoloop.py $STOREFILE2 127.0.0.2 tcp://127.0.0.1:$MY_MARKET_PORT > $LOGDIR//demo_peer.log &
 
 fi
 
