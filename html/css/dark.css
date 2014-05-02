@@ -27,10 +27,10 @@ a:hover {
 html,
 body {
   height: 100%;
-  background-color: #333;
+  background-color: #efefef;
 }
 body {
-  color: #fff;
+    color: #666;
   text-align: center;
   /*text-shadow: 0 1px 3px rgba(0,0,0,.5);*/
   /*box-shadow: inset 0 0 100px rgba(0,0,0,.5);*/
@@ -53,7 +53,6 @@ body {
 }
 
 .panel-body {
-  background: #444;
 }
 
 /* Padding for spacing */
@@ -167,7 +166,8 @@ body {
 .panel-default{border-color:#696969}
 .panel { background-color:#696969;}
 
-.dashboard-panel { min-height:500px; padding:20px; border-top:1px solid #666; margin-top:10px;}
+.dashboard-panel { min-height:500px; padding:10px; }
 
-.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus { background-color: #666}
-.nav-pills > li > a:hover { background-color: #999; }
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus { background-color: #bbb}
+.nav-pills > li > a:hover { background-color: #ddd; }
+.nav-pills > li > a { color: #666; }

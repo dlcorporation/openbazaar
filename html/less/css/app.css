@@ -2,12 +2,15 @@ h1 {
   font-size: 42px;
   font-weight: 100;
 }
+h2 {
+	color:#666;
+}
 h3 {
   margin-bottom: 10px;
   text-align: left;
-  color: #aaa;
-  font-size: 26px;
-  font-weight: 100;
+  color: #666;
+  font-size: 20px;
+
   
 }
 h3.masthead-brand {
@@ -43,8 +46,7 @@ h4 {
   margin-bottom: 10px;
 }
 .search-area .search-form {
-  background: #333333;
-  border-color: #555;
+
 }
 .search-area form.search-form {
   margin-bottom: 0;
