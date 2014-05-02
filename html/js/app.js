@@ -263,6 +263,10 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       $scope.newOrder.text = '';		
       //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
       socket.send('order', newOrder);
+      
+      $scope.showStorePanel('storeOrders');
+      $('#pill-storeorders').addClass('active').siblings().removeClass('active').blur();
+      
   }
   $scope.payOrder = function(order) {
       order.state = 'payed'
@@ -325,20 +329,23 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   function resetStorePanels() {
   	$scope.storeProductsPanel = false;
   	$scope.storeReviewsPanel = false;
+  	$scope.storeOrdersPanel = false;
   	$scope.storeInfoPanel = false;
   	$scope.storeOrderHistoryPanel = false;
   }
   
   $scope.showStorePanel = function(panelName) {
     
-    resetStorePanels();
-  	
+    resetStorePanels();  	
   	$scope.dashboard = false;
-    $scope.page = true;
+    
   	
   	switch(panelName) {
   		case 'storeProducts':
   			$scope.storeProductsPanel = true;
+  			break;
+  		case 'storeOrders':
+  			$scope.storeOrdersPanel = true;
   			break;
   		case 'storeReviews':
   			$scope.storeReviewsPanel = true;

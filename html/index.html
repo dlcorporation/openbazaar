@@ -148,7 +148,7 @@
 
 						<ul class="nav nav-pills">
 						  <li class="active" ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
-						  <li><a href="#storeOrderHistory" ng-click="showStorePanel('storeOrderHistory')">Orders</a></li>
+						  <li id="pill-storeorders"><a href="#storeOrderHistory" ng-click="showStorePanel('storeOrderHistory')">Orders</a></li>
 						  <li><a href="#storeReviews" ng-click="showStorePanel('storeReviews')">Reviews</a></li>
 						  <li><a href="#storeInfo" ng-click="showStorePanel('storeInfo')">Store Info</a></a></li>
 						</ul>
@@ -166,13 +166,20 @@
                                 Text: <input class="form-control" type="text" ng-model="newOrder.text" placeholder="Friendly message"> <a class="btn btn-primary navbar-btn" ng-click="createOrder()" type="submit">Order</a> <a class="btn btn-warning navbar-btn" ng-click="creatingOrder=false" type="cancel">Cancel</a>
                             </form>
 
-
-
-                            <h3 ng-show="Object.keys(myOrders).length">Orders</h3><!-- Orders -->
+   
+                            
+                            <div id="page-content"></div><!-- TODO: Pagination of comments -->
+							
+							</div>
+							
+							
+							<div ng-show="storeOrdersPanel" class="animated bounceInLeft">
+							
+							
+								<h3 ng-show="Object.keys(myOrders).length">Orders</h3><!-- Orders -->
                             
                             
-
-                            <div class='panel-body' ng-repeat="(orderId, order) in myOrders" ng-show="order.seller == page.pubkey || order.seller == myself.pubkey">
+<div class='panel-body' ng-repeat="(orderId, order) in myOrders" ng-show="order.seller == page.pubkey || order.seller == myself.pubkey">
                                 
                                 <table cellpadding="5" cellspacing="5" width="100%">
                                 	<tr>
@@ -206,9 +213,13 @@
                                 </form>
                             </div>
 
-                            <div id="page-content"></div><!-- TODO: Pagination of comments -->
+
+                         
 							
 							</div>
+							
+							
+							
                             
                             <div ng-show="storeReviewsPanel"  class="animated bounceInLeft">
                             
