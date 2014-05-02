@@ -88,8 +88,9 @@
 						  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">My Info</a></li>
 						  <li><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
 						  <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
-						  <li><a href="#catalog" ng-click="showDashboardPanel('catalog')">Product Catalog</a></li>
+						  <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Product Catalog</a></li>
 						  <li><a href="#messages" ng-click="showDashboardPanel('messages')">Messages</a></li>
+						  <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
 						</ul>
 
                     	<div class="dashboard-panel">
@@ -102,36 +103,36 @@
                     					<td style="word-break:break-all">{{myself.pubkey}}</td>
                     				</tr>
                     			</table>
-                    			 
-								
-			
-			                    
 
                     		</div>
                     		
+							<div ng-show="productCatalogPanel" class="animated fadeInLeft">
+		                        <p>This is where you will manage your product catalog.</p>
+		                    </div>
                     		
-                    		<div ng-show="reviewsPanel">
-		                        <h4>Reviews</h4>
-		
+                    		<div ng-show="settingsPanel" class="animated fadeInLeft">	
+		                        <p>This is where you will manage software settings.</p>
+		                        
+		                        
+		                        
+		                    </div>
+
+                    		
+                    		<div ng-show="reviewsPanel" class="animated fadeInLeft">
 		                        <div ng-repeat="review in myself.reputation">
 		                            [{{review.rating}}] {{review.text}}
 		                        </div>
 		                    </div>
-                    	
-                    	
-                    		<div ng-show="messagesPanel"><p>This will be all your private messages from peers.</p></div>
+                    	                    	
+                    		<div ng-show="messagesPanel" class="animated fadeInLeft">
+                    			<p>This will be all your private messages from peers.</p>
+                    		</div>
                     	
                     	
                     	</div>
                     
                     </div>
-                    
-                    
-                    
-                    
-                    
-                    
-                    
+
                     
                     <div ng-show="page" class="" style="margin-top:40px;">
                     	
@@ -287,14 +288,14 @@
                             
                             </div>
                             
-                            <div ng-show="storeInfoPanel">
-                            	<div title="page.pubkey" style="word-wrap:break-word">
-                                <h2>Owner:</h2>{{page.pubkey}}
-                            </div>
-
-                            <div title="{{page.signature}}" style="word-wrap:break-word">
-                                <h2>Signature</h2>{{page.signature}}
-                            </div>
+                            <div ng-show="storeInfoPanel" class="animated fadeInLeft">                            
+	                            <div title="page.pubkey" style="word-wrap:break-word">
+	                                <h2>Owner:</h2>{{page.pubkey}}
+	                            </div>
+	
+	                            <div title="{{page.signature}}" style="word-wrap:break-word">
+	                                <h2>Signature</h2>{{page.signature}}
+	                            </div>
                             </div>
                             
                             

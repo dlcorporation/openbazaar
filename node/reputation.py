@@ -30,7 +30,7 @@ class Reputation(object):
         transport.add_callback('query_reputation', self.on_query_reputation)
 
         # SAMPLE Review because there is no persistence of reviews ATM
-        self.create_review(self._priv.get_pubkey(), "Initial Review", 10)
+        #self.create_review(self._priv.get_pubkey(), "Initial Review", 10)
 
 
     # getting reputation from inside the application
@@ -81,8 +81,7 @@ class Reputation(object):
             newreview = review(pubkey, subject, signature, text, rating)                     
             
             if newreview not in self._reviews[subject]:               
-                self._reviews[subject].append(newreview)
-            
+                self._reviews[subject].append(newreview)         
             
         else:
             self._transport.log("[reputation] Invalid review!")

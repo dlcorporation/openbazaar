@@ -79,6 +79,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
          $scope.parse_order(msg)
          break;
       case 'reputation':
+      	 console.log(msg);
          $scope.parse_reputation(msg)
          break;
       case 'proto_response_pubkey':
@@ -92,6 +93,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   var add_review_to_page = function(pubkey, review) {
     var found = false;
+    
+    console.log("Add review");
     
     if (!$scope.reviews.hasOwnProperty(pubkey)) {
         $scope.reviews[pubkey] = []
@@ -110,6 +113,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
         }
         $scope.reviews[pubkey].push(review)
     }
+    $scope.$apply();
+    console.log($scope.reviews);
   }
 
   $scope.parse_order = function(msg) {
@@ -153,9 +158,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   // Peer information has arrived
   $scope.parse_reputation = function(msg) {
+    
     console.log('Parsing reputation', msg.reviews)
     msg.reviews.forEach(function(review) {
-    
         add_review_to_page(review.subject, review);
     });
     if (!$scope.$$phase) {
@@ -283,7 +288,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   function resetPanels() {
   	$scope.messagesPanel = false;
   	$scope.reviewsPanel = false;
-  	$scope.catalogPanel = false;
+  	$scope.productCatalogPanel = false;
+  	$scope.settingsPanel = false;
   	$scope.ordersPanel = false;
   	$scope.myInfoPanel = false;
   }
@@ -295,8 +301,18 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   		case 'messages':
   			$scope.messagesPanel = true;
   			break;
+  		case 'reviews':
+  			$scope.reviewsPanel = true;
+  			break;
+  		case 'productCatalog':
+  			$scope.productCatalogPanel = true;
+  			break;	
+  		case 'settings':
+  			$scope.settingsPanel = true;
+  			break;
   		case 'myInfo':
   			$scope.myInfoPanel = true;
+  			break;
   	
   	}
   }
