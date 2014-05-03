@@ -95,7 +95,14 @@ class TransportLayer(object):
         self.log("init server %s %s" % (MY_IP, self._port))
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REP)
-        self._socket.bind(self._uri)
+
+        if MY_IP.startswith("127.0.0."): 
+            # we are in local test mode so bind that socket on the 
+            # specified IP
+            self._socket.bind(self._uri)
+        else: 
+            self._socket.bind('tcp://*:%s' % self._port)
+
         while True:
             message = self._socket.recv()
             self.on_raw_message(message)
