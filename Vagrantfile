@@ -15,8 +15,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
-    apt-get install -y build-essential python-dev python-pip python-zmq
+    apt-get install -y build-essential python-dev python-pip python-zmq mongodb
     pip install pyelliptic tornado Twisted
+    easy_install pymongo
+    mongo --eval "db = db.getSiblingDB('openbazaar')"
   SCRIPT
 
   # Create a private network, which allows host-only access to the machine
