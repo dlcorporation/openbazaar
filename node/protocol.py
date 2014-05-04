@@ -1,7 +1,11 @@
 
 
-def hello(data):
-    data['type'] = 'hello'
+def hello_request(data):
+    data['type'] = 'hello_request'
+    return data
+
+def hello_response(data):
+    data['type'] = 'hello_reply'
     return data
 
 def ok():

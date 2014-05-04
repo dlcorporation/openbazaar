@@ -23,8 +23,8 @@ else:
     MY_IP = "127.0.0.1"
 if len(sys.argv) > 3:
     SEED_URI = sys.argv[3] # like tcp://127.0.0.1:12345
-else:
-    print "You provided no SEED_URI. You should call like [market myip seeduri]"
+# else:
+    # print "You provided no SEED_URI. You should call like [market myip seeduri]"
 
 # Connection to one peer
 class PeerConnection(object):
@@ -80,7 +80,7 @@ class TransportLayer(object):
                 cb(*data)
 
     def get_profile(self):
-        return {'type': 'hello', 'uri': 'tcp://%s:12345' % MY_IP}
+        return {'type': 'hello_request', 'uri': 'tcp://%s:12345' % MY_IP}
 
     def join_network(self):
         self.listen()
@@ -119,6 +119,7 @@ class TransportLayer(object):
 
     def log(self, msg, pointer='-'):
         print " %s [%s] %s" % (pointer, self._id, msg)
+        sys.stdout.flush()
 
     def send(self, data, send_to=None):
 
@@ -163,7 +164,7 @@ class TransportLayer(object):
             return
 
         msg_type = msg.get('type')
-        if msg_type == 'hello' and msg.get('uri'):
+        if msg_type == 'hello_request' and msg.get('uri'):
             self.init_peer(msg)
         else:
             self.on_message(msg)
