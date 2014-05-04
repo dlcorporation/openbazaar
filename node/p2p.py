@@ -23,8 +23,6 @@ else:
     MY_IP = "127.0.0.1"
 if len(sys.argv) > 3:
     SEED_URI = sys.argv[3] # like tcp://127.0.0.1:12345
-else:
-    print "You provided no SEED_URI. You should call like [market myip seeduri]"
 
 # Connection to one peer
 class PeerConnection(object):
