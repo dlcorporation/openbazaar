@@ -134,8 +134,8 @@ class CryptoTransportLayer(TransportLayer):
         if msg_type == 'hello' and msg.get('uri') :
             self.init_peer(msg)
             for uri, pub in msg.get('peers', {}).iteritems():
-                # Check if yourself is a peer
-                if uri != 'tcp://127.0.0.2:12345':
+                # Do not add yourself as a peer
+                if uri != self._uri:
                     self.init_peer({'uri': uri, 'pub': pub})
             self.log("Update peer table [%s peers]" % len(self._peers))
         else:
