@@ -119,6 +119,7 @@ class TransportLayer(object):
 
     def log(self, msg, pointer='-'):
         print " %s [%s] %s" % (pointer, self._id, msg)
+        sys.stdout.flush()
 
     def send(self, data, send_to=None):
 
