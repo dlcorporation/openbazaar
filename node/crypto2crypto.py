@@ -6,7 +6,7 @@ from p2p import PeerConnection, TransportLayer
 from multiprocessing import Process
 import traceback
 
-from protocol import hello, proto_response_pubkey
+from protocol import hello_request, hello_response, proto_response_pubkey
 import obelisk
 
 # Check if user specified a crypto file to load for their marketplace
@@ -93,28 +93,42 @@ class CryptoTransportLayer(TransportLayer):
         # Call 'peer' callbacks on listeners
         self.trigger_callbacks('peer', self._peers[uri])
 
+    def send_enc(self, uri, msg):
+        peer = self._peers[uri]
+        pub = peer._pub
+
         # Now send a hello message to the peer
         if pub:
-            self.log("Sending encrypted profile to %s" % uri)
-            self._peers[uri].send(hello(self.get_profile()))
+            self.log("Sending encrypted [" + msg['type']  + "] message to %s" % uri)
+            peer.send(msg)
         else:
             # Will send clear profile on initial if no pub
-            self.log("Sending unencrypted profile to %s" % uri)
-            profile = hello(self.get_profile())
-            self._peers[uri].send_raw(json.dumps(profile))
+            self.log("Sending unencrypted [" + msg['type']  + "] message to %s" % uri)
+            self._peers[uri].send_raw(json.dumps(msg))
+
 
     def init_peer(self, msg):
         print "Initialize Peer: ", msg
         uri = msg['uri']
         pub = msg.get('pub')        
+        msg_type = msg.get('type')        
+
         if not uri in self._peers:
             print 'Create New Peer: ',uri
             self.create_peer(uri, pub)
         elif pub and not self._peers[uri]._pub:
             self.log("Setting public key for seed node")
             self._peers[uri]._pub = pub.decode('hex')
+        elif pub and (self._peers[uri]._pub != pub.decode('hex')):
+            self.log("Adjusting public key for node")
+            self._peers[uri]._pub = pub.decode('hex')
+        
+        if not msg_type:
+            self.send_enc(uri, hello_request(self.get_profile()))
+        elif msg_type == 'hello_request':
+            self.send_enc(uri, hello_response(self.get_profile()))
 
-	
+
     def on_raw_message(self, serialized):
         
         try:
@@ -131,7 +145,7 @@ class CryptoTransportLayer(TransportLayer):
 
         msg_type = msg.get('type')              
         
-        if msg_type == 'hello' and msg.get('uri') :
+        if msg_type.startswith('hello') and msg.get('uri') :
             self.init_peer(msg)
             for uri, pub in msg.get('peers', {}).iteritems():
                 # Do not add yourself as a peer
