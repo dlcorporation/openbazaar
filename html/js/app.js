@@ -37,6 +37,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   $scope.currentReviews = []
   $scope.myOrders = []
   $scope.myReviews = []
+  
+  
+  
   $scope.createShout = function() {
      // launch a shout
      console.log($scope)
@@ -59,7 +62,6 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
      socket.send('query_page', query)
   }
   
-  
 
  // Open the websocket connection and handle messages
   var socket = new Connection(function(msg) {   
@@ -79,6 +81,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       case 'order':
          $scope.parse_order(msg)
          break;
+      case 'myorders':
+      	 $scope.parse_myorders(msg)
+      	 break;
       case 'reputation':
       	 console.log(msg);
          $scope.parse_reputation(msg)
@@ -137,6 +142,17 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       	 console.log($scope.myOrders);
          $scope.$apply();
       }
+  }
+  
+  $scope.parse_myorders = function(msg) {
+  	  
+  	  console.log('Retrieved my orders: ',msg);
+  	  $scope.orders = msg['orders'];
+      
+      if (!$scope.$$phase) {
+	       $scope.$apply();
+	    }
+      
   }
 
   $scope.parse_response_pubkey = function(msg) {
@@ -315,7 +331,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   			$scope.reviewsPanel = true;
   			break;
   		case 'orders':
+  		    
   			$scope.ordersPanel = true;
+  			$scope.queryMyOrder();
   			break;
   		case 'productCatalog':
   			$scope.productCatalogPanel = true;
@@ -362,6 +380,15 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   	}
   }
 
+
+  $scope.queryMyOrder = function() {
+	// Query for orders
+	var query = {'type': 'query_orders', 'pubkey': ''}
+	console.log('querying orders')
+	socket.send('query_orders', query)
+	  
+  }
+  
   
   
   $('ul.nav.nav-pills li a').click(function() {           

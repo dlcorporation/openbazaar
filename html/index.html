@@ -76,7 +76,7 @@
 	                <identicon icon-size="50" hash="myself.pubkey" title="{{myself.pubkey}}" style="float:left;margin-right:10px;"></identicon>
 	                
 	                <ul class="nav nav-pills">
-						  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">My Market</a></li>
+						  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">Home</a></li>
 						  <li><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
 						  <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
 						  <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Product Catalog</a></li>
@@ -102,7 +102,11 @@
                     	
                     		<div ng-show="myInfoPanel" class="animated fadeInLeft">
                     	
-                    			<h2><identicon icon-size="64" hash="myself.pubkey" title="{{myself.pubkey}}" style="margin-right:10px;"></identicon> My Market</h2>
+                    			<h3>Home</h3>
+                    			
+                    			<p>Welcome to the OpenBazaar marketplace. This is your home screen for your marketplace.</p>
+                    			
+                    			<hr class="hr"/>
                     			
                     			<table width=700>
                     				<tr>
@@ -114,10 +118,18 @@
                     		</div>
                     		
 							<div ng-show="productCatalogPanel" class="animated fadeInLeft">
+		                        
+		                        <h3>Products</h3>		                        
+		                        
 		                        <p>This is where you will manage your product catalog.</p>
+		                        
+		                        
 		                    </div>
                     		
                     		<div ng-show="settingsPanel" class="animated fadeInLeft">	
+		                        
+		                        <h3>Settings</h3>
+		                        
 		                        <p>This is where you will manage software settings.</p>
 		                        
 		                        
@@ -125,20 +137,58 @@
 		                    </div>
 
 							<div ng-show="ordersPanel" class="animated fadeInLeft">
-		                        <p>You have no orders at this time.</p>
-		                        <div ng-repeat="order in orders">
-		                            {{order}}
+		                        
+		                        <h3>Orders</h3>
+		                        
+		                        <p>Click on your order below to find out more information.</p>
+		                        
+		                        <div ng-show="!orders">
+		                        	<p>You have no orders at this time.</p>
 		                        </div>
+		                        
+		                        
+		                        
+		                        <div ng-show="orders">
+		                        
+		                        	<div ng-repeat="order in orders">
+		                        		<div style="padding:5px">
+			                        	<table class="table">
+			                        		<tr>
+			                        		<td width=120><div style="width:100px;height:100px;background-color:#ddd">Photo</div></td>
+										
+			                        	<td>
+			                        		Order Id: {{order.id}}<br/>
+			                        		Order Date: {{order.date}}<br/>
+			                        		Status: {{order.status}}		                        		
+			                        	</td>
+			                        	</tr></table>
+			                        	
+			                        	
+		                        		</div>
+		                        	</div>		                        		                        			                       
+			                        
+		                        </div>
+		                        		                        			                        	
 		                    </div>
                     		
                     		<div ng-show="reviewsPanel" class="animated fadeInLeft">
+		                        
+		                        <h3>Reviews</h3>
+		                        
+		                        <p>Here are all the reviews of your marketplace.</p>
+		                        
 		                        <div ng-repeat="review in myself.reputation">
 		                            [{{review.rating}}] {{review.text}}
 		                        </div>
 		                    </div>
                     	                    	
                     		<div ng-show="messagesPanel" class="animated fadeInLeft">
-                    			<p>This will be all your private messages from peers.</p>
+                    		
+                    			<h3>Messages</h3>
+                    			
+                    			<p>This is your private messages inbox.</p>
+                    		
+                    			
                     		</div>
                     	
                     	

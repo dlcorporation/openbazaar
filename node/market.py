@@ -21,13 +21,14 @@ class Market(object):
 
         self.reputation = Reputation(self._transport)
         self.orders = Orders(self._transport)
+        self.order_entries = self.orders._orders
         
-
         # TODO: Persistent storage of nicknames and pages
         self.nicks = {}
         self.pages = {}
 
         # Register callbacks for incoming events
+        transport.add_callback('query_myorders', self.on_query_myorders)
         transport.add_callback('peer', self.on_peer)
         transport.add_callback('query_page', self.on_query_page)
         transport.add_callback('page', self.on_page)
@@ -102,6 +103,10 @@ class Market(object):
         
 	# Return your page info if someone requests it on the network
     def on_query_page(self, peer):
+        self._transport.log("[Market] Someone is querying for your page")        
+        self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature, self.nickname))
+        
+    def on_query_myorders(self, peer):
         self._transport.log("[Market] Someone is querying for your page")        
         self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature, self.nickname))
 

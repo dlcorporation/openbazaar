@@ -24,7 +24,8 @@ class ProtocolHandler:
             "review":          self.client_review,
             "order":          self.client_order,
             "search":          self.client_search,
-            "shout":          self.client_shout
+            "shout":          self.client_shout,
+            "query_orders":	  self.client_query_orders,
         }
 
 
@@ -50,10 +51,23 @@ class ProtocolHandler:
 
     # Requests coming from the client
     def client_query_page(self, socket_handler, msg):
-        print "Message: ", msg
+        self._transport.log("Message: ", msg)
         pubkey = msg['pubkey'].decode('hex')
         self.node.query_page(pubkey)
         self.node.reputation.query_reputation(pubkey)
+
+    def client_query_orders(self, socket_handler, msg):
+        self._transport.log("Querying for Orders: ", msg)
+        
+        # Query mongo for orders
+        orders = self.node.orders._orders
+        
+        self.send_to_client(None, { "type": "myorders", "orders": orders } )
+        
+        #pubkey = msg['pubkey'].decode('hex')
+        #self.node.query_page(pubkey)
+        #self.node.reputation.query_reputation(pubkey)
+
 
     def client_order(self, socket_handler, msg):
         self.node.orders.on_order(msg)
@@ -65,7 +79,7 @@ class ProtocolHandler:
         self.node.reputation.create_review(pubkey, text, rating)
 
     def client_search(self, socket_handler, msg):
-        print "[Search]", msg
+        self._transport.log("[Search] %s"% msg)
         response = self.node.lookup(msg)
         if response:
             print "yuea", response
@@ -103,6 +117,7 @@ class ProtocolHandler:
     # handler a request
     def handle_request(self, socket_handler, request):
         command = request["command"]
+        
         if command not in self._handlers:
             return False
         params = request["params"]
@@ -126,7 +141,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         self._transport.log("Websocket open")
-        print 'Websocket open'
+        self._transport.log('Websocket open')
         self._app_handler.send_opening()
         with WebSocketHandler.listen_lock:
             self.listeners.add(self)
@@ -146,9 +161,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             #request.has_key("params") and type(request["params"]) == list
 
     def on_message(self, message):
+    
+        self._transport.log('Message: ',message)
+    
         try:
-            request = json.loads(message)
-            print request
+            request = json.loads(message)            
         except:
             logging.error("Error decoding message: %s", message, exc_info=True)
 
