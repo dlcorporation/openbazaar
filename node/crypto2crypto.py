@@ -79,19 +79,29 @@ class CryptoTransportLayer(TransportLayer):
         # Send array of nickname, pubkey, signature to transport layer
         self.send(proto_response_pubkey(nickname, pubkey, signature))
 
+    def pubkey_exists(self, pub):
+        
+        for uri, peer in self._peers.iteritems():
+            self.log('PEER: %s Pub: %s' % (peer._pub.encode('hex'), pub.encode('hex')))
+            if peer._pub.encode('hex') == pub.encode('hex'):
+                return True
+            
+        return False;
+    
 
     def create_peer(self, uri, pub):
-        if pub:
-            self.log("Creating peer " + uri + " " + pub[0:16] + "...", '*')
+        
+        if pub:            
             pub = pub.decode('hex')
+        
+        # Create the peer if public key is not already in the peer list
+        if not self.pubkey_exists(pub):
+            self._peers[uri] = CryptoPeerConnection(uri, self, pub)            
+
+            # Call 'peer' callbacks on listeners
+            self.trigger_callbacks('peer', self._peers[uri])
         else:
-            self.log("Creating peer [seed] " + uri, '*')
-
-        # Create the peer
-        self._peers[uri] = CryptoPeerConnection(uri, self, pub)
-
-        # Call 'peer' callbacks on listeners
-        self.trigger_callbacks('peer', self._peers[uri])
+            print 'Pub Key is already in peer list'
 
     def send_enc(self, uri, msg):
         peer = self._peers[uri]
@@ -112,6 +122,8 @@ class CryptoTransportLayer(TransportLayer):
         uri = msg['uri']
         pub = msg.get('pub')        
         msg_type = msg.get('type')        
+
+        print 'PEER INFO: ',msg
 
         if not uri in self._peers:
             # unknown peer
