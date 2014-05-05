@@ -114,19 +114,30 @@ class CryptoTransportLayer(TransportLayer):
         msg_type = msg.get('type')        
 
         if not uri in self._peers:
+            # unknown peer
             print 'Create New Peer: ',uri
             self.create_peer(uri, pub)
-        elif pub and not self._peers[uri]._pub:
-            self.log("Setting public key for seed node")
-            self._peers[uri]._pub = pub.decode('hex')
-        elif pub and (self._peers[uri]._pub != pub.decode('hex')):
-            self.log("Adjusting public key for node")
-            self._peers[uri]._pub = pub.decode('hex')
+
+            if not msg_type:
+                self.send_enc(uri, hello_request(self.get_profile()))
+            elif msg_type == 'hello_request':
+                self.send_enc(uri, hello_response(self.get_profile()))
+
+        else:
+            # known peer
+            if pub:
+                # test if we have to update the pubkey
+                if not self._peers[uri]._pub:
+                    self.log("Setting public key for seed node")
+                    self._peers[uri]._pub = pub.decode('hex')
+                if (self._peers[uri]._pub != pub.decode('hex')):
+                    self.log("Updating public key for node")
+                    self._peers[uri]._pub = pub.decode('hex')
         
-        if not msg_type:
-            self.send_enc(uri, hello_request(self.get_profile()))
-        elif msg_type == 'hello_request':
-            self.send_enc(uri, hello_response(self.get_profile()))
+            if msg_type == 'hello_request':
+                # reply only if necessary
+                self.send_enc(uri, hello_response(self.get_profile()))
+
 
 
     def on_raw_message(self, serialized):
