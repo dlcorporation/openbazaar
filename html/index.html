@@ -351,7 +351,7 @@
 
                         <div class="shout-chats">
                             <div ng-repeat="shout in shouts.slice().reverse()" style="padding-bottom:5px;">
-                                {{shout.text}}
+                                <div><identicon icon-size="25" hash="shout.pubkey" title="{{shout.pubkey}}" style="float:left;margin-right:10px;"></identicon></div><div>{{shout.text}}</div>
                             </div>
                         </div>
                     </div>
