@@ -171,3 +171,6 @@ body {
 .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus { background-color: #bbb}
 .nav-pills > li > a:hover { background-color: #ddd; }
 .nav-pills > li > a { color: #666; }
+
+
+#page-content { word-break:break-all; }
