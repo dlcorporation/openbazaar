@@ -2,10 +2,12 @@
 
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the GPL.
 
+See a demonstration of the Proof Of Concept here: https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
 
 This project is alpha and all feedback is welcome at: http://www.reddit.com/r/Bitcoin/comments/23y80c
  
 Official site: http://openbazaar.org (currently a placeholder)
+
 
 ## Features (Notional)
 - Full market editor for management of items catalog
@@ -15,7 +17,11 @@ Official site: http://openbazaar.org (currently a placeholder)
 - Private messaging
 - Identity/Reputation system
 
-##Quick Start
+## Project Status
+
+All features are currently in alpha stage. Current functionality includes starting a connection to the distributed marketplace and viewing content in a browser. Transactions are not possible.
+
+## Quick Start
 
 These instructions download a VirtualBox image (Ubuntu Trusty) and use Vagrant to configure an OpenBazaar node inside the virtual environment. When the node is running, you can navigate to http://localhost:8888 on your local machine to access the client. This setup should take less than 10GB and about an hour. These instructions should include all necessary code for starting OpenBazaar.
 
@@ -43,7 +49,7 @@ These instructions download a VirtualBox image (Ubuntu Trusty) and use Vagrant t
 
     `cd /vagrant && ./run_dev.sh`
 
-6. Now return to your host and open firefox to:
+6. Now return to your host and open your web browser to:
 
     `http://127.0.0.1:8888`
 
@@ -97,7 +103,7 @@ sudo ifconfig lo0 alias 127.0.0.4 up
 
 To get the identity server running for querying nicknames in the UI you need to start the identity server. From the base directory of the software run the following:
 
-`python identy/identity.py`
+`python ident/identity.py`
 
 
 ## Screenshot
