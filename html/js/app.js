@@ -39,7 +39,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   $scope.myReviews = []
   $scope.createShout = function() {
      // launch a shout
-     var newShout = {'type': 'shout', 'text': $scope.newShout}
+     console.log($scope)
+     var newShout = {'type': 'shout', 'text': $scope.newShout, 'pubkey': $scope.myself.pubkey}
      socket.send('shout', newShout)
      $scope.shouts.push(newShout)
      $scope.newShout = '';
@@ -238,6 +239,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   // A shout has arrived
   $scope.parse_shout = function(msg) {
     $scope.shouts.push(msg)
+    console.log('Shout',msg)
     if (!$scope.$$phase) {
        $scope.$apply();
     }
