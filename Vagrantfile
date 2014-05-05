@@ -15,13 +15,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
-    apt-get install -y build-essential python-dev python-pip python-zmq mongodb xdg-utils
-    pip install pyelliptic tornado Twisted
+    apt-get install -y build-essential python-dev python-pip python-zmq mongodb
+    pip install tornado Twisted
     easy_install pymongo
-    #setting up python obelisk
-    git clone https://github.com/darkwallet/python-obelisk 
-    cd /vagrant/python-obelisk/ && python setup.py install
-    #done setting up obelisk
+    cp -R /vagrant/ecdsa /vagrant/pyelliptic /vagrant/obelisk /usr/local/lib/python2.7/dist-packages/
     mongo --eval "db = db.getSiblingDB('openbazaar')"
   SCRIPT
 
