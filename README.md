@@ -104,8 +104,9 @@ To get the identity server running for querying nicknames in the UI you need to 
 
 This screen shot looks horrible and is just a placeholder ATM. Designers wanted. Apply to brian@openbazaar.org if you're interested in helping out.
 
-![Screen 1](http://i.imgur.com/zUKFXyt.png)
-![Screen 2](http://i.imgur.com/6SUrsw7.png)
+![Screen 1](http://i.imgur.com/qwByrqk.png)
+![Screen 2](http://i.imgur.com/v3gRVgi.png)
+![Screen 3](http://i.imgur.com/65eSjjz.png)
 =======
 
 
