@@ -7,7 +7,7 @@ LOGDIR=logs
 
 # Specify a seed URI or you will be put into demo mode
 #SEED_URI=tcp://127.0.0.1:12345
-SEED_URI=
+SEED_URI=tcp://seed.openbazaar.org:12345
 
 # Market Info
 MY_MARKET_IP=127.0.0.1

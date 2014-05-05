@@ -113,7 +113,7 @@ class TransportLayer(object):
 
     def _init_peer(self, msg):
         uri = msg['uri']
-        self.log("init peer %s" %  msg)
+        
         if not uri in self._peers:
             self._peers[uri] = PeerConnection(uri)            
 
