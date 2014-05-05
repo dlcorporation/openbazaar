@@ -95,13 +95,13 @@ class CryptoTransportLayer(TransportLayer):
             pub = pub.decode('hex')
         
         # Create the peer if public key is not already in the peer list
-        if not self.pubkey_exists(pub):
-            self._peers[uri] = CryptoPeerConnection(uri, self, pub)            
+        #if not self.pubkey_exists(pub):
+        self._peers[uri] = CryptoPeerConnection(uri, self, pub)            
 
             # Call 'peer' callbacks on listeners
-            self.trigger_callbacks('peer', self._peers[uri])
-        else:
-            print 'Pub Key is already in peer list'
+            #self.trigger_callbacks('peer', self._peers[uri])
+        #else:
+        #    print 'Pub Key is already in peer list'
 
     def send_enc(self, uri, msg):
         peer = self._peers[uri]

@@ -314,6 +314,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   		case 'reviews':
   			$scope.reviewsPanel = true;
   			break;
+  		case 'orders':
+  			$scope.ordersPanel = true;
+  			break;
   		case 'productCatalog':
   			$scope.productCatalogPanel = true;
   			break;	

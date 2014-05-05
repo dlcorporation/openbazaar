@@ -16,10 +16,6 @@ class Market(object):
         # for now we have the id in the transport
         self._myself = transport._myself
         self._peers = transport._peers
-        
-        print 'PEERS: ',self._peers
-        
-        
         self._transport = transport
         self.query_ident = None
 
