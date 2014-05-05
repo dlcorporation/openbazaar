@@ -15,14 +15,25 @@ class Orders(object):
         # TODO: Make user configurable escrow addresses
         self._escrows = ["02ca0020a9de236b47ca19e147cf2cd5b98b6600f168481da8ec0ca9ec92b59b76db1c3d0020f9038a585b93160632f1edec8278ddaeacc38a381c105860d702d7e81ffaa14d",
                          "02ca0020c0d9cd9bdd70c8565374ed8986ac58d24f076e9bcc401fc836352da4fc21f8490020b59dec0aff5e93184d022423893568df13ec1b8352e5f1141dbc669456af510c"]
-        #self._orders = {}
 
         MONGODB_URI = 'mongodb://localhost:27017'         
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
-        self._orders = self._db.orders
+        self._orders = self.get_orders()
 
         transport.add_callback('order', self.on_order)
+
+    def get_orders(self):
+        orders = []
+        for _order in self._db.orders.find():
+            
+            # Get order prototype object before storing
+            orders.append({"id":_order['id']})
+            #orders.append(_order)        
+            
+            
+        return orders      
+
 
 
     # Create a new order

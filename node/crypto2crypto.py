@@ -43,6 +43,7 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
+        print 'DATA: ',data
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):
@@ -118,12 +119,12 @@ class CryptoTransportLayer(TransportLayer):
 
 
     def init_peer(self, msg):
-        print "Initialize Peer: ", msg
+        self.log('Initialize Peer: %s' % msg)
         uri = msg['uri']
         pub = msg.get('pub')        
         msg_type = msg.get('type')        
 
-        print 'PEER INFO: ',msg
+        self.log('PEER INFO: %s' % msg)
 
         if not uri in self._peers:
             # unknown peer
