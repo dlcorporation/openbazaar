@@ -41,9 +41,9 @@ else
 
 fi
 
-# TODO: Want to get rid of this
+# TODO: Want to get rid of this (removed temporarily 2014-05-02 sbl)
 # Open the browser if -q is not passed:
-if ! [ $1 = -q ]; then
-    xdg-open http://localhost:8888
-    xdg-open http://localhost:8889
-fi
+#if ! [ $1 = -q ]; then
+#    xdg-open http://localhost:8888
+#    xdg-open http://localhost:8889
+#fi
