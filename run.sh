@@ -1,17 +1,18 @@
-# Store config file
-STOREFILE=ppl/default
-STOREFILE2=ppl/s_tec
-
-# Location of log directory
-LOGDIR=logs
-
-# Specify a seed URI or you will be put into demo mode
-#SEED_URI=tcp://127.0.0.1:12345
-SEED_URI=tcp://seed.openbazaar.org:12345
-
 # Market Info
 MY_MARKET_IP=127.0.0.1
 MY_MARKET_PORT=12345
+
+# Specify a seed URI or you will be put into demo mode
+SEED_URI=tcp://seed.openbazaar.org:12345
+
+# Run in local test mode if not production
+MODE=production
+
+# Store config file
+STOREFILE=ppl/default
+
+# Location of log directory
+LOGDIR=logs
 
 if which python2 2>/dev/null; then
     PYTHON=python2
@@ -25,25 +26,25 @@ if [ ! -d "$LOGDIR" ]; then
 fi
 touch $LOGDIR/server.log
 
-if [[ -n "$SEED_URI" ]]; then
+if [ $MODE == production ]; then
 	
 	$PYTHON node/tornadoloop.py $STOREFILE $MY_MARKET_IP $SEED_URI > $LOGDIR//server.log &
 	
 else
 
 	# Primary Market - No SEED_URI specified 
-	$PYTHON node/tornadoloop.py $STOREFILE $MY_MARKET_IP > $LOGDIR/server.log &
+	$PYTHON node/tornadoloop.py $STOREFILE $MY_MARKET_IP > $LOGDIR/demo_peer1.log &
 	
 	# Demo Peer Market
 	sleep 2
-	touch $LOGDIR/demo_peer.log
-	$PYTHON node/tornadoloop.py $STOREFILE2 127.0.0.2 tcp://127.0.0.1:$MY_MARKET_PORT > $LOGDIR//demo_peer.log &
+    STOREFILE2=ppl/s_tec
+	touch $LOGDIR/demo_peer2.log
+	$PYTHON node/tornadoloop.py $STOREFILE2 127.0.0.2 tcp://127.0.0.1:$MY_MARKET_PORT > $LOGDIR//demo_peer2.log &
+
+	sleep 2
+    STOREFILE2=ppl/genjix
+	touch $LOGDIR/demo_peer3.log
+	$PYTHON node/tornadoloop.py $STOREFILE2 127.0.0.3 tcp://127.0.0.1:$MY_MARKET_PORT > $LOGDIR//demo_peer3.log &
+
 
 fi
-
-# TODO: Want to get rid of this (removed temporarily 2014-05-02 sbl)
-# Open the browser if -q is not passed:
-#if ! [ $1 = -q ]; then
-#    xdg-open http://localhost:8888
-#    xdg-open http://localhost:8889
-#fi
