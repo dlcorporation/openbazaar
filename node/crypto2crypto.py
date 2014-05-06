@@ -124,6 +124,10 @@ class CryptoTransportLayer(TransportLayer):
         pub = msg.get('pub')        
         msg_type = msg.get('type')        
 
+        if not self.valid_peer_uri(uri):
+            self.log("Peer " + uri + " is not valid.")
+            return
+
         self.log('PEER INFO: %s' % msg)
 
         if not uri in self._peers:
