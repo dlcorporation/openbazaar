@@ -26,6 +26,7 @@ class ProtocolHandler:
             "search":          self.client_search,
             "shout":          self.client_shout,
             "query_orders":	  self.client_query_orders,
+            "update_settings":	self.client_update_settings,
         }
 
 
@@ -64,9 +65,17 @@ class ProtocolHandler:
         
         self.send_to_client(None, { "type": "myorders", "orders": orders } )
         
-        #pubkey = msg['pubkey'].decode('hex')
-        #self.node.query_page(pubkey)
-        #self.node.reputation.query_reputation(pubkey)
+        
+    def client_update_settings(self, socket_handler, msg):
+        self._transport.log("Updating settings: ", msg)
+        
+        self.send_to_client(None, { "type": "settings", "values": msg })
+
+        # Update settings in mongo
+        self.node.save_settings()
+        
+        #self.send_to_client(None, { "type": "myorders", "orders": orders } )
+
 
 
     def client_order(self, socket_handler, msg):
@@ -117,7 +126,6 @@ class ProtocolHandler:
     # handler a request
     def handle_request(self, socket_handler, request):
         command = request["command"]
-        
         if command not in self._handlers:
             return False
         params = request["params"]

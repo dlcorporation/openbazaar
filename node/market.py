@@ -26,6 +26,11 @@ class Market(object):
         # TODO: Persistent storage of nicknames and pages
         self.nicks = {}
         self.pages = {}
+        
+        # Connect to database
+        MONGODB_URI = 'mongodb://localhost:27017'         
+        _dbclient = MongoClient()
+        self._db = _dbclient.openbazaar
 
         # Register callbacks for incoming events
         transport.add_callback('query_myorders', self.on_query_myorders)
@@ -46,8 +51,7 @@ class Market(object):
         if self.query_ident is None:
             self._transport.log("Initializing identity query")
             self.query_ident = lookup.QueryIdent()
-            
-            
+                        
         nickname = str(msg["text"])
         key = self.query_ident.lookup(nickname)
         if key is None:
@@ -85,6 +89,14 @@ class Market(object):
         self.signature = self._transport._myself.sign(tagline)
         
         self._transport.log("[Market] Tagline signature: " + self.signature.encode("hex"))
+        
+    def save_settings(self):
+    
+        self._transport.log('Save settings')
+        
+        self._db.settings.update
+        
+        
         
 
     def query_page(self, pubkey):

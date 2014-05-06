@@ -5,9 +5,9 @@ class QueryIdent:
     def __init__(self):
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REQ)
-        self._socket.connect("tcp://localhost:5558")
-        print 'SOCKET OPEN 5558'
-        #self._socket.connect("tcp://85.25.195.77:5558")
+        
+        # Point to OpenBazaar Identity server for now
+        self._socket.connect("tcp://seed.openbazaar.org:5558")
 
     def lookup(self, user):
         self._socket.send(user)
