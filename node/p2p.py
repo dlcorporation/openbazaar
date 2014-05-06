@@ -30,11 +30,14 @@ if len(sys.argv) > 3:
 # Connection to one peer
 class PeerConnection(object):
     def __init__(self, address):
+        # timeout in seconds
+        self._timeout = 10
         self._address = address
 
     def create_socket(self):
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REQ)
+        self._socket.setsockopt(zmq.LINGER, 0)
         self._socket.connect(self._address)
 
     def cleanup_socket(self):
@@ -50,8 +53,14 @@ class PeerConnection(object):
         self.create_socket()
 
         self._socket.send(serialized)
-        msg = self._socket.recv()
-        self.on_message(msg)
+
+        poller = zmq.Poller()
+        poller.register(self._socket, zmq.POLLIN)
+        if poller.poll(self._timeout * 1000):
+            msg = self._socket.recv()
+            self.on_message(msg)
+        else:
+            print "Peer " + self._address + " timed out."
 
         self.cleanup_socket()
 
