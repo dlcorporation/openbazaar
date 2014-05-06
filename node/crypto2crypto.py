@@ -8,28 +8,7 @@ import traceback
 
 from protocol import hello_request, hello_response, proto_response_pubkey
 import obelisk
-
-# Check if user specified a crypto file to load for their marketplace
-# This is located in the ppl/ folder 
-if len(sys.argv) < 2:
-    print >> sys.stderr, "[Error] You need to specify a user crypto file in `ppl/` folder"
-    sys.exit(-1)
-
-# Return data array with details from the crypto file
-# TODO: This needs to be protected better; potentially encrypted file or DB
-def load_crypto_details():
-    print sys.argv[1]
-    with open(sys.argv[1]) as f:
-        data = json.loads(f.read())
-    assert "nickname" in data
-    assert "secret" in data
-    assert "pubkey" in data
-    assert len(data["secret"]) == 2 * 32
-    assert len(data["pubkey"]) == 2 * 33
-    return data["nickname"], data["secret"].decode("hex"), data["pubkey"].decode("hex")
-
-# Look in crypto file for market details
-NICKNAME, SECRET, PUBKEY = load_crypto_details()
+import logging
 
 class CryptoPeerConnection(PeerConnection):
 
@@ -42,7 +21,7 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
-        print 'DATA: ',data
+        self._log.info('DATA: %s',data)
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):
@@ -51,10 +30,25 @@ class CryptoPeerConnection(PeerConnection):
 
 class CryptoTransportLayer(TransportLayer):
 
-    def __init__(self, port=None):
-        TransportLayer.__init__(self, port)
+    def __init__(self, my_ip, my_port, store_file):
+        TransportLayer.__init__(self, my_ip, my_port)
         self._myself = ec.ECC(curve='secp256k1')
         self.nick_mapping = {}
+        self.nickname, self.secret, self.pubkey = self.load_crypto_details(store_file)
+        self._log = logging.getLogger(self.__class__.__name__)
+
+    # Return data array with details from the crypto file
+    # TODO: This needs to be protected better; potentially encrypted file or DB
+    def load_crypto_details(self, store_file):
+        with open(store_file) as f:
+            data = json.loads(f.read())
+        assert "nickname" in data
+        assert "secret" in data
+        assert "pubkey" in data
+        assert len(data["secret"]) == 2 * 32
+        assert len(data["pubkey"]) == 2 * 33
+        return data["nickname"], data["secret"].decode("hex"), data["pubkey"].decode("hex")
+
 
     def get_profile(self):
         peers = {}
@@ -65,14 +59,14 @@ class CryptoTransportLayer(TransportLayer):
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
         
-        if ident_pubkey != PUBKEY:
+        if ident_pubkey != self.pubkey:
             print "Public key does not match your identity"
             return
         
         # Return signed pubkey     
         pubkey = self._myself.get_pubkey()
         ec_key = obelisk.EllipticCurveKey()
-        ec_key.set_secret(SECRET)
+        ec_key.set_secret(self.secret)
         digest = obelisk.Hash(pubkey)
         signature = ec_key.sign(digest)
         
@@ -82,7 +76,7 @@ class CryptoTransportLayer(TransportLayer):
     def pubkey_exists(self, pub):
         
         for uri, peer in self._peers.iteritems():
-            self.log('PEER: %s Pub: %s' % (peer._pub.encode('hex'), pub.encode('hex')))
+            self._log.info('PEER: %s Pub: %s' % (peer._pub.encode('hex'), pub.encode('hex')))
             if peer._pub.encode('hex') == pub.encode('hex'):
                 return True
             
@@ -109,29 +103,27 @@ class CryptoTransportLayer(TransportLayer):
 
         # Now send a hello message to the peer
         if pub:
-            self.log("Sending encrypted [" + msg['type']  + "] message to %s" % uri)
+            self._log.info("Sending encrypted [" + msg['type']  + "] message to %s" % uri)
             peer.send(msg)
         else:
             # Will send clear profile on initial if no pub
-            self.log("Sending unencrypted [" + msg['type']  + "] message to %s" % uri)
+            self._log.info("Sending unencrypted [" + msg['type']  + "] message to %s" % uri)
             self._peers[uri].send_raw(json.dumps(msg))
 
 
     def init_peer(self, msg):
-        self.log('Initialize Peer: %s' % msg)
+        self._log.info('Initialize Peer: %s' % msg)
         uri = msg['uri']
         pub = msg.get('pub')        
         msg_type = msg.get('type')        
 
         if not self.valid_peer_uri(uri):
-            self.log("Peer " + uri + " is not valid.")
+            self._log.info("Peer " + uri + " is not valid.")
             return
-
-        self.log('PEER INFO: %s' % msg)
 
         if not uri in self._peers:
             # unknown peer
-            print 'Create New Peer: ',uri
+            self._log.info('Create New Peer: %s' % uri)
             self.create_peer(uri, pub)
 
             if not msg_type:
@@ -144,10 +136,10 @@ class CryptoTransportLayer(TransportLayer):
             if pub:
                 # test if we have to update the pubkey
                 if not self._peers[uri]._pub:
-                    self.log("Setting public key for seed node")
+                    self._log.info("Setting public key for seed node")
                     self._peers[uri]._pub = pub.decode('hex')
                 if (self._peers[uri]._pub != pub.decode('hex')):
-                    self.log("Updating public key for node")
+                    self._log.info("Updating public key for node")
                     self._peers[uri]._pub = pub.decode('hex')
         
             if msg_type == 'hello_request':
@@ -160,13 +152,13 @@ class CryptoTransportLayer(TransportLayer):
         
         try:
             msg = json.loads(serialized)
-            self.log("receive [%s]" % msg.get('type', 'unknown'))
+            self._log.info("receive [%s]" % msg.get('type', 'unknown'))
         except ValueError:
             try:
                 msg = json.loads(self._myself.decrypt(serialized))
-                self.log("Decrypted raw message [%s]" % msg.get('type', 'unknown'))
+                self._log.info("Decrypted raw message [%s]" % msg.get('type', 'unknown'))
             except:
-                self.log("incorrect msg ! %s..." % self._myself.decrypt(serialized))
+                self._log.info("incorrect msg ! %s..." % self._myself.decrypt(serialized))
                 traceback.print_exc()
                 return
 
@@ -178,8 +170,6 @@ class CryptoTransportLayer(TransportLayer):
                 # Do not add yourself as a peer
                 if uri != self._uri:
                     self.init_peer({'uri': uri, 'pub': pub})
-            self.log("Update peer table [%s peers]" % len(self._peers))
+            self._log.info("Update peer table [%s peers]" % len(self._peers))
         else:
             self.on_message(msg)
-            
-            
