@@ -9,28 +9,6 @@ import traceback
 from protocol import hello_request, hello_response, proto_response_pubkey
 import obelisk
 
-# Check if user specified a crypto file to load for their marketplace
-# This is located in the ppl/ folder 
-if len(sys.argv) < 2:
-    print >> sys.stderr, "[Error] You need to specify a user crypto file in `ppl/` folder"
-    sys.exit(-1)
-
-# Return data array with details from the crypto file
-# TODO: This needs to be protected better; potentially encrypted file or DB
-def load_crypto_details():
-    print sys.argv[1]
-    with open(sys.argv[1]) as f:
-        data = json.loads(f.read())
-    assert "nickname" in data
-    assert "secret" in data
-    assert "pubkey" in data
-    assert len(data["secret"]) == 2 * 32
-    assert len(data["pubkey"]) == 2 * 33
-    return data["nickname"], data["secret"].decode("hex"), data["pubkey"].decode("hex")
-
-# Look in crypto file for market details
-NICKNAME, SECRET, PUBKEY = load_crypto_details()
-
 class CryptoPeerConnection(PeerConnection):
 
     def __init__(self, transport, address, pub):
@@ -51,10 +29,24 @@ class CryptoPeerConnection(PeerConnection):
 
 class CryptoTransportLayer(TransportLayer):
 
-    def __init__(self, port=None):
-        TransportLayer.__init__(self, port)
+    def __init__(self, my_ip, my_port, store_file):
+        TransportLayer.__init__(self, my_ip, my_port)
         self._myself = ec.ECC(curve='secp256k1')
         self.nick_mapping = {}
+        self.nickname, self.secret, self.pubkey = self.load_crypto_details(store_file)
+
+    # Return data array with details from the crypto file
+    # TODO: This needs to be protected better; potentially encrypted file or DB
+    def load_crypto_details(self, store_file):
+        with open(store_file) as f:
+            data = json.loads(f.read())
+        assert "nickname" in data
+        assert "secret" in data
+        assert "pubkey" in data
+        assert len(data["secret"]) == 2 * 32
+        assert len(data["pubkey"]) == 2 * 33
+        return data["nickname"], data["secret"].decode("hex"), data["pubkey"].decode("hex")
+
 
     def get_profile(self):
         peers = {}
@@ -65,14 +57,14 @@ class CryptoTransportLayer(TransportLayer):
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
         
-        if ident_pubkey != PUBKEY:
+        if ident_pubkey != self.pubkey:
             print "Public key does not match your identity"
             return
         
         # Return signed pubkey     
         pubkey = self._myself.get_pubkey()
         ec_key = obelisk.EllipticCurveKey()
-        ec_key.set_secret(SECRET)
+        ec_key.set_secret(self.secret)
         digest = obelisk.Hash(pubkey)
         signature = ec_key.sign(digest)
         
@@ -181,5 +173,3 @@ class CryptoTransportLayer(TransportLayer):
             self.log("Update peer table [%s peers]" % len(self._peers))
         else:
             self.on_message(msg)
-            
-            
