@@ -12,21 +12,6 @@ ioloop.install()
 import traceback
 import network_util
 
-# Default port
-DEFAULT_PORT=12345
-
-# Get some command line pars
-SEED_URI = False
-
-if len(sys.argv) > 2:
-    MY_IP = sys.argv[2]
-else:
-    MY_IP = "127.0.0.1"
-if len(sys.argv) > 3:
-    SEED_URI = sys.argv[3] # like tcp://127.0.0.1:12345
-# else:
-    # print "You provided no SEED_URI. You should call like [market myip seeduri]"
-
 # Connection to one peer
 class PeerConnection(object):
     def __init__(self, transport, address):
@@ -75,12 +60,13 @@ class PeerConnection(object):
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
-    def __init__(self, port=DEFAULT_PORT):
+    def __init__(self, my_ip, my_port):
         self._peers = {}
         self._callbacks = defaultdict(list)
-        self._id = MY_IP[-1] # hack for logging
-        self._port = port
-        self._uri = 'tcp://%s:%s' % (MY_IP, self._port)
+        self._id = my_ip[-1] # hack for logging
+        self._port = my_port
+        self._ip = my_ip
+        self._uri = 'tcp://%s:%s' % (self._ip, self._port)
 
     def add_callback(self, section, callback):
         self._callbacks[section].append(callback)
@@ -93,23 +79,23 @@ class TransportLayer(object):
                 cb(*data)
 
     def get_profile(self):
-        return {'type': 'hello_request', 'uri': 'tcp://%s:12345' % MY_IP}
+        return {'type': 'hello_request', 'uri': self._uri}
 
-    def join_network(self):
+    def join_network(self, seed_uri):
         self.listen()
         
-        if SEED_URI:
-            self.init_peer({'uri': SEED_URI})
+        if seed_uri:
+            self.init_peer({'uri': seed_uri})
 
     def listen(self):
         Thread(target=self._listen).start()
 
     def _listen(self):
-        self.log("init server %s %s" % (MY_IP, self._port))
+        self.log("init server %s %s" % (self._ip, self._port))
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REP)
 
-        if MY_IP.startswith("127.0.0."): 
+        if network_util.is_loopback_addr(self._ip): 
             # we are in local test mode so bind that socket on the 
             # specified IP
             self._socket.bind(self._uri)
