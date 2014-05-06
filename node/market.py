@@ -6,12 +6,14 @@ import sys
 import json
 import lookup
 from pymongo import MongoClient
+import logging
 
 class Market(object):
 
     def __init__(self, transport):
         
-        transport.log("[Market] Initializing")
+        self._log = logging.getLogger(self.__class__.__name__)
+        self._log.info("Initializing")
 
         # for now we have the id in the transport
         self._myself = transport._myself
@@ -44,7 +46,7 @@ class Market(object):
     def lookup(self, msg):
            
         if self.query_ident is None:
-            self._transport.log("Initializing identity query")
+            self._log.info("Initializing identity query")
             self.query_ident = lookup.QueryIdent()
             
             
@@ -67,13 +69,13 @@ class Market(object):
 	# Load default information for your market from your file
     def load_page(self):
     
-    	self._transport.log("[Market] Loading market config from " + sys.argv[1])
+    	self._log.info("Loading market config from " + sys.argv[1])
     
         with open(sys.argv[1]) as f:
             data = json.loads(f.read())
                     
             
-        self._transport.log("[Market] Configuration data: " + json.dumps(data))    
+        self._log.info("Configuration data: " + json.dumps(data))    
             
         assert "desc" in data
         nickname = data["nickname"]
@@ -84,14 +86,14 @@ class Market(object):
         self.nickname = nickname
         self.signature = self._transport._myself.sign(tagline)
         
-        self._transport.log("[Market] Tagline signature: " + self.signature.encode("hex"))
+        self._log.info("Tagline signature: " + self.signature.encode("hex"))
         
 
     def query_page(self, pubkey):
         self._transport.send(query_page(pubkey))
 
     def on_page(self, page):
-        self._transport.log("[Market] Page returned: " + str(page))
+        self._log.info("Page returned: " + str(page))
         
         pubkey = page.get('pubkey')
         page = page.get('text')
@@ -103,18 +105,18 @@ class Market(object):
         
 	# Return your page info if someone requests it on the network
     def on_query_page(self, peer):
-        self._transport.log("[Market] Someone is querying for your page")        
+        self._log.info("Someone is querying for your page")        
         self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature, self.nickname))
         
     def on_query_myorders(self, peer):
-        self._transport.log("[Market] Someone is querying for your page")        
+        self._log.info("Someone is querying for your page")        
         self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature, self.nickname))
 
     def on_peer(self, peer):
-        self._transport.log("[Market] New peer")
+        self._log.info("New peer")
 
     def on_negotiate_pubkey(self, ident_pubkey):
-        self._transport.log("[Market] Someone is asking for your real pubKey")
+        self._log.info("Someone is asking for your real pubKey")
         assert "nickname" in ident_pubkey
         assert "ident_pubkey" in ident_pubkey
         nickname = ident_pubkey['nickname']
@@ -122,7 +124,7 @@ class Market(object):
         self._transport.respond_pubkey_if_mine(nickname, ident_pubkey)
 
     def on_response_pubkey(self, response):
-        self._transport.log("[Market] got a pubkey!")
+        self._log.info("got a pubkey!")
         assert "pubkey" in response
         assert "nickname" in response
         assert "signature" in response
@@ -135,10 +137,10 @@ class Market(object):
         # Verify signature here...
         # Add to our dict.
         self._transport.nick_mapping[nickname][1] = pubkey
-        self._transport.log("[market] mappings: ###############")
+        self._log.info("[market] mappings: ###############")
         for k, v in self._transport.nick_mapping.iteritems():
-            self._transport.log("'%s' -> '%s' (%s)" % (
+            self._log.info("'%s' -> '%s' (%s)" % (
                 k, v[1].encode("hex") if v[1] is not None else v[1],
                 v[0].encode("hex") if v[0] is not None else v[0]))
-        self._transport.log("##################################")
+        self._log.info("##################################")
 

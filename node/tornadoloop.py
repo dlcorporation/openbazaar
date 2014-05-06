@@ -10,6 +10,8 @@ from crypto2crypto import CryptoTransportLayer
 from market import Market
 from ws import WebSocketHandler, ProtocolHandler
 import pymongo
+import logging
+from logging import FileHandler, StreamHandler
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -44,6 +46,8 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--log_file", default='node.log')
     args = parser.parse_args()
 
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename=args.log_file)
+
     application = MarketApplication(args.store_file, args.my_market_ip, \
                                     args.my_market_port, args.seed_uri)
     error = True
@@ -54,5 +58,7 @@ if __name__ == "__main__":
             error = False
         except:
             port += 1
-    print " - Started user app at http://%s:%s" % (args.my_market_ip, port)
+
+    logging.getLogger().info("Started user app at http://%s:%s" \
+                                % (args.my_market_ip, port))
     tornado.ioloop.IOLoop.instance().start()
