@@ -6,6 +6,7 @@ import tornado.ioloop
 import random
 import protocol
 import obelisk
+import logging
 
 class ProtocolHandler:
     def __init__(self, transport, node, handler):
@@ -28,6 +29,7 @@ class ProtocolHandler:
             "query_orders":	  self.client_query_orders,
         }
 
+        self._log = logging.getLogger(self.__class__.__name__)
 
     def send_opening(self):
 
@@ -51,13 +53,13 @@ class ProtocolHandler:
 
     # Requests coming from the client
     def client_query_page(self, socket_handler, msg):
-        self._transport.log("Message: ", msg)
+        self._log.info("Message: ", msg)
         pubkey = msg['pubkey'].decode('hex')
         self.node.query_page(pubkey)
         self.node.reputation.query_reputation(pubkey)
 
     def client_query_orders(self, socket_handler, msg):
-        self._transport.log("Querying for Orders: ", msg)
+        self._log.info("Querying for Orders: ", msg)
         
         # Query mongo for orders
         orders = self.node.orders._orders
@@ -79,7 +81,7 @@ class ProtocolHandler:
         self.node.reputation.create_review(pubkey, text, rating)
 
     def client_search(self, socket_handler, msg):
-        self._transport.log("[Search] %s"% msg)
+        self._log.info("[Search] %s"% msg)
         response = self.node.lookup(msg)
         if response:
             print "yuea", response
@@ -101,7 +103,7 @@ class ProtocolHandler:
         if isinstance(first, dict):
             self.send_to_client(None, first)
         else:
-            self._transport.log("can't format")
+            self._log.info("can't format")
 
     # send a message
     def send_to_client(self, error, result):
@@ -134,21 +136,22 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     listen_lock = threading.Lock()
 
     def initialize(self, transport, node):
-        transport.log("Initialize websockethandler")
+        self._log = logging.getLogger(self.__class__.__name__)
+        self._log.info("Initialize websockethandler")
         self._app_handler = ProtocolHandler(transport, node, self)
         self.node = node
         self._transport = transport
 
     def open(self):
-        self._transport.log("Websocket open")
-        self._transport.log('Websocket open')
+        self._self._log.info("Websocket open")
+        self._self._log.info('Websocket open')
         self._app_handler.send_opening()
         with WebSocketHandler.listen_lock:
             self.listeners.add(self)
         self._connected = True
 
     def on_close(self):
-        self._transport.log("websocket closed")
+        self._self._log.info("websocket closed")
         disconnect_msg = {'command': 'disconnect_client', 'id': 0, 'params': []}
         self._connected = False
         self._app_handler.handle_request(self, disconnect_msg)
@@ -162,7 +165,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
     
-        self._transport.log('Message: ',message)
+        self._self._log.info('Message: ',message)
     
         try:
             request = json.loads(message)            
