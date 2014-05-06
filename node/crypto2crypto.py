@@ -33,11 +33,10 @@ NICKNAME, SECRET, PUBKEY = load_crypto_details()
 
 class CryptoPeerConnection(PeerConnection):
 
-    def __init__(self, address, transport, pub):
-        self._transport = transport
+    def __init__(self, transport, address, pub):
         self._priv = transport._myself
         self._pub = pub
-        PeerConnection.__init__(self, address)
+        PeerConnection.__init__(self, transport, address)
 
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub)
@@ -97,7 +96,7 @@ class CryptoTransportLayer(TransportLayer):
         
         # Create the peer if public key is not already in the peer list
         #if not self.pubkey_exists(pub):
-        self._peers[uri] = CryptoPeerConnection(uri, self, pub)            
+        self._peers[uri] = CryptoPeerConnection(self, uri, pub)            
 
             # Call 'peer' callbacks on listeners
             #self.trigger_callbacks('peer', self._peers[uri])

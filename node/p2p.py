@@ -29,9 +29,10 @@ if len(sys.argv) > 3:
 
 # Connection to one peer
 class PeerConnection(object):
-    def __init__(self, address):
+    def __init__(self, transport, address):
         # timeout in seconds
         self._timeout = 10
+        self._transport = transport
         self._address = address
 
     def create_socket(self):
@@ -59,10 +60,12 @@ class PeerConnection(object):
         if poller.poll(self._timeout * 1000):
             msg = self._socket.recv()
             self.on_message(msg)
+            self.cleanup_socket()
+
         else:
             print "Peer " + self._address + " timed out."
-
-        self.cleanup_socket()
+            self.cleanup_socket()
+            self._transport.remove_peer(self._address)
 
     def on_message(self, msg):
         print "message received!", msg
@@ -125,7 +128,12 @@ class TransportLayer(object):
         uri = msg['uri']
         
         if not uri in self._peers:
-            self._peers[uri] = PeerConnection(uri)            
+            self._peers[uri] = PeerConnection(self, uri)            
+
+    def remove_peer(self, uri):
+        self.log("Removing peer " + uri )
+        del self._peers[uri]
+        self.log("Peers " + str(self._peers) )
 
     def log(self, msg, pointer='-'):
         print " %s [%s] %s" % (pointer, self._id, msg)
