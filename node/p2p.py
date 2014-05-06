@@ -10,6 +10,7 @@ from multiprocessing import Process
 from threading import Thread
 ioloop.install()
 import traceback
+import network_util
 
 # Default port
 DEFAULT_PORT=12345
@@ -28,12 +29,16 @@ if len(sys.argv) > 3:
 
 # Connection to one peer
 class PeerConnection(object):
-    def __init__(self, address):
+    def __init__(self, transport, address):
+        # timeout in seconds
+        self._timeout = 10
+        self._transport = transport
         self._address = address
 
     def create_socket(self):
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REQ)
+        self._socket.setsockopt(zmq.LINGER, 0)
         self._socket.connect(self._address)
 
     def cleanup_socket(self):
@@ -49,10 +54,18 @@ class PeerConnection(object):
         self.create_socket()
 
         self._socket.send(serialized)
-        msg = self._socket.recv()
-        self.on_message(msg)
 
-        self.cleanup_socket()
+        poller = zmq.Poller()
+        poller.register(self._socket, zmq.POLLIN)
+        if poller.poll(self._timeout * 1000):
+            msg = self._socket.recv()
+            self.on_message(msg)
+            self.cleanup_socket()
+
+        else:
+            print "Peer " + self._address + " timed out."
+            self.cleanup_socket()
+            self._transport.remove_peer(self._address)
 
     def on_message(self, msg):
         print "message received!", msg
@@ -115,7 +128,12 @@ class TransportLayer(object):
         uri = msg['uri']
         
         if not uri in self._peers:
-            self._peers[uri] = PeerConnection(uri)            
+            self._peers[uri] = PeerConnection(self, uri)            
+
+    def remove_peer(self, uri):
+        self.log("Removing peer " + uri )
+        del self._peers[uri]
+        self.log("Peers " + str(self._peers) )
 
     def log(self, msg, pointer='-'):
         print " %s [%s] %s" % (pointer, self._id, msg)
@@ -169,3 +187,23 @@ class TransportLayer(object):
         else:
             self.on_message(msg)
 
+    def valid_peer_uri(self, uri):
+        try:
+            [self_protocol, self_addr, self_port] = network_util.uri_parts(self._uri)
+            [other_protocol, other_addr, other_port] = network_util.uri_parts(uri)
+        except RuntimeError:
+            return False
+
+        if not network_util.is_valid_protocol(other_protocol)  \
+                or not network_util.is_valid_port(other_port):
+            return False
+
+        if network_util.is_private_ip_address(self_addr):
+            if not network_util.is_private_ip_address(other_addr):
+                self.log(('Warning: trying to connect to external '
+                        'network with a private ip address.')) 
+        else:
+            if network_util.is_private_ip_address(other_addr):
+                return False
+
+        return True
