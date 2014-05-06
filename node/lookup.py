@@ -19,5 +19,4 @@ class QueryIdent:
 
 if __name__ == "__main__":
     query = QueryIdent()
-    print query.lookup("caedes").encode("hex")
 
