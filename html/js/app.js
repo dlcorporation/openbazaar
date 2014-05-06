@@ -236,20 +236,26 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   
   // My information has arrived
   $scope.parse_myself = function(msg) {
+    
     $scope.myself = msg;
+    
     if (!$scope.$$phase) {
        $scope.$apply();
     }
     
-    console.log('Reputation for myself', msg);
-    console.log('Reviews: ', $scope.reviews);
+    // Settings
+    $scope.settings = msg.settings
+    console.log($scope.settings)
     
     msg.reputation.forEach(function(review) {       
        add_review_to_page($scope.myself.pubkey, review)
     });
+    
     msg.peers.forEach(function(peer) {
        $scope.parse_peer(peer)
     });
+    
+    
   }
   
   // A shout has arrived

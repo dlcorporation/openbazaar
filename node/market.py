@@ -90,14 +90,21 @@ class Market(object):
         
         self._transport.log("[Market] Tagline signature: " + self.signature.encode("hex"))
         
-    def save_settings(self):
-    
-        self._transport.log('Save settings')
         
-        self._db.settings.update
+    # SETTINGS
+        
+    def save_settings(self, msg):      
+        self._db.settings.update({}, msg, True)
+        
+    def get_settings(self):   
+        settings = self._db.settings.find_one()
+        return { "bitmessage": settings['bitmessage'], 
+            "email": settings['email'],
+            "PGPPubKey": settings['PGPPubKey'] }
         
         
         
+    # PAGE QUERYING    
 
     def query_page(self, pubkey):
         self._transport.send(query_page(pubkey))
