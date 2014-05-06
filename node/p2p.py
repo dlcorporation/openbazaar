@@ -1,5 +1,6 @@
 import sys
 import json
+import logging
 from collections import defaultdict
 
 import pyelliptic as ec
@@ -10,22 +11,8 @@ from multiprocessing import Process
 from threading import Thread
 ioloop.install()
 import traceback
+import logging
 import network_util
-
-# Default port
-DEFAULT_PORT=12345
-
-# Get some command line pars
-SEED_URI = False
-
-if len(sys.argv) > 2:
-    MY_IP = sys.argv[2]
-else:
-    MY_IP = "127.0.0.1"
-if len(sys.argv) > 3:
-    SEED_URI = sys.argv[3] # like tcp://127.0.0.1:12345
-# else:
-    # print "You provided no SEED_URI. You should call like [market myip seeduri]"
 
 # Connection to one peer
 class PeerConnection(object):
@@ -34,6 +21,7 @@ class PeerConnection(object):
         self._timeout = 10
         self._transport = transport
         self._address = address
+        self._log = logging.getLogger(self.__class__.__name__)
 
     def create_socket(self):
         self._ctx = zmq.Context()
@@ -63,7 +51,7 @@ class PeerConnection(object):
             self.cleanup_socket()
 
         else:
-            print "Peer " + self._address + " timed out."
+            self._log.info("Peer " + self._address + " timed out.")
             self.cleanup_socket()
             self._transport.remove_peer(self._address)
 
@@ -75,12 +63,13 @@ class PeerConnection(object):
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
-    def __init__(self, port=DEFAULT_PORT):
+    def __init__(self, my_ip, my_port):
         self._peers = {}
         self._callbacks = defaultdict(list)
-        self._id = MY_IP[-1] # hack for logging
-        self._port = port
-        self._uri = 'tcp://%s:%s' % (MY_IP, self._port)
+        self._port = my_port
+        self._ip = my_ip
+        self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+        self._log = logging.getLogger(self.__class__.__name__)
 
     def add_callback(self, section, callback):
         self._callbacks[section].append(callback)
@@ -93,23 +82,23 @@ class TransportLayer(object):
                 cb(*data)
 
     def get_profile(self):
-        return {'type': 'hello_request', 'uri': 'tcp://%s:12345' % MY_IP}
+        return {'type': 'hello_request', 'uri': self._uri}
 
-    def join_network(self):
+    def join_network(self, seed_uri):
         self.listen()
         
-        if SEED_URI:
-            self.init_peer({'uri': SEED_URI})
+        if seed_uri:
+            self.init_peer({'uri': seed_uri})
 
     def listen(self):
         Thread(target=self._listen).start()
 
     def _listen(self):
-        self.log("init server %s %s" % (MY_IP, self._port))
+        self._log.info("init server %s %s" % (self._ip, self._port))
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REP)
 
-        if MY_IP.startswith("127.0.0."): 
+        if network_util.is_loopback_addr(self._ip): 
             # we are in local test mode so bind that socket on the 
             # specified IP
             self._socket.bind(self._uri)
@@ -131,18 +120,14 @@ class TransportLayer(object):
             self._peers[uri] = PeerConnection(self, uri)            
 
     def remove_peer(self, uri):
-        self.log("Removing peer " + uri )
+        self._log.info("Removing peer " + uri )
         del self._peers[uri]
-        
-        self.log("Peers " + str(self._peers) )
 
-    def log(self, msg, pointer='-'):
-        print " %s [%s] %s" % (pointer, self._id, msg)
-        sys.stdout.flush()
+        self._log.debug("Peers " + str(self._peers) )
 
     def send(self, data, send_to=None):
 
-        #self.log("Data sent to p2p: %s" % data);
+        #self._log.info("Data sent to p2p: %s" % data);
 
         # directed message        
         if send_to:
@@ -171,15 +156,15 @@ class TransportLayer(object):
     def on_message(self, msg):
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        self.log("Data received: %s" % msg)
+        self._log.info("Data received: %s" % msg)
         self.trigger_callbacks(msg.get('type'), msg)
 
     def on_raw_message(self, serialized):
-        self.log("connected " +str(len(serialized)))
+        self._log.info("connected " +str(len(serialized)))
         try:
             msg = json.loads(serialized[0])
         except:
-            self.log("incorrect msg! " + serialized)
+            self._log.info("incorrect msg! " + serialized)
             return
 
         msg_type = msg.get('type')
@@ -201,7 +186,7 @@ class TransportLayer(object):
 
         if network_util.is_private_ip_address(self_addr):
             if not network_util.is_private_ip_address(other_addr):
-                self.log(('Warning: trying to connect to external '
+                self._log.warning(('Trying to connect to external '
                         'network with a private ip address.')) 
         else:
             if network_util.is_private_ip_address(other_addr):

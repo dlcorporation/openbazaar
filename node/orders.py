@@ -5,6 +5,7 @@ from pyelliptic import ECC
 import random
 from pymongo import MongoClient
 from multisig import Multisig
+import logging
 
 
 class Orders(object):
@@ -22,6 +23,7 @@ class Orders(object):
         self._orders = self.get_orders()
 
         transport.add_callback('order', self.on_order)
+        self._log = logging.getLogger(self.__class__.__name__)
 
     def get_orders(self):
         orders = []
@@ -92,11 +94,11 @@ class Orders(object):
         myself = self._transport._myself.get_pubkey()
         
         if not buyer or not seller or not state:
-            self._transport.log("Malformed order")
+            _self._log.info("Malformed order")
             return
         
         if not state == 'new' and not msg.get('id'):
-            self._transport.log("Order with no id")
+            self._log.info("Order with no id")
             return
         
         # Check order state
@@ -107,20 +109,20 @@ class Orders(object):
                 print msg
                 self.accept_order(msg)
             else:
-                self._transport.log("Not a party to this order")
+                self._log.info("Not a party to this order")
         elif state == 'cancelled':
             if myself == seller or myself == buyer:
                 print 'Order cancelled'
             else:
-                self._transport.log("Order not for us")
+                self._log.info("Order not for us")
         elif state == 'accepted':
             if myself == seller:
-                self._transport.log("Bad subjects [%s]" % state)
+                self._log.info("Bad subjects [%s]" % state)
             elif myself == buyer:
                 # wait for confirmation
                 pass
             else:
-                self._transport.log("Order not for us")
+                self._log.info("Order not for us")
         elif state == 'payed':
             if myself == seller:
                 # wait for  confirmation
@@ -128,7 +130,7 @@ class Orders(object):
             elif myself == buyer:
                 self.pay_order(msg)
             else:
-                self._transport.log("Order not for us")
+                self._log.info("Order not for us")
         elif state == 'sent':
             if myself == seller:
                 self.send_order(msg)
@@ -136,7 +138,7 @@ class Orders(object):
                 # wait for confirmation
                 pass
             else:
-                self._transport.log("Order not for us")
+                self._log.info("Order not for us")
         elif state == 'received':
             if myself == seller:
                 pass
@@ -144,7 +146,7 @@ class Orders(object):
             elif myself == buyer:
                 self.receive_order(msg)
             else:
-                self._transport.log("Order not for us")
+                self._log.info("Order not for us")
         
         # Store order     
         if msg.get('id'):

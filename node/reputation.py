@@ -2,6 +2,7 @@ import json
 from protocol import proto_reputation, proto_query_reputation
 from collections import defaultdict
 from pyelliptic import ECC
+import logging
 
 def review(pubkey, subject, signature, text, rating):
     data = {}
@@ -31,6 +32,8 @@ class Reputation(object):
 
         # SAMPLE Review because there is no persistence of reviews ATM
         #self.create_review(self._priv.get_pubkey(), "Initial Review", 10)
+
+        self._log = logging.getLogger(self.__class__.__name__)
 
 
     # getting reputation from inside the application
@@ -84,7 +87,7 @@ class Reputation(object):
                 self._reviews[subject].append(newreview)         
             
         else:
-            self._transport.log("[reputation] Invalid review!")
+            self._log.info("[reputation] Invalid review!")
 
 
     # callbacks for messages
