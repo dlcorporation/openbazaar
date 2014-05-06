@@ -41,14 +41,26 @@ class ProtocolHandler:
             else:
                peer_item['pubkey'] = 'unknown'
             peers.append(peer_item)
+            
         message = {
             'type': 'myself',
             'pubkey': self._transport._myself.get_pubkey().encode('hex'),
             'peers': peers,
+            'settings': self.node.get_settings(),
             'reputation': self.node.reputation.get_my_reputation()
         }
         
         self.send_to_client(None, message)
+
+    def check_peers(self):
+        for uri, peer in self._transport._peers.items():
+            peer_item = {'uri': uri}
+            if peer._pub:
+               peer_item['pubkey'] = peer._pub.encode('hex')
+            else:
+               peer_item['pubkey'] = 'unknown'
+            peers.append(peer_item)
+
 
     # Requests coming from the client
     def client_query_page(self, socket_handler, msg):
@@ -72,10 +84,7 @@ class ProtocolHandler:
         self.send_to_client(None, { "type": "settings", "values": msg })
 
         # Update settings in mongo
-        self.node.save_settings()
-        
-        #self.send_to_client(None, { "type": "myorders", "orders": orders } )
-
+        self.node.save_settings(msg['settings'])
 
 
     def client_order(self, socket_handler, msg):
@@ -99,6 +108,7 @@ class ProtocolHandler:
 
     # messages coming from "the market"
     def on_node_peer(self, peer):
+        self.check_peers()
         response = {'type': 'peer', 'pubkey': peer._pub.encode('hex'), 'uri': peer._address}
         self.send_to_client(None, response)
 

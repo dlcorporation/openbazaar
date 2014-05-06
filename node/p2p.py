@@ -133,6 +133,7 @@ class TransportLayer(object):
     def remove_peer(self, uri):
         self.log("Removing peer " + uri )
         del self._peers[uri]
+        
         self.log("Peers " + str(self._peers) )
 
     def log(self, msg, pointer='-'):
