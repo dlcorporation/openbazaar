@@ -98,9 +98,11 @@ class Market(object):
         
     def get_settings(self):   
         settings = self._db.settings.find_one()
-        return { "bitmessage": settings['bitmessage'], 
-            "email": settings['email'],
-            "PGPPubKey": settings['PGPPubKey'] }
+        
+        if settings:
+            return { "bitmessage": settings['bitmessage'], 
+                "email": settings['email'],
+                "PGPPubKey": settings['PGPPubKey'] }
         
         
         
