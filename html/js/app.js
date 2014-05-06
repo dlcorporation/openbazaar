@@ -268,6 +268,13 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
      $scope.search = ""
   }
 
+  $scope.settings = { email:'', PGPPubKey:'', bitmessage:'' }
+  $scope.saveSettings = function() {
+      var query = {'type': 'update_settings', settings: $scope.settings }
+      socket.send('update_settings', query)
+  }
+
+
   // Create a new order and send to the network
   $scope.newOrder = {text:'', tx: ''}
   $scope.createOrder = function() {
@@ -330,8 +337,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   		case 'reviews':
   			$scope.reviewsPanel = true;
   			break;
-  		case 'orders':
-  		    
+  		case 'orders':  		    
   			$scope.ordersPanel = true;
   			$scope.queryMyOrder();
   			break;
