@@ -1,10 +1,3 @@
-![](https://github.com/OpenBazaar/OpenBazaar/blob/gh-pages/img/logo_alt1-b-h.png?raw=true)
-contributed by Jacob Payne
-![](http://i.imgur.com/WwPUXGS.png)
-contributed by Dean Masley
-
-We have some great artwork being contributed!
-
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the GPL.
 
 See a demonstration of the Proof Of Concept here: https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
@@ -112,6 +105,15 @@ sudo ifconfig lo0 alias 127.0.0.4 up
 To get the identity server running for querying nicknames in the UI you need to start the identity server. From the base directory of the software run the following:
 
 `python ident/identity.py`
+
+
+## Artwork Contributions
+
+![](https://github.com/OpenBazaar/OpenBazaar/blob/gh-pages/img/logo_alt1-b-h.png?raw=true)
+contributed by Jacob Payne
+![](http://i.imgur.com/WwPUXGS.png)
+contributed by Dean Masley
+
 
 
 ## Screenshot
