@@ -37,9 +37,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   $scope.currentReviews = []
   $scope.myOrders = []
   $scope.myReviews = []
-  
-  
-  
+  $scope.sidebar = true
+
+
   $scope.createShout = function() {
      // launch a shout
      console.log($scope)
@@ -52,19 +52,32 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   $scope.peers = [];
   $scope.peerIds = [];
   $scope.reviews = {};
+
+  $scope.toggleSidebar = function() {
+    $scope.sidebar = ($scope.sidebar) ? false : true;
+  }
+
+  $scope.hideSidebar = function() {
+    $scope.sidebar = false;
+  }
+
+  $scope.showSidebar = function() {
+    $scope.sidebar = true;
+  }
+
   $scope.awaitingShop = null;
   $scope.queryShop = function(peer) {
-     
+
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.pubkey;
      var query = {'type': 'query_page', 'pubkey': peer.pubkey}
      socket.send('query_page', query)
   }
-  
+
 
  // Open the websocket connection and handle messages
-  var socket = new Connection(function(msg) {   
+  var socket = new Connection(function(msg) {
    switch(msg.type) {
       case 'peer':
          $scope.parse_peer(msg)
@@ -99,13 +112,13 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   var add_review_to_page = function(pubkey, review) {
     var found = false;
-    
+
     console.log("Add review");
-    
+
     if (!$scope.reviews.hasOwnProperty(pubkey)) {
         $scope.reviews[pubkey] = []
     }
-    $scope.reviews[pubkey].forEach(function(_review) {    	
+    $scope.reviews[pubkey].forEach(function(_review) {
         if (_review.sig == review.sig && _review.subject == review.subject && _review.pubkey == review.pubkey) {
            console.log("Found a review for this market")
            found = true
@@ -124,9 +137,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
 
   $scope.parse_order = function(msg) {
-  	  
+
   	  console.log("Order update");
-  	  
+
       if ($scope.myOrders.hasOwnProperty(msg.id)) {
           console.log("Updating order!")
           $scope.myOrders[msg.id].state = msg.state
@@ -136,23 +149,23 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
           return;
       } else {
           console.log(msg);
-          $scope.myOrders.push(msg);          
+          $scope.myOrders.push(msg);
       }
       if (!$scope.$$phase) {
       	 console.log($scope.myOrders);
          $scope.$apply();
       }
   }
-  
+
   $scope.parse_myorders = function(msg) {
-  	  
+
   	  console.log('Retrieved my orders: ',msg);
   	  $scope.orders = msg['orders'];
-      
+
       if (!$scope.$$phase) {
 	       $scope.$apply();
 	    }
-      
+
   }
 
   $scope.parse_response_pubkey = function(msg) {
@@ -168,14 +181,14 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
           }
       });
       if (!$scope.$$phase) {
-      	
+
          $scope.$apply();
       }
   }
 
   // Peer information has arrived
   $scope.parse_reputation = function(msg) {
-    
+
     console.log('Parsing reputation', msg.reviews)
     msg.reviews.forEach(function(review) {
         add_review_to_page(review.subject, review);
@@ -186,9 +199,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
 
   $scope.parse_page = function(msg) {
-    
+
     console.log('Parsing page: ', msg);
-    
+
     if (msg.pubkey != $scope.awaitingShop)
        return
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
@@ -196,21 +209,21 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     }
     $scope.currentReviews = $scope.reviews[msg.pubkey]
     $scope.page = msg
-    
+
     // Write in store content into the HTML
     var contentDiv = document.getElementById('page-content')
     contentDiv.innerHTML = msg.text;
-    
+
     console.log("Parse orders:"+$scope.myOrders);
-    
+
     if (!$scope.$$phase) {
        $scope.$apply();
     }
   }
   $scope.parse_peer = function(msg) {
-  
+
     console.log('PARSE PEER: ',msg);
-  
+
     if ($scope.peerIds.indexOf(msg.uri) == -1) {
       $scope.peers.push(msg)
       $scope.peerIds.push(msg.uri)
@@ -219,10 +232,10 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
        $scope.$apply();
     }
   }
-  
+
   $scope.review= {rating:5, text:""}
   $scope.addReview = function() {
-     
+
      var query = {'type': 'review', 'pubkey': $scope.page.pubkey, 'text': $scope.review.text, 'rating': parseInt($scope.review.rating)}
      socket.send('review', query)
 
@@ -233,31 +246,31 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
      $scope.review.text = '';
      $scope.showReviewForm = false;
   }
-  
+
   // My information has arrived
   $scope.parse_myself = function(msg) {
-    
+
     $scope.myself = msg;
-    
+
     if (!$scope.$$phase) {
        $scope.$apply();
     }
-    
+
     // Settings
     $scope.settings = msg.settings
     console.log($scope.settings)
-    
-    msg.reputation.forEach(function(review) {       
+
+    msg.reputation.forEach(function(review) {
        add_review_to_page($scope.myself.pubkey, review)
     });
-    
+
     msg.peers.forEach(function(peer) {
        $scope.parse_peer(peer)
     });
-    
-    
+
+
   }
-  
+
   // A shout has arrived
   $scope.parse_shout = function(msg) {
     $scope.shouts.push(msg)
@@ -291,13 +304,13 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
           'buyer': $scope.myself.pubkey,
           'seller': $scope.page.pubkey
       }
-      $scope.newOrder.text = '';		
+      $scope.newOrder.text = '';
       //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
       socket.send('order', newOrder);
-      
+
       $scope.showStorePanel('storeOrders');
       $('#pill-storeorders').addClass('active').siblings().removeClass('active').blur();
-      
+
   }
   $scope.payOrder = function(order) {
       order.state = 'payed'
@@ -313,13 +326,13 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       order.state = 'sent'
       socket.send('order', order);
   }
-  
+
   $scope.cancelOrder = function(order) {
   	order.state = 'cancelled'
   	socket.send('order', order)
   }
-  
-  
+
+
   function resetPanels() {
   	$scope.messagesPanel = false;
   	$scope.reviewsPanel = false;
@@ -328,14 +341,22 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   	$scope.ordersPanel = false;
   	$scope.myInfoPanel = false;
   }
-  
+
   $scope.showDashboardPanel = function(panelName) {
-    
+
     resetPanels();
-    
+
+    if(panelName != 'myInfo') {
+      $scope.hideSidebar();
+      $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
+    } else {
+      $scope.showSidebar();
+      $('#dashboard-container').removeClass('col-sm-12').addClass('col-sm-8')
+    }
+
     $scope.dashboard = true;
     $scope.page = false;
-  	
+
   	switch(panelName) {
   		case 'messages':
   			$scope.messagesPanel = true;
@@ -343,24 +364,24 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   		case 'reviews':
   			$scope.reviewsPanel = true;
   			break;
-  		case 'orders':  		    
+  		case 'orders':
   			$scope.ordersPanel = true;
   			$scope.queryMyOrder();
   			break;
   		case 'productCatalog':
   			$scope.productCatalogPanel = true;
-  			break;	
+  			break;
   		case 'settings':
   			$scope.settingsPanel = true;
   			break;
   		case 'myInfo':
   			$scope.myInfoPanel = true;
   			break;
-  	
+
   	}
   }
-  
-  
+
+
   function resetStorePanels() {
   	$scope.storeProductsPanel = false;
   	$scope.storeReviewsPanel = false;
@@ -368,13 +389,13 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   	$scope.storeInfoPanel = false;
   	$scope.storeOrderHistoryPanel = false;
   }
-  
+
   $scope.showStorePanel = function(panelName) {
-    
-    resetStorePanels();  	
+
+    resetStorePanels();
   	$scope.dashboard = false;
-    
-  	
+
+
   	switch(panelName) {
   		case 'storeProducts':
   			$scope.storeProductsPanel = true;
@@ -388,7 +409,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   		case 'storeInfo':
   			$scope.storeInfoPanel = true;
   			break;
-  	
+
   	}
   }
 
@@ -398,15 +419,15 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 	var query = {'type': 'query_orders', 'pubkey': ''}
 	console.log('querying orders')
 	socket.send('query_orders', query)
-	  
+
   }
-  
-  
-  
-  $('ul.nav.nav-pills li a').click(function() {           
-	    $(this).parent().addClass('active').siblings().removeClass('active').blur();           
+
+
+
+  $('ul.nav.nav-pills li a').click(function() {
+	    $(this).parent().addClass('active').siblings().removeClass('active').blur();
 	});
-  
-  
+
+
 
 }])
