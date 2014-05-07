@@ -274,7 +274,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
      $scope.search = ""
   }
 
-  $scope.settings = { email:'', PGPPubKey:'', bitmessage:'' }
+  $scope.settings = { email:'', PGPPubKey:'', bitmessage:'', pubkey:'', secret:'' }
   $scope.saveSettings = function() {
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query)
