@@ -21,41 +21,7 @@
     <div ng-show="warningMessage" class="alert alert-warning"></div>
 
     <div class="container">
-        <!-- MOVE APP INSIDE THIS AREA -->
-
-        <div class="site-wrapper" ng-show="started">
-            <div class="site-wrapper-inner">
-                <div class="cover-container">
-                    <div class="masthead clearfix">
-                        <div class="inner">
-                            <h3 class="masthead-brand"><a href="/">OpenBazaar</a></h3>
-
-                            <ul class="nav masthead-nav">
-                                <li class="active"><a href="#">Home</a></li>
-
-                                <li><a ng-click="started=true">Search</a></li>
-
-                                <li><a ng-click="started=true">Sell</a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="inner cover">
-                        <h1 class="cover-heading">OpenBazaar is a decentralized marketplace for the masses.</h1>
-
-                        <p class="lead">Help us build a free and open marketplace for trade across borders.</p>
-
-                        <p class="lead"><a ng-show="!started" ng-click="started=true" class="btn btn-lg btn-success">Enter the Market</a></p>
-                    </div>
-
-                    <div class="mastfoot">
-                        <div class="inner">
-                            <p>2014 - OpenBazaar <a href="http://openbazaar.org">http://openbazaar.org</a></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div><!-- /MOVE APP INSIDE THIS AREA -->
+        
 
         <div id="search" class="search-area" ng-show="!started">
             
@@ -151,7 +117,7 @@
 									  <div class="form-group">
 									    <label for="inputBitmessageAddress" class="col-sm-3 control-label">Bitmessage Address</label>
 									    <div class="col-sm-9">
-									      <input type="text" class="form-control" ng-model="settings.bitmessage" id="inputBitmessageAddress" placeholder="Bitmessage address">
+									      <input type="text" class="form-control" ng-model="settings.bitmessage" id="inputBitmessageAddress" placeholder="Bitmessage address"> 
 									    </div>
 									  </div>
 		                        
