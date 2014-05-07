@@ -161,8 +161,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._transport = transport
 
     def open(self):
-        self._self._log.info("Websocket open")
-        self._self._log.info('Websocket open')
+        self._log.info("Websocket open")
+        self._log.info('Websocket open')
         self._app_handler.send_opening()
         with WebSocketHandler.listen_lock:
             self.listeners.add(self)
