@@ -57,11 +57,12 @@ class Market(object):
         nickname = str(msg["text"])
         key = self.query_ident.lookup(nickname)
         if key is None:
-            print "Key not found for this nickname"
+            self._log.info("Key not found for this nickname")
             return ("Key not found for this nickname", None)
-        print "Found key:", key.encode("hex")
+        
+        self._log.info("Found key: %s " % key.encode("hex"))
         if self._transport.nick_mapping.has_key(nickname):
-            print "Already have a cached mapping, just adding key there."
+            self._log.info("Already have a cached mapping, just adding key there.")
             response = {'nickname': nickname, 'pubkey': self._transport.nick_mapping[nickname][1].encode('hex'), 'signature': self._transport.nick_mapping[nickname][0].encode('hex'), 'type': 'response_pubkey', 'signature': 'unknown'}
             self._transport.nick_mapping[nickname][0] = key
             return (None, response)
@@ -124,8 +125,6 @@ class Market(object):
         
         pubkey = page.get('pubkey')
         page = page.get('text')
-        
-        #print "Orders: ", self.orders.print_orders()
         
         if pubkey and page:
             self.pages[pubkey] = page

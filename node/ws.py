@@ -102,7 +102,7 @@ class ProtocolHandler:
         self._log.info("[Search] %s"% msg)
         response = self.node.lookup(msg)
         if response:
-            print "yuea", response
+            self._log.info("yuea %s", response)
             self.send_to_client(*response)
 
     def client_shout(self, socket_handler, msg):

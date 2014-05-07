@@ -51,15 +51,15 @@ class PeerConnection(object):
             self.cleanup_socket()
 
         else:
-            self._log.info("Peer " + self._address + " timed out.")
+            self._log.info("Peer %s timed out." % self._address)
             self.cleanup_socket()
             self._transport.remove_peer(self._address)
 
     def on_message(self, msg):
-        print "message received!", msg
+        self._log.info("message received! %s" % msg)
 
     def closed(self, *args):
-        print " - peer disconnected"
+        self._log.info(" - peer disconnected")
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
@@ -111,7 +111,7 @@ class TransportLayer(object):
             self._socket.send(json.dumps({'type': "ok"}))
 
     def closed(self, *args):
-        print "client left"
+        self._log.info("client left")
 
     def _init_peer(self, msg):
         uri = msg['uri']
@@ -134,11 +134,12 @@ class TransportLayer(object):
             for peer in self._peers.values():
                 if peer._pub == send_to:                    
                     if peer.send(data):
-                        print 'Success'
+                        self._log.info('Success')
                     else:
-                        print 'Failed'                         
+                        self._log.info('Failed')
                     return
-            print "Peer not found!", send_to, self._myself.get_pubkey()
+            
+            self._log.info("Peer not found! %s %s", send_to, self._myself.get_pubkey())
             return
             
         # broadcast
@@ -150,7 +151,7 @@ class TransportLayer(object):
                     serialized = json.dumps(data)
                     peer.send_raw(serialized)
             except:
-                print "Error sending over peer!"
+                self._log.info("Error sending over peer!")
                 traceback.print_exc()
 
     def on_message(self, msg):
