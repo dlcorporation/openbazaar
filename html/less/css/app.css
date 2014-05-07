@@ -11,7 +11,7 @@ h3 {
   color: #666;
   font-size: 20px;
 
-  
+
 }
 h3.masthead-brand {
   border: none;
@@ -21,6 +21,9 @@ h4 {
   color: #efefef;
   font-weight:80;
 }
+
+.container { text-align:left; }
+
 .masthead {
   position: fixed;
   margin-bottom: 50px;
@@ -28,8 +31,8 @@ h4 {
 }
 .masthead .masthead-brand img {
   width: 250px;
-  
-  
+
+
 }
 #mascot {
   width: 350px;
@@ -53,6 +56,7 @@ h4 {
 }
 .peers-area {
   text-align: left;
+  margin-bottom:10px;
 }
 .anon-profile-area {
   text-align: left;
@@ -83,7 +87,7 @@ h4 {
 .mastfoot {
   background: #333333;
 }
-.peers-table { padding:10px; width:100%; border-bottom:1px solid #999; color:#999;  }
+.peers-table { padding:10px; width:100%; color:#999;  }
 .peers-table td { padding:3px 5px; }
 
  .animated {
@@ -98,4 +102,3 @@ h4 {
     font-size: 24px;
     color: #d17581;
 }
-
