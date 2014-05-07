@@ -1,5 +1,5 @@
 # Market Info
-MY_MARKET_IP=127.0.0.1
+MY_MARKET_IP=69.80.107.23
 MY_MARKET_PORT=12345
 
 # Specify a seed URI or you will be put into demo mode

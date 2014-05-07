@@ -183,7 +183,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
     
-        self._log.info('Message: ',message)
+        self._log.info('Message: %s' % message)
     
         try:
             request = json.loads(message)            
