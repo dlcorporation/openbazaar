@@ -106,8 +106,9 @@ class Market(object):
             return { "bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "", 
                 "email": settings['email'] if settings.has_key("email") else "",
                 "PGPPubKey": settings['PGPPubKey'] if settings.has_key("PGPPubKey") else "",
-                "pubkey": settings['pubkey'] if settings.has_key['pubkey'] else "",
-                "secret": settings['secret'] if settings.has_key['secret'] else ""
+                "pubkey": settings['pubkey'] if settings.has_key("pubkey") else "",
+                "nickname": settings['nickname'] if settings.has_key("nickname") else "",
+                "secret": settings['secret'] if settings.has_key("secret") else "",
                 }
 
         
