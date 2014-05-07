@@ -81,7 +81,7 @@ class ProtocolHandler:
         
         
     def client_update_settings(self, socket_handler, msg):
-        self._log("Updating settings: ", msg)
+        self._log.info("Updating settings: %s" % msg)
         
         self.send_to_client(None, { "type": "settings", "values": msg })
 
