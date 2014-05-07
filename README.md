@@ -1,4 +1,9 @@
-![](http://openbazaar.org/logo_small.png)
+![](https://github.com/OpenBazaar/OpenBazaar/blob/gh-pages/img/logo_alt1-b-h.png?raw=true)
+contributed by Jacob Payne
+![](http://i.imgur.com/WwPUXGS.png)
+contributed by Dean Masley
+
+We have some great artwork being contributed!
 
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the GPL.
 
