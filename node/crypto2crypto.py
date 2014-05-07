@@ -47,6 +47,7 @@ class CryptoTransportLayer(TransportLayer):
         assert "pubkey" in data
         assert len(data["secret"]) == 2 * 32
         assert len(data["pubkey"]) == 2 * 33
+        
         return data["nickname"], data["secret"].decode("hex"), data["pubkey"].decode("hex")
 
 
