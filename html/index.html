@@ -25,30 +25,32 @@
 
         <div id="search" class="search-area" ng-show="!started">
             
-            <div  style="border-bottom:1px solid #bbb;height:120px;">
+            <div id="header">
             
-	            <div style="float:left;">
+	            <div class="col-sm-4" >
 	                <a href="/"><img src="https://raw.githubusercontent.com/OpenBazaar/OpenBazaar/gh-pages/img/logo_alt1-b-h.png" height="100"/></a>
 	            </div>
 	
-	            <div class="search-area " style="text-align:right;margin-left:250px;">
+	            <div class="col-sm-8 search-area ">
 	                
-	                <form class="search-form form-inline">
-	                    <label class="sr-only" for="search">Search:</label> <input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for markets or products..."> <input class="btn btn-success" ng-click="searchNickname()" type="submit" value="Search">
-	                </form>
-	                
+	                <div id="header-search">
+		                <form class="search-form form-inline">
+		                    <label class="sr-only" for="search">Search:</label> <input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for markets or products..."> <input class="btn btn-primary" ng-click="searchNickname()" type="submit" value="Search">
+		                </form>
+	                </div>
 
-	                <div style="float:right;margin-top:30px;width:700px;">
-	                <identicon icon-size="50" hash="myself.pubkey" title="{{myself.pubkey}}" style="float:left;margin-right:10px;"></identicon>
-	                
-	                <ul class="nav nav-pills">
-						  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">Home</a></li>
-						  <li><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
-						  <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
-						  <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Product Catalog</a></li>
-						  <li><a href="#messages" ng-click="showDashboardPanel('messages')">Messages</a></li>
-						  <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
-						</ul>
+	                <div id="header-navigation">
+		                
+		                <identicon icon-size="45" hash="myself.pubkey" title="{{myself.pubkey}}" style="vertical-align:middle; margin-right:10px;"></identicon>
+		                
+		                <ul class="nav nav-pills">
+							  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">Home</a></li>
+							  <li><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
+							  <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
+							  <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Product Catalog</a></li>
+							  <li><a href="#messages" ng-click="showDashboardPanel('messages')">Messages</a></li>
+							  <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
+							</ul>
 					</div>
 	                
 	            </div>
@@ -410,20 +412,20 @@
                             <tr>
                                 <td width="40"><identicon icon-size="38" hash="peer.pubkey" title="{{peer.pubkey}}"></identicon></td>
 
-                                <td><span title="{{peer.pubkey}}">{{peer.uri}}<br>
+                                <td style="font-size:13px;"><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}<br>
                                 <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.pubkey?peer.pubkey.slice(0,20):'unknown'}}...</span></span></td>
 
-                                <td align="right"><button ng-click="queryShop(peer)" class="btn btn-sm btn-primary">Visit Shop</button></td>
+                                <td align="right"><button ng-click="queryShop(peer)" class="btn btn-sm btn-default">Visit Shop</button></td>
                             </tr>
                         </table>
                     </div>
                     
                     
-                    <div>
+                    <div style="width:100%">
                         <h3>Chat Stream</h3>
 
                         <form class="form-inline">
-                            <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Type a message"> <button ng-click="createShout(newShout)" class="btn btn-danger">Shout!</button>
+                            <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Type a message"> <button ng-click="createShout(newShout)" class="btn btn-default">Shout!</button>
                         </form>
 
                         <div class="shout-chats">
