@@ -384,7 +384,7 @@
                   <td style="font-size:13px;"><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}<br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.pubkey?peer.pubkey.slice(0,20):'unknown'}}...</span></span></td>
 
-                  <td align="right"><button ng-click="queryShop(peer)" class="btn btn-sm btn-default">Visit Shop</button></td>
+                  <td align="right"><button ng-click="queryShop(peer)" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-share-alt"></span> Visit</button></td>
               </tr>
           </table>
       </div>
@@ -394,8 +394,8 @@
       <div style="width:100%">
           <h3>Chat Stream</h3>
 
-          <form class="form-inline">
-              <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Type a message"> <button ng-click="createShout(newShout)" class="btn btn-default">Shout!</button>
+          <form class="form" ng-submit="createShout(newShout)">
+            <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Type a message">
           </form>
 
           <div class="shout-chats">
