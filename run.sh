@@ -32,7 +32,7 @@ if [ $MODE == production ]; then
 else
 
 	# Primary Market - No SEED_URI specified 
-	$PYTHON node/tornadoloop.py $STOREFILE $MY_MARKET_IP -l $LOGDIR/demo_node1.log &
+	$PYTHON node/tornadoloop.py $STOREFILE 127.0.0.1 -l $LOGDIR/demo_node1.log &
 	
 	# Demo Peer Market
 	sleep 2

@@ -1,5 +1,6 @@
 import obelisk
 from twisted.internet import reactor
+import logging
 
 # Create new private key:
 #
@@ -35,6 +36,7 @@ class Multisig:
         self.client = client
         self.number_required = number_required
         self.pubkeys = pubkeys
+        self._log = logging.getLogger(self.__class__.__name__)
 
     @property
     def script(self):
@@ -54,9 +56,9 @@ class Multisig:
     # 
     def create_unsigned_transaction(self, destination, finished_cb):
         def fetched(ec, history):
-            print history
+            self._log.info(history)
             if ec is not None:
-                print >> sys.stderr, "Error fetching history:", ec
+                self._log.error("Error fetching history: %s" % ec)
                 return    
             self._fetched(history, destination, finished_cb)
         self.client.fetch_history(self.address, fetched)

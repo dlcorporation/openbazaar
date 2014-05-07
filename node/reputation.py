@@ -42,7 +42,7 @@ class Reputation(object):
 
 
     def get_my_reputation(self):
-    	print 'My Public Key: ', self._priv
+        self._log.info('My Public Key: %s', self._priv)
         return self._reviews[self._priv.get_pubkey()]
 
 
