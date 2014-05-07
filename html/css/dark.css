@@ -173,6 +173,12 @@ hr { border-top:#bbb; }
 .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus { background-color: #bbb}
 .nav-pills > li > a:hover { background-color: #ddd; }
 .nav-pills > li > a { color: #666; }
+.nav-pills { text-align:right; float:right; }
+.nav-pills > li { display:inline-block; }
+
+#header { border-bottom:1px solid #bbb; height:120px; }
+#header-search { width:100%; text-align:right;}
+#header-navigation { width:100%; text-align:right; float:right; margin-top:10px; }
 
 
 #page-content { word-break:break-all; }
