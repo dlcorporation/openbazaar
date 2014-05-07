@@ -169,7 +169,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._connected = True
 
     def on_close(self):
-        self._self._log.info("websocket closed")
+        self._log.info("websocket closed")
         disconnect_msg = {'command': 'disconnect_client', 'id': 0, 'params': []}
         self._connected = False
         self._app_handler.handle_request(self, disconnect_msg)
