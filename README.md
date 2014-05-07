@@ -7,7 +7,8 @@ This project is alpha and all feedback is welcome at: http://www.reddit.com/r/Bi
  
 Official site: http://openbazaar.org (currently a placeholder)
 
-
+### IRC Chat 
+We are continually on IRC chat at #OpenBazaar on Freenode
 
 
 ## Features (Notional)
