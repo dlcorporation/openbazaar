@@ -41,5 +41,4 @@ def uri_parts(uri):
     if m is not None:
         return (m.group(1), m.group(2), m.group(3))
     else:
-        print "Uri parts!"
         raise RuntimeError('URI is not valid')
