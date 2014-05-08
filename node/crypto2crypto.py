@@ -10,6 +10,7 @@ from protocol import hello_request, hello_response, proto_response_pubkey
 import obelisk
 import logging
 
+
 class CryptoPeerConnection(PeerConnection):
 
     def __init__(self, transport, address, pub):
@@ -27,6 +28,7 @@ class CryptoPeerConnection(PeerConnection):
     def on_message(self, msg):
         # this are just acks
         pass
+
 
 class CryptoTransportLayer(TransportLayer):
 
@@ -59,9 +61,8 @@ class CryptoTransportLayer(TransportLayer):
         return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'), 'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
-        
         if ident_pubkey != self.pubkey:
-            print "Public key does not match your identity"
+            self._log.info("Public key does not match your identity")
             return
         
         # Return signed pubkey     
@@ -75,7 +76,6 @@ class CryptoTransportLayer(TransportLayer):
         self.send(proto_response_pubkey(nickname, pubkey, signature))
 
     def pubkey_exists(self, pub):
-        
         for uri, peer in self._peers.iteritems():
             self._log.info('PEER: %s Pub: %s' % (peer._pub.encode('hex'), pub.encode('hex')))
             if peer._pub.encode('hex') == pub.encode('hex'):
@@ -85,7 +85,6 @@ class CryptoTransportLayer(TransportLayer):
     
 
     def create_peer(self, uri, pub):
-        
         if pub:            
             pub = pub.decode('hex')
         
@@ -148,9 +147,7 @@ class CryptoTransportLayer(TransportLayer):
                 self.send_enc(uri, hello_response(self.get_profile()))
 
 
-
     def on_raw_message(self, serialized):
-        
         try:
             msg = json.loads(serialized)
             self._log.info("receive [%s]" % msg.get('type', 'unknown'))

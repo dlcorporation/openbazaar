@@ -7,7 +7,7 @@ import pyelliptic as ec
 
 from zmq.eventloop import ioloop, zmqstream
 import zmq
-from multiprocessing import Process
+from multiprocessing import Process, Queue
 from threading import Thread
 ioloop.install()
 import traceback
@@ -36,9 +36,17 @@ class PeerConnection(object):
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
-        Process(target=self._send_raw, args=(serialized,)).start()
+        Thread(target=self._send_raw, args=(serialized,)).start()
 
     def _send_raw(self, serialized):
+        # zmq sockets are not threadsafe, they have to run in a separate process
+        queue = Queue()
+        Process(target=self._send_raw_process, args=(serialized,queue)).start()
+        if not queue.get():
+            self._log.info("Peer %s timed out." % self._address)
+            self._transport.remove_peer(self._address)
+
+    def _send_raw_process(self, serialized, queue):
         self.create_socket()
 
         self._socket.send(serialized)
@@ -49,17 +57,14 @@ class PeerConnection(object):
             msg = self._socket.recv()
             self.on_message(msg)
             self.cleanup_socket()
+            queue.put(True)
 
         else:
-            self._log.info("Peer %s timed out." % self._address)
             self.cleanup_socket()
-            self._transport.remove_peer(self._address)
+            queue.put(False)
 
     def on_message(self, msg):
         self._log.info("message received! %s" % msg)
-
-    def closed(self, *args):
-        self._log.info(" - peer disconnected")
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
@@ -120,10 +125,11 @@ class TransportLayer(object):
             self._peers[uri] = PeerConnection(self, uri)            
 
     def remove_peer(self, uri):
-        self._log.info("Removing peer " + uri )
-        del self._peers[uri]
-
-        self._log.debug("Peers " + str(self._peers) )
+        self._log.info("Removing peer %s", uri )
+        try:
+            del self._peers[uri]
+        except KeyError:
+            self._log.info("Peer %s was already removed", uri)
 
     def send(self, data, send_to=None):
 
