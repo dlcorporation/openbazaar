@@ -97,9 +97,9 @@ For OSX there is a CLANG error when installing pyzmq but you can use the followi
 If you're getting errors saying `ZMQError: Can't assign requested address` then you probably need to bring up some loopback adapters for those 
 IPs higher than 127.0.0.1.
 
-sudo ifconfig lo0 alias 127.0.0.2 up
-sudo ifconfig lo0 alias 127.0.0.3 up
-sudo ifconfig lo0 alias 127.0.0.4 up
+sudo ifconfig lo:1 127.0.0.2
+sudo ifconfig lo:2 127.0.0.3
+sudo ifconfig lo:3 127.0.0.4
 
 ## Identity Server
 
