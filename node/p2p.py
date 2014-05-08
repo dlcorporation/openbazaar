@@ -39,8 +39,10 @@ class PeerConnection(object):
         Thread(target=self._send_raw, args=(serialized,)).start()
 
     def _send_raw(self, serialized):
-        # zmq sockets are not threadsafe, they have to run in a separate process
+        # pyzmq sockets are not threadsafe, they have to run in a separate process
         queue = Queue()
+        # queue element is false if something went wrong and the peer 
+        # has to be removed
         Process(target=self._send_raw_process, args=(serialized,queue)).start()
         if not queue.get():
             self._log.info("Peer %s timed out." % self._address)
@@ -128,6 +130,12 @@ class TransportLayer(object):
         self._log.info("Removing peer %s", uri )
         try:
             del self._peers[uri]
+            msg = {
+                'type': 'peer_remove',
+                'uri': uri 
+            }
+            self.trigger_callbacks(msg['type'], msg)
+
         except KeyError:
             self._log.info("Peer %s was already removed", uri)
 

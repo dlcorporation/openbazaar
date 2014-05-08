@@ -92,8 +92,9 @@ class CryptoTransportLayer(TransportLayer):
         #if not self.pubkey_exists(pub):
         self._peers[uri] = CryptoPeerConnection(self, uri, pub)            
 
-            # Call 'peer' callbacks on listeners
-            #self.trigger_callbacks('peer', self._peers[uri])
+        # Call 'peer' callbacks on listeners
+        self.trigger_callbacks('peer', self._peers[uri])
+
         #else:
         #    print 'Pub Key is already in peer list'
 
@@ -138,9 +139,12 @@ class CryptoTransportLayer(TransportLayer):
                 if not self._peers[uri]._pub:
                     self._log.info("Setting public key for seed node")
                     self._peers[uri]._pub = pub.decode('hex')
+                    self.trigger_callbacks('peer', self._peers[uri])
+
                 if (self._peers[uri]._pub != pub.decode('hex')):
                     self._log.info("Updating public key for node")
                     self._peers[uri]._pub = pub.decode('hex')
+                    self.trigger_callbacks('peer', self._peers[uri])
         
             if msg_type == 'hello_request':
                 # reply only if necessary
