@@ -1,9 +1,7 @@
 import json
-import sys
 import pyelliptic as ec
 
 from p2p import PeerConnection, TransportLayer
-from multiprocessing import Process
 import traceback
 
 from protocol import hello_request, hello_response, proto_response_pubkey
@@ -22,7 +20,7 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
-        self._log.info('DATA: %s',data)
+        self._log.info('DATA: %s', data)
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):
@@ -36,7 +34,8 @@ class CryptoTransportLayer(TransportLayer):
         TransportLayer.__init__(self, my_ip, my_port)
         self._myself = ec.ECC(curve='secp256k1')
         self.nick_mapping = {}
-        self.nickname, self.secret, self.pubkey = self.load_crypto_details(store_file)
+        self.nickname, self.secret, self.pubkey = \
+            self.load_crypto_details(store_file)
         self._log = logging.getLogger(self.__class__.__name__)
 
     # Return data array with details from the crypto file
@@ -49,53 +48,54 @@ class CryptoTransportLayer(TransportLayer):
         assert "pubkey" in data
         assert len(data["secret"]) == 2 * 32
         assert len(data["pubkey"]) == 2 * 33
-        
-        return data["nickname"], data["secret"].decode("hex"), data["pubkey"].decode("hex")
 
+        return data["nickname"], data["secret"].decode("hex"), \
+            data["pubkey"].decode("hex")
 
     def get_profile(self):
         peers = {}
         for uri, peer in self._peers.iteritems():
             if peer._pub:
                 peers[uri] = peer._pub.encode('hex')
-        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'), 'peers': peers}
+        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'),
+                'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
         if ident_pubkey != self.pubkey:
             self._log.info("Public key does not match your identity")
             return
-        
-        # Return signed pubkey     
+
+        # Return signed pubkey
         pubkey = self._myself.get_pubkey()
         ec_key = obelisk.EllipticCurveKey()
         ec_key.set_secret(self.secret)
         digest = obelisk.Hash(pubkey)
         signature = ec_key.sign(digest)
-        
+
         # Send array of nickname, pubkey, signature to transport layer
         self.send(proto_response_pubkey(nickname, pubkey, signature))
 
     def pubkey_exists(self, pub):
         for uri, peer in self._peers.iteritems():
-            self._log.info('PEER: %s Pub: %s' % (peer._pub.encode('hex'), pub.encode('hex')))
+            self._log.info('PEER: %s Pub: %s' %
+                           (peer._pub.encode('hex'), pub.encode('hex')))
             if peer._pub.encode('hex') == pub.encode('hex'):
                 return True
-            
-        return False;
-    
+
+        return False
 
     def create_peer(self, uri, pub):
-        if pub:            
+        if pub:
             pub = pub.decode('hex')
-        
+
         # Create the peer if public key is not already in the peer list
-        #if not self.pubkey_exists(pub):
-        self._peers[uri] = CryptoPeerConnection(self, uri, pub)            
+        # if not self.pubkey_exists(pub):
+        self._peers[uri] = CryptoPeerConnection(self, uri, pub)
 
         # Call 'peer' callbacks on listeners
         self.trigger_callbacks('peer', self._peers[uri])
 
-        #else:
+        # else:
         #    print 'Pub Key is already in peer list'
 
     def send_enc(self, uri, msg):
@@ -104,25 +104,26 @@ class CryptoTransportLayer(TransportLayer):
 
         # Now send a hello message to the peer
         if pub:
-            self._log.info("Sending encrypted [" + msg['type']  + "] message to %s" % uri)
+            self._log.info("Sending encrypted [%s] message to %s"
+                           % (msg['type'], uri))
             peer.send(msg)
         else:
             # Will send clear profile on initial if no pub
-            self._log.info("Sending unencrypted [" + msg['type']  + "] message to %s" % uri)
+            self._log.info("Sending unencrypted [%s] message to %s"
+                           % (msg['type'], uri))
             self._peers[uri].send_raw(json.dumps(msg))
-
 
     def init_peer(self, msg):
         self._log.info('Initialize Peer: %s' % msg)
         uri = msg['uri']
-        pub = msg.get('pub')        
-        msg_type = msg.get('type')        
+        pub = msg.get('pub')
+        msg_type = msg.get('type')
 
         if not self.valid_peer_uri(uri):
             self._log.info("Peer " + uri + " is not valid.")
             return
 
-        if not uri in self._peers:
+        if uri not in self._peers:
             # unknown peer
             self._log.info('Create New Peer: %s' % uri)
             self.create_peer(uri, pub)
@@ -145,11 +146,10 @@ class CryptoTransportLayer(TransportLayer):
                     self._log.info("Updating public key for node")
                     self._peers[uri]._pub = pub.decode('hex')
                     self.trigger_callbacks('peer', self._peers[uri])
-        
+
             if msg_type == 'hello_request':
                 # reply only if necessary
                 self.send_enc(uri, hello_response(self.get_profile()))
-
 
     def on_raw_message(self, serialized):
         try:
@@ -158,20 +158,28 @@ class CryptoTransportLayer(TransportLayer):
         except ValueError:
             try:
                 msg = json.loads(self._myself.decrypt(serialized))
-                self._log.info("Decrypted raw message [%s]" % msg.get('type', 'unknown'))
+                self._log.info("Decrypted raw message [%s]"
+                               % msg.get('type', 'unknown'))
             except:
-                self._log.info("incorrect msg ! %s..." % self._myself.decrypt(serialized))
+                self._log.info("incorrect msg ! %s..."
+                               % self._myself.decrypt(serialized))
                 traceback.print_exc()
                 return
 
-        msg_type = msg.get('type')              
-        
-        if msg_type.startswith('hello') and msg.get('uri') :
+        msg_type = msg.get('type')
+        msg_uri = msg.get('uri')
+
+        if msg_type.startswith('hello') and msg_uri:
             self.init_peer(msg)
             for uri, pub in msg.get('peers', {}).iteritems():
                 # Do not add yourself as a peer
                 if uri != self._uri:
                     self.init_peer({'uri': uri, 'pub': pub})
             self._log.info("Update peer table [%s peers]" % len(self._peers))
+
+        elif msg_type == 'goodbye' and msg_uri:
+            self._log.info("Received goodbye from %s" % msg_uri)
+            self.remove_peer(msg_uri)
+
         else:
             self.on_message(msg)
