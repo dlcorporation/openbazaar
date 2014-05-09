@@ -1,19 +1,26 @@
-
-
 def hello_request(data):
     data['type'] = 'hello_request'
     return data
+
 
 def hello_response(data):
     data['type'] = 'hello_reply'
     return data
 
+
+def goodbye(data):
+    data['type'] = 'goodbye'
+    return data
+
+
 def ok():
     return {'type': 'ok'}
+
 
 def shout(data):
     data['type'] = 'shout'
     return data
+
 
 def proto_reputation(pubkey, reviews):
     data = {}
@@ -22,11 +29,13 @@ def proto_reputation(pubkey, reviews):
     data['reviews'] = reviews
     return data
 
+
 def proto_query_reputation(pubkey):
     data = {}
     data['type'] = 'query_reputation'
     data['pubkey'] = pubkey.encode('hex')
     return data
+
 
 def proto_page(pubkey, text, signature, nickname):
     data = {}
@@ -37,11 +46,13 @@ def proto_page(pubkey, text, signature, nickname):
     data['nickname'] = nickname
     return data
 
+
 def query_page(pubkey):
     data = {}
     data['type'] = 'query_page'
     data['pubkey'] = pubkey.encode('hex')
     return data
+
 
 def order(id, buyer, seller, state, text, escrows=[], tx=None):
     data = {}
@@ -60,7 +71,8 @@ def order(id, buyer, seller, state, text, escrows=[], tx=None):
     data['text'] = text
     # some text
     data['address'] = ''
-    data['state'] = state # new -> accepted/rejected -> payed -> sent -> received
+    data['state'] = state
+    # new -> accepted/rejected -> payed -> sent -> received
     return data
 
 
@@ -71,6 +83,7 @@ def negotiate_pubkey(nickname, ident_pubkey):
     data['ident_pubkey'] = ident_pubkey.encode("hex")
     return data
 
+
 def proto_response_pubkey(nickname, pubkey, signature):
     data = {}
     data['type'] = "proto_response_pubkey"
@@ -78,4 +91,3 @@ def proto_response_pubkey(nickname, pubkey, signature):
     data['pubkey'] = pubkey.encode("hex")
     data['signature'] = signature.encode("hex")
     return data
-
