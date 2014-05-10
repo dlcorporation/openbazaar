@@ -227,10 +227,12 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
     console.log('Add peer: ',msg);
 
-    var index = $scope.peers.findIndex(function(element) {
-        return element.uri == msg.uri;
-    }); 
-
+    /* get index if peer is already known */
+    var index = [-1].concat($scope.peers).reduce(
+        function(previousValue, currentValue, index, array){
+            return currentValue.uri == msg.uri ? index : previousValue ;
+    });
+    
     if(index == -1) {
         /* it is a new peer */
         $scope.peers.push(msg);
