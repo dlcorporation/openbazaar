@@ -336,8 +336,11 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
       socket.send('order', newOrder);
 
-      $scope.showStorePanel('storeOrders');
-      $('#pill-storeorders').addClass('active').siblings().removeClass('active').blur();
+      $scope.showDashboardPanel('orders');
+
+      $('#pill-orders').addClass('active').siblings().removeClass('active').blur();
+      $("#orderSuccessAlert").alert();
+      window.setTimeout(function() { $("#orderSuccessAlert").alert('close') } , 5000);
 
   }
   $scope.payOrder = function(order) {
