@@ -95,8 +95,8 @@ class Market(object):
         desc = data["desc"]
 
         tagline = "%s: %s" % (nickname, desc)
-      # self.mypage = tagline
-      # self.nickname = nickname
+        self.mypage = tagline
+        self.nickname = nickname
         self.signature = self._transport._myself.sign(tagline)
 
 
