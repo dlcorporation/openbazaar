@@ -66,7 +66,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   $scope.awaitingShop = null;
   $scope.queryShop = function(peer) {
-
+      console.log('Shop',peer);
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.pubkey;
