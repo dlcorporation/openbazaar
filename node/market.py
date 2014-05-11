@@ -8,6 +8,7 @@ import lookup
 from pymongo import MongoClient
 import logging
 
+
 class Market(object):
 
     def __init__(self, transport):
@@ -64,11 +65,14 @@ class Market(object):
             self._log.info("Key not found for this nickname")
             return ("Key not found for this nickname", None)
 
-        self._log.info("Found key:", key.encode("hex"))
-
-        if self._transport.nick_mapping.has_key(nickname):
+        self._log.info("Found key: %s " % key.encode("hex"))
+        if nickname in self._transport.nick_mapping.has_key:
             self._log.info("Already have a cached mapping, just adding key there.")
-            response = {'nickname': nickname, 'pubkey': self._transport.nick_mapping[nickname][1].encode('hex'), 'signature': self._transport.nick_mapping[nickname][0].encode('hex'), 'type': 'response_pubkey', 'signature': 'unknown'}
+            response = {'nickname': nickname,
+                        'pubkey': self._transport.nick_mapping[nickname][1].encode('hex'),
+                        'signature': self._transport.nick_mapping[nickname][0].encode('hex'),
+                        'type': 'response_pubkey',
+                        'signature': 'unknown'}
             self._transport.nick_mapping[nickname][0] = key
             return (None, response)
 
@@ -125,8 +129,6 @@ class Market(object):
                 }
 
 
-
-
     # PAGE QUERYING
 
     def query_page(self, pubkey):
@@ -138,22 +140,24 @@ class Market(object):
         pubkey = page.get('pubkey')
         page = page.get('text')
 
-        #print "Orders: ", self.orders.print_orders()
-
         if pubkey and page:
             self.pages[pubkey] = page
 
-	  # Return your page info if someone requests it on the network
+    # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
-        self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature, self.nickname))
+        self._transport.send(proto_page(self._transport._myself.get_pubkey(),
+                                        self.mypage, self.signature,
+                                        self.nickname))
 
     def on_query_myorders(self, peer):
         self._log.info("Someone is querying for your page")
-        self._transport.send(proto_page(self._transport._myself.get_pubkey(), self.mypage, self.signature, self.nickname))
+        self._transport.send(proto_page(self._transport._myself.get_pubkey(),
+                                        self.mypage, self.signature,
+                                        self.nickname))
 
     def on_peer(self, peer):
-        self._log.info("New peer")
+        pass
 
     def on_negotiate_pubkey(self, ident_pubkey):
         self._log.info("Someone is asking for your real pubKey")
@@ -172,7 +176,7 @@ class Market(object):
         signature = response["signature"].decode("hex")
         nickname = response["nickname"]
         # Cache mapping for later.
-        if not self._transport.nick_mapping.has_key(nickname):
+        if nickname not in self._transport.nick_mapping:
             self._transport.nick_mapping[nickname] = [None, pubkey]
         # Verify signature here...
         # Add to our dict.

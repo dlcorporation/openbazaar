@@ -50,10 +50,6 @@ class Orders(object):
         self._orders.insert(new_order)
 
         
-        
-    def print_orders(self):
-        print self._orders
-
     def accept_order(self, new_order): 
     
     	# TODO: Need to have a check for the vendor to agree to the order        
@@ -106,13 +102,13 @@ class Orders(object):
             if myself == buyer:
                 self.create_order(seller, msg.get('text', 'no comments'))
             elif myself == seller:
-                print msg
+                _self._log.info(msg)
                 self.accept_order(msg)
             else:
                 self._log.info("Not a party to this order")
         elif state == 'cancelled':
             if myself == seller or myself == buyer:
-                print 'Order cancelled'
+                _self._log.info('Order cancelled')
             else:
                 self._log.info("Order not for us")
         elif state == 'accepted':
