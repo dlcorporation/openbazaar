@@ -21,6 +21,7 @@ class Orders(object):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
         self._orders = self.get_orders()
+        self.orders
 
         transport.add_callback('order', self.on_order)
         self._log = logging.getLogger(self.__class__.__name__)
@@ -146,10 +147,10 @@ class Orders(object):
 
         # Store order
         if msg.get('id'):
-            if self._orders.find( {id:msg['id']}):
-                self._orders.update({'id':msg['id']}, { "$set": { 'state':msg['state'] } }, True)
+            if self.find( {id:msg['id']}):
+                self.orders.update({'id':msg['id']}, { "$set": { 'state':msg['state'] } }, True)
             else:
-                self._orders.update({'id':msg['id']}, { "$set": { msg } }, True)
+                self.orders.update({'id':msg['id']}, { "$set": { msg } }, True)
 
 if __name__ == '__main__':
     seller = ECC(curve='secp256k1')
