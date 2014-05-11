@@ -9,7 +9,7 @@ ioloop.install()
 from crypto2crypto import CryptoTransportLayer
 from market import Market
 from ws import WebSocketHandler, ProtocolHandler
-import pymongo
+from pymongo import MongoClient
 import logging
 from logging import FileHandler, StreamHandler
 
@@ -20,18 +20,20 @@ class MainHandler(tornado.web.RequestHandler):
 class MarketApplication(tornado.web.Application):
 
     def __init__(self, store_file, my_market_ip, my_market_port, seed_uri):
-    
+
+        # TODO: Check mongo for configuration settings
+
         self.transport = CryptoTransportLayer(my_market_ip, my_market_port, store_file)
         self.transport.join_network(seed_uri)
-        self.market = Market(self.transport)        
-        
+        self.market = Market(self.transport)
+
         handlers = [
             (r"/", MainHandler),
             (r"/main", MainHandler),
             (r"/html/(.*)", tornado.web.StaticFileHandler, {'path': './html'}),
             (r"/ws", WebSocketHandler, dict(transport=self.transport, node=self.market))
         ]
-        
+
     	# TODO: Move debug settings to configuration location
         settings = dict(debug=True)
         tornado.web.Application.__init__(self, handlers, **settings)

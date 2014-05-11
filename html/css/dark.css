@@ -36,6 +36,9 @@ body {
   /*box-shadow: inset 0 0 100px rgba(0,0,0,.5);*/
 }
 
+a { color: #1b75bc; }
+a:hover { color: #29aae2; }
+
 /* Extra markup and styles for table-esque vertical and horizontal centering */
 .site-wrapper {
   display: table;
@@ -173,7 +176,7 @@ hr { border-top:#bbb; }
 .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus { background-color: #bbb}
 .nav-pills > li > a:hover { background-color: #ddd; }
 .nav-pills > li > a { color: #666; }
-.nav-pills { text-align:right; float:right; }
+#header-navigation  .nav-pills { text-align:right; float:right; }
 .nav-pills > li { display:inline-block; }
 
 #header { border-bottom:1px solid #bbb; height:120px; }

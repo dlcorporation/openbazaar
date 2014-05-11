@@ -35,7 +35,7 @@ class ProtocolHandler:
     def send_opening(self):
 
         peers = []
-        
+
         for uri, peer in self._transport._peers.items():
             peer_item = {'uri': uri}
             if peer._pub:
@@ -43,7 +43,7 @@ class ProtocolHandler:
             else:
                peer_item['pubkey'] = 'unknown'
             peers.append(peer_item)
-            
+
         message = {
             'type': 'myself',
             'pubkey': self._transport._myself.get_pubkey().encode('hex'),
@@ -73,16 +73,16 @@ class ProtocolHandler:
 
     def client_query_orders(self, socket_handler, msg):
         self._log.info("Querying for Orders: ", msg)
-        
+
         # Query mongo for orders
         orders = self.node.orders._orders
-        
+
         self.send_to_client(None, { "type": "myorders", "orders": orders } )
-        
-        
+
+
     def client_update_settings(self, socket_handler, msg):
         self._log.info("Updating settings: %s" % msg)
-        
+
         self.send_to_client(None, { "type": "settings", "values": msg })
 
         # Update settings in mongo
@@ -102,7 +102,7 @@ class ProtocolHandler:
         self._log.info("[Search] %s"% msg)
         response = self.node.lookup(msg)
         if response:
-            print "yuea", response
+            self._log.info(response)
             self.send_to_client(*response)
 
     def client_shout(self, socket_handler, msg):
@@ -182,11 +182,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             #request.has_key("params") and type(request["params"]) == list
 
     def on_message(self, message):
-    
+
         self._log.info('Message: %s' % message)
-    
+
         try:
-            request = json.loads(message)            
+            request = json.loads(message)
         except:
             logging.error("Error decoding message: %s", message, exc_info=True)
 
@@ -215,4 +215,3 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             ioloop.add_callback(send_response)
         except:
             logging.error("Error adding callback", exc_info=True)
-
