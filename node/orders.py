@@ -21,7 +21,7 @@ class Orders(object):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
         self._orders = self.get_orders()
-        self.orders
+        self.orders = self._db.orders
 
         transport.add_callback('order', self.on_order)
         self._log = logging.getLogger(self.__class__.__name__)
