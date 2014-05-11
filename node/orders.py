@@ -31,7 +31,13 @@ class Orders(object):
         for _order in self._db.orders.find():
 
             # Get order prototype object before storing
-            orders.append({"id":_order['id']})
+            orders.append({"id":_order['id'],
+                                    "state": _order['state'],
+                                    "address": _order['address'] if _order.has_key("address") else "",
+                                    "buyer": _order['buyer'] if _order.has_key("buyer") else "",
+                                    "seller": _order['seller'] if _order.has_key("seller") else "",
+                                    "escrows": _order['escrows'] if _order.has_key("escrows") else "",
+                                    "text": _order['text'] if _order.has_key("text") else "" })
             #orders.append(_order)
 
 
@@ -147,7 +153,7 @@ class Orders(object):
 
         # Store order
         if msg.get('id'):
-            if self.find( {id:msg['id']}):
+            if self.orders.find( {id:msg['id']}):
                 self.orders.update({'id':msg['id']}, { "$set": { 'state':msg['state'] } }, True)
             else:
                 self.orders.update({'id':msg['id']}, { "$set": { msg } }, True)
