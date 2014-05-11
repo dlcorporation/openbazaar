@@ -169,6 +169,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   	  console.log('Retrieved my orders: ',msg);
   	  $scope.orders = msg['orders'];
+      console.log($scope.orders);
 
       if (!$scope.$$phase) {
 	       $scope.$apply();
