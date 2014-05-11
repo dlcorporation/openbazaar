@@ -2,12 +2,14 @@
 <head>
 
     <script src="/html/vendors/angular.min.js" type="text/javascript"></script>
+    <script src="/html/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script src="/html/vendors/identicon.js" type="text/javascript"></script>
     <script src="/html/vendors/pnglib.js" type="text/javascript"></script>
     <script src="/html/vendors/jquery.min.js" type="text/javascript"></script>
     <script src="/html/vendors/bootstrap.min.js" type="text/javascript"></script>
     <script src="/html/js/ws.js" type="text/javascript"></script>
     <script src="/html/js/app.js" type="text/javascript"></script>
+
 
     <link href="/html/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="/html/css/dark.css" rel="stylesheet" type="text/css">
@@ -17,11 +19,43 @@
     <title>OpenBazaar - Decentralized markets for the masses</title>
 </head>
 
-<body ng-controller="Market">
+<body ng-controller="Market" ng-init="">
 
     <div ng-show="warningMessage" class="alert alert-warning"></div>
 
-    <div class="container">
+    <div ng-if="myself.settings.welcome == ''">
+    <div ng-controller="WelcomeModalCtrl" ng-init="open('lg','static')">
+    <script type="text/ng-template" id="myModalContent.html">
+
+        <div class="modal-header">
+            <h3 class="modal-title">Welcome to OpenBazaar</h3>
+        </div>
+
+
+        <div>
+
+
+          <div class="modal-body"  style="text-align:left;">
+          <p style="font-size:110%">This seems to be your first time starting the application. You can proceed to the settings screen to fill in important information about your marketplace.</p>
+
+          <p>>> This is a placeholder for additional starting information</p>
+          </div>
+
+
+
+        <div class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">Ok, let's get started!</button>
+        </div>
+        </form>
+    </script>
+  </div>
+</div>
+
+
+<!-- Merchant Dashboard -->
+
+
+  <div class="container">
 
       <!-- Header -->
       <div id="header">
@@ -41,8 +75,6 @@
             </div>
 
             <div id="header-navigation">
-
-
 
               <ul class="nav nav-pills">
         			  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">Home</a></li>
@@ -64,7 +96,6 @@
         <div class="row">
           <div id="dashboard-container" class="col-sm-8">
 
-            <!-- Merchant Dashboard -->
             <div ng-show="dashboard" style="text-align:left;padding:10px;">
 
             	<div class="dashboard-panel">
@@ -74,6 +105,7 @@
             			<h3>Home</h3>
 
             			<p>Welcome to the OpenBazaar marketplace. This is your home screen for your marketplace.</p>
+
 
             			<hr class="hr"/>
 
@@ -138,7 +170,7 @@
               	<div class="form-group">
 							    <label for="inputPubkey" class="col-sm-3 control-label">Public Key</label>
 							    <div class="col-sm-9">
-							      <input ng-model="settings.pubkey" class="form-control" id="inputPubkey" placeholder="Public Key">
+							      
 							    </div>
 							  </div>
 
@@ -239,17 +271,18 @@
 
       <div ng-show="page" class="" style="margin-top:40px;">
 
-        <h2><identicon icon-size="64" hash="page.pubkey" title="{{page.pubkey}}"></identicon>  {{page.nickname}}</h2>
+        <div>
+          <h2><identicon icon-size="64" hash="page.pubkey" title="{{page.pubkey}}"></identicon>  {{page.nickname}}</h2>
 
-				<ul class="nav nav-pills">
-				  <li class="active" ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
-				  <li id="pill-storeorders"><a href="#storeOrderHistory" ng-click="showStorePanel('storeOrderHistory')">Orders</a></li>
-				  <li><a href="#storeReviews" ng-click="showStorePanel('storeReviews')">Reviews</a></li>
-				  <li><a href="#storeInfo" ng-click="showStorePanel('storeInfo')">Store Info</a></a></li>
-				</ul>
+  				<ul class="nav nav-pills">
+  				  <li class="active" ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
+  				  <li id="pill-storeorders"><a href="#storeOrderHistory" ng-click="showStorePanel('storeOrderHistory')">Orders</a></li>
+  				  <li><a href="#storeReviews" ng-click="showStorePanel('storeReviews')">Reviews</a></li>
+  				  <li><a href="#storeInfo" ng-click="showStorePanel('storeInfo')">Store Info</a></a></li>
+  				</ul>
+        </div>
 
-
-        <div class="panel-bod3y" ng-show="page" style="border-top:1px solid #999;margin-top:10px;padding:20px;" >
+        <div class="panel-bod3y" ng-show="page" style="border-top:1px solid #bbb;margin-top:10px;padding:20px;" >
 
           <!-- Store Products -->
           <div ng-show="storeProductsPanel"  class="animated bounceInLeft">
@@ -370,8 +403,7 @@
 
         </div>
       </div>
-      </div>
-
+    </div>
     <div id="sidebar" ng-show="sidebar" class="shoutbox-area col-sm-4" style="margin-top:20px;">
 
       <h3>Online Markets</h3>

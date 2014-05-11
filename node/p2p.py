@@ -33,6 +33,7 @@ class PeerConnection(object):
         self._socket.close()
 
     def send(self, data):
+        self._log.info('DROPPING DATA: %S' % data)
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
@@ -86,7 +87,7 @@ class TransportLayer(object):
 
     def join_network(self, seed_uri):
         self.listen()
-        
+
         if seed_uri:
             self.init_peer({'uri': seed_uri})
 
@@ -98,11 +99,11 @@ class TransportLayer(object):
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REP)
 
-        if network_util.is_loopback_addr(self._ip): 
-            # we are in local test mode so bind that socket on the 
+        if network_util.is_loopback_addr(self._ip):
+            # we are in local test mode so bind that socket on the
             # specified IP
             self._socket.bind(self._uri)
-        else: 
+        else:
             self._socket.bind('tcp://*:%s' % self._port)
 
         while True:
@@ -115,9 +116,9 @@ class TransportLayer(object):
 
     def _init_peer(self, msg):
         uri = msg['uri']
-        
+
         if not uri in self._peers:
-            self._peers[uri] = PeerConnection(self, uri)            
+            self._peers[uri] = PeerConnection(self, uri)
 
     def remove_peer(self, uri):
         self._log.info("Removing peer " + uri )
@@ -129,18 +130,18 @@ class TransportLayer(object):
 
         #self._log.info("Data sent to p2p: %s" % data);
 
-        # directed message        
+        # directed message
         if send_to:
             for peer in self._peers.values():
-                if peer._pub == send_to:                    
+                if peer._pub == send_to:
                     if peer.send(data):
                         print 'Success'
                     else:
-                        print 'Failed'                         
+                        print 'Failed'
                     return
             print "Peer not found!", send_to, self._myself.get_pubkey()
             return
-            
+
         # broadcast
         for peer in self._peers.values():
             try:
@@ -187,7 +188,7 @@ class TransportLayer(object):
         if network_util.is_private_ip_address(self_addr):
             if not network_util.is_private_ip_address(other_addr):
                 self._log.warning(('Trying to connect to external '
-                        'network with a private ip address.')) 
+                        'network with a private ip address.'))
         else:
             if network_util.is_private_ip_address(other_addr):
                 return False

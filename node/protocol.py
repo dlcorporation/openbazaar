@@ -15,6 +15,9 @@ def shout(data):
     data['type'] = 'shout'
     return data
 
+def proto_welcome():
+    return {'type':'welcome'}
+
 def proto_reputation(pubkey, reviews):
     data = {}
     data['type'] = 'reputation'
@@ -78,4 +81,3 @@ def proto_response_pubkey(nickname, pubkey, signature):
     data['pubkey'] = pubkey.encode("hex")
     data['signature'] = signature.encode("hex")
     return data
-

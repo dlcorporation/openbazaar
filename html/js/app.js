@@ -1,4 +1,4 @@
-angular.module('app', [])
+angular.module('app', ['ui.bootstrap'])
 
 angular.module('app').directive('identicon', function () {
     return {
@@ -28,6 +28,7 @@ angular.module('app').directive('identicon', function () {
 
 angular.module('app').controller('Market', ['$scope', function($scope) {
 
+  $scope.newuser = true
   $scope.page = false
   $scope.dashboard = true
   $scope.myInfoPanel = true
@@ -38,7 +39,6 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   $scope.myOrders = []
   $scope.myReviews = []
   $scope.sidebar = true
-
 
   $scope.createShout = function() {
      // launch a shout
@@ -157,6 +157,12 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       }
   }
 
+  $scope.parse_welcome = function(msg) {
+
+    console.log(msg)
+
+  }
+
   $scope.parse_myorders = function(msg) {
 
   	  console.log('Retrieved my orders: ',msg);
@@ -200,8 +206,6 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   $scope.parse_page = function(msg) {
 
-    console.log('Parsing page: ', msg);
-
     if (msg.pubkey != $scope.awaitingShop)
        return
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
@@ -214,15 +218,13 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     var contentDiv = document.getElementById('page-content')
     contentDiv.innerHTML = msg.text;
 
-    console.log("Parse orders:"+$scope.myOrders);
-
     if (!$scope.$$phase) {
        $scope.$apply();
     }
   }
   $scope.parse_peer = function(msg) {
 
-    console.log('PARSE PEER: ',msg);
+
 
     if ($scope.peerIds.indexOf(msg.uri) == -1) {
       $scope.peers.push(msg)
@@ -256,9 +258,10 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
        $scope.$apply();
     }
 
+
     // Settings
+
     $scope.settings = msg.settings
-    console.log($scope.settings)
 
     msg.reputation.forEach(function(review) {
        add_review_to_page($scope.myself.pubkey, review)
@@ -287,7 +290,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
      $scope.search = ""
   }
 
-  $scope.settings = { email:'', PGPPubKey:'', bitmessage:'', pubkey:'', secret:'', nickname:'' }
+  $scope.settings = { email:'', PGPPubKey:'', bitmessage:'', pubkey:'', secret:'', nickname:'', welcome:''}
   $scope.saveSettings = function() {
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query)
@@ -401,7 +404,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   			$scope.storeProductsPanel = true;
   			break;
   		case 'storeOrders':
-  			$scope.storeOrdersPanel = true;
+  			//$scope.storeOrdersPanel = true;
   			break;
   		case 'storeReviews':
   			$scope.storeReviewsPanel = true;
@@ -429,5 +432,65 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 	});
 
 
+
+// Modal Code
+$scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
+
+
+
+
+
+
+  $scope.open = function (size, backdrop) {
+
+      backdrop = backdrop ? backdrop : true;
+
+      var modalInstance = $modal.open({
+        templateUrl: 'myModalContent.html',
+        controller: ModalInstanceCtrl,
+        size: size,
+        backdrop: backdrop,
+        resolve: {
+          settings: function () {
+            return $scope.settings;
+          }
+        }
+      });
+
+      modalInstance.result.then(function (selectedItem) {
+        $scope.selected = selectedItem;
+      }, function () {
+        $log.info('Modal dismissed at: ' + new Date());
+      });
+
+    }
+
+
+
+
+  // Please note that $modalInstance represents a modal window (instance) dependency.
+  // It is not the same as the $modal service used above.
+
+  var ModalInstanceCtrl = function ($scope, $modalInstance, settings) {
+
+    $scope.settings = settings;
+    // $scope.selected = {
+    //   item: $scope.items[0]
+    // };
+    //
+
+    $scope.welcome = settings.welcome;
+
+
+    $scope.ok = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  };
+
+};
 
 }])
