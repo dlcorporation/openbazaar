@@ -16,6 +16,7 @@ class ProtocolHandler:
 
         # register on transport events to forward..
         transport.add_callback('peer', self.on_node_peer)
+        transport.add_callback('peer_remove', self.on_node_remove_peer)
         transport.add_callback('page', self.on_node_page)
         transport.add_callback('all', self.on_node_message)
 
@@ -51,18 +52,8 @@ class ProtocolHandler:
             'settings': self.node.get_settings(),
             'reputation': self.node.reputation.get_my_reputation()
         }
-        
+
         self.send_to_client(None, message)
-
-    def check_peers(self):
-        for uri, peer in self._transport._peers.items():
-            peer_item = {'uri': uri}
-            if peer._pub:
-               peer_item['pubkey'] = peer._pub.encode('hex')
-            else:
-               peer_item['pubkey'] = 'unknown'
-            peers.append(peer_item)
-
 
     # Requests coming from the client
     def client_query_page(self, socket_handler, msg):
@@ -110,9 +101,12 @@ class ProtocolHandler:
 
     # messages coming from "the market"
     def on_node_peer(self, peer):
-        self.check_peers()
+        self._log.info("Add peer")
         response = {'type': 'peer', 'pubkey': peer._pub.encode('hex'), 'uri': peer._address}
         self.send_to_client(None, response)
+
+    def on_node_remove_peer(self, msg):
+        self.send_to_client(None, msg)
 
     def on_node_page(self, page):
         self.send_to_client(None, page)
@@ -161,7 +155,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._transport = transport
 
     def open(self):
-        self._log.info("Websocket open")
         self._log.info('Websocket open')
         self._app_handler.send_opening()
         with WebSocketHandler.listen_lock:

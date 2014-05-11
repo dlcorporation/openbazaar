@@ -50,7 +50,6 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   }
 
   $scope.peers = [];
-  $scope.peerIds = [];
   $scope.reviews = {};
 
   $scope.toggleSidebar = function() {
@@ -80,7 +79,10 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   var socket = new Connection(function(msg) {
    switch(msg.type) {
       case 'peer':
-         $scope.parse_peer(msg)
+         $scope.add_peer(msg)
+         break;
+      case 'peer_remove':
+         $scope.remove_peer(msg)
          break;
       case 'page':
          $scope.parse_page(msg)
@@ -222,14 +224,36 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
        $scope.$apply();
     }
   }
-  $scope.parse_peer = function(msg) {
 
+  $scope.add_peer = function(msg) {
 
+    console.log('Add peer: ',msg);
 
-    if ($scope.peerIds.indexOf(msg.uri) == -1) {
-      $scope.peers.push(msg)
-      $scope.peerIds.push(msg.uri)
+    /* get index if peer is already known */
+    var index = [-1].concat($scope.peers).reduce(
+        function(previousValue, currentValue, index, array){
+            return currentValue.uri == msg.uri ? index : previousValue ;
+    });
+
+    if(index == -1) {
+        /* it is a new peer */
+        $scope.peers.push(msg);
+    } else {
+        $scope.peers[index] = msg;
     }
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+  }
+
+  $scope.remove_peer = function(msg) {
+
+    console.log('Remove peer: ',msg);
+
+    $scope.peers = $scope.peers.filter(function(element) {
+        return element.uri != msg.uri;
+    });
+
     if (!$scope.$$phase) {
        $scope.$apply();
     }
@@ -268,7 +292,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     });
 
     msg.peers.forEach(function(peer) {
-       $scope.parse_peer(peer)
+       $scope.add_peer(peer)
     });
 
 
