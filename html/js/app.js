@@ -443,10 +443,10 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
 
   $scope.queryMyOrder = function() {
-	// Query for orders
-	var query = {'type': 'query_orders', 'pubkey': ''}
-	console.log('querying orders')
-	socket.send('query_orders', query)
+    	// Query for orders
+    	var query = {'type': 'query_orders', 'pubkey': ''}
+    	console.log('querying orders')
+    	socket.send('query_orders', query)
 
   }
 

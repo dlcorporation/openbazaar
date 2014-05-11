@@ -63,10 +63,12 @@ class ProtocolHandler:
         self.node.reputation.query_reputation(pubkey)
 
     def client_query_orders(self, socket_handler, msg):
+
         self._log.info("Querying for Orders: ", msg)
 
         # Query mongo for orders
-        orders = self.node.orders._orders
+        orders = self.node.orders.get_orders()
+        print orders
 
         self.send_to_client(None, { "type": "myorders", "orders": orders } )
 
