@@ -65,6 +65,7 @@ class Orders(object):
     def accept_order(self, new_order):
 
     	# TODO: Need to have a check for the vendor to agree to the order
+        print 'NEW ORDER',new_order
 
         new_order['state'] = 'accepted'
         seller = new_order['seller'].decode('hex')
@@ -118,6 +119,7 @@ class Orders(object):
                 self.accept_order(msg)
             else:
                 self._log.info("Not a party to this order")
+
         elif state == 'cancelled':
             if myself == seller or myself == buyer:
                 self._log.info('Order cancelled')

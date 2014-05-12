@@ -32,7 +32,6 @@ class PeerConnection(object):
         self._socket.close()
 
     def send(self, data):
-        self._log.info('DROPPING DATA: %S' % data)
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
@@ -54,12 +53,11 @@ class PeerConnection(object):
 
     def _send_raw_process(self, serialized, queue):
         self.create_socket()
-
         self._socket.send(serialized)
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
-        if poller.poll(self._timeout * 1000):
+        if poller.poll(self._timeout * 5000):
             msg = self._socket.recv()
             self.on_message(msg)
             self.cleanup_socket()
@@ -154,7 +152,7 @@ class TransportLayer(object):
         # directed message
         if send_to:
             for peer in self._peers.values():
-                if peer._pub == send_to:
+                if peer._pub == send_to:                    
                     if peer.send(data):
                         self._log.info('Success')
                     else:

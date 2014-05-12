@@ -264,7 +264,7 @@
                 <div style="padding:5px">
                   <table class="table table-striped table-bordered" >
 
-<tr><td colspan="100%" style="background-color:#ccc;color:white;">
+<tr><td colspan="100%" style="background-color:#ccc;Adding escrows to database instead of hard coded into order.py">
   <select>
   <option>Select Action</option>
 </select>
@@ -284,11 +284,11 @@
                           	<td width=70><a href="">{{order.id}}</a></td>
                             <td width=150>{{order.created * 1000 | date: 'medium'}}</td>
                             <td style="word-break:break-all">{{order.buyer}}</td>
-                            <td width=100>{{order.state}}</td>
+                            <td width=100><span class="label label-info">{{order.state}}</span></td>
                             <td width=100>{{order.total}}</td>
                           </tr>
 
-<tr><td colspan="100%" style="background-color:#ccc;color:white;">
+<tr><td colspan="100%" style="background-color:#ccc;">
   <select>
   <option>Select Action</option>
 </select>
