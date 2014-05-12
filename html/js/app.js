@@ -335,6 +335,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       $scope.newOrder.text = '';
       //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
       socket.send('order', newOrder);
+      $scope.sentOrder = true;
 
       $scope.showDashboardPanel('orders');
 
