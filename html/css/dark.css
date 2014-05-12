@@ -185,3 +185,5 @@ hr { border-top:#bbb; }
 
 
 #page-content { word-break:break-all; }
+
+ul.pagination { margin: 10px 0 }

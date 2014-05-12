@@ -6,6 +6,7 @@ import random
 from pymongo import MongoClient
 from multisig import Multisig
 import logging
+import time
 
 
 class Orders(object):
@@ -28,7 +29,7 @@ class Orders(object):
 
     def get_orders(self):
         orders = []
-        for _order in self._db.orders.find():
+        for _order in self._db.orders.find().sort([("created",-1)]):
 
             # Get order prototype object before storing
             orders.append({"id":_order['id'],
@@ -37,7 +38,8 @@ class Orders(object):
                                     "buyer": _order['buyer'] if _order.has_key("buyer") else "",
                                     "seller": _order['seller'] if _order.has_key("seller") else "",
                                     "escrows": _order['escrows'] if _order.has_key("escrows") else "",
-                                    "text": _order['text'] if _order.has_key("text") else "" })
+                                    "text": _order['text'] if _order.has_key("text") else "",
+                                    "created": _order['created'] if _order.has_key("created") else ""})
             #orders.append(_order)
 
 
@@ -51,6 +53,9 @@ class Orders(object):
         id = random.randint(0,1000000)
         buyer = self._transport._myself.get_pubkey()
         new_order = order(id, buyer, seller, 'new', text, self._escrows)
+
+        # Add a timestamp
+        new_order['created'] = time.time()
 
         self._transport.send(new_order, seller)
 
