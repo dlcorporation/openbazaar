@@ -11,7 +11,7 @@ import logging
 
 class Market(object):
 
-    def __init__(self, transport):
+    def __init__(self, transport, store_file):
 
         self._log = logging.getLogger(self.__class__.__name__)
         self._log.info("Initializing")
@@ -22,6 +22,7 @@ class Market(object):
         self._transport = transport
         self.query_ident = None
 
+        self.store_file = store_file
         self.reputation = Reputation(self._transport)
         self.orders = Orders(self._transport)
         self.order_entries = self.orders._orders
@@ -83,9 +84,9 @@ class Market(object):
 	# Load default information for your market from your file
     def load_page(self, welcome):
 
-        self._log.info("Loading market config from " + sys.argv[1])
+        self._log.info("Loading market config from %s." % self.store_file)
 
-        with open(sys.argv[1]) as f:
+        with open(self.store_file) as f:
             data = json.loads(f.read())
 
         self._log.info("Configuration data: " + json.dumps(data))
