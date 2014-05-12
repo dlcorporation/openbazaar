@@ -214,15 +214,18 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
         $scope.reviews[msg.pubkey] = []
     }
-    $scope.currentReviews = $scope.reviews[msg.pubkey]
-    $scope.page = msg
 
-    // Write in store content into the HTML
-    var contentDiv = document.getElementById('page-content')
-    contentDiv.innerHTML = msg.text;
+    if (!$scope.dashboard) {
+      $scope.currentReviews = $scope.reviews[msg.pubkey]
+      $scope.page = msg
 
-    if (!$scope.$$phase) {
-       $scope.$apply();
+      // Write in store content into the HTML
+      var contentDiv = document.getElementById('page-content')
+      contentDiv.innerHTML = msg.text;
+
+      if (!$scope.$$phase) {
+         $scope.$apply();
+      }
     }
   }
 
@@ -380,7 +383,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
     $.each($scope.settings.escrowAddresses, function(i, el){
         if($.inArray(el, uniqueEscrows) === -1) uniqueEscrows.push(el);
     });
-    
+
     $scope.settings.escrowAddresses = uniqueEscrows;
 
     $scope.saveSettings();
