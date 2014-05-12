@@ -66,7 +66,7 @@ class Market(object):
             return ("Key not found for this nickname", None)
 
         self._log.info("Found key: %s " % key.encode("hex"))
-        if nickname in self._transport.nick_mapping.has_key:
+        if nickname in self._transport.nick_mapping:
             self._log.info("Already have a cached mapping, just adding key there.")
             response = {'nickname': nickname,
                         'pubkey': self._transport.nick_mapping[nickname][1].encode('hex'),
