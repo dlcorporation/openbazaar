@@ -10,6 +10,7 @@ from market import Market
 from ws import WebSocketHandler
 import logging
 import signal
+import threading
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -25,7 +26,7 @@ class MarketApplication(tornado.web.Application):
                                               my_market_port,
                                               store_file)
         self.transport.join_network(seed_uri)
-        self.market = Market(self.transport)
+        self.market = Market(self.transport, store_file)
 
         handlers = [
             (r"/", MainHandler),
@@ -43,25 +44,14 @@ class MarketApplication(tornado.web.Application):
         return self.transport
 
 
-# Run this if executed directly
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("store_file",
-                        help="You need to specify a user \
-                                crypto file in `ppl/` folder")
-    parser.add_argument("my_market_ip")
-    parser.add_argument("-p", "--my_market_port", type=int, default=12345)
-    parser.add_argument("-s", "--seed_uri")
-    parser.add_argument("-l", "--log_file", default='node.log')
-    args = parser.parse_args()
-
+def start_node(store_file, my_market_ip, my_market_port, seed_uri, log_file):
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(name)s -  \
                                 %(levelname)s - %(message)s',
-                        filename=args.log_file)
+                        filename=log_file)
 
-    application = MarketApplication(args.store_file, args.my_market_ip,
-                                    args.my_market_port, args.seed_uri)
+    application = MarketApplication(store_file, my_market_ip,
+                                    my_market_port, seed_uri)
 
     error = True
     port = 8888
@@ -73,12 +63,30 @@ if __name__ == "__main__":
             port += 1
 
     logging.getLogger().info("Started user app at http://%s:%s"
-                             % (args.my_market_ip, port))
+                             % (my_market_ip, port))
 
     # handle shutdown
     def shutdown(x, y):
         application.get_transport().broadcast_goodbye()
         sys.exit(0)
-    signal.signal(signal.SIGTERM, shutdown)
+    try:
+        signal.signal(signal.SIGTERM, shutdown)
+    except ValueError:
+        # not the main thread
+        pass
 
     tornado.ioloop.IOLoop.instance().start()
+
+# Run this if executed directly
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("store_file",
+                        help="You need to specify a user \
+                                crypto file in `ppl/` folder")
+    parser.add_argument("my_market_ip")
+    parser.add_argument("-p", "--my_market_port", type=int, default=12345)
+    parser.add_argument("-s", "--seed_uri")
+    parser.add_argument("-l", "--log_file", default='node.log')
+    args = parser.parse_args()
+    start_node(args.store_file, args.my_market_ip,
+               args.my_market_port, args.seed_uri, args.log_file)
