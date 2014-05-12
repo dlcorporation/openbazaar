@@ -261,7 +261,7 @@
                       		<tr ng-repeat="order in orders">
                             <td width=20><input type="checkbox"/></td>
                           	<td width=70><a href="">{{order.id}}</a></td>
-                            <td>{{order.purchaseDate}}</td>
+                            <td width=150>{{order.created * 1000 | date: 'medium'}}</td>
                             <td style="word-break:break-all">{{order.buyer}}</td>
                             <td width=100>{{order.state}}</td>
                             <td width=100>{{order.total}}</td>
@@ -457,7 +457,7 @@
               </tr>
           </table>
       </div>
-      <button type="button" class="btn btn-default btn-sm">See all markets</button>
+
 
 
       <div style="width:100%">
