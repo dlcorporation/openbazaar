@@ -315,7 +315,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
      $scope.search = ""
   }
 
-  $scope.settings = { email:'', PGPPubKey:'', bitmessage:'', pubkey:'', secret:'', nickname:'', welcome:''}
+  $scope.settings = { email:'', PGPPubKey:'', bitmessage:'', pubkey:'', secret:'', nickname:'', welcome:'', escrowAddresses:''}
   $scope.saveSettings = function() {
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query)
@@ -364,6 +364,27 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
   	socket.send('order', order)
   }
 
+  $scope.addEscrow = function() {
+    escrowAddress = $('#inputEscrowAddress').val();
+    $('#inputEscrowAddress').val('');
+
+    // TODO: Check for valid escrow address
+
+    if(!$scope.settings.escrowAddresses) {
+      $scope.settings.escrowAddresses = [];
+    }
+    $scope.settings.escrowAddresses.push(escrowAddress);
+
+    // Dedupe escrow addresses
+    var uniqueEscrows = [];
+    $.each($scope.settings.escrowAddresses, function(i, el){
+        if($.inArray(el, uniqueEscrows) === -1) uniqueEscrows.push(el);
+    });
+    
+    $scope.settings.escrowAddresses = uniqueEscrows;
+
+    $scope.saveSettings();
+  }
 
   function resetPanels() {
   	$scope.messagesPanel = false;

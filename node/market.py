@@ -126,6 +126,7 @@ class Market(object):
                 "nickname": settings['nickname'] if settings.has_key("nickname") else "",
                 "secret": settings['secret'] if settings.has_key("secret") else "",
                 "welcome": settings['welcome'] if settings.has_key("welcome") else "",
+                "escrowAddresses": settings['escrowAddresses'] if settings.has_key("escrowAddresses") else "",
                 }
 
 

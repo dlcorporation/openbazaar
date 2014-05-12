@@ -169,8 +169,8 @@
 
               	<div class="form-group">
 							    <label for="inputPubkey" class="col-sm-3 control-label">Public Key</label>
-							    <div class="col-sm-9">
-
+							    <div class="col-sm-9" style="word-break:break-all">
+                    {{myself.pubkey}}
 							    </div>
 							  </div>
 
@@ -201,6 +201,27 @@
 							      <input type="text" class="form-control" ng-model="settings.bitmessage" id="inputBitmessageAddress" placeholder="Bitmessage address">
 							    </div>
 							  </div>
+
+                <div class="form-group">
+                  <label for="inputEscrowAddresses" class="col-sm-3 control-label">Escrow Addresses</label>
+                  <input type="hidden" ng-model="settings.escrowAddresses" />
+                  <div class="col-sm-9">
+                    <div class="input-group">
+                      <input type="text" class="form-control" id="inputEscrowAddress" placeholder="Enter an escrow address">
+                      <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="addEscrow()">Add</button>
+                      </span>
+                    </div>
+                      <table class="table " style="margin-top:5px;padding:0">
+                        <tr ng-repeat="escrow in settings.escrowAddresses" style="word-break:break-all"><td width=20>
+                          <button type="button" class="btn btn-default btn-sm">
+                            <span class="glyphicon glyphicon-trash" style="color:black"></span>
+                          </button></td><td>{{escrow}}</td></tr>
+                      </table>
+                  </div>
+                </div>
+
+
 
             	  <div class="form-group">
             	     <div class="col-sm-3"></div>
