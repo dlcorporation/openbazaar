@@ -107,6 +107,9 @@ To get the identity server running for querying nicknames in the UI you need to 
 
 `python ident/identity.py`
 
+### Tests
+Install [behave](https://github.com/behave/behave) and run `behave` in the OpenBazaar folder. The tests themselves are located in the `features` folder.
+
 
 ## Artwork Contributions
 

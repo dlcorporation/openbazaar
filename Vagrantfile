@@ -17,7 +17,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     apt-get update
     apt-get install -y build-essential python-dev python-pip python-zmq mongodb
     pip install tornado Twisted
-    easy_install pymongo websocket
+    easy_install pymongo websocket behave
     cp -R /vagrant/ecdsa /vagrant/pyelliptic /vagrant/obelisk /usr/local/lib/python2.7/dist-packages/
     mongo --eval "db = db.getSiblingDB('openbazaar')"
   SCRIPT
