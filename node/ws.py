@@ -66,11 +66,10 @@ class ProtocolHandler:
 
     def client_query_orders(self, socket_handler, msg):
 
-        self._log.info("Querying for Orders: ", msg)
+        self._log.info("Querying for Orders")
 
         # Query mongo for orders
         orders = self.node.orders.get_orders()
-        print orders
 
         self.send_to_client(None, { "type": "myorders", "orders": orders } )
 
@@ -99,7 +98,7 @@ class ProtocolHandler:
 
         # Update order in mongo
         order = self.node.orders.get_order(msg['orderId'])
-        print order        
+        print order
 
         # Send to exchange partner
         self.node.orders.pay_order(order)

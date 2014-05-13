@@ -169,15 +169,20 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
       $('#modalOrderDescription').html(msg.order.text);
       $('#modalBuyer').html(msg.order.buyer);
+      $('#modalStatus').html(msg.order.state);
       $('#modalSeller').html(msg.order.seller);
       $('#modalPaymentAddress').html('<a href="https://blockchain.info/address/'+msg.order.address+'" target="_blank">'+msg.order.address+'</a>');
       $('#modalCreated').html(new Date(msg.order.created*1000));
 
-      msg.order.escrows.forEach(function(escrow) {
-        escrows = '<li style="word-break:break-all">' + escrow + "</li>";
-      });
 
-      $('#modalEscrows').html(escrows);
+
+      $('#modalEscrows').html(msg.order.escrows);
+
+      if(msg.order.state == 'accepted') {
+        $('#payment_buttons').show();
+      } else {
+        $('#payment_buttons').hide();
+      }
 
 
       if (!$scope.$$phase) {
@@ -606,7 +611,13 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
    $scope.orderId = orderId;
 
    $scope.markOrderPaid = function(orderId) {
-    socket.send("pay_order", { orderId: orderId} ) 
+    socket.send("pay_order", { orderId: orderId} )
+    $('#payment_buttons').hide();
+
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+
    }
 
     $scope.ok = function () {

@@ -279,6 +279,10 @@
                             <td><span id="modalCreated"></span></td>
                           </tr>
                           <tr>
+                            <td width=200><strong>Status:</strong></td>
+                            <td style="vertical-align:middle;"><span id="modalStatus" class="label label-info"></span></td>
+                          </tr>
+                          <tr>
                             <td><strong>Buyer:</strong></td>
                             <td style="word-break:break-all"><span id="modalBuyer"></span></td>
                           </tr>
@@ -288,7 +292,7 @@
                           </tr>
                           <tr>
                             <td><strong>Escrows:</strong></td>
-                            <td><ul id="modalEscrows"></ul></td>
+                            <td style="word-break:break-all"><span id="modalEscrows"></span></td>
                           </tr>
                           <tr>
                             <td><strong>Payment Address:</strong></td>
@@ -300,8 +304,10 @@
                           </tr>
                           </table>
 
+                          <div id="payment_buttons">
                           <button ng-click="markOrderPaid(orderId)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
                           <button ng-click="" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
+                          </div>
 
                         </div>
                         <div class="modal-footer">
