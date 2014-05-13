@@ -146,15 +146,17 @@ class Orders(object):
                 self._log.info('Order cancelled')
             else:
                 self._log.info("Order not for us")
+
         elif state == 'accepted':
             if myself == seller:
                 self._log.info("Bad subjects [%s]" % state)
             elif myself == buyer:
                 # wait for confirmation
+                self._db.orders.update({"id":msg['id']}, {"$set":msg}, True)
                 pass
             else:
                 self._log.info("Order not for us")
-        elif state == 'payed':
+        elif state == 'paid':
             if myself == seller:
                 # wait for  confirmation
                 pass
