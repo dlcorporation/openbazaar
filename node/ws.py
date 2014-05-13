@@ -98,7 +98,6 @@ class ProtocolHandler:
 
         # Update order in mongo
         order = self.node.orders.get_order(msg['orderId'])
-        print order
 
         # Send to exchange partner
         self.node.orders.pay_order(order)
