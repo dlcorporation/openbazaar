@@ -84,7 +84,6 @@ class Orders(object):
 
     	# TODO: Need to have a check for the vendor to agree to the order
 
-
         new_order['state'] = 'accepted'
         seller = new_order['seller'].decode('hex')
         buyer = new_order['buyer'].decode('hex')
@@ -92,6 +91,7 @@ class Orders(object):
         new_order['escrows'] = [new_order.get('escrows')[0]]
         escrow = new_order['escrows'][0].decode('hex')
 
+        # Create 2 of 3 multisig address
         self._multisig = Multisig(None, 2, [buyer, seller, escrow])
 
         new_order['address'] = self._multisig.address
@@ -101,7 +101,8 @@ class Orders(object):
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
 
     def pay_order(self, new_order): # action
-        new_order['state'] = 'payed'
+        new_order['state'] = 'paid'
+        self._db.orders.update({"id":new_order['id']}, {"$set":new_order}, True)
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
     def send_order(self, new_order): # action

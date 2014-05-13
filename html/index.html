@@ -253,7 +253,7 @@
               	<p>You have no orders at this time.</p>
               </div>
 
-              <div ng-show="orders">
+              <div ng-show="orders.length > 0">
 
                 <div ng-show="orders.length > 10" style="float:right">
                 <ul class="pagination">
@@ -283,6 +283,10 @@
                             <td style="word-break:break-all"><span id="modalBuyer"></span></td>
                           </tr>
                           <tr>
+                            <td><strong>Seller:</strong></td>
+                            <td style="word-break:break-all"><span id="modalSeller"></span></td>
+                          </tr>
+                          <tr>
                             <td><strong>Escrows:</strong></td>
                             <td><ul id="modalEscrows"></ul></td>
                           </tr>
@@ -296,8 +300,8 @@
                           </tr>
                           </table>
 
-
-
+                          <button ng-click="markOrderPaid(orderId)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
+                          <button ng-click="" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
 
                         </div>
                         <div class="modal-footer">
