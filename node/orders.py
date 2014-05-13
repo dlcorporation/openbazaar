@@ -103,6 +103,7 @@ class Orders(object):
     def pay_order(self, new_order): # action
         new_order['state'] = 'paid'
         self._db.orders.update({"id":new_order['id']}, {"$set":new_order}, True)
+        new_order['type'] = 'order'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
     def send_order(self, new_order): # action

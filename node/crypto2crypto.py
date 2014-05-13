@@ -19,7 +19,7 @@ class CryptoPeerConnection(PeerConnection):
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub)
 
-    def send(self, data):      
+    def send(self, data):
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):
@@ -173,17 +173,19 @@ class CryptoTransportLayer(TransportLayer):
         msg_type = msg.get('type')
         msg_uri = msg.get('uri')
 
-        if msg_type.startswith('hello') and msg_uri:
-            self.init_peer(msg)
-            for uri, pub in msg.get('peers', {}).iteritems():
-                # Do not add yourself as a peer
-                if uri != self._uri:
-                    self.init_peer({'uri': uri, 'pub': pub})
-            self._log.info("Update peer table [%s peers]" % len(self._peers))
+        if msg_type != '':
 
-        elif msg_type == 'goodbye' and msg_uri:
-            self._log.info("Received goodbye from %s" % msg_uri)
-            self.remove_peer(msg_uri)
+            if msg_type.startswith('hello') and msg_uri:
+                self.init_peer(msg)
+                for uri, pub in msg.get('peers', {}).iteritems():
+                    # Do not add yourself as a peer
+                    if uri != self._uri:
+                        self.init_peer({'uri': uri, 'pub': pub})
+                self._log.info("Update peer table [%s peers]" % len(self._peers))
 
-        else:
-            self.on_message(msg)
+            elif msg_type == 'goodbye' and msg_uri:
+                self._log.info("Received goodbye from %s" % msg_uri)
+                self.remove_peer(msg_uri)
+
+            else:
+                self.on_message(msg)
