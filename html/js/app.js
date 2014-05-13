@@ -169,6 +169,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
       $('#modalOrderDescription').html(msg.order.text);
       $('#modalBuyer').html(msg.order.buyer);
+      $('#modalSeller').html(msg.order.seller);
       $('#modalPaymentAddress').html('<a href="https://blockchain.info/address/'+msg.order.address+'" target="_blank">'+msg.order.address+'</a>');
       $('#modalCreated').html(new Date(msg.order.created*1000));
 
@@ -506,6 +507,8 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
 
 
+
+
   $('ul.nav.nav-pills li a').click(function() {
 	    $(this).parent().addClass('active').siblings().removeClass('active').blur();
 	});
@@ -514,9 +517,6 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
 // Modal Code
 $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
-
-
-
 
 
 
@@ -561,6 +561,7 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
     $scope.welcome = settings.welcome;
 
 
+
     $scope.ok = function () {
       $modalInstance.dismiss('cancel');
     };
@@ -603,6 +604,10 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
  var ViewOrderInstanceCtrl = function ($scope, $modalInstance, orderId) {
 
    $scope.orderId = orderId;
+
+   $scope.markOrderPaid = function(orderId) {
+    socket.send("pay_order", { orderId: orderId} ) 
+   }
 
     $scope.ok = function () {
       $modalInstance.close();

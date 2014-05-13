@@ -36,7 +36,6 @@ class PeerConnection(object):
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
-        print "JSON DUMP",serialized
         Thread(target=self._send_raw, args=(serialized,)).start()
         pass
 
@@ -60,7 +59,7 @@ class PeerConnection(object):
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
         if poller.poll(self._timeout * 5000):
-            msg = self._socket.recv()            
+            msg = self._socket.recv()
             self.on_message(msg)
             self.cleanup_socket()
             queue.put(True)
