@@ -173,7 +173,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       $('#modalCreated').html(new Date(msg.order.created*1000));
 
       msg.order.escrows.forEach(function(escrow) {
-        escrows = "<li>" + escrow + "</li>";
+        escrows = '<li style="word-break:break-all">' + escrow + "</li>";
       });
 
       $('#modalEscrows').html(escrows);
