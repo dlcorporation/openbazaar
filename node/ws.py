@@ -22,6 +22,8 @@ class ProtocolHandler:
 
         # handlers from events coming from websocket, we shouldnt need this
         self._handlers = {
+            "connect":          self.client_connect,
+            "peers":          self.client_peers,
             "query_page":          self.client_query_page,
             "review":          self.client_review,
             "order":          self.client_order,
@@ -36,17 +38,7 @@ class ProtocolHandler:
         self._log = logging.getLogger(self.__class__.__name__)
 
     def send_opening(self):
-
-        peers = []
-
-        for uri, peer in self._transport._peers.items():
-            peer_item = {'uri': uri}
-            if peer._pub:
-               peer_item['pubkey'] = peer._pub.encode('hex')
-            else:
-               peer_item['pubkey'] = 'unknown'
-            peers.append(peer_item)
-
+        peers = self.get_peers()
         message = {
             'type': 'myself',
             'pubkey': self._transport._myself.get_pubkey().encode('hex'),
@@ -58,6 +50,15 @@ class ProtocolHandler:
         self.send_to_client(None, message)
 
     # Requests coming from the client
+    def client_connect(self, socket_handler, msg):
+        self._log.info("Connection command: ", msg)
+        self._transport.init_peer(msg)
+        self.send_ok()
+
+    def client_peers(self, socket_handler, msg):
+        self._log.info("Peers command")
+        self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+
     def client_query_page(self, socket_handler, msg):
         self._log.info("Message: ", msg)
         pubkey = msg['pubkey'].decode('hex')
@@ -125,7 +126,11 @@ class ProtocolHandler:
     # messages coming from "the market"
     def on_node_peer(self, peer):
         self._log.info("Add peer")
-        response = {'type': 'peer', 'pubkey': peer._pub.encode('hex'), 'uri': peer._address}
+        response = {'type': 'peer',
+                    'pubkey': peer._pub.encode('hex')
+                              if peer._pub
+                              else 'unknown',
+                    'uri': peer._address}
         self.send_to_client(None, response)
 
     def on_node_remove_peer(self, msg):
@@ -152,6 +157,9 @@ class ProtocolHandler:
             response["error"] = error
         self._handler.queue_response(response)
 
+    def send_ok(self):
+        self.send_to_client(None, {"type": "ok"})
+
     # handler a request
     def handle_request(self, socket_handler, request):
         command = request["command"]
@@ -162,6 +170,17 @@ class ProtocolHandler:
         handler = self._handlers[command](socket_handler, params)
         return True
 
+    def get_peers(self):
+        peers = []
+        for uri, peer in self._transport._peers.items():
+            peer_item = {'uri': uri}
+            if peer._pub:
+                peer_item['pubkey'] = peer._pub.encode('hex')
+            else:
+                peer_item['pubkey'] = 'unknown'
+            peers.append(peer_item)
+
+        return peers
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
