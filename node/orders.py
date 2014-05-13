@@ -28,7 +28,7 @@ class Orders(object):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def get_order(self, orderId):
-        print orderId
+
         _order = self._db.orders.find_one({"id":orderId})
 
         # Get order prototype object before storing

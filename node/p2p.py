@@ -68,8 +68,7 @@ class PeerConnection(object):
             self.cleanup_socket()
             queue.put(False)
 
-    def on_message(self, msg):
-        print "YAY",msg
+    def on_message(self, msg):        
         self._log.info("message received! %s" % msg)
 
 
@@ -158,7 +157,6 @@ class TransportLayer(object):
                     if peer.send(data):
                         self._log.info('Success')
                     else:
-                        print 'DATA',data
                         self._log.info('Failed')
 
                     return
