@@ -27,6 +27,24 @@ class Orders(object):
         transport.add_callback('order', self.on_order)
         self._log = logging.getLogger(self.__class__.__name__)
 
+    def get_order(self, orderId):
+        print orderId
+        _order = self._db.orders.find_one({"id":orderId})
+
+        # Get order prototype object before storing
+        order = {"id":_order['id'],
+                                    "state": _order['state'],
+                                    "address": _order['address'] if _order.has_key("address") else "",
+                                    "buyer": _order['buyer'] if _order.has_key("buyer") else "",
+                                    "seller": _order['seller'] if _order.has_key("seller") else "",
+                                    "escrows": _order['escrows'] if _order.has_key("escrows") else "",
+                                    "text": _order['text'] if _order.has_key("text") else "",
+                                    "created": _order['created'] if _order.has_key("created") else ""}
+            #orders.append(_order)
+
+
+        return order
+
     def get_orders(self):
         orders = []
         for _order in self._db.orders.find().sort([("created",-1)]):
@@ -65,7 +83,7 @@ class Orders(object):
     def accept_order(self, new_order):
 
     	# TODO: Need to have a check for the vendor to agree to the order
-        print 'NEW ORDER',new_order
+
 
         new_order['state'] = 'accepted'
         seller = new_order['seller'].decode('hex')
@@ -77,6 +95,8 @@ class Orders(object):
         self._multisig = Multisig(None, 2, [buyer, seller, escrow])
 
         new_order['address'] = self._multisig.address
+
+        self._db.orders.update({ "id":new_order['id']}, {"$set":new_order}, True)
 
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
 

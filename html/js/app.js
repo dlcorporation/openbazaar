@@ -99,6 +99,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       case 'myorders':
       	 $scope.parse_myorders(msg)
       	 break;
+      case 'orderinfo':
+         $scope.parse_orderinfo(msg)
+         break;
       case 'reputation':
       	 console.log(msg);
          $scope.parse_reputation(msg)
@@ -155,6 +158,29 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       }
       if (!$scope.$$phase) {
       	 console.log($scope.myOrders);
+         $scope.$apply();
+      }
+  }
+
+  $scope.parse_orderinfo = function(msg) {
+
+      console.log("Order info retrieved");
+      console.log(msg.order);
+
+      $('#modalOrderDescription').html(msg.order.text);
+      $('#modalBuyer').html(msg.order.buyer);
+      $('#modalPaymentAddress').html('<a href="https://blockchain.info/address/'+msg.order.address+'" target="_blank">'+msg.order.address+'</a>');
+      $('#modalCreated').html(new Date(msg.order.created*1000));
+
+      msg.order.escrows.forEach(function(escrow) {
+        escrows = "<li>" + escrow + "</li>";
+      });
+
+      $('#modalEscrows').html(escrows);
+
+
+      if (!$scope.$$phase) {
+         //console.log($scope.myOrders);
          $scope.$apply();
       }
   }
@@ -519,7 +545,7 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
     }
 
 
-
+};
 
   // Please note that $modalInstance represents a modal window (instance) dependency.
   // It is not the same as the $modal service used above.
@@ -544,6 +570,50 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
     };
   };
 
-};
+
+
+
+  $scope.ViewOrderCtrl = function ($scope, $modal, $log) {
+
+
+    $scope.open = function (size, orderId) {
+
+      // Send socket a request for order info
+      socket.send('query_order', { orderId: orderId } )
+
+      var modalInstance = $modal.open({
+        templateUrl: 'viewOrder.html',
+        controller: ViewOrderInstanceCtrl,
+        size: size,
+        resolve: {
+          orderId: function() {
+            return orderId;
+          }
+        }
+      });
+
+      modalInstance.result.then(function () {
+
+      }, function () {
+        $log.info('Modal dismissed at: ' + new Date());
+      });
+    };
+  };
+
+ var ViewOrderInstanceCtrl = function ($scope, $modalInstance, orderId) {
+
+   $scope.orderId = orderId;
+
+    $scope.ok = function () {
+      $modalInstance.close();
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  };
+
+
+
 
 }])
