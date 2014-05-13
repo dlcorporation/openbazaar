@@ -29,6 +29,7 @@ class ProtocolHandler:
             "shout":          self.client_shout,
             "query_orders":	  self.client_query_orders,
             "update_settings":	self.client_update_settings,
+            "query_order":	self.client_query_order,
         }
 
         self._log = logging.getLogger(self.__class__.__name__)
@@ -71,6 +72,16 @@ class ProtocolHandler:
         print orders
 
         self.send_to_client(None, { "type": "myorders", "orders": orders } )
+
+    # Get a single order's info
+    def client_query_order(self, socket_handler, msg):
+
+        self._log.info("Querying for Order: ", msg['orderId'])
+
+        # Query mongo for order
+        order = self.node.orders.get_order(msg['orderId'])
+
+        self.send_to_client(None, { "type": "orderinfo", "order": order } )
 
 
     def client_update_settings(self, socket_handler, msg):

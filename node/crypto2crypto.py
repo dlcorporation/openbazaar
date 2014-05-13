@@ -19,7 +19,7 @@ class CryptoPeerConnection(PeerConnection):
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub)
 
-    def send(self, data):
+    def send(self, data):      
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):

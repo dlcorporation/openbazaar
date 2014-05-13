@@ -31,10 +31,12 @@ class PeerConnection(object):
     def cleanup_socket(self):
         self._socket.close()
 
+    # Is this even used?
     def send(self, data):
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
+        print "JSON DUMP",serialized
         Thread(target=self._send_raw, args=(serialized,)).start()
         pass
 
@@ -58,7 +60,7 @@ class PeerConnection(object):
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
         if poller.poll(self._timeout * 5000):
-            msg = self._socket.recv()
+            msg = self._socket.recv()            
             self.on_message(msg)
             self.cleanup_socket()
             queue.put(True)
@@ -68,6 +70,7 @@ class PeerConnection(object):
             queue.put(False)
 
     def on_message(self, msg):
+        print "YAY",msg
         self._log.info("message received! %s" % msg)
 
 
@@ -152,10 +155,11 @@ class TransportLayer(object):
         # directed message
         if send_to:
             for peer in self._peers.values():
-                if peer._pub == send_to:                    
+                if peer._pub == send_to:
                     if peer.send(data):
                         self._log.info('Success')
                     else:
+                        print 'DATA',data
                         self._log.info('Failed')
 
                     return

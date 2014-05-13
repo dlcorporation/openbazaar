@@ -19,9 +19,16 @@
     <title>OpenBazaar - Decentralized markets for the masses</title>
 </head>
 
+
+
+
 <body ng-controller="Market" ng-init="">
 
     <div ng-show="warningMessage" class="alert alert-warning"></div>
+
+
+
+
 
     <div ng-if="myself.settings.welcome == ''">
     <div ng-controller="WelcomeModalCtrl" ng-init="open('lg','static')">
@@ -248,8 +255,7 @@
 
               <div ng-show="orders">
 
-
-                <div style="float:right">
+                <div ng-show="orders.length > 10" style="float:right">
                 <ul class="pagination">
                   <li><a href="#">&laquo;</a></li>
                   <li><a href="#">1</a></li>
@@ -260,28 +266,70 @@
               </div>
 
 
+                <div ng-controller="ViewOrderCtrl">
+                    <script type="text/ng-template" id="viewOrder.html">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Order #{{orderId}}</h3>
+                        </div>
+                        <div class="modal-body" style="text-align:left;">
+
+                          <table class="table table-striped">
+                          <tr>
+                            <td width=200><strong>Order Date:</strong></td>
+                            <td><span id="modalCreated"></span></td>
+                          </tr>
+                          <tr>
+                            <td><strong>Buyer:</strong></td>
+                            <td style="word-break:break-all"><span id="modalBuyer"></span></td>
+                          </tr>
+                          <tr>
+                            <td><strong>Escrows:</strong></td>
+                            <td style="word-break:break-all"><ul id="modalEscrows"></ul></td>
+                          </tr>
+                          <tr>
+                            <td><strong>Payment Address:</strong></td>
+                            <td style="word-break:break-all"><span id="modalPaymentAddress"></span></td>
+                          </tr>
+                          <tr>
+                            <td><strong>Order Description:</strong></td>
+                            <td><span id="modalOrderDescription"></span></td>
+                          </tr>
+                          </table>
+
+
+
+
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-info" ng-click="cancel()">Close</button>
+                        </div>
+                    </script>
+
+
 
                 <div style="padding:5px">
                   <table class="table table-striped table-bordered" >
 
-<tr><td colspan="100%" style="background-color:#ccc;Adding escrows to database instead of hard coded into order.py">
-  <select>
-  <option>Select Action</option>
-</select>
-</td></tr>
+                    <tr><td colspan="100%" style="background-color:#ccc;Adding escrows to database instead of hard coded into order.py">
+                      <select>
+                      <option>Select Action</option>
+                      <option>-----------------</option>
+                      <option>Cancel Order</option>
+                    </select>
+                    </td></tr>
 
-<tr>
-  <th><input type="checkbox"/></th>
-  <th>Order</th>
-  <th>Date</th>
-  <th>Buyer</th>
-  <th>Status</th>
-  <th>Total</th>
-</tr>
+                    <tr>
+                      <th><input type="checkbox"/></th>
+                      <th>Order</th>
+                      <th>Date</th>
+                      <th>Buyer</th>
+                      <th>Status</th>
+                      <th>Total</th>
+                    </tr>
 
                       		<tr ng-repeat="order in orders">
                             <td width=20><input type="checkbox"/></td>
-                          	<td width=70><a href="">{{order.id}}</a></td>
+                          	<td width=70><a href="" ng-click="open('lg', order.id)">{{order.id}}</a></td>
                             <td width=150>{{order.created * 1000 | date: 'medium'}}</td>
                             <td style="word-break:break-all">{{order.buyer}}</td>
                             <td width=100><span class="label label-info">{{order.state}}</span></td>
@@ -291,12 +339,17 @@
 <tr><td colspan="100%" style="background-color:#ccc;">
   <select>
   <option>Select Action</option>
+  <option>-----------------</option>
+  <option>Cancel Order</option>
 </select>
 </td></tr>
 
                 </table>
 
                </div>
+
+
+             </div>
 
               </div>
 
