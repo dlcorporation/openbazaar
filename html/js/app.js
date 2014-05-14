@@ -174,11 +174,12 @@ angular.module('app')
       if(msg.order.state == 'accepted') {
         $scope.modalOrder.waitingForPayment = true;
       } else if (msg.order.state == 'paid') {
+
         if (msg.order.seller == $scope.myself.pubkey) {
           $scope.modalOrder.waitingForShipment = true;
         } else {
           $scope.modalOrder.waitingForSellerToShip = true;
-        }      
+        }
       } else {
         $scope.modalOrder.waitingForPayment = false;
       }
@@ -622,7 +623,9 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
     scope.modalOrder.state = 'paid';
 
     scope.modalOrder.waitingForPayment = false;
-    scope.modalOrder.waitingForShipment = true;
+
+
+    
 
     // Refresh orders in background
     scope.queryMyOrder();
