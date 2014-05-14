@@ -68,7 +68,7 @@ These instructions download a VirtualBox image (Ubuntu Trusty) and use Vagrant t
 `pip install tornado`
 `pip install pyelliptic`
 `pip install pymongo`
-`pip install pycountries`
+`pip install pycountry`
 
 1. Install python-obelisk
 2. git clone https://github.com/darkwallet/python-obelisk
