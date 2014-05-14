@@ -109,6 +109,7 @@ class Orders(object):
     def send_order(self, new_order): # action
         new_order['state'] = 'sent'
         self._db.orders.update({"id":new_order['id']}, {"$set":new_order}, True)
+        new_order['type'] = 'order'
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
 
     def receive_order(self, new_order): # action

@@ -33,6 +33,7 @@ class ProtocolHandler:
             "update_settings":	self.client_update_settings,
             "query_order":	self.client_query_order,
             "pay_order":	self.client_pay_order,
+            "ship_order":	self.client_ship_order,
         }
 
         self._log = logging.getLogger(self.__class__.__name__)
@@ -102,6 +103,16 @@ class ProtocolHandler:
 
         # Send to exchange partner
         self.node.orders.pay_order(order)
+
+    def client_ship_order(self, socket_handler, msg):
+
+        self._log.info("Shipping order out: %s" % msg)
+
+        # Update order in mongo
+        order = self.node.orders.get_order(msg['orderId'])
+
+        # Send to exchange partner
+        self.node.orders.send_order(order)
 
 
     def client_order(self, socket_handler, msg):

@@ -619,13 +619,8 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
 
     socket.send("pay_order", { orderId: orderId} )
 
-
     scope.modalOrder.state = 'paid';
-
     scope.modalOrder.waitingForPayment = false;
-
-
-    
 
     // Refresh orders in background
     scope.queryMyOrder();
@@ -637,9 +632,15 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
    }
 
 
-   $scope.markOrderSent = function(orderId) {
-    socket.send("send_order", { orderId: orderId} )
-    $('#send-order-button').hide();
+   $scope.markOrderShipped = function(orderId) {
+
+    socket.send("ship_order", { orderId: orderId} )
+
+    scope.modalOrder.state = 'sent';
+    scope.modalOrder.waitingForShipment = false;
+
+    // Refresh orders in background
+    scope.queryMyOrder();
 
     if (!$scope.$$phase) {
        $scope.$apply();
