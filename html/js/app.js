@@ -427,6 +427,7 @@ angular.module('app')
   	$scope.reviewsPanel = false;
   	$scope.productCatalogPanel = false;
   	$scope.settingsPanel = false;
+    $scope.arbitrationPanel = false;
   	$scope.ordersPanel = false;
   	$scope.myInfoPanel = false;
   }
@@ -457,6 +458,9 @@ angular.module('app')
   			$scope.ordersPanel = true;
   			$scope.queryMyOrder();
   			break;
+      case 'arbitration':
+        $scope.arbitrationPanel = true;
+        break;
   		case 'productCatalog':
   			$scope.productCatalogPanel = true;
   			break;

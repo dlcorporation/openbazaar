@@ -90,7 +90,8 @@
         			  <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">Home</a></li>
         			  <li id="pill-orders"><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
         			  <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
-        			  <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Product Catalog</a></li>
+        			  <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Products</a></li>
+                <li><a href="#arbitration" ng-click="showDashboardPanel('arbitration')">Arbitration</a></li>
         			  <li><a href="#messages" ng-click="showDashboardPanel('messages')">Messages</a></li>
         			  <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
         			</ul>
@@ -382,6 +383,15 @@
               <div ng-repeat="review in myself.reputation">
                   [{{review.rating}}] {{review.text}}
               </div>
+          </div>
+
+          <div ng-show="arbitrationPanel" class="animated fadeInLeft">
+
+              <h3>Arbitration</h3>
+
+              <p>Here are all the arbitration cases you have.</p>
+
+              
           </div>
 
           <!-- Messages -->
