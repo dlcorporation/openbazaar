@@ -180,10 +180,11 @@ angular.module('app')
         } else {
           $scope.modalOrder.waitingForSellerToShip = true;
         }
+      } else if(msg.order.state == 'sent') {
+        $scope.modalOrder.flagForArbitration = true;
       } else {
         $scope.modalOrder.waitingForPayment = false;
       }
-
 
       if (!$scope.$$phase) {
 
