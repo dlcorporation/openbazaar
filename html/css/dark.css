@@ -176,7 +176,7 @@ hr { border-top:#bbb; }
 .nav-pills > li > a:hover { background-color: #ddd; }
 .nav-pills > li > a { color: #666; }
 #header-navigation  .nav-pills { text-align:right; float:right; }
-.nav-pills > li { display:inline-block; }
+#header-navigation  .nav-pills > li { display:inline-block; }
 
 #header { border-bottom:1px solid #bbb; height:120px; }
 #header-search { width:100%; text-align:right;}
@@ -186,3 +186,7 @@ hr { border-top:#bbb; }
 #page-content { word-break:break-all; }
 
 ul.pagination { margin: 10px 0 }
+
+#settings-container { margin: 30px 0 20px 0; }
+
+#arbitration-form, #communication-form, #keys-form { display:none; }
