@@ -67,7 +67,7 @@ angular.module('app')
 
   $scope.awaitingShop = null;
   $scope.queryShop = function(peer) {
-      console.log('Shop',peer);
+     console.log('Shop',peer);
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.pubkey;
@@ -314,7 +314,7 @@ angular.module('app')
   $scope.parse_myself = function(msg) {
 
     $scope.myself = msg;
-    
+
 
     if (!$scope.$$phase) {
        $scope.$apply();
@@ -516,7 +516,14 @@ angular.module('app')
 
   }
 
+  $scope.generateNewSecret = function() {
 
+    var query = {'type': 'generate_secret'}
+    console.log('Generating new secret key')
+    socket.send('generate_secret', query)
+    console.log($scope.myself.settings)
+
+  }
 
 
 

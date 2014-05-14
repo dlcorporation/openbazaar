@@ -7,12 +7,16 @@ import json
 import lookup
 from pymongo import MongoClient
 import logging
+import pyelliptic
 import pycountry
+from ecdsa import SigningKey,SECP256k1
+import random
+from obelisk import bitcoin
 
 
 class Market(object):
 
-    def __init__(self, transport, store_file):
+    def __init__(self, transport):
 
         self._log = logging.getLogger(self.__class__.__name__)
         self._log.info("Initializing")
@@ -23,7 +27,6 @@ class Market(object):
         self._transport = transport
         self.query_ident = None
 
-        self.store_file = store_file
         self.reputation = Reputation(self._transport)
         self.orders = Orders(self._transport)
         self.order_entries = self.orders._orders
@@ -38,6 +41,9 @@ class Market(object):
         self._db = _dbclient.openbazaar
 
         settings = self._db.settings.find_one()
+
+
+
         welcome = True
 
         if settings:
@@ -53,6 +59,16 @@ class Market(object):
         transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
         self.load_page(welcome)
+
+    def generate_new_secret(self):
+
+        key = bitcoin.EllipticCurveKey()
+        key.new_key_pair()
+        hexkey = key.secret.encode('hex')
+
+        print 'Pubkey generate: ', key._public_key.pubkey
+
+        self._db.settings.update({}, {"$set": {"secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')}})
 
 
     def lookup(self, msg):
@@ -85,21 +101,21 @@ class Market(object):
 	# Load default information for your market from your file
     def load_page(self, welcome):
 
-        self._log.info("Loading market config from %s." % self.store_file)
+        #self._log.info("Loading market config from %s." % self.store_file)
 
-        with open(self.store_file) as f:
-            data = json.loads(f.read())
+        #with open(self.store_file) as f:
+        #    data = json.loads(f.read())
 
-        self._log.info("Configuration data: " + json.dumps(data))
+        #self._log.info("Configuration data: " + json.dumps(data))
 
-        assert "desc" in data
-        nickname = data["nickname"]
-        desc = data["desc"]
+        #assert "desc" in data
+        #nickname = data["nickname"]
+        #desc = data["desc"]
 
-        tagline = "%s: %s" % (nickname, desc)
-        self.mypage = tagline
-        self.nickname = nickname
-        self.signature = self._transport._myself.sign(tagline)
+        #tagline = "%s: %s" % (nickname, desc)
+        #self.mypage = tagline
+        #self.nickname = nickname
+        #self.signature = self._transport._myself.sign(tagline)
 
 
         if welcome:
@@ -108,7 +124,7 @@ class Market(object):
             self.welcome = False
 
 
-        self._log.info("Tagline signature: " + self.signature.encode("hex"))
+        #self._log.info("Tagline signature: " + self.signature.encode("hex"))
 
 
     # SETTINGS

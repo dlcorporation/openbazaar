@@ -20,13 +20,13 @@ class MainHandler(tornado.web.RequestHandler):
 
 class MarketApplication(tornado.web.Application):
 
-    def __init__(self, store_file, my_market_ip, my_market_port, seed_uri):
+    def __init__(self, my_market_ip, my_market_port, seed_uri, market_id):
 
         self.transport = CryptoTransportLayer(my_market_ip,
                                               my_market_port,
-                                              store_file)
+                                              market_id)
         self.transport.join_network(seed_uri)
-        self.market = Market(self.transport, store_file)
+        self.market = Market(self.transport)
 
         handlers = [
             (r"/", MainHandler),
@@ -44,14 +44,14 @@ class MarketApplication(tornado.web.Application):
         return self.transport
 
 
-def start_node(store_file, my_market_ip, my_market_port, seed_uri, log_file):
+def start_node(my_market_ip, my_market_port, seed_uri, log_file, userid):
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(name)s -  \
                                 %(levelname)s - %(message)s',
                         filename=log_file)
 
-    application = MarketApplication(store_file, my_market_ip,
-                                    my_market_port, seed_uri)
+    application = MarketApplication(my_market_ip,
+                                    my_market_port, seed_uri, userid)
 
     error = True
     port = 8888
@@ -80,13 +80,11 @@ def start_node(store_file, my_market_ip, my_market_port, seed_uri, log_file):
 # Run this if executed directly
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("store_file",
-                        help="You need to specify a user \
-                                crypto file in `ppl/` folder")
     parser.add_argument("my_market_ip")
     parser.add_argument("-p", "--my_market_port", type=int, default=12345)
     parser.add_argument("-s", "--seed_uri")
     parser.add_argument("-l", "--log_file", default='node.log')
+    parser.add_argument("-u", "--userid", default=1)
     args = parser.parse_args()
-    start_node(args.store_file, args.my_market_ip,
-               args.my_market_port, args.seed_uri, args.log_file)
+    start_node(args.my_market_ip,
+               args.my_market_port, args.seed_uri, args.log_file, args.userid)

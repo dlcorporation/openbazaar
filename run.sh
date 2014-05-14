@@ -26,21 +26,21 @@ if [ ! -d "$LOGDIR" ]; then
 fi
 
 if [ $MODE == production ]; then
-	
-	$PYTHON node/tornadoloop.py $STOREFILE $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT -l $LOGDIR/node.log &
-	
+
+	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT -l $LOGDIR/node.log &
+
 else
 
-	# Primary Market - No SEED_URI specified 
-	$PYTHON node/tornadoloop.py $STOREFILE 127.0.0.1 -l $LOGDIR/demo_node1.log &
-	
+	# Primary Market - No SEED_URI specified
+	$PYTHON node/tornadoloop.py 127.0.0.1 -l $LOGDIR/demo_node1.log &
+
 	# Demo Peer Market
 	sleep 2
     STOREFILE2=ppl/s_tec
-	$PYTHON node/tornadoloop.py $STOREFILE2 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node2.log &
+	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node2.log &
 
 	sleep 2
     STOREFILE3=ppl/genjix
-	$PYTHON node/tornadoloop.py $STOREFILE3 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node3.log &
+	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node3.log &
 
 fi
