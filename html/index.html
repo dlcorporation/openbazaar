@@ -25,7 +25,7 @@
 
 
 
-<body ng-controller="Market" ng-init="">
+<body ng-controller="Market as market" ng-init="">
 
     <div ng-show="warningMessage" class="alert alert-warning"></div>
 
@@ -71,7 +71,7 @@
       <div id="header">
 
         <!-- Logo -->
-        <div class="col-sm-2" >
+        <div class="col-sm-4" >
             <a href="/"><img src="https://raw.githubusercontent.com/OpenBazaar/OpenBazaar/gh-pages/img/logo_alt1-b-h.png" style="max-height:100px;" /></a>
         </div>
 
@@ -279,38 +279,42 @@
                           <table class="table table-striped">
                           <tr>
                             <td width=200><strong>Order Date:</strong></td>
-                            <td><span id="modalCreated"></span></td>
+                            <td>{{Market.modalOrder.created*1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
                           </tr>
                           <tr>
                             <td width=200><strong>Status:</strong></td>
-                            <td style="vertical-align:middle;"><span id="modalStatus" class="label label-info"></span></td>
+                            <td style="vertical-align:middle;"><span class="label label-info">{{Market.modalOrder.state}}</span> <span ng-show="Market.modalOrder.waitingForSellerToShip" style="font-weight:bold;">Waiting for Shipment</span></td>
                           </tr>
                           <tr>
                             <td><strong>Buyer:</strong></td>
-                            <td style="word-break:break-all"><span id="modalBuyer"></span></td>
+                            <td style="word-break:break-all">{{Market.modalOrder.buyer}}</td>
                           </tr>
                           <tr>
                             <td><strong>Seller:</strong></td>
-                            <td style="word-break:break-all"><span id="modalSeller"></span></td>
+                            <td style="word-break:break-all">{{Market.modalOrder.seller}}</td>
                           </tr>
                           <tr>
                             <td><strong>Escrows:</strong></td>
-                            <td style="word-break:break-all"><span id="modalEscrows"></span></td>
+                            <td style="word-break:break-all">{{Market.modalOrder.escrows}}</td>
                           </tr>
                           <tr>
                             <td><strong>Payment Address:</strong></td>
-                            <td style="word-break:break-all"><span id="modalPaymentAddress"></span></td>
+                            <td style="word-break:break-all"><a href="https://blockchain.info/address/{{Market.modalOrder.address}}" target="_blank">{{Market.modalOrder.address}}</a></td>
                           </tr>
                           <tr>
                             <td><strong>Order Description:</strong></td>
-                            <td><span id="modalOrderDescription"></span></td>
+                            <td>{{Market.modalOrder.text}}</td>
                           </tr>
                           </table>
 
-                          <div id="payment_buttons">
+                          <div ng-show="Market.modalOrder.waitingForPayment" id="payment_buttons2">
                           <button ng-click="markOrderPaid(orderId)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
                           <button ng-click="" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
                           </div>
+
+                          <button ng-show="Market.modalOrder.waitingForShipment" id="send-order-button" ng-click="markOrderShipped(orderId)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-ok"></span> Mark as Shipped</button>
+
+
 
                         </div>
                         <div class="modal-footer">

@@ -26,7 +26,8 @@ angular.module('app').directive('identicon', function () {
     }
   });
 
-angular.module('app').controller('Market', ['$scope', function($scope) {
+angular.module('app')
+  .controller('Market', ['$scope', function($scope) {
 
   $scope.newuser = true
   $scope.page = false
@@ -167,26 +168,24 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
       console.log("Order info retrieved");
       console.log(msg.order);
 
-      $('#modalOrderDescription').html(msg.order.text);
-      $('#modalBuyer').html(msg.order.buyer);
-      $('#modalStatus').html(msg.order.state);
-      $('#modalSeller').html(msg.order.seller);
-      $('#modalPaymentAddress').html('<a href="https://blockchain.info/address/'+msg.order.address+'" target="_blank">'+msg.order.address+'</a>');
-      $('#modalCreated').html(new Date(msg.order.created*1000));
+      $scope.modalOrder = msg.order;
 
-
-
-      $('#modalEscrows').html(msg.order.escrows);
 
       if(msg.order.state == 'accepted') {
-        $('#payment_buttons').show();
+        $scope.modalOrder.waitingForPayment = true;
+      } else if (msg.order.state == 'paid') {
+        if (msg.order.seller == $scope.myself.pubkey) {
+          $scope.modalOrder.waitingForShipment = true;
+        } else {
+          $scope.modalOrder.waitingForSellerToShip = true;
+        }      
       } else {
-        $('#payment_buttons').hide();
+        $scope.modalOrder.waitingForPayment = false;
       }
 
 
       if (!$scope.$$phase) {
-         //console.log($scope.myOrders);
+
          $scope.$apply();
       }
   }
@@ -199,9 +198,9 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   $scope.parse_myorders = function(msg) {
 
-  	  console.log('Retrieved my orders: ',msg);
+
   	  $scope.orders = msg['orders'];
-      console.log($scope.orders);
+
 
       if (!$scope.$$phase) {
 	       $scope.$apply();
@@ -380,7 +379,7 @@ angular.module('app').controller('Market', ['$scope', function($scope) {
 
   }
   $scope.payOrder = function(order) {
-      order.state = 'payed'
+      order.state = 'paid'
       order.tx = $scope.newOrder.tx;
       $scope.newOrder.tx = '';
       socket.send('order', order);
@@ -582,6 +581,7 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
   $scope.ViewOrderCtrl = function ($scope, $modal, $log) {
 
 
+
     $scope.open = function (size, orderId) {
 
       // Send socket a request for order info
@@ -594,7 +594,8 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
         resolve: {
           orderId: function() {
             return orderId;
-          }
+          },
+          scope: function() { return $scope }
         }
       });
 
@@ -606,13 +607,36 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
     };
   };
 
- var ViewOrderInstanceCtrl = function ($scope, $modalInstance, orderId) {
+
+ var ViewOrderInstanceCtrl = function ($scope, $modalInstance, orderId, scope) {
+
 
    $scope.orderId = orderId;
+   $scope.Market = scope;
 
    $scope.markOrderPaid = function(orderId) {
+
     socket.send("pay_order", { orderId: orderId} )
-    $('#payment_buttons').hide();
+
+
+    scope.modalOrder.state = 'paid';
+
+    scope.modalOrder.waitingForPayment = false;
+    scope.modalOrder.waitingForShipment = true;
+
+    // Refresh orders in background
+    scope.queryMyOrder();
+
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+
+   }
+
+
+   $scope.markOrderSent = function(orderId) {
+    socket.send("send_order", { orderId: orderId} )
+    $('#send-order-button').hide();
 
     if (!$scope.$$phase) {
        $scope.$apply();
@@ -628,8 +652,5 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
       $modalInstance.dismiss('cancel');
     };
   };
-
-
-
 
 }])
