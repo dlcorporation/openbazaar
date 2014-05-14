@@ -7,6 +7,7 @@ import random
 import protocol
 import obelisk
 import logging
+import pycountry
 
 class ProtocolHandler:
     def __init__(self, transport, node, handler):
@@ -40,11 +41,17 @@ class ProtocolHandler:
 
     def send_opening(self):
         peers = self.get_peers()
+
+        countryCodes = []
+        for country in pycountry.countries:
+          countryCodes.append({"code":country.alpha2, "name":country.name})
+
         message = {
             'type': 'myself',
             'pubkey': self._transport._myself.get_pubkey().encode('hex'),
             'peers': peers,
             'settings': self.node.get_settings(),
+            'countryCodes': countryCodes,
             'reputation': self.node.reputation.get_my_reputation()
         }
 
