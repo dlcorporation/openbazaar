@@ -35,6 +35,7 @@ class ProtocolHandler:
             "query_order":	self.client_query_order,
             "pay_order":	self.client_pay_order,
             "ship_order":	self.client_ship_order,
+            "generate_secret":	self.client_generate_secret,
         }
 
         self._log = logging.getLogger(self.__class__.__name__)
@@ -46,11 +47,13 @@ class ProtocolHandler:
         for country in pycountry.countries:
           countryCodes.append({"code":country.alpha2, "name":country.name})
 
+        settings = self.node.get_settings()
+
         message = {
             'type': 'myself',
-            'pubkey': self._transport._myself.get_pubkey().encode('hex'),
+            'pubkey': settings['pubkey'],
             'peers': peers,
-            'settings': self.node.get_settings(),
+            'settings': settings,
             'countryCodes': countryCodes,
             'reputation': self.node.reputation.get_my_reputation()
         }
@@ -69,6 +72,7 @@ class ProtocolHandler:
 
     def client_query_page(self, socket_handler, msg):
         self._log.info("Message: ", msg)
+        
         pubkey = msg['pubkey'].decode('hex')
         self.node.query_page(pubkey)
         self.node.reputation.query_reputation(pubkey)
@@ -120,6 +124,11 @@ class ProtocolHandler:
 
         # Send to exchange partner
         self.node.orders.send_order(order)
+
+    def client_generate_secret(self, socket_handler, msg):
+
+      new_secret = self.node.generate_new_secret()
+      self.send_opening()
 
 
     def client_order(self, socket_handler, msg):

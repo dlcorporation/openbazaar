@@ -3,11 +3,14 @@ import pyelliptic as ec
 
 from p2p import PeerConnection, TransportLayer
 import traceback
-
+from pymongo import MongoClient
 from protocol import hello_request, hello_response, proto_response_pubkey
 import obelisk
 import logging
-
+from market import Market
+#from ecdsa import SigningKey,SECP256k1
+#import random
+from obelisk import bitcoin
 
 class CryptoPeerConnection(PeerConnection):
 
@@ -20,6 +23,7 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
+        print data
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):
@@ -29,12 +33,35 @@ class CryptoPeerConnection(PeerConnection):
 
 class CryptoTransportLayer(TransportLayer):
 
-    def __init__(self, my_ip, my_port, store_file):
+    def __init__(self, my_ip, my_port, market_id):
+
         TransportLayer.__init__(self, my_ip, my_port)
+
         self._myself = ec.ECC(curve='secp256k1')
+
         self.nick_mapping = {}
-        self.nickname, self.secret, self.pubkey = \
-            self.load_crypto_details(store_file)
+
+        # Connect to database
+        MONGODB_URI = 'mongodb://localhost:27017'
+        _dbclient = MongoClient()
+        self._db = _dbclient.openbazaar
+
+        settings = self._db.settings.find_one({'id':market_id})
+
+        if settings:
+            self.nickname = settings['nickname'] if settings.has_key("nickname") else ""
+            self.secret = settings['secret']
+            self.pubkey = settings['pubkey']
+        else:
+            self.nickname = 'Default'
+            key = bitcoin.EllipticCurveKey()
+            key.new_key_pair()
+            hexkey = key.secret.encode('hex')
+            self._db.settings.insert({"id":market_id, "secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')})
+
+#        self.nickname, self.secret, self.pubkey = \
+#            self.load_crypto_details(store_file)
+
         self._log = logging.getLogger(self.__class__.__name__)
 
     # Return data array with details from the crypto file
@@ -66,7 +93,7 @@ class CryptoTransportLayer(TransportLayer):
             return
 
         # Return signed pubkey
-        pubkey = self._myself.get_pubkey()
+        pubkey = self._myself.pubkey
         ec_key = obelisk.EllipticCurveKey()
         ec_key.set_secret(self.secret)
         digest = obelisk.Hash(pubkey)
@@ -103,6 +130,7 @@ class CryptoTransportLayer(TransportLayer):
     def send_enc(self, uri, msg):
         peer = self._peers[uri]
         pub = peer._pub
+        print 'here is the pub',pub
 
         # Now send a hello message to the peer
         if pub:
@@ -117,6 +145,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def init_peer(self, msg):
         self._log.info('Initialize Peer: %s' % msg)
+
         uri = msg['uri']
         pub = msg.get('pub')
         msg_type = msg.get('type')
