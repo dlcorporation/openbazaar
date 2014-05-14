@@ -7,6 +7,7 @@ import json
 import lookup
 from pymongo import MongoClient
 import logging
+import pycountry
 
 
 class Market(object):

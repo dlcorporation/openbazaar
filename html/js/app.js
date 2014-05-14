@@ -314,6 +314,7 @@ angular.module('app')
   $scope.parse_myself = function(msg) {
 
     $scope.myself = msg;
+    
 
     if (!$scope.$$phase) {
        $scope.$apply();

@@ -167,22 +167,24 @@
 
 		          <h3>Settings</h3>
 
-              <p>This is where you will manage software settings.</p>
+
 
               <div id="settings-container">
               <div class="col-sm-2">
 
               <ul class="nav nav-pills nav-stacked">
-                <li class="active" onclick="$('#profile-form').show();$('#profile-form').siblings().hide();"><a href="#">Profile</a></li>
+                <li class="active" onclick="$('#profile-form').show();$('#profile-form').siblings().hide();"><a href="#">Store Info</a></li>
                 <li><a href="#" onclick="$('#keys-form').show();$('#keys-form').siblings().hide();">Keys</a></li>
                 <li><a href="#" onclick="$('#communication-form').show();$('#communication-form').siblings().hide();">Communication</a></li>
                 <li><a href="#" onclick="$('#arbitration-form').show();$('#arbitration-form').siblings().hide();">Arbitration</a></li>
               </ul>
 
               </div>
-              <div class="col-sm-10" style="background-color:#ddd;padding-top:10px;">
+              <div class="col-sm-10" style="">
 
                 <form id="profile-form" role="form" class="form-horizontal">
+
+                  <h4>Store Details</h4>
 
                   <div class="form-group">
   							    <label for="inputNickname" class="col-sm-3 control-label">Nickname</label>
@@ -192,61 +194,59 @@
   							  </div>
 
                 	<div class="form-group">
-  							    <label for="inputPubkey" class="col-sm-3 control-label">Public Key</label>
-  							    <div class="col-sm-9" style="word-break:break-all">
-                      {{myself.pubkey}}
-  							    </div>
-  							  </div>
+                   <label for="inputStoreDescription" class="col-sm-3 control-label">Store Description</label>
+                   <div class="col-sm-9">
+                     <textarea ng-model="settings.storeDescription" class="form-control" id="inputStoreDescription" rows="5" placeholder="Enter a short description about your store"></textarea>
+                   </div>
+                 </div>
 
-  								<div class="form-group">
-  							    <label for="inputSecret" class="col-sm-3 control-label">Secret</label>
-  							    <div class="col-sm-9">
-  							      <input ng-model="settings.secret" class="form-control" id="inputSecret" placeholder="Secret">
-                      <a href="#" ng-click="generateNewSecret()">Generate a new secret</a>
-  							    </div>
-  							  </div>
+                  <h4>Shipping Information</h4>
 
                   <div class="form-group">
-  							    <label for="inputEmail" class="col-sm-3 control-label">Email</label>
-  							    <div class="col-sm-9">
-  							      <input type="email" ng-model="settings.email" class="form-control" id="inputEmail" placeholder="Email">
-  							    </div>
-  							  </div>
-
-  							  <div class="form-group">
-  							    <label for="inputPGPPubkey" class="col-sm-3 control-label">PGP Public Key</label>
-  							    <div class="col-sm-9">
-  							      <textarea class="form-control" ng-model="settings.PGPPubKey" id="inputPGPPubkey" rows="8" style="font-size:12px;" placeholder="Copy-paste your PGP public key here"></textarea>
-  							    </div>
-  							  </div>
-
-  							  <div class="form-group">
-  							    <label for="inputBitmessageAddress" class="col-sm-3 control-label">Bitmessage Address</label>
-  							    <div class="col-sm-9">
-  							      <input type="text" class="form-control" ng-model="settings.bitmessage" id="inputBitmessageAddress" placeholder="Bitmessage address">
-  							    </div>
-  							  </div>
-
-                  <div class="form-group">
-                    <label for="inputEscrowAddresses" class="col-sm-3 control-label">Escrow Addresses</label>
-                    <input type="hidden" ng-model="settings.escrowAddresses" />
-                    <div class="col-sm-9">
-                      <div class="input-group">
-                        <input type="text" class="form-control" id="inputEscrowAddress" placeholder="Enter an escrow address">
-                        <span class="input-group-btn">
-                          <button class="btn btn-default" type="button" ng-click="addEscrow()">Add</button>
-                        </span>
-                      </div>
-                        <table class="table " style="margin-top:5px;padding:0">
-                          <tr ng-repeat="escrow in settings.escrowAddresses" style="word-break:break-all"><td width=20>
-                            <button type="button" class="btn btn-default btn-sm">
-                              <span class="glyphicon glyphicon-trash" style="color:black"></span>
-                            </button></td><td>{{escrow}}</td></tr>
-                        </table>
-                    </div>
+                   <label for="inputStreet1" class="col-sm-3 control-label">Street 1</label>
+                   <div class="col-sm-9">
+                     <input ng-model="settings.street1" class="form-control" id="inputStreet1" placeholder="123 Bitcoin Ave."/>
+                   </div>
+                 </div>
+                 <div class="form-group">
+                  <label for="inputStreet2" class="col-sm-3 control-label">Street 2</label>
+                  <div class="col-sm-9">
+                    <input ng-model="settings.street2" class="form-control" id="inputStreet2" placeholder=""/>
                   </div>
+                </div>
 
+                <div class="form-group">
+                 <label for="inputCity" class="col-sm-3 control-label">City</label>
+                 <div class="col-sm-5">
+                   <input ng-model="settings.city" class="form-control" id="inputCity" placeholder=""/>
+                 </div>
 
+               </div>
+
+                <div class="form-group">
+                 <label for="inputStateRegion" class="col-sm-3 control-label">State/Province/Region</label>
+                 <div class="col-sm-9">
+
+                 </div>
+               </div>
+
+               <div class="form-group">
+                <label for="inputZip" class="col-sm-3 control-label">Zip</label>
+                <div class="col-sm-2">
+                  <input ng-model="settings.zip" class="form-control" id="inputZip" placeholder=""/>
+                </div>
+
+              </div>
+
+              <div class="form-group">
+               <label for="inputCountry" class="col-sm-3 control-label">Country</label>
+               <div class="col-sm-2">
+                 <select ng-model="settings.countryCode" ng-options="country.name for country in myself.countryCodes">
+
+                 </select>
+               </div>
+
+             </div>
 
               	  <div class="form-group">
               	     <div class="col-sm-3"></div>
@@ -254,10 +254,14 @@
               	     	<button type="submit" class="btn btn-default" ng-click="saveSettings()">Save</button>
               	     </div>
               	  </div>
+
+
                 </form>
 
                 <!-- Keys Form -->
                 <form id="keys-form" role="form" class="form-horizontal" style="display:none;">
+
+                  <h4>Manage Keys</h4>
 
                   <div class="form-group">
                     <label for="inputPubkey" class="col-sm-3 control-label">Public Key</label>
@@ -284,6 +288,8 @@
 
                 <!-- Communication Form -->
                 <form id="communication-form" role="form" class="form-horizontal">
+
+                  <h4>Communication Info</h4>
 
                   <div class="form-group">
                     <label for="inputEmail" class="col-sm-3 control-label">Email</label>
@@ -317,14 +323,15 @@
                 <!-- Arbitration Form -->
                 <form id="arbitration-form" role="form" class="form-horizontal">
 
-
+                  <h4>Trusted Arbiters</h4>
+                  <p>The addresses below are your trusted arbiters for transactions. You will be able to choose one at time of purchase.<br/><br/></p>
 
                   <div class="form-group">
-                    <label for="inputEscrowAddresses" class="col-sm-3 control-label">Escrow Addresses</label>
+
                     <input type="hidden" ng-model="settings.escrowAddresses" />
-                    <div class="col-sm-9">
+                    <div class="col-sm-12">
                       <div class="input-group">
-                        <input type="text" class="form-control" id="inputEscrowAddress" placeholder="Enter an escrow address">
+                        <input type="text" class="form-control" id="inputEscrowAddress" placeholder="Enter an arbiter's address">
                         <span class="input-group-btn">
                           <button class="btn btn-default" type="button" ng-click="addEscrow()">Add</button>
                         </span>
@@ -338,15 +345,26 @@
                     </div>
                   </div>
 
-
+                  <h4>Acting as an Arbiter</h4>
+                  <p>If you are interested in acting as a trusted arbiter on the network you can set it up here.</p>
 
                   <div class="form-group">
-                     <div class="col-sm-3"></div>
-                     <div class="col-sm-9" style="text-align:right">
-                       <button type="submit" class="btn btn-default" ng-click="saveSettings()">Save</button>
-                     </div>
+
+                    <label for="inputArbiter" class="col-sm-3 control-label">Make me an arbiter</label>
+                    <input type="checkbox" id="inputArbiter" class="col-sm-9" ng-model="settings.arbiter" value="1" />
+
                   </div>
+
+                  <div class="form-group">
+                    <label for="inputArbiterDescription" class="col-sm-3 control-label">Experience & Services</label>
+                    <div class="col-sm-9">
+                      <textarea rows='6' type="text" class="form-control" ng-model="settings.arbiterDescription" id="inputArbiterDescription" placeholder="Enter a short description of your services and experience"></textarea>
+                    </div>
+                  </div>
+
                 </form>
+
+
 
             </div>
 
