@@ -135,11 +135,12 @@ class Market(object):
 
     def save_settings(self, msg):
         print "Settings to save",msg
-        self._db.settings.update({}, msg, True)
+        print self._transport
+        self._db.settings.update({'id':'%s'%self._transport.market_id}, {'$set':msg}, True)
 
     def get_settings(self):
-
-        settings = self._db.settings.find_one()
+        print self._transport.market_id
+        settings = self._db.settings.find_one({'id':'%s'%self._transport.market_id})
 
         if settings:
             return { "bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",

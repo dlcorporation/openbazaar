@@ -152,10 +152,12 @@ class ProtocolHandler:
     # messages coming from "the market"
     def on_node_peer(self, peer):
         self._log.info("Add peer")
+        
         response = {'type': 'peer',
                     'pubkey': peer._pub.encode('hex')
                               if peer._pub
                               else 'unknown',
+                    #'nickname': peer.
                     'uri': peer._address}
         self.send_to_client(None, response)
 
