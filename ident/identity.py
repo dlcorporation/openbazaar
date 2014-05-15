@@ -291,7 +291,7 @@ class ZmqPoller:
 
 def main(argv):
 
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename='../logs/identity.log')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename='logs/identity.log')
 
     chain = Blockchain()
     pool = Pool(chain)

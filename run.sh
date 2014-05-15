@@ -27,6 +27,7 @@ fi
 
 if [ $MODE == production ]; then
 
+  $PYTHON ident/identity.py &
 	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT -l $LOGDIR/node.log -u 1 &
 
 else
