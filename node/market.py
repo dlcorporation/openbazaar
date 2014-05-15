@@ -166,14 +166,15 @@ class Market(object):
         page = page.get('text')
 
         if pubkey and page:
+            print page
             self.pages[pubkey] = page
 
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
         self._transport.send(proto_page(self._transport._myself.get_pubkey().encode('hex'),
-                                        self.mypage, self.signature,
-                                        self.nickname))
+                                        self.settings['storeDescription'], self.signature,
+                                        self.settings['nickname']))
 
     def on_query_myorders(self, peer):
         self._log.info("Someone is querying for your page")
