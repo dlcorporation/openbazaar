@@ -71,7 +71,6 @@ angular.module('app')
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.pubkey;
-     console.log( peer);
      var query = {'type': 'query_page', 'pubkey': peer.pubkey}
      socket.send('query_page', query)
   }
@@ -365,6 +364,7 @@ angular.module('app')
   $scope.newOrder = {text:'', tx: ''}
   $scope.createOrder = function() {
       $scope.creatingOrder = false;
+      
       var newOrder = {
           'text': $scope.newOrder.text,
           'state': 'new',
