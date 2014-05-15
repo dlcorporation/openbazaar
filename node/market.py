@@ -141,7 +141,7 @@ class Market(object):
     def get_settings(self):
         self._log.info(self._transport.market_id)
         settings = self._db.settings.find_one({'id':'%s'%self._transport.market_id})
-
+        print settings
         if settings:
             return { "bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
                 "email": settings['email'] if settings.has_key("email") else "",
@@ -152,6 +152,14 @@ class Market(object):
                 "welcome": settings['welcome'] if settings.has_key("welcome") else "",
                 "escrowAddresses": settings['escrowAddresses'] if settings.has_key("escrowAddresses") else "",
                 "storeDescription": settings['storeDescription'] if settings.has_key("storeDescription") else "",
+                "city": settings['city'] if settings.has_key("city") else "",
+                "stateRegion": settings['stateRegion'] if settings.has_key("stateRegion") else "",
+                "street1": settings['street1'] if settings.has_key("street1") else "",
+                "street2": settings['street2'] if settings.has_key("street2") else "",
+                "countryCode": settings['countryCode'] if settings.has_key("countryCode") else "",
+                "zip": settings['zip'] if settings.has_key("zip") else "",
+                "arbiterDescription": settings['arbiterDescription'] if settings.has_key("arbiterDescription") else "",
+                "arbiter": settings['arbiter'] if settings.has_key("arbiter") else "",
                 }
 
 
