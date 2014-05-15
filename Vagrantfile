@@ -13,11 +13,32 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "trusty"
   config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-i386-vagrant-disk1.box"
 
+
+  #This stanza makes use of the vagrant-cachier tool to cache apt updates while refreshing virtual machines -sbl
+  if Vagrant.has_plugin?("vagrant-cachier")
+     # Configure cached packages to be shared between instances of the same base box.
+     # More info on the "Usage" link above
+     config.cache.scope = :box
+
+     # If you are using VirtualBox, you might want to use that to enable NFS for
+     # shared folders. This is also very useful for vagrant-libvirt if you want
+     # bi-directional sync
+     config.cache.synced_folder_opts = {
+       type: :nfs,
+       # The nolock option can be useful for an NFSv3 client that wants to avoid the
+       # NLM sideband protocol. Without this option, apt-get might hang if it tries
+       # to lock files needed for /var/cache/* operations. All of this can be avoided
+       # by using NFSv4 everywhere. Please note that the tcp option is not the default.
+       mount_options: ['rw', 'vers=3', 'tcp', 'nolock']
+     }
+   end
+
+
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
     apt-get install -y build-essential python-dev python-pip python-zmq mongodb
-    pip install tornado Twisted
-    easy_install pymongo websocket behave pycountry
+    pip install tornado Twisted pycountry
+    easy_install pymongo websocket behave 
     cp -R /vagrant/ecdsa /vagrant/pyelliptic /vagrant/obelisk /usr/local/lib/python2.7/dist-packages/
     mongo --eval "db = db.getSiblingDB('openbazaar')"
   SCRIPT
