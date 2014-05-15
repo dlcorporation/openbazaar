@@ -57,7 +57,7 @@ class CryptoTransportLayer(TransportLayer):
             key = bitcoin.EllipticCurveKey()
             key.new_key_pair()
             hexkey = key.secret.encode('hex')
-            self._db.settings.insert({"id":market_id, "secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')})
+            self._db.settings.insert({"id":'%s'%market_id, "secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')})
             self.settings = self._db.settings.find_one({'id':"%s"%market_id})
 
 
