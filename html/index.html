@@ -558,7 +558,7 @@
           <!-- Store Products -->
           <div ng-show="storeProductsPanel"  class="animated bounceInLeft">
 
-            <button ng-click="creatingOrder=true" class="btn btn-success btn-xl navbar-btn">Buy Now</button>
+            <button ng-click="creatingOrder=true" class="btn btn-success btn-xl navbar-btn">Submit an Order</button>
 
             <form ng-show="creatingOrder">
                 Text: <input class="form-control" type="text" ng-model="newOrder.text" placeholder="Friendly message"> <a class="btn btn-primary navbar-btn" ng-click="createOrder()" type="submit">Order</a> <a class="btn btn-warning navbar-btn" ng-click="creatingOrder=false" type="cancel">Cancel</a>

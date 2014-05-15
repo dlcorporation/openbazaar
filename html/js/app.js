@@ -349,7 +349,7 @@ angular.module('app')
   $scope.searchNickname = function() {
      var query = {'type': 'search', 'text': $scope.search };
      $scope.searching = $scope.search;
-     socket.send('search', query)
+     //socket.send('search', query)
      $scope.search = ""
   }
 
@@ -364,7 +364,7 @@ angular.module('app')
   $scope.newOrder = {text:'', tx: ''}
   $scope.createOrder = function() {
       $scope.creatingOrder = false;
-      
+
       var newOrder = {
           'text': $scope.newOrder.text,
           'state': 'new',
