@@ -80,7 +80,7 @@ angular.module('app')
   var socket = new Connection(function(msg) {
    switch(msg.type) {
       case 'peer':
-         $scope.add_peer(msg)         
+         $scope.add_peer(msg)
          break;
       case 'peer_remove':
          $scope.remove_peer(msg)
@@ -352,7 +352,14 @@ angular.module('app')
      $scope.search = ""
   }
 
-  $scope.settings = { email:'', PGPPubKey:'', bitmessage:'', pubkey:'', secret:'', nickname:'', welcome:'', escrowAddresses:''}
+  $scope.settings = { email:'',
+                      PGPPubKey:'',
+                      bitmessage:'',
+                      pubkey:'',
+                      secret:'',
+                      nickname:'',
+                      welcome:'',
+                      escrowAddresses:''}
   $scope.saveSettings = function() {
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query)
