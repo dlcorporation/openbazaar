@@ -167,8 +167,9 @@ class Market(object):
 
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
+        print self.settings
         self._log.info("Someone is querying for your page")
-        self._transport.send(proto_page(self._transport._myself.get_pubkey(),
+        self._transport.send(proto_page(self.settings['pubkey'],
                                         self.mypage, self.signature,
                                         self.nickname))
 
