@@ -50,9 +50,11 @@ def proto_page(pubkey, text, signature, nickname):
 
 
 def query_page(pubkey):
+
     data = {}
     data['type'] = 'query_page'
     data['pubkey'] = pubkey.encode('hex')
+    print 'query_page',data
     return data
 
 

@@ -133,6 +133,7 @@ class Market(object):
     # SETTINGS
 
     def save_settings(self, msg):
+        print "Settings to save",msg
         self._db.settings.update({}, msg, True)
 
     def get_settings(self):
@@ -148,6 +149,7 @@ class Market(object):
                 "secret": settings['secret'] if settings.has_key("secret") else "",
                 "welcome": settings['welcome'] if settings.has_key("welcome") else "",
                 "escrowAddresses": settings['escrowAddresses'] if settings.has_key("escrowAddresses") else "",
+                "storeDescription": settings['storeDescription'] if settings.has_key("storeDescription") else "",
                 }
 
 
@@ -157,6 +159,7 @@ class Market(object):
         self._transport.send(query_page(pubkey))
 
     def on_page(self, page):
+
         self._log.info("Page returned: " + str(page))
 
         pubkey = page.get('pubkey')
@@ -167,9 +170,8 @@ class Market(object):
 
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
-        print self.settings
         self._log.info("Someone is querying for your page")
-        self._transport.send(proto_page(self.settings['pubkey'],
+        self._transport.send(proto_page(self._transport._myself.get_pubkey().encode('hex'),
                                         self.mypage, self.signature,
                                         self.nickname))
 
