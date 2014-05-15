@@ -51,7 +51,7 @@ class ProtocolHandler:
 
         message = {
             'type': 'myself',
-            'pubkey': settings['pubkey'],
+            'pubkey': self._transport._myself.get_pubkey().encode('hex'),
             'peers': peers,
             'settings': settings,
             'countryCodes': countryCodes,
@@ -71,7 +71,7 @@ class ProtocolHandler:
         self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
 
     def client_query_page(self, socket_handler, msg):
-        self._log.info("Message: ", msg)        
+        self._log.info("Message: ", msg)
         pubkey = msg['pubkey'].decode('hex')
         self.node.query_page(pubkey)
         self.node.reputation.query_reputation(pubkey)

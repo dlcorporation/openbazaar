@@ -67,7 +67,7 @@ class Orders(object):
 
     # Create a new order
     def create_order(self, seller, text):
-
+        print 'CREATING ORDER'
         id = random.randint(0,1000000)
         buyer = self._transport._myself.get_pubkey()
         new_order = order(id, buyer, seller, 'new', text, self._escrows)

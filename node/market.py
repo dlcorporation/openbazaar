@@ -12,6 +12,7 @@ import pycountry
 from ecdsa import SigningKey,SECP256k1
 import random
 from obelisk import bitcoin
+import base64
 
 
 class Market(object):
@@ -172,6 +173,8 @@ class Market(object):
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
+        self.settings = self.get_settings()
+        print base64.b64encode(self.settings['storeDescription'].encode('ascii'))
         self._transport.send(proto_page(self._transport._myself.get_pubkey().encode('hex'),
                                         self.settings['storeDescription'], self.signature,
                                         self.settings['nickname']))
