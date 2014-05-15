@@ -46,18 +46,22 @@ class CryptoTransportLayer(TransportLayer):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
-        settings = self._db.settings.find_one({'id':market_id})
+        self.settings = self._db.settings.find_one({'id':"%s"%market_id})
+        self.market_id = market_id
 
-        if settings:
-            self.nickname = settings['nickname'] if settings.has_key("nickname") else ""
-            self.secret = settings['secret']
-            self.pubkey = settings['pubkey']
+        if self.settings:
+            self.nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
+            self.secret = self.settings['secret']
+            self.pubkey = self.settings['pubkey']
         else:
             self.nickname = 'Default'
             key = bitcoin.EllipticCurveKey()
             key.new_key_pair()
             hexkey = key.secret.encode('hex')
             self._db.settings.insert({"id":market_id, "secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')})
+            self.settings = self._db.settings.find_one({'id':"%s"%market_id})
+
+
 
 #        self.nickname, self.secret, self.pubkey = \
 #            self.load_crypto_details(store_file)
@@ -80,10 +84,13 @@ class CryptoTransportLayer(TransportLayer):
 
     def get_profile(self):
         peers = {}
+
+        self.settings = self._db.settings.find_one({'id':"%s"%self.market_id})
+        print 'SETTINGS',self.settings
         for uri, peer in self._peers.iteritems():
             if peer._pub:
                 peers[uri] = peer._pub.encode('hex')
-        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'),
+        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'),'nickname': self.nickname,
                 'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
@@ -130,7 +137,7 @@ class CryptoTransportLayer(TransportLayer):
     def send_enc(self, uri, msg):
         peer = self._peers[uri]
         pub = peer._pub
-        
+
 
         # Now send a hello message to the peer
         if pub:
@@ -148,6 +155,7 @@ class CryptoTransportLayer(TransportLayer):
 
         uri = msg['uri']
         pub = msg.get('pub')
+        nickname = msg.get('nickname')
         msg_type = msg.get('type')
 
         if not self.valid_peer_uri(uri):
@@ -170,12 +178,12 @@ class CryptoTransportLayer(TransportLayer):
                 # test if we have to update the pubkey
                 if not self._peers[uri]._pub:
                     self._log.info("Setting public key for seed node")
-                    print pub
                     self._peers[uri]._pub = pub.decode('hex')
                     self.trigger_callbacks('peer', self._peers[uri])
 
                 if (self._peers[uri]._pub != pub.decode('hex')):
                     self._log.info("Updating public key for node")
+                    self._peers[uri]._nickname = nickname
                     self._peers[uri]._pub = pub.decode('hex')
 
                     self.trigger_callbacks('peer', self._peers[uri])

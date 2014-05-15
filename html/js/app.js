@@ -80,8 +80,7 @@ angular.module('app')
   var socket = new Connection(function(msg) {
    switch(msg.type) {
       case 'peer':
-         $scope.add_peer(msg)
-         console.log('add peer',msg)
+         $scope.add_peer(msg)         
          break;
       case 'peer_remove':
          $scope.remove_peer(msg)
