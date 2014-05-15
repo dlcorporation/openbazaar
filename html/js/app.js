@@ -71,6 +71,7 @@ angular.module('app')
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.pubkey;
+     console.log( peer);
      var query = {'type': 'query_page', 'pubkey': peer.pubkey}
      socket.send('query_page', query)
   }
@@ -81,6 +82,7 @@ angular.module('app')
    switch(msg.type) {
       case 'peer':
          $scope.add_peer(msg)
+         console.log('add peer',msg)
          break;
       case 'peer_remove':
          $scope.remove_peer(msg)

@@ -40,14 +40,14 @@ class Market(object):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
-        settings = self._db.settings.find_one()
+        self.settings = self._db.settings.find_one()
 
 
 
         welcome = True
 
-        if settings:
-            if  'welcome' in settings.keys() and settings['welcome']:
+        if self.settings:
+            if  'welcome' in self.settings.keys() and self.settings['welcome']:
                 welcome = False
 
         # Register callbacks for incoming events
@@ -112,10 +112,13 @@ class Market(object):
         #nickname = data["nickname"]
         #desc = data["desc"]
 
-        #tagline = "%s: %s" % (nickname, desc)
-        #self.mypage = tagline
-        #self.nickname = nickname
-        #self.signature = self._transport._myself.sign(tagline)
+        nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
+        storeDescription = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
+
+        tagline = "%s: %s" % (nickname, storeDescription)
+        self.mypage = tagline
+        self.nickname = nickname
+        self.signature = self._transport._myself.sign(tagline)
 
 
         if welcome:

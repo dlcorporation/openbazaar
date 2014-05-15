@@ -46,8 +46,7 @@ def create_nodes(context, num_nodes):
     proc = []
     for i in range(num_nodes):
         proc.append(Process(target=start_node,
-                            args=('ppl/default',
-                                  '127.0.0.%s' % str(i+1),
+                            args=('127.0.0.%s' % str(i+1),
                                   12345,
                                   None,
                                   'test%s.log' % str(i))))
