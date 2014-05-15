@@ -130,7 +130,7 @@ class CryptoTransportLayer(TransportLayer):
     def send_enc(self, uri, msg):
         peer = self._peers[uri]
         pub = peer._pub
-        print 'here is the pub',pub
+        
 
         # Now send a hello message to the peer
         if pub:
@@ -170,6 +170,7 @@ class CryptoTransportLayer(TransportLayer):
                 # test if we have to update the pubkey
                 if not self._peers[uri]._pub:
                     self._log.info("Setting public key for seed node")
+                    print pub
                     self._peers[uri]._pub = pub.decode('hex')
                     self.trigger_callbacks('peer', self._peers[uri])
 
