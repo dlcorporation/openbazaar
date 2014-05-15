@@ -46,8 +46,10 @@ def step_impl(context, i, j):
     pubkey_j = ws_connect(int(j))[u'result'][u'pubkey']
 
     response = ws_send(int(i), 'query_page', {'pubkey': pubkey_j})[u'result']
-    f = open('ppl/default')
-    data = json.loads(f.read())
+    data = settings(j)
+    print pubkey_j
+    print response['text']
+    print data['storeDescription']
+
     assert response[u'type'] == u'page'
-    assert response['nickname'] == data['nickname']
-    assert response['text'] == data['nickname'] + ': ' + data['desc']
+    assert response[u'text'] == data['storeDescription']
