@@ -72,7 +72,7 @@
 
         <!-- Logo -->
         <div class="col-sm-4" >
-            <a href="/"><img src="https://raw.githubusercontent.com/OpenBazaar/OpenBazaar/gh-pages/img/logo_alt1-b-h.png" style="max-height:100px;" /></a>
+            <a href="/"><img src="https://raw.githubusercontent.com/OpenBazaar/OpenBazaar/gh-pages/img/logo_alt1-b-h.png" class="img-responsive" style="max-height:100px;" /></a>
         </div>
 
         <!-- Search and Navigation -->
@@ -113,21 +113,33 @@
 
             		<div ng-show="myInfoPanel" class="animated fadeInLeft">
 
-            			<h3>Home</h3>
-
-            			<p>Welcome to the OpenBazaar marketplace. This is your home screen for your marketplace.</p>
 
 
-            			<hr class="hr"/>
 
-            			<table width=700>
-            				<tr>
-            					<td width=150 valign=top><strong>Public Key:</strong></td>
-            					<td style="word-break:break-all">{{myself.pubkey}}</td>
-            				</tr>
-            			</table>
+
+                  <div class="jumbotron">
+                    <h1 style="font-weight:130">Welcome</h1>
+                      <p>You are <strong>now ready</strong> to join the world on a mission of freedom. Freedom to puchase, sell and trade.</p>
+
+                      <p style="margin-top:40px;">Some of the cool features we are working on:
+                          <ul>
+                            <li>Secure peer to peer merchants</li>
+                            <li>Anonymous ratings system</li>
+                            <li>Third-party arbitration system</li>
+                            <li>Encrypted messaging and chat</li>
+                          </ul>
+                    </p>
+                    <p style="margin-top:40px;">Want to help us change the world by contributing to our project? Visit us at <a href="https://github.com/OpenBazaar/OpenBazaar" target="_blank">https://github.com/OpenBazaar/OpenBazaar</a></p>
+
+
+                  </div>
+
+
+
 
             		</div>
+
+
 
             <!-- Product Catalog -->
 					  <div ng-show="productCatalogPanel" class="animated fadeInLeft">
