@@ -23,7 +23,6 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
-        print data
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):
@@ -86,7 +85,7 @@ class CryptoTransportLayer(TransportLayer):
         peers = {}
 
         self.settings = self._db.settings.find_one({'id':"%s"%self.market_id})
-        print 'SETTINGS',self.settings
+        self._log.info('SETTINGS %s' % self.settings)
         for uri, peer in self._peers.iteritems():
             if peer._pub:
                 peers[uri] = peer._pub.encode('hex')

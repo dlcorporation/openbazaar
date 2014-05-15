@@ -67,7 +67,7 @@ class Market(object):
         key.new_key_pair()
         hexkey = key.secret.encode('hex')
 
-        print 'Pubkey generate: ', key._public_key.pubkey
+        self._log.info('Pubkey generate: %s' % key._public_key.pubkey)
 
         self._db.settings.update({}, {"$set": {"secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')}})
 
@@ -134,12 +134,12 @@ class Market(object):
     # SETTINGS
 
     def save_settings(self, msg):
-        print "Settings to save",msg
-        print self._transport
+        self._log.info("Settings to save %s" % msg)
+        self._log.info(self._transport)
         self._db.settings.update({'id':'%s'%self._transport.market_id}, {'$set':msg}, True)
 
     def get_settings(self):
-        print self._transport.market_id
+        self._log.info(self._transport.market_id)
         settings = self._db.settings.find_one({'id':'%s'%self._transport.market_id})
 
         if settings:
@@ -168,14 +168,14 @@ class Market(object):
         page = page.get('text')
 
         if pubkey and page:
-            print page
+            self._log.info(page)
             self.pages[pubkey] = page
 
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
         self.settings = self.get_settings()
-        print base64.b64encode(self.settings['storeDescription'].encode('ascii'))
+        self._log.info(base64.b64encode(self.settings['storeDescription'].encode('ascii')))
         self._transport.send(proto_page(self._transport._myself.get_pubkey().encode('hex'),
                                         self.settings['storeDescription'], self.signature,
                                         self.settings['nickname']))
