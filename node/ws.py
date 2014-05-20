@@ -35,6 +35,7 @@ class ProtocolHandler:
             "query_order":	self.client_query_order,
             "pay_order":	self.client_pay_order,
             "ship_order":	self.client_ship_order,
+            "save_product":	self.client_save_product,
             "generate_secret":	self.client_generate_secret,
         }
 
@@ -104,6 +105,14 @@ class ProtocolHandler:
         # Update settings in mongo
         self.node.save_settings(msg['settings'])
 
+    def client_save_product(self, socket_handler, msg):
+        self._log.info("Save product: %s" % msg)
+
+        self.send_to_client(None, { "type": "products", "values": msg })
+
+        # Update settings in mongo
+        self.node.save_product(msg)
+
     def client_pay_order(self, socket_handler, msg):
 
         self._log.info("Marking Order as Paid: %s" % msg)
@@ -152,7 +161,7 @@ class ProtocolHandler:
     # messages coming from "the market"
     def on_node_peer(self, peer):
         self._log.info("Add peer")
-        
+
         response = {'type': 'peer',
                     'pubkey': peer._pub.encode('hex')
                               if peer._pub

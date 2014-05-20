@@ -131,6 +131,18 @@ class Market(object):
         #self._log.info("Tagline signature: " + self.signature.encode("hex"))
 
 
+    # Products
+    def save_product(self, msg):
+        self._log.info("Product to save %s" % msg)
+        self._log.info(self._transport)
+
+        product_id = msg['id'] if msg.has_key("id") else ""
+
+        if product_id == "":
+          product_id = random.randint(0,1000000)
+
+        self._db.products.update({'id':product_id}, {'$set':msg}, True)
+
     # SETTINGS
 
     def save_settings(self, msg):
