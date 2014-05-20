@@ -176,7 +176,7 @@
                   </div>
 
                   <div class="modal-body"  style="text-align:left;">
-                    <form role="form">
+                    <form role="form" id="productForm">
 
 
                       <div class="col-sm-3">
@@ -224,7 +224,7 @@
                       <br clear="both"/>
 
                       <div class="col-sm-12">
-                      <a href="#" ng-click="toggleItemAdvanced()">&gt; Advanced Details</a>
+                      <a href="#" ng-click="toggleItemAdvanced()"><span class="caret"></span> Advanced Details</a>
 
                       <div ng-show="itemAdvancedDetails" style="padding:10px 0;">
                         <p>Wouldn't you like to see more details here?</p>
@@ -241,7 +241,7 @@
                   </div>
 
                   <div class="modal-footer">
-                      <button class="btn btn-primary" ng-click="ok()">Save</button>
+                      <button class="btn btn-primary" ng-click="saveProduct()">Save</button>
                   </div>
 
               </script>

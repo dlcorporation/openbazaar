@@ -713,7 +713,16 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
 
   $scope.product = product;
 
-  $scope.ok = function () {
+  $scope.saveProduct = function () {
+
+    productTitle = $('#inputProductTitle').val();
+    productDescription = $('#inputProductDescription').val();
+    productPrice = $('#inputProductPrice').val();
+    productShippingPrice = $('#inputProductShippingPrice').val();
+    productTags = $('#inputProductTags').val();
+
+    socket.send("save_product", { productTitle: productTitle, productDescription:productDescription, productPrice:productPrice, productShippingPrice:productShippingPrice, productTags:productTags })
+
     $modalInstance.dismiss('cancel');
   };
 
