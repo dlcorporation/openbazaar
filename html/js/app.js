@@ -748,23 +748,33 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
 
     if(imgUpload) {
 
-      var r = new FileReader();
-      r.onloadend = function(e){
-        var data = e.target.result;
+      if (imgUpload.type != '' && $.inArray(imgUpload.type, ['image/jpg', 'image/gif', 'image/png']) != -1) {
 
-        $scope.product.productImageName = imgUpload.name;
-        $scope.product.productImageData = imgUpload.result;
-        console.log(imgUpload);
+        var r = new FileReader();
+        r.onloadend = function(e){
+          var data = e.target.result;
 
+          $scope.product.productImageName = imgUpload.name;
+          $scope.product.productImageData = imgUpload.result;
+          console.log(imgUpload);
+
+          console.log('SAVED:',$scope.product);
+          socket.send("save_product", $scope.product)
+          socket.send("query_products", {})
+
+          $modalInstance.dismiss('cancel');
+
+
+        }
+        r.readAsArrayBuffer(imgUpload);
+
+      } else {
         console.log('SAVED:',$scope.product);
         socket.send("save_product", $scope.product)
         socket.send("query_products", {})
 
         $modalInstance.dismiss('cancel');
-
-
       }
-      r.readAsArrayBuffer(imgUpload);
 
     } else {
 
