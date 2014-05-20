@@ -31,11 +31,13 @@ class ProtocolHandler:
             "search":          self.client_search,
             "shout":          self.client_shout,
             "query_orders":	  self.client_query_orders,
+            "query_products":	  self.client_query_products,
             "update_settings":	self.client_update_settings,
             "query_order":	self.client_query_order,
             "pay_order":	self.client_pay_order,
             "ship_order":	self.client_ship_order,
             "save_product":	self.client_save_product,
+            "remove_product":	self.client_remove_product,
             "generate_secret":	self.client_generate_secret,
         }
 
@@ -86,6 +88,15 @@ class ProtocolHandler:
 
         self.send_to_client(None, { "type": "myorders", "orders": orders } )
 
+    def client_query_products(self, socket_handler, msg):
+
+        self._log.info("Querying for Products")
+
+        # Query mongo for products
+        products = self.node.get_products()
+
+        self.send_to_client(None, { "type": "products", "products": products } )
+
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
 
@@ -108,10 +119,14 @@ class ProtocolHandler:
     def client_save_product(self, socket_handler, msg):
         self._log.info("Save product: %s" % msg)
 
-        self.send_to_client(None, { "type": "products", "values": msg })
-
         # Update settings in mongo
         self.node.save_product(msg)
+
+    def client_remove_product(self, socket_handler, msg):
+        self._log.info("Remove product: %s" % msg)
+
+        # Update settings in mongo
+        self.node.remove_product(msg)
 
     def client_pay_order(self, socket_handler, msg):
 
