@@ -720,6 +720,11 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
   $scope.cancel = function () {
     $modalInstance.dismiss('cancel');
   };
+
+  $scope.toggleItemAdvanced = function() {
+
+    $scope.itemAdvancedDetails = ($scope.itemAdvancedDetails) ? 0 : 1;
+  }
 };
 
 
