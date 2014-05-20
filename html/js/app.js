@@ -100,6 +100,9 @@ angular.module('app')
       case 'myorders':
       	 $scope.parse_myorders(msg)
       	 break;
+      case 'products':
+         $scope.parse_products(msg)
+         break;
       case 'orderinfo':
          $scope.parse_orderinfo(msg)
          break;
@@ -207,6 +210,18 @@ angular.module('app')
       if (!$scope.$$phase) {
 	       $scope.$apply();
 	    }
+
+  }
+
+  $scope.product = {};
+  $scope.parse_products = function(msg) {
+      console.log(msg.products.products);
+      $scope.products = msg.products.products;
+
+      $scope.product = {};
+      if (!$scope.$$phase) {
+         $scope.$apply();
+      }
 
   }
 
@@ -322,7 +337,6 @@ angular.module('app')
 
 
     // Settings
-
     $scope.settings = msg.settings
 
     msg.reputation.forEach(function(review) {
@@ -409,6 +423,12 @@ angular.module('app')
   	socket.send('order', order)
   }
 
+  $scope.removeProduct = function(productID) {
+     socket.send("remove_product", {"productID":productID});
+     socket.send("query_products", {})
+  }
+
+
   $scope.addEscrow = function() {
     escrowAddress = $('#inputEscrowAddress').val();
     $('#inputEscrowAddress').val('');
@@ -471,6 +491,7 @@ angular.module('app')
         $scope.arbitrationPanel = true;
         break;
   		case 'productCatalog':
+        $scope.queryProducts();
   			$scope.productCatalogPanel = true;
   			break;
   		case 'settings':
@@ -521,6 +542,14 @@ angular.module('app')
     	var query = {'type': 'query_orders', 'pubkey': ''}
     	console.log('querying orders')
     	socket.send('query_orders', query)
+
+  }
+
+  $scope.queryProducts = function() {
+      // Query for products
+      var query = {'type': 'query_products', 'pubkey': ''}
+      console.log('querying products')
+      socket.send('query_products', query)
 
   }
 
@@ -693,7 +722,7 @@ $scope.ProductModal = function ($scope, $modal, $log) {
         backdrop: backdrop,
         resolve: {
           product: function () {
-            return {"product":""};
+            return {"product":$scope.product};
           }
         }
       });
@@ -711,22 +740,47 @@ $scope.ProductModal = function ($scope, $modal, $log) {
 
 var ProductModalInstance = function ($scope, $modalInstance, product) {
 
-  $scope.product = product;
+  $scope.product = product.product;
 
   $scope.saveProduct = function () {
 
-    productTitle = $('#inputProductTitle').val();
-    productDescription = $('#inputProductDescription').val();
-    productPrice = $('#inputProductPrice').val();
-    productShippingPrice = $('#inputProductShippingPrice').val();
-    productTags = $('#inputProductTags').val();
+    var imgUpload = document.getElementById('inputProductImage').files[0];
 
-    socket.send("save_product", { productTitle: productTitle, productDescription:productDescription, productPrice:productPrice, productShippingPrice:productShippingPrice, productTags:productTags })
+    if(imgUpload) {
 
-    $modalInstance.dismiss('cancel');
+      var r = new FileReader();
+      r.onloadend = function(e){
+        var data = e.target.result;
+
+        $scope.product.productImageName = imgUpload.name;
+        $scope.product.productImageData = imgUpload.result;
+        console.log(imgUpload);
+
+        console.log('SAVED:',$scope.product);
+        socket.send("save_product", $scope.product)
+        socket.send("query_products", {})
+
+        $modalInstance.dismiss('cancel');
+
+
+      }
+      r.readAsArrayBuffer(imgUpload);
+
+    } else {
+
+      console.log('SAVED:',$scope.product);
+      socket.send("save_product", $scope.product)
+      socket.send("query_products", {})
+
+      $modalInstance.dismiss('cancel');
+    }
+
+
+
   };
 
   $scope.cancel = function () {
+    socket.send("query_products", {});
     $modalInstance.dismiss('cancel');
   };
 
@@ -734,6 +788,10 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
 
     $scope.itemAdvancedDetails = ($scope.itemAdvancedDetails) ? 0 : 1;
   }
+
+
+
+
 };
 
 

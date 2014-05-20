@@ -141,7 +141,38 @@ class Market(object):
         if product_id == "":
           product_id = random.randint(0,1000000)
 
+        if not msg.has_key("productPrice") or not msg['productPrice'] > 0:
+          msg['productPrice'] = 0
+
+        if not msg.has_key("productQuantity") or not msg['productQuantity'] > 0:
+          msg['productQuantity'] = 1
+
         self._db.products.update({'id':product_id}, {'$set':msg}, True)
+        
+
+    def remove_product(self, msg):
+        self._log.info("Product to remove %s" % msg)
+        self._db.products.remove({'id':msg['productID']})
+
+
+    def get_products(self):
+        self._log.info(self._transport.market_id)
+        products = self._db.products.find()
+        my_products = []
+
+        for product in products:
+          my_products.append({ "productTitle":product['productTitle'] if product.has_key("productTitle") else "",
+                        "id":product['id'] if product.has_key("id") else "",
+                        "productDescription":product['productDescription'] if product.has_key("productDescription") else "",
+                        "productPrice":product['productPrice'] if product.has_key("productPrice") else "",
+                        "productShippingPrice":product['productShippingPrice'] if product.has_key("productShippingPrice") else "",
+                        "productTags":product['productTags'] if product.has_key("productTags") else "",
+                        "productImageData":product['productImageData'] if product.has_key("productImageData") else "",
+                        "productQuantity":product['productQuantity'] if product.has_key("productQuantity") else "",
+                         })
+
+        return { "products": my_products }
+
 
     # SETTINGS
 
@@ -173,6 +204,8 @@ class Market(object):
                 "arbiterDescription": settings['arbiterDescription'] if settings.has_key("arbiterDescription") else "",
                 "arbiter": settings['arbiter'] if settings.has_key("arbiter") else "",
                 }
+
+
 
 
     # PAGE QUERYING
