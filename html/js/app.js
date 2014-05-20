@@ -678,4 +678,51 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
     };
   };
 
+
+// Modal Code
+$scope.ProductModal = function ($scope, $modal, $log) {
+
+  $scope.open = function (size, backdrop) {
+
+      backdrop = backdrop ? backdrop : true;
+
+      var modalInstance = $modal.open({
+        templateUrl: 'ProductModal.html',
+        controller: ProductModalInstance,
+        size: size,
+        backdrop: backdrop,
+        resolve: {
+          product: function () {
+            return {"product":""};
+          }
+        }
+      });
+
+      modalInstance.result.then(function (selectedItem) {
+        $scope.selected = selectedItem;
+      }, function () {
+        $log.info('Product modal dismissed at: ' + new Date());
+      });
+
+    }
+
+
+};
+
+var ProductModalInstance = function ($scope, $modalInstance, product) {
+
+  $scope.product = product;
+
+  $scope.ok = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  $scope.cancel = function () {
+    $modalInstance.dismiss('cancel');
+  };
+};
+
+
+
+
 }])
