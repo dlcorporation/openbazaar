@@ -205,10 +205,30 @@
                             <input type="text" class="form-control" id="inputProductShippingPrice"/>
                           </div>
                         </div>
+                        <div class="col-sm-8">
+                          <div class="form-group">
+                            <label for="inputProductTags">Tags</label>
+                            <input type="text" class="form-control" id="inputProductTags" placeholder="Comma separated tags that describe the item. Used for searching."/>
+                          </div>
+                        </div>
 
                       <br clear="both"/>
 
+                      <div class="col-sm-12">
+                      <a href="#" ng-click="toggleItemAdvanced()">&gt; Advanced Details</a>
+
+                      <div ng-show="itemAdvancedDetails" style="padding:10px 0;">
+                        <p>Wouldn't you like to see more details here?</p>
+                      </div>
+
+
+                      </div>
+
+
+
                     </form>
+
+                    <br clear="both"/>
                   </div>
 
                   <div class="modal-footer">
