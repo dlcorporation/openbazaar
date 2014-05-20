@@ -197,3 +197,6 @@ ul.pagination { margin: 10px 0 }
 
 .jumbotron { background-color:white; margin-top:20px; }
 #jumboh1 { font-weight:120; }
+
+
+.thumbnail { background-image:url('/html/img/product_photo.png'); background-size:200px 150px;}
