@@ -747,8 +747,8 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
     var imgUpload = document.getElementById('inputProductImage').files[0];
 
     if(imgUpload) {
-
-      if (imgUpload.type != '' && $.inArray(imgUpload.type, ['image/jpg', 'image/gif', 'image/png']) != -1) {
+      
+      if (imgUpload.type != '' && $.inArray(imgUpload.type, ['image/jpeg', 'image/gif', 'image/png']) != -1) {
 
         var r = new FileReader();
         r.onloadend = function(e){
