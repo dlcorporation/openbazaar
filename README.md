@@ -1,11 +1,12 @@
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the GPL.
 
-See a demonstration of the Proof Of Concept here: https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
-Try out a demonstration at: http://seed.openbazaar.org:8888
+Official Site: http://openbazaar.org
+Forums: http://forum.openbazaar.org
+IRC Chat: #OpenBazaar on Freenode
 
-This project is alpha and all feedback is welcome at: http://www.reddit.com/r/Bitcoin/comments/23y80c
+Online Test Drive: http://seed.openbazaar.org:8888
 
-Official site: http://openbazaar.org (currently a placeholder)
+Original Presentation at Toronto Hackathon: https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
 
 ### IRC Chat
 We are continually on IRC chat at #OpenBazaar on Freenode
