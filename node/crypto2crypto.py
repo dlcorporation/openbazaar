@@ -99,7 +99,8 @@ class CryptoTransportLayer(TransportLayer):
       @rtype: list
       """
       # Get the sender's ID (if any)
-      senderID = msg['key']
+      senderID = msg['senderID']
+      key = msg['key']
 
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
       contactTriples = []
@@ -366,7 +367,7 @@ class CryptoTransportLayer(TransportLayer):
 
               # Ping peer
               uri = "tcp://%s:%s" % (node[0], node[1])
-              msg = {"type":"findNode", "uri":self._uri, "key":key, "findValue":findValue}
+              msg = {"type":"findNode", "uri":self._uri, "senderID":self._guid, "key":key, "findValue":findValue}
 
               self._peers[uri].send_raw(json.dumps(msg))
 
