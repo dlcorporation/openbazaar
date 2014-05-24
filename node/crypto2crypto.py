@@ -192,6 +192,7 @@ class CryptoTransportLayer(TransportLayer):
             self._peers[uri].send_raw(json.dumps(msg))
 
     def init_peer(self, msg):
+
         self._log.info('Initialize Peer: %s' % msg)
 
         uri = msg['uri']
