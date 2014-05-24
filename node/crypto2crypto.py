@@ -58,6 +58,7 @@ class CryptoTransportLayer(TransportLayer):
         # Set up callbacks for pinging peers
         self.add_callback('ping', self._on_ping)
         self.add_callback('pong', self._on_pong)
+        self.add_callback('findNode', self._on_findNode)
 
         if self.settings:
             self.nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
@@ -83,6 +84,9 @@ class CryptoTransportLayer(TransportLayer):
       self._log.info("PONG %s" % msg)
       print msg
       nodeID = self.extendShortlist(msg)
+
+    def _on_findNode(self, msg):
+      print msg
 
 
     # Return data array with details from the crypto file
@@ -223,6 +227,7 @@ class CryptoTransportLayer(TransportLayer):
           # The "raw response" tuple contains the response message, and the originating address info
           nodeID = responseTuple['guid']
           nodeURI = responseTuple['uri']
+          findValue = responseTuple['findValue']
 
           uri = responseTuple['uri'] # tuple: (ip adress, udp port)
           print self._activePeers, responseTuple
@@ -342,7 +347,7 @@ class CryptoTransportLayer(TransportLayer):
 
               # Ping peer
               uri = "tcp://%s:%s" % (node[0], node[1])
-              msg = {"type":"ping", "uri":self._uri, "findValue":findValue}
+              msg = {"type":"findNode", "uri":self._uri, "key":key, "findValue":findValue}
 
               self._peers[uri].send_raw(json.dumps(msg))
 
