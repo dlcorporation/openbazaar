@@ -86,7 +86,26 @@ class CryptoTransportLayer(TransportLayer):
       nodeID = self.extendShortlist(msg)
 
     def _on_findNode(self, msg):
-      print msg
+      """ Finds a number of known nodes closest to the node/value with the
+      specified key.
+
+      @param key: the 160-bit key (i.e. the node or value ID) to search for
+      @type key: str
+
+      @return: A list of contact triples closest to the specified key.
+               This method will return C{k} (or C{count}, if specified)
+               contacts if at all possible; it will only return fewer if the
+               node is returning all of the contacts that it knows of.
+      @rtype: list
+      """
+      # Get the sender's ID (if any)
+      senderID = msg['key']
+
+      contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
+      contactTriples = []
+      for contact in contacts:
+          contactTriples.append( (contact.id, contact.address, contact.port) )
+      return contactTriples
 
 
     # Return data array with details from the crypto file
