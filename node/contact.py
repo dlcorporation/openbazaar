@@ -5,11 +5,10 @@ class Contact(object):
 
     This class contains information on a single remote contact
     """
-    def __init__(self, id, ipAddress, port, networkProtocol, firstComm=0):
-        self.id = id
-        self.address = ipAddress
-        self.port = port
-        self._peerConnection = PeerConnection(ipAddress, port)
+    def __init__(self, guid, uri, firstComm=0):
+        self.guid = guid
+        self.uri = uri
+        self._peerConnection = PeerConnection(uri, guid)
         self.commTime = firstComm
 
     def __eq__(self, other):
