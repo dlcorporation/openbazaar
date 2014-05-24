@@ -203,7 +203,7 @@ class TreeRoutingTable(RoutingTable):
                  node is returning all of the contacts that it knows of.
         @rtype: list
         """
-        if key == self.id:
+        if key == self._parentNodeID:
             bucketIndex = 0 #TODO: maybe not allow this to continue?
         else:
             bucketIndex = self._kbucketIndex(key)
