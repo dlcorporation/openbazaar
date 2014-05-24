@@ -49,6 +49,8 @@ class CryptoTransportLayer(TransportLayer):
         self.settings = self._db.settings.find_one({'id':"%s"%market_id})
         self.market_id = market_id
 
+        self._activeContacts = []
+
         # Set up callbacks for pinging peers
         self.add_callback('ping', self._on_ping)
         self.add_callback('pong', self._on_pong)
@@ -69,14 +71,13 @@ class CryptoTransportLayer(TransportLayer):
 
     def _on_ping(self, peer):
       uri = peer['uri']
-      print uri
-      self._peers[uri].send_raw(json.dumps({"type":"pong", "guid": self._guid}))
+      self._peers[uri].send_raw(json.dumps({"type":"pong", "guid": self._guid, "uri":self._uri}))
       self._log.info("Got a ping")
 
     def _on_pong(self, msg):
-
-
       self._log.info("PONG")
+      nodeID = self.extendShortlist(msg)
+
 
     # Return data array with details from the crypto file
     # TODO: This needs to be protected better; potentially encrypted file or DB
@@ -211,10 +212,11 @@ class CryptoTransportLayer(TransportLayer):
                 # reply only if necessary
                 self.send_enc(uri, hello_response(self.get_profile()))
 
-    def extendShortlist(responseTuple):
+    def extendShortlist(self, responseTuple):
           """ @type responseMsg: kademlia.msgtypes.ResponseMessage """
           # The "raw response" tuple contains the response message, and the originating address info
-          responseMsg = responseTuple[0]
+          nodeID = responseTuple['guid']
+
           originAddress = responseTuple[1] # tuple: (ip adress, udp port)
           # Make sure the responding node is valid, and abort the operation if it isn't
           if responseMsg.nodeID in activeContacts or responseMsg.nodeID == self.id:
@@ -279,7 +281,7 @@ class CryptoTransportLayer(TransportLayer):
 
       activeProbes = []
       alreadyContacted = []
-      activeContacts = []
+
       pendingIterationCalls = []
       prevClosestNode = [None]
       findValueResult = {}
@@ -289,7 +291,7 @@ class CryptoTransportLayer(TransportLayer):
         slowNodeCount[0] = len(activeProbes)
 
         # Sort closest to farthest
-        activeContacts.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
+        self._activeContacts.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
 
         while len(pendingIterationCalls):
           del pendingIterationCalls[0]
@@ -298,13 +300,13 @@ class CryptoTransportLayer(TransportLayer):
           #outerDf.callback(findValueResult)
           return findValueResult
 
-        elif len(activeContacts) and findValue == False:
-          if (len(activeContacts) >= constants.k) or (activeContacts[0] == prevClosestNode[0] and len(activeProbes) == slowNodeCount[0]):
+        elif len(self._activeContacts) and findValue == False:
+          if (len(self._activeContacts) >= constants.k) or (activeContacts[0] == prevClosestNode[0] and len(activeProbes) == slowNodeCount[0]):
             #outerDf.callback(activeContacts)
-            return activeContacts
+            return self._activeContacts
 
-        if len(activeContacts):
-          prevClosestNode[0] = activeContacts[0]
+        if len(self._activeContacts):
+          prevClosestNode[0] = self._activeContacts[0]
 
         contactedNow = 0
 
