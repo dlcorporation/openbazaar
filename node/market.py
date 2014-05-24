@@ -148,7 +148,7 @@ class Market(object):
           msg['productQuantity'] = 1
 
         self._db.products.update({'id':product_id}, {'$set':msg}, True)
-        
+
 
     def remove_product(self, msg):
         self._log.info("Product to remove %s" % msg)
@@ -235,9 +235,7 @@ class Market(object):
 
     def on_query_myorders(self, peer):
         self._log.info("Someone is querying for your page")
-        self._transport.send(proto_page(self._transport._myself.get_pubkey(),
-                                        self.mypage, self.signature,
-                                        self.nickname))
+        
 
     def on_peer(self, peer):
         pass

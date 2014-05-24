@@ -8,21 +8,23 @@ from protocol import hello_request, hello_response, proto_response_pubkey
 import obelisk
 import logging
 from market import Market
-#from ecdsa import SigningKey,SECP256k1
-#import random
 from obelisk import bitcoin
+from urlparse import urlparse
+import hashlib
 
 class CryptoPeerConnection(PeerConnection):
 
-    def __init__(self, transport, address, pub):
+    def __init__(self, transport, address, pub, node_guid):
         self._priv = transport._myself
         self._pub = pub
-        PeerConnection.__init__(self, transport, address)
+        self._guid = node_guid
+        PeerConnection.__init__(self, transport, address, node_guid)
 
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
+        print self.node_guid,data
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):
@@ -48,6 +50,10 @@ class CryptoTransportLayer(TransportLayer):
         self.settings = self._db.settings.find_one({'id':"%s"%market_id})
         self.market_id = market_id
 
+        # Set up callbacks for pinging peers
+        self.add_callback('ping', self._on_ping)
+        self.add_callback('pong', self._on_pong)
+
         if self.settings:
             self.nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
             self.secret = self.settings['secret']
@@ -60,12 +66,16 @@ class CryptoTransportLayer(TransportLayer):
             self._db.settings.insert({"id":'%s'%market_id, "secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')})
             self.settings = self._db.settings.find_one({'id':"%s"%market_id})
 
-
-
-#        self.nickname, self.secret, self.pubkey = \
-#            self.load_crypto_details(store_file)
-
         self._log = logging.getLogger(self.__class__.__name__)
+
+    def _on_ping(self, peer):
+      self.send({"type":"pong", "msg": {"uri":self._uri, "guid":self._guid}})
+      self._log.info("Got a ping")
+
+    def _on_pong(self, msg):
+
+
+      self._log.info("PONG")
 
     # Return data array with details from the crypto file
     # TODO: This needs to be protected better; potentially encrypted file or DB
@@ -118,14 +128,14 @@ class CryptoTransportLayer(TransportLayer):
 
         return False
 
-    def create_peer(self, uri, pub):
+    def create_peer(self, uri, pub, node_guid):
 
         if pub:
             pub = pub.decode('hex')
 
         # Create the peer if public key is not already in the peer list
         # if not self.pubkey_exists(pub):
-        self._peers[uri] = CryptoPeerConnection(self, uri, pub)
+        self._peers[uri] = CryptoPeerConnection(self, uri, pub, node_guid)
 
         # Call 'peer' callbacks on listeners
         self.trigger_callbacks('peer', self._peers[uri])
@@ -136,7 +146,6 @@ class CryptoTransportLayer(TransportLayer):
     def send_enc(self, uri, msg):
         peer = self._peers[uri]
         pub = peer._pub
-
 
         # Now send a hello message to the peer
         if pub:
@@ -161,10 +170,20 @@ class CryptoTransportLayer(TransportLayer):
             self._log.info("Peer " + uri + " is not valid.")
             return
 
+        node_ip = urlparse(uri).hostname
+        node_port = urlparse(uri).port
+        node_guid = hashlib.new('sha1')
+        node_guid.update("%s:%s" % (node_ip, node_port))
+        node_guid = node_guid.digest().encode('hex')
+
+        if (node_ip, node_port, node_guid) not in self._knownNodes:
+            self._knownNodes.append((node_ip, node_port, node_guid))
+
         if uri not in self._peers:
             # unknown peer
             self._log.info('Create New Peer: %s' % uri)
-            self.create_peer(uri, pub)
+            self.create_peer(uri, pub, node_guid)
+
 
             if not msg_type:
                 self.send_enc(uri, hello_request(self.get_profile()))
@@ -190,6 +209,159 @@ class CryptoTransportLayer(TransportLayer):
             if msg_type == 'hello_request':
                 # reply only if necessary
                 self.send_enc(uri, hello_response(self.get_profile()))
+
+    def extendShortlist(responseTuple):
+          """ @type responseMsg: kademlia.msgtypes.ResponseMessage """
+          # The "raw response" tuple contains the response message, and the originating address info
+          responseMsg = responseTuple[0]
+          originAddress = responseTuple[1] # tuple: (ip adress, udp port)
+          # Make sure the responding node is valid, and abort the operation if it isn't
+          if responseMsg.nodeID in activeContacts or responseMsg.nodeID == self.id:
+              return responseMsg.nodeID
+
+          # Mark this node as active
+          if responseMsg.nodeID in shortlist:
+              # Get the contact information from the shortlist...
+              aContact = shortlist[shortlist.index(responseMsg.nodeID)]
+          else:
+              # If it's not in the shortlist; we probably used a fake ID to reach it
+              # - reconstruct the contact, using the real node ID this time
+              aContact = Contact(responseMsg.nodeID, originAddress[0], originAddress[1], self._protocol)
+          activeContacts.append(aContact)
+          # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
+          if responseMsg.nodeID not in alreadyContacted:
+              alreadyContacted.append(responseMsg.nodeID)
+          # Now grow extend the (unverified) shortlist with the returned contacts
+          result = responseMsg.response
+          #TODO: some validation on the result (for guarding against attacks)
+          # If we are looking for a value, first see if this result is the value
+          # we are looking for before treating it as a list of contact triples
+          if findValue == True and type(result) == dict:
+              # We have found the value
+              findValueResult[key] = result[key]
+          else:
+              if findValue == True:
+                  # We are looking for a value, and the remote node didn't have it
+                  # - mark it as the closest "empty" node, if it is
+                  if 'closestNodeNoValue' in findValueResult:
+                      if self._routingTable.distance(key, responseMsg.nodeID) < self._routingTable.distance(key, activeContacts[0].id):
+                          findValueResult['closestNodeNoValue'] = aContact
+                  else:
+                      findValueResult['closestNodeNoValue'] = aContact
+              for contactTriple in result:
+                  if isinstance(contactTriple, (list, tuple)) and len(contactTriple) == 3:
+                      testContact = Contact(contactTriple[0], contactTriple[1], contactTriple[2], self._protocol)
+                      if testContact not in shortlist:
+                          shortlist.append(testContact)
+          return responseMsg.nodeID
+
+    def _iterativeFind(self, key, startupShortlist=None, call='findNode'):
+
+      # Determine if we're looking for a node or a key
+      if call != 'findNode':
+        findValue = True
+      else:
+        findValue = False
+
+      shortlist = []
+
+      if startupShortlist == None:
+        shortlist = self._routingTable.findCloseNodes(key, constants.alpha)
+        if key != self._guid:
+          self._routingTable.touchKBucket(key)
+        if len(shortlist) == 0:
+          fakeDf = defer.Deferred()
+          fakeDf.callback([])
+          return fakeDf
+      else:
+        shortlist = startupShortlist
+
+      activeProbes = []
+      alreadyContacted = []
+      activeContacts = []
+      pendingIterationCalls = []
+      prevClosestNode = [None]
+      findValueResult = {}
+      slowNodeCount = [0]
+
+      def searchIteration():
+        slowNodeCount[0] = len(activeProbes)
+
+        # Sort closest to farthest
+        activeContacts.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
+
+        while len(pendingIterationCalls):
+          del pendingIterationCalls[0]
+
+        if key in findValueResult:
+          #outerDf.callback(findValueResult)
+          return findValueResult
+
+        elif len(activeContacts) and findValue == False:
+          if (len(activeContacts) >= constants.k) or (activeContacts[0] == prevClosestNode[0] and len(activeProbes) == slowNodeCount[0]):
+            #outerDf.callback(activeContacts)
+            return activeContacts
+
+        if len(activeContacts):
+          prevClosestNode[0] = activeContacts[0]
+
+        contactedNow = 0
+
+        shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
+
+        prevShortlistLength = len(shortlist)
+        print shortlist
+        for node in shortlist:
+          if node[2] not in alreadyContacted:
+              activeProbes.append(node[2])
+
+              #rpcMethod = getattr(node, rpc)
+              #df = rpcMethod(key, rawResponse=True)
+
+              # Ping peer
+              uri = "tcp://%s:%s" % (node[0], node[1])
+              msg = {"type":"ping"}
+              self._peers[uri].send_raw(json.dumps(msg))
+
+
+              # df.addCallback(extendShortlist)
+              # df.addErrback(removeFromShortlist)
+              # df.addCallback(cancelActiveProbe)
+
+              # Send method call which returns some raw response
+              # and send it to extendShortlist
+
+              #alreadyContacted.append(node[2])
+              #contactedNow += 1
+
+        #   if contactedNow == constants.alpha:
+        #       break
+        # if len(activeProbes) > slowNodeCount[0] \
+        #     or (len(shortlist) < constants.k and len(activeContacts) < len(shortlist) and len(activeProbes) > 0):
+        #     #print '----------- scheduling next call -------------'
+        #     # Schedule the next iteration if there are any active calls (Kademlia uses loose parallelism)
+        #     call = twisted.internet.reactor.callLater(constants.iterativeLookupDelay, searchIteration) #IGNORE:E1101
+        #     pendingIterationCalls.append(call)
+        # # Check for a quick contact response that made an update to the shortList
+        # elif prevShortlistLength < len(shortlist):
+        #     # Ensure that the closest contacts are taken from the updated shortList
+        #     searchIteration()
+        # else:
+        #     #print '++++++++++++++ DONE (logically) +++++++++++++\n\n'
+        #     # If no probes were sent, there will not be any improvement, so we're done
+        #     outerDf.callback(activeContacts)
+
+
+
+
+
+      #outerDf = defer.Deferred()
+
+      # Start searching
+      results = searchIteration()
+
+      return results
+
 
     def on_raw_message(self, serialized):
 

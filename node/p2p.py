@@ -11,15 +11,19 @@ ioloop.install()
 
 from protocol import goodbye
 import network_util
+import hashlib
+import routingtable
+import datastore
 
 
 # Connection to one peer
 class PeerConnection(object):
-    def __init__(self, transport, address):
+    def __init__(self, transport, address, guid):
         # timeout in seconds
         self._timeout = 10
         self._transport = transport
         self._address = address
+        self._guid = guid
         self._log = logging.getLogger(self.__class__.__name__)
 
     def create_socket(self):
@@ -31,7 +35,6 @@ class PeerConnection(object):
     def cleanup_socket(self):
         self._socket.close()
 
-    # Is this even used?
     def send(self, data):
         self.send_raw(json.dumps(data))
 
@@ -68,7 +71,7 @@ class PeerConnection(object):
             self.cleanup_socket()
             queue.put(False)
 
-    def on_message(self, msg):        
+    def on_message(self, msg):
         self._log.info("message received! %s" % msg)
 
 
@@ -80,11 +83,24 @@ class TransportLayer(object):
         self._port = my_port
         self._ip = my_ip
         self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+        self._guid = self.generate_guid().encode('hex')
+
+        # Routing table
+        self._routingTable = routingtable.OptimizedTreeRoutingTable(self._guid)
+        self._dataStore = datastore.MongoDataStore()
+        self._knownNodes = []
+
+
         self._log = logging.getLogger(self.__class__.__name__)
         # signal.signal(signal.SIGTERM, lambda x, y: self.broadcast_goodbye())
 
     def add_callback(self, section, callback):
         self._callbacks[section].append(callback)
+
+    def generate_guid(self):
+      guid = hashlib.sha1()
+      guid.update("%s:%s" % (self._ip, self._port))
+      return guid.digest()
 
     def trigger_callbacks(self, section, *data):
         for cb in self._callbacks[section]:
@@ -101,6 +117,7 @@ class TransportLayer(object):
 
         if seed_uri:
             self.init_peer({'uri': seed_uri})
+            self._joinDeferred = self._iterativeFind(self._guid, self._knownNodes)
 
     def listen(self):
         t = Thread(target=self._listen)
