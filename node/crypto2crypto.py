@@ -68,7 +68,7 @@ class CryptoTransportLayer(TransportLayer):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def _on_ping(self, peer):
-      self.send_raw({"type":"pong", "guid": self._guid})
+      self._peers[peer.uri].send_raw({"type":"pong", "guid": self._guid})
       self._log.info("Got a ping")
 
     def _on_pong(self, msg):
@@ -319,7 +319,8 @@ class CryptoTransportLayer(TransportLayer):
 
               # Ping peer
               uri = "tcp://%s:%s" % (node[0], node[1])
-              msg = {"type":"ping"}
+              msg = {"type":"ping", "uri":self._uri}
+              print msg
               self._peers[uri].send_raw(json.dumps(msg))
 
 
