@@ -203,10 +203,10 @@ class TreeRoutingTable(RoutingTable):
                  node is returning all of the contacts that it knows of.
         @rtype: list
         """
-        #if key == self.id:
-        #    bucketIndex = 0 #TODO: maybe not allow this to continue?
-        #else:
-        bucketIndex = self._kbucketIndex(key)
+        if key == self.id:
+            bucketIndex = 0 #TODO: maybe not allow this to continue?
+        else:
+            bucketIndex = self._kbucketIndex(key)
         closestNodes = self._buckets[bucketIndex].getContacts(constants.k, _rpcNodeID)
         # This method must return k contacts (even if we have the node with the specified key as node ID),
         # unless there is less than k remote nodes in the routing table
