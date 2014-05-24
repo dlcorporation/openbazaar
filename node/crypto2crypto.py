@@ -12,6 +12,7 @@ from obelisk import bitcoin
 from urlparse import urlparse
 import hashlib
 from contact import Contact
+import constants
 
 class CryptoPeerConnection(PeerConnection):
 
