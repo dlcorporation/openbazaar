@@ -117,7 +117,7 @@ class TransportLayer(object):
 
         if seed_uri:
             self.init_peer({'uri': seed_uri})
-            self._joinDeferred = self._iterativeFind(self._guid, self._knownNodes)
+            self._iterativeFind(self._guid, self._knownNodes)            
 
     def listen(self):
         t = Thread(target=self._listen)
