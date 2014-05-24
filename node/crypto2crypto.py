@@ -50,6 +50,7 @@ class CryptoTransportLayer(TransportLayer):
         self.market_id = market_id
 
         self._activeContacts = []
+        self._shortlist = []
 
         # Set up callbacks for pinging peers
         self.add_callback('ping', self._on_ping)
@@ -75,7 +76,8 @@ class CryptoTransportLayer(TransportLayer):
       self._log.info("Got a ping")
 
     def _on_pong(self, msg):
-      self._log.info("PONG")
+      self._log.info("PONG %s" % msg)
+      print msg
       nodeID = self.extendShortlist(msg)
 
 
@@ -217,13 +219,17 @@ class CryptoTransportLayer(TransportLayer):
           # The "raw response" tuple contains the response message, and the originating address info
           nodeID = responseTuple['guid']
 
-          originAddress = responseTuple[1] # tuple: (ip adress, udp port)
+          uri = responseTuple['uri'] # tuple: (ip adress, udp port)
+          print self._activeContacts, responseTuple
+          print nodeID
           # Make sure the responding node is valid, and abort the operation if it isn't
-          if responseMsg.nodeID in activeContacts or responseMsg.nodeID == self.id:
-              return responseMsg.nodeID
+          if nodeID in self._activeContacts or nodeID == self._guid:
+              return nodeID
+
+          print 'GOT HERE'
 
           # Mark this node as active
-          if responseMsg.nodeID in shortlist:
+          if nodeID in self._shortlist:
               # Get the contact information from the shortlist...
               aContact = shortlist[shortlist.index(responseMsg.nodeID)]
           else:
@@ -265,8 +271,6 @@ class CryptoTransportLayer(TransportLayer):
         findValue = True
       else:
         findValue = False
-
-      shortlist = []
 
       if startupShortlist == None:
         shortlist = self._routingTable.findCloseNodes(key, constants.alpha)
@@ -310,11 +314,11 @@ class CryptoTransportLayer(TransportLayer):
 
         contactedNow = 0
 
-        shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
+        self._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
 
-        prevShortlistLength = len(shortlist)
-        print shortlist
-        for node in shortlist:
+        prevShortlistLength = len(self._shortlist)
+        print self._shortlist
+        for node in self._shortlist:
           if node[2] not in alreadyContacted:
               activeProbes.append(node[2])
 
@@ -324,7 +328,6 @@ class CryptoTransportLayer(TransportLayer):
               # Ping peer
               uri = "tcp://%s:%s" % (node[0], node[1])
               msg = {"type":"ping", "uri":self._uri}
-              print msg
               self._peers[uri].send_raw(json.dumps(msg))
 
 
