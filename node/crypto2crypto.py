@@ -24,7 +24,6 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
-        print self.node_guid,data
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg):
@@ -69,7 +68,7 @@ class CryptoTransportLayer(TransportLayer):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def _on_ping(self, peer):
-      self.send({"type":"pong", "msg": {"uri":self._uri, "guid":self._guid}})
+      self.send_raw({"type":"pong", "msg": {"uri":self._uri, "guid":self._guid}})
       self._log.info("Got a ping")
 
     def _on_pong(self, msg):
