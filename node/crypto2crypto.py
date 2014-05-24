@@ -318,6 +318,7 @@ class CryptoTransportLayer(TransportLayer):
         if key != self._guid:
           self._routingTable.touchKBucket(key)
         if len(self._shortlist) == 0:
+          print 'Empty shortlist'
           fakeDf = defer.Deferred()
           fakeDf.callback([])
           return fakeDf
