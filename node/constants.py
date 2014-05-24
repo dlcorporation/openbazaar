@@ -6,6 +6,9 @@ alpha = 3
 #: Maximum number of contacts stored in a bucket; this should be an even number
 k = 8
 
+#: Timeout for network operations (in seconds)
+rpcTimeout = 5
+
 # Delay between iterations of iterative node lookups (for loose parallelism)  (in seconds)
 iterativeLookupDelay = rpcTimeout / 2
 
@@ -22,3 +25,7 @@ dataExpireTimeout = 86400 # 24 hours
 #: The interval in which the node should check its whether any buckets need refreshing,
 #: or whether any data needs to be republished (in seconds)
 checkRefreshInterval = refreshTimeout/5
+
+#: Max size of a single UDP datagram, in bytes. If a message is larger than this, it will
+#: be spread accross several UDP packets.
+udpDatagramMaxSize = 8192 # 8 KB
