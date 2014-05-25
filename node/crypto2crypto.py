@@ -320,16 +320,13 @@ class CryptoTransportLayer(TransportLayer):
       print 'Startup Shortlist: ', startupShortlist
 
       if startupShortlist == []:
-
         self._shortlist = self._routingTable.findCloseNodes(key, constants.alpha)
 
         if key != self._guid:
           self._routingTable.touchKBucket(key)
         if len(self._shortlist) == 0:
+          return []
 
-          fakeDf = defer.Deferred()
-          fakeDf.callback([])
-          return fakeDf
       else:
         self._shortlist = startupShortlist
 
@@ -346,7 +343,6 @@ class CryptoTransportLayer(TransportLayer):
 
         # Sort closest to farthest
         self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
-
         while len(pendingIterationCalls):
           del pendingIterationCalls[0]
 
@@ -367,7 +363,7 @@ class CryptoTransportLayer(TransportLayer):
         self._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
 
         prevShortlistLength = len(self._shortlist)
-        print self._shortlist
+
         for node in self._shortlist:
           if node[2] not in self._alreadyContacted:
               activeProbes.append(node[2])
