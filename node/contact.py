@@ -13,17 +13,17 @@ class Contact(object):
 
     def __eq__(self, other):
         if isinstance(other, Contact):
-            return self.id == other.id
+            return self.guid == other.guid
         elif isinstance(other, str):
-            return self.id == other
+            return self.guid == other
         else:
             return False
 
     def __ne__(self, other):
         if isinstance(other, Contact):
-            return self.id != other.id
+            return self.guid != other.guid
         elif isinstance(other, str):
-            return self.id != other
+            return self.guid != other
         else:
             return True
 
