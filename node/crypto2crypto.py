@@ -109,7 +109,7 @@ class CryptoTransportLayer(TransportLayer):
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact.guid, contact.uri) )
-      self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","key":self._guid,"uri":self._uri,"findValue":contactTriples}))
+      self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
 
     def _on_findNodeResponse(self, msg):
       self.extendShortlist(msg)
