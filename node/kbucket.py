@@ -119,7 +119,7 @@ class KBucket(object):
         @rtype: bool
         """
         if isinstance(key, str):
-            key = long(key, 16)
+            key = long(key.encode('hex'), 16)
         print self.rangeMin, key, self.rangeMax
         return self.rangeMin <= key < self.rangeMax
 
