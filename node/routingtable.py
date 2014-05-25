@@ -136,6 +136,8 @@ class TreeRoutingTable(RoutingTable):
         @param contact: The contact to add to this node's k-buckets
         @type contact: kademlia.contact.Contact
         """
+
+        print "Line 140",contact
         if contact.id == self._parentNodeID:
             return
 
@@ -304,7 +306,7 @@ class TreeRoutingTable(RoutingTable):
         valKey = long(key.encode('hex'), 16)
         i = 0
         for bucket in self._buckets:
-            if bucket.keyInRange(valKey):
+            if bucket.keyInRange(key):
                 return i
             else:
                 i += 1
@@ -367,13 +369,15 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
         @param contact: The contact to add to this node's k-buckets
         @type contact: kademlia.contact.Contact
         """
-        if contact.id == self._parentNodeID:
+        if contact.guid == self._parentNodeID:
+            print 'GUID same as Parent Node ID'
             return
 
         # Initialize/reset the "successively failed RPC" counter
         contact.failedRPCs = 0
 
-        bucketIndex = self._kbucketIndex(contact.id)
+        bucketIndex = self._kbucketIndex(contact.guid)
+        print bucketIndex
         try:
             self._buckets[bucketIndex].addContact(contact)
         except kbucket.BucketFull:

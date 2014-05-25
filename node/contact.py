@@ -8,7 +8,7 @@ class Contact(object):
     def __init__(self, guid, uri, firstComm=0):
         self.guid = guid
         self.uri = uri
-        self._peerConnection = PeerConnection(uri, guid)
+        #self._peerConnection = PeerConnection(uri, guid)
         self.commTime = firstComm
 
     def __eq__(self, other):
@@ -28,22 +28,4 @@ class Contact(object):
             return True
 
     def __str__(self):
-        return '<%s.%s object; IP address: %s, Port: %d>' % (self.__module__, self.__class__.__name__, self.address, self.port)
-
-    def __getattr__(self, name):
-        """ This override allows the host node to call a method of the remote
-        node (i.e. this contact) as if it was a local function.
-
-        For instance, if C{remoteNode} is a instance of C{Contact}, the
-        following will result in C{remoteNode}'s C{test()} method to be
-        called with argument C{123}::
-         remoteNode.test(123)
-
-        Such a RPC method call will return a Deferred, which will callback
-        when the contact responds with the result (or an error occurs).
-        This happens via this contact's C{_networkProtocol} object (i.e. the
-        host Node's C{_protocol} object).
-        """
-        def _send():
-            return self._networkProtocol.sendRPC(self, name, args, **kwargs)
-        return _sendRPC
+        return '<%s.%s object; GUID: %s, URI: %s>' % (self.__module__, self.__class__.__name__, self.guid, self.uri)

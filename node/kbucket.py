@@ -117,8 +117,10 @@ class KBucket(object):
                  if not.
         @rtype: bool
         """
+        print 'Key In Range:',key
         if isinstance(key, str):
-            key = long(key.encode('hex'), 16)
+            key = long(key, 16)
+        print self.rangeMin, key, self.rangeMax
         return self.rangeMin <= key < self.rangeMax
 
     def __len__(self):
