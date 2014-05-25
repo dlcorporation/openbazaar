@@ -116,7 +116,6 @@ class TransportLayer(object):
         self.listen()
 
         if seed_uri:
-            print seed_uri
             self.init_peer({'uri': seed_uri})
 
         self._iterativeFind(self._guid, self._knownNodes)

@@ -213,11 +213,14 @@ class CryptoTransportLayer(TransportLayer):
         if (node_ip, node_port, node_guid) not in self._knownNodes:
             self._knownNodes.append((node_ip, node_port, node_guid))
 
+        # Add to routing table
+        aContact = Contact(node_guid, uri)
+        self._routingTable.addContact(aContact)
+
         if uri not in self._peers:
             # unknown peer
-            self._log.info('Create New Peer: %s' % uri)
+            self._log.info('Found a new peer: %s' % uri)
             self.create_peer(uri, pub, node_guid)
-
 
             if not msg_type:
                 self.send_enc(uri, hello_request(self.get_profile()))
@@ -314,9 +317,10 @@ class CryptoTransportLayer(TransportLayer):
       else:
         findValue = False
 
-      print 'Startup Shortlist: ',startupShortlist
+      print 'Startup Shortlist: ', startupShortlist
 
-      if startupShortlist == None:
+      if startupShortlist == []:
+
         self._shortlist = self._routingTable.findCloseNodes(key, constants.alpha)
 
         if key != self._guid:
