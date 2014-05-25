@@ -205,6 +205,7 @@ class TreeRoutingTable(RoutingTable):
                  node is returning all of the contacts that it knows of.
         @rtype: list
         """
+        print key
         bucketIndex = self._kbucketIndex(key)
         closestNodes = self._buckets[bucketIndex].getContacts(constants.k, _rpcNodeID)
 
