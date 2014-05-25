@@ -102,7 +102,7 @@ class CryptoTransportLayer(TransportLayer):
       # Get the sender's ID (if any)
       senderID = msg['senderID']
       key = msg['key']
-
+      print 'KEY:',key
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
       contactTriples = []
       for contact in contacts:
