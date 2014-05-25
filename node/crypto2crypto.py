@@ -102,12 +102,12 @@ class CryptoTransportLayer(TransportLayer):
       # Get the sender's ID (if any)
       senderID = msg['senderID']
       key = msg['key']
-      
+
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact.guid, contact.uri) )
-      return contactTriples
+      self.send_raw(json.dumps(contactTriples))
 
 
     # Return data array with details from the crypto file
