@@ -146,6 +146,7 @@ class TreeRoutingTable(RoutingTable):
             self._buckets[bucketIndex].addContact(contact)
         except kbucket.BucketFull:
             # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
+            print '149'
             if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
                 self._splitBucket(bucketIndex)
                 # Retry the insertion attempt
@@ -306,6 +307,7 @@ class TreeRoutingTable(RoutingTable):
         @rtype: int
         """
         valKey = long(key.encode('hex'), 16)
+
         i = 0
         for bucket in self._buckets:
             if bucket.keyInRange(key):
@@ -384,6 +386,7 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
             self._buckets[bucketIndex].addContact(contact)
         except kbucket.BucketFull:
             # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
+            print '388'
             if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
                 self._splitBucket(bucketIndex)
                 # Retry the insertion attempt
