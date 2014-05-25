@@ -109,7 +109,7 @@ class CryptoTransportLayer(TransportLayer):
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact.guid, contact.uri) )
-      self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","findValue":contactTriples}))
+      self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","key":self._guid,"uri":self._uri,"findValue":contactTriples}))
 
     def _on_findNodeResponse(self, msg):
       self.extendShortlist(msg)
@@ -254,7 +254,7 @@ class CryptoTransportLayer(TransportLayer):
     def extendShortlist(self, response):
           """ @type responseMsg: kademlia.msgtypes.ResponseMessage """
           # The "raw response" tuple contains the response message, and the originating address info
-          print response
+          print "Extend Shortlist",response
           nodeID = response['guid']
           nodeURI = response['uri']
           findValue = response['findValue']
