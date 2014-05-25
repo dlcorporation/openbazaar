@@ -186,7 +186,7 @@ class TreeRoutingTable(RoutingTable):
                 # If there's an error (i.e. timeout), remove the head contact, and append the new one
                 df.addErrback(replaceContact)
 
-    def findCloseNodes(self, key, count, _rpcNodeID=None):
+    def findCloseNodes(self, key, count, nodeID=None):
         """ Finds a number of known nodes closest to the node/value with the
         specified key.
 
@@ -207,9 +207,8 @@ class TreeRoutingTable(RoutingTable):
         @rtype: list
         """
 
-        bucketIndex = self._kbucketIndex(key)
-        print key
-        closestNodes = self._buckets[bucketIndex].getContacts(constants.k, _rpcNodeID)
+        bucketIndex = self._kbucketIndex(key.decode('hex'))
+        closestNodes = self._buckets[bucketIndex].getContacts(constants.k, nodeID)
 
         # This method must return k contacts (even if we have the node with the specified key as node ID),
         # unless there is less than k remote nodes in the routing table
@@ -380,7 +379,7 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
         # Initialize/reset the "successively failed RPC" counter
         contact.failedRPCs = 0
 
-        bucketIndex = self._kbucketIndex(contact.guid)
+        bucketIndex = self._kbucketIndex(contact.guid.decode('hex'))
         print bucketIndex
         try:
             self._buckets[bucketIndex].addContact(contact)
