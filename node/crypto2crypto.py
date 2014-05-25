@@ -107,7 +107,7 @@ class CryptoTransportLayer(TransportLayer):
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact.guid, contact.uri) )
-      self.send_raw(json.dumps(contactTriples))
+      self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","nodes":contactTriples}))
 
 
     # Return data array with details from the crypto file
