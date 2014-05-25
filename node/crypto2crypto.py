@@ -60,6 +60,7 @@ class CryptoTransportLayer(TransportLayer):
         self.add_callback('ping', self._on_ping)
         self.add_callback('pong', self._on_pong)
         self.add_callback('findNode', self._on_findNode)
+        self.add_callback('findNodeResponse', self._on_findNodeResponse)
 
         if self.settings:
             self.nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
@@ -108,8 +109,10 @@ class CryptoTransportLayer(TransportLayer):
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact.guid, contact.uri) )
-      self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","nodes":contactTriples}))
+      self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","findValue":contactTriples}))
 
+    def _on_findNodeResponse(self, msg):
+      self.extendShortlist(msg)
 
     # Return data array with details from the crypto file
     # TODO: This needs to be protected better; potentially encrypted file or DB
@@ -248,15 +251,16 @@ class CryptoTransportLayer(TransportLayer):
                 # reply only if necessary
                 self.send_enc(uri, hello_response(self.get_profile()))
 
-    def extendShortlist(self, responseTuple):
+    def extendShortlist(self, response):
           """ @type responseMsg: kademlia.msgtypes.ResponseMessage """
           # The "raw response" tuple contains the response message, and the originating address info
-          nodeID = responseTuple['guid']
-          nodeURI = responseTuple['uri']
-          findValue = responseTuple['findValue']
+          print response
+          nodeID = response['guid']
+          nodeURI = response['uri']
+          findValue = response['findValue']
 
-          uri = responseTuple['uri'] # tuple: (ip adress, udp port)
-          print self._activePeers, responseTuple
+          uri = response['uri'] # tuple: (ip adress, udp port)
+          print self._activePeers, response
 
           # Make sure the responding node is valid, and abort the operation if it isn't
           if nodeID in self._activePeers or nodeID == self._guid:
