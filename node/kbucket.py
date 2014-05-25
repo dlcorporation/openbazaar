@@ -91,6 +91,7 @@ class KBucket(object):
         if excludeContact in contactList:
             contactList.remove(excludeContact)
 
+        print 'Contact List: ',contactList
         return contactList
 
     def removeContact(self, contact):
