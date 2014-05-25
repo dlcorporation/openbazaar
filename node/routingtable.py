@@ -207,6 +207,7 @@ class TreeRoutingTable(RoutingTable):
         """
 
         bucketIndex = self._kbucketIndex(key)
+        print bucketIndex
         closestNodes = self._buckets[bucketIndex].getContacts(constants.k, _rpcNodeID)
 
         # This method must return k contacts (even if we have the node with the specified key as node ID),
@@ -304,7 +305,7 @@ class TreeRoutingTable(RoutingTable):
         @return: The index of the k-bucket responsible for the specified key
         @rtype: int
         """
-        valKey = long(key.encode('hex'), 16)
+        valKey = long(key, 16)
         i = 0
         for bucket in self._buckets:
             if bucket.keyInRange(key):
