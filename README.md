@@ -120,7 +120,9 @@ contributed by Jacob Payne
 ![](http://i.imgur.com/WwPUXGS.png)
 contributed by Dean Masley
 
+## Theory Work
 
+Ricardian Contracts [Washington Sanchez]: https://gist.github.com/drwasho/a5380544c170bdbbbad8
 
 ## Screenshot
 
