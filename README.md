@@ -8,6 +8,9 @@ OpenBazaar is a decentralized marketplace proof of concept. It is based off of t
 
 <strong>Original Presentation at Toronto Hackathon:</strong> https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
 
+<strong>Donate to the Project</strong> BTC: 16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt
+
+
 ### IRC Chat
 We are continually on IRC chat at #OpenBazaar on Freenode
 
