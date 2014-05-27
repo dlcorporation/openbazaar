@@ -116,7 +116,9 @@ class CryptoTransportLayer(TransportLayer):
       for contact in contacts:
           contactTriples.append( (contact._guid, contact._address) )
           print contactTriples,'triples'
-          self._routingTable.getContact(senderID).send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
+          foundContact = self._routingTable.getContact(senderID)
+          print foundContact
+          #.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
 
 
       # if self._peers[uri]:
