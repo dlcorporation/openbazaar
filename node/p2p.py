@@ -39,8 +39,6 @@ class PeerConnection(object):
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized, callback=None):
-
-
         Thread(target=self._send_raw, args=(serialized,callback)).start()
         pass
 
@@ -154,7 +152,9 @@ class TransportLayer(object):
               if msg['type'] == 'ok':
                 print 'Found myself: %s' % self._guid
 
-        finder = self._iterativeFind(self._guid, self._knownNodes, 'findNode', joinedNetwork)
+        self._iterativeFind(self._guid, self._knownNodes, 'findNode', joinedNetwork)
+
+        # Referesh the k-buckets periodically
 
 
     def listen(self):

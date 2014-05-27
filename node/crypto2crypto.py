@@ -115,12 +115,17 @@ class CryptoTransportLayer(TransportLayer):
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact._guid, contact._address) )
+          print contactTriples,'triples'
+
+
+
       # if self._peers[uri]:
       #     self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
       # else:
       #     self._log.error("There is no peer for that URI: %s" % uri)
 
     def _on_findNodeResponse(self, msg):
+
       nodeID = self.extendShortlist(msg)
       print 'Found node',nodeID
 
@@ -221,68 +226,7 @@ class CryptoTransportLayer(TransportLayer):
         """
         return self._iterativeFind(key)
 
-    def extendShortlist(self, response):
-          """ @type response: json response """
-          nodeID = response['guid']
-          nodeURI = response['uri']
-          findValue = False
-          result = response['findValue']
 
-          uri = response['uri'] # tuple: (ip adress, udp port)
-          print self._activePeers, response
-
-          # Make sure the responding node is valid, and abort the operation if it isn't
-          if nodeID in self._activePeers or nodeID == self._guid:
-              return nodeID
-
-          # Mark this node as active
-          if nodeID in self._shortlist:
-              print 'Mark node active'
-              # Get the contact information from the shortlist...
-              #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
-              aPeer = PeerConnection(self, nodeURI, nodeID)
-          else:
-              print 'Mark node with real node ID'
-              # If it's not in the shortlist; we probably used a fake ID to reach it
-              # - reconstruct the contact, using the real node ID this time
-              #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
-              aPeer = PeerConnection(self, nodeURI, nodeID)
-
-          self._activePeers.append(aPeer)
-          print 'Active Peers:', self._activePeers
-
-          # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
-          if nodeID not in self._alreadyContacted:
-              self._alreadyContacted.append(nodeID)
-
-          print 'Already Contacted: ', self._alreadyContacted
-
-          # Now grow extend the (unverified) shortlist with the returned contacts
-          #result = responseMsg.response
-
-          #TODO: some validation on the result (for guarding against attacks)
-
-          # If we are looking for a value, first see if this result is the value
-          # we are looking for before treating it as a list of contact triples
-          if findValue == True and type(result) == dict:
-              # We have found the value
-              self._findValueResult[key] = result[key]
-          else:
-              if findValue == True:
-                  # We are looking for a value, and the remote node didn't have it
-                  # - mark it as the closest "empty" node, if it is
-                  if 'closestNodeNoValue' in self._findValueResult:
-                      if self._routingTable.distance(key, responseMsg.nodeID) < self._routingTable.distance(key, activeContacts[0].id):
-                          self._findValueResult['closestNodeNoValue'] = aContact
-                  else:
-                      self._findValueResult['closestNodeNoValue'] = aContact
-              for contactTriple in result:
-                  print contactTriple
-                  #if isinstance(contactTriple, (list, tuple)) and len(contactTriple) == 3:
-                  testContact = Contact(contactTriple[0], contactTriple[1])
-                  if testContact not in self._shortlist:
-                      self._shortlist.append(testContact)
-          return nodeID
 
 
     def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
@@ -356,7 +300,73 @@ class CryptoTransportLayer(TransportLayer):
 
               contact = self._routingTable.getContact(node[2])
 
-              contact.send_raw(json.dumps(msg), callback)
+              def extendShortlist(response):
+
+                    print 'HERES RESPONSE: ', response
+
+                    # """ @type response: json response """
+                    # nodeID = response['guid']
+                    # nodeURI = response['uri']
+                    # findValue = False
+                    # result = response['findValue']
+                    #
+                    # uri = response['uri'] # tuple: (ip adress, udp port)
+                    # print self._activePeers, response
+                    #
+                    # # Make sure the responding node is valid, and abort the operation if it isn't
+                    # if nodeID in self._activePeers or nodeID == self._guid:
+                    #     return nodeID
+                    #
+                    # # Mark this node as active
+                    # if nodeID in self._shortlist:
+                    #     print 'Mark node active'
+                    #     # Get the contact information from the shortlist...
+                    #     #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
+                    #     aPeer = PeerConnection(self, nodeURI, nodeID)
+                    # else:
+                    #     print 'Mark node with real node ID'
+                    #     # If it's not in the shortlist; we probably used a fake ID to reach it
+                    #     # - reconstruct the contact, using the real node ID this time
+                    #     #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
+                    #     aPeer = PeerConnection(self, nodeURI, nodeID)
+                    #
+                    # self._activePeers.append(aPeer)
+                    # print 'Active Peers:', self._activePeers
+                    #
+                    # # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
+                    # if nodeID not in self._alreadyContacted:
+                    #     self._alreadyContacted.append(nodeID)
+                    #
+                    # print 'Already Contacted: ', self._alreadyContacted
+                    #
+                    # # Now grow extend the (unverified) shortlist with the returned contacts
+                    # #result = responseMsg.response
+                    #
+                    # #TODO: some validation on the result (for guarding against attacks)
+                    #
+                    # # If we are looking for a value, first see if this result is the value
+                    # # we are looking for before treating it as a list of contact triples
+                    # if findValue == True and type(result) == dict:
+                    #     # We have found the value
+                    #     self._findValueResult[key] = result[key]
+                    # else:
+                    #     if findValue == True:
+                    #         # We are looking for a value, and the remote node didn't have it
+                    #         # - mark it as the closest "empty" node, if it is
+                    #         if 'closestNodeNoValue' in self._findValueResult:
+                    #             if self._routingTable.distance(key, responseMsg.nodeID) < self._routingTable.distance(key, activeContacts[0].id):
+                    #                 self._findValueResult['closestNodeNoValue'] = aContact
+                    #         else:
+                    #             self._findValueResult['closestNodeNoValue'] = aContact
+                    #     for contactTriple in result:
+                    #         print contactTriple
+                    #         #if isinstance(contactTriple, (list, tuple)) and len(contactTriple) == 3:
+                    #         testContact = Contact(contactTriple[0], contactTriple[1])
+                    #         if testContact not in self._shortlist:
+                    #             self._shortlist.append(testContact)
+                    # return nodeID
+
+              contact.send_raw(json.dumps(msg), extendShortlist)
 
 
       # Start searching
