@@ -9,6 +9,7 @@ import time, random
 
 import constants
 import kbucket
+import p2p
 #from protocol import TimeoutError
 
 class RoutingTable(object):
@@ -28,7 +29,7 @@ class RoutingTable(object):
         exists, its status will be updated
 
         @param contact: The contact to add to this node's k-buckets
-        @type contact: kademlia.contact.Contact
+        @type contact: p2p.PeerConnection
         """
 
     def distance(self, keyOne, keyTwo):
@@ -134,19 +135,18 @@ class TreeRoutingTable(RoutingTable):
         exists, its status will be updated
 
         @param contact: The contact to add to this node's k-buckets
-        @type contact: kademlia.contact.Contact
+        @type contact: p2p.PeerConnection
         """
 
-        print "Line 140",contact
-        if contact.id == self._parentNodeID:
+        if contact._guid == self._parentNodeID:
             return
 
-        bucketIndex = self._kbucketIndex(contact.id)
+        bucketIndex = self._kbucketIndex(contact._guid)
+
         try:
             self._buckets[bucketIndex].addContact(contact)
         except kbucket.BucketFull:
             # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
-            print '149'
             if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
                 self._splitBucket(bucketIndex)
                 # Retry the insertion attempt
@@ -160,7 +160,6 @@ class TreeRoutingTable(RoutingTable):
                 # should be pinged - if it does not reply, it should be dropped, and the new contact
                 # added to the tail of the k-bucket. This implementation follows section 2.2 regarding
                 # this point.
-                headContact = self._buckets[bucketIndex]._contacts[0]
 
                 def replaceContact(failure):
                     """ Callback for the deferred PING RPC to see if the head
@@ -182,6 +181,9 @@ class TreeRoutingTable(RoutingTable):
 
                 # Ping the least-recently seen contact in this k-bucket
                 headContact = self._buckets[bucketIndex]._contacts[0]
+
+                headContact.send_raw(json.dumps({"type":"ping", "guid": self._guid, "uri":self._uri, "findValue":peer['findValue']}))
+
                 df = headContact.ping()
                 # If there's an error (i.e. timeout), remove the head contact, and append the new one
                 df.addErrback(replaceContact)
@@ -207,7 +209,7 @@ class TreeRoutingTable(RoutingTable):
         @rtype: list
         """
 
-        bucketIndex = self._kbucketIndex(key.decode('hex'))
+        bucketIndex = self._kbucketIndex(key)
         closestNodes = self._buckets[bucketIndex].getContacts(constants.k, nodeID)
 
         # This method must return k contacts (even if we have the node with the specified key as node ID),
@@ -233,7 +235,9 @@ class TreeRoutingTable(RoutingTable):
         @raise ValueError: No contact with the specified contact ID is known
                            by this node
         """
+
         bucketIndex = self._kbucketIndex(contactID)
+
         try:
             contact = self._buckets[bucketIndex].getContact(contactID)
         except ValueError:
@@ -305,11 +309,13 @@ class TreeRoutingTable(RoutingTable):
         @return: The index of the k-bucket responsible for the specified key
         @rtype: int
         """
-        valKey = long(key.encode('hex'), 16)
+        print key
+        valKey = long(key, 16)
+        print valKey
 
         i = 0
         for bucket in self._buckets:
-            if bucket.keyInRange(key):
+            if bucket.keyInRange(valKey):
                 return i
             else:
                 i += 1
@@ -372,20 +378,18 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
         @param contact: The contact to add to this node's k-buckets
         @type contact: kademlia.contact.Contact
         """
-        if contact.guid == self._parentNodeID:
-            print 'GUID same as Parent Node ID'
+        if contact._guid == self._parentNodeID:
             return
 
         # Initialize/reset the "successively failed RPC" counter
         contact.failedRPCs = 0
 
-        bucketIndex = self._kbucketIndex(contact.guid.decode('hex'))
-        print bucketIndex
+        bucketIndex = self._kbucketIndex(contact._guid)
+
         try:
             self._buckets[bucketIndex].addContact(contact)
         except kbucket.BucketFull:
             # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
-            print '388'
             if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
                 self._splitBucket(bucketIndex)
                 # Retry the insertion attempt

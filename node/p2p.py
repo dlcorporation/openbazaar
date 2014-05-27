@@ -14,7 +14,7 @@ import network_util
 import hashlib
 import routingtable
 import datastore
-
+from urlparse import urlparse
 
 # Connection to one peer
 class PeerConnection(object):
@@ -38,24 +38,28 @@ class PeerConnection(object):
     def send(self, data):
         self.send_raw(json.dumps(data))
 
-    def send_raw(self, serialized):
-        Thread(target=self._send_raw, args=(serialized,)).start()
+    def send_raw(self, serialized, callback=None):
+
+
+        Thread(target=self._send_raw, args=(serialized,callback)).start()
         pass
 
-    def _send_raw(self, serialized):
+    def _send_raw(self, serialized, callback=None):
+
         # pyzmq sockets are not threadsafe,
         # they have to run in a separate process
         queue = Queue()
         # queue element is false if something went wrong and the peer
         # has to be removed
-        p = Process(target=self._send_raw_process, args=(serialized, queue))
+        p = Process(target=self._send_raw_process, args=(serialized, queue, callback))
         p.start()
         if not queue.get():
             self._log.info("Peer %s timed out." % self._address)
             self._transport.remove_peer(self._address)
         p.join()
 
-    def _send_raw_process(self, serialized, queue):
+    def _send_raw_process(self, serialized, queue, callback=None):
+
         self.create_socket()
         self._socket.send(serialized)
 
@@ -63,7 +67,7 @@ class PeerConnection(object):
         poller.register(self._socket, zmq.POLLIN)
         if poller.poll(self._timeout * 5000):
             msg = self._socket.recv()
-            self.on_message(msg)
+            self.on_message(msg, callback)
             self.cleanup_socket()
             queue.put(True)
 
@@ -71,7 +75,10 @@ class PeerConnection(object):
             self.cleanup_socket()
             queue.put(False)
 
-    def on_message(self, msg):
+
+    def on_message(self, msg, callback=None):
+        if callback:
+          callback(msg)
         self._log.info("message received! %s" % msg)
 
 
@@ -113,12 +120,42 @@ class TransportLayer(object):
         return {'type': 'hello_request', 'uri': self._uri}
 
     def join_network(self, seed_uri):
-        self.listen()
+
+        self.listen() # Turn on zmq socket
 
         if seed_uri:
             self.init_peer({'uri': seed_uri})
 
-        self._iterativeFind(self._guid, self._knownNodes)
+            # Get Seed info
+            node_ip = urlparse(seed_uri).hostname
+            node_port = urlparse(seed_uri).port
+            node_guid = hashlib.new('sha1')
+            node_guid.update("%s:%s" % (node_ip, node_port))
+            node_guid = node_guid.digest().encode('hex')
+
+
+            if (node_ip, node_port, node_guid) not in self._knownNodes:
+                self._knownNodes.append((node_ip, node_port, node_guid))
+                # Need to persist this in MongoDB
+                # Used when starting server back up
+
+            # Add to routing table
+            #aContact = Contact(node_guid, uri)
+            #self._routingTable.addContact(aContact)
+            seed_node = PeerConnection(self, seed_uri, node_guid)
+            self._routingTable.addContact(seed_node)
+
+
+        # Send findNode call to other nodes to let them know we're online
+        def joinedNetwork(msg):
+
+            if msg != None:
+              msg = json.loads(msg)
+              if msg['type'] == 'ok':
+                print 'Found myself: %s' % self._guid
+
+        finder = self._iterativeFind(self._guid, self._knownNodes, 'findNode', joinedNetwork)
+
 
     def listen(self):
         t = Thread(target=self._listen)
@@ -135,7 +172,11 @@ class TransportLayer(object):
             # specified IP
             self._socket.bind(self._uri)
         else:
-            self._socket.bind('tcp://*:%s' % self._port)
+            try:
+              self._socket.bind('tcp://*:%s' % self._port)
+            except:
+              pass
+
 
         while True:
             message = self._socket.recv()

@@ -28,7 +28,7 @@ class CryptoPeerConnection(PeerConnection):
     def send(self, data):
         self.send_raw(self.encrypt(json.dumps(data)))
 
-    def on_message(self, msg):
+    def on_message(self, msg, callback=None):
         # this are just acks
         pass
 
@@ -40,7 +40,7 @@ class CryptoTransportLayer(TransportLayer):
         TransportLayer.__init__(self, my_ip, my_port)
 
         self._myself = ec.ECC(curve='secp256k1')
-
+        self._market_id = market_id
         self.nick_mapping = {}
 
         # Connect to database
@@ -48,19 +48,31 @@ class CryptoTransportLayer(TransportLayer):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
-        self.settings = self._db.settings.find_one({'id':"%s"%market_id})
-        self.market_id = market_id
-
-        self._activePeers = []
-        self._shortlist = []
-        self._alreadyContacted = []
-        self._findValueResult = {}
-
-        # Set up callbacks for pinging peers
+        # Set up callbacks
         self.add_callback('ping', self._on_ping)
         self.add_callback('pong', self._on_pong)
         self.add_callback('findNode', self._on_findNode)
         self.add_callback('findNodeResponse', self._on_findNodeResponse)
+
+        self._init_dht()
+        self._setup_settings()
+
+        self._log = logging.getLogger(self.__class__.__name__)
+
+    def _init_dht(self):
+        self._activePeers = []
+        self._shortlist = []
+        self._alreadyContacted = []
+        self._findValueResult = {}
+        self._activeProbes = []
+        self._pendingIterationCalls = []
+        self._slowNodeCount = [0]
+        self._contactedNow = 0
+        self._dhtCallbacks = []
+
+    def _setup_settings(self):
+
+        self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
 
         if self.settings:
             self.nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
@@ -72,9 +84,9 @@ class CryptoTransportLayer(TransportLayer):
             key.new_key_pair()
             hexkey = key.secret.encode('hex')
             self._db.settings.insert({"id":'%s'%market_id, "secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')})
-            self.settings = self._db.settings.find_one({'id':"%s"%market_id})
+            self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
 
-        self._log = logging.getLogger(self.__class__.__name__)
+    # CALLBACKS
 
     def _on_ping(self, peer):
       uri = peer['uri']
@@ -84,7 +96,6 @@ class CryptoTransportLayer(TransportLayer):
 
     def _on_pong(self, msg):
       self._log.info("PONG %s" % msg)
-      print msg
       nodeID = self.extendShortlist(msg)
 
     def _on_findNode(self, msg):
@@ -94,11 +105,6 @@ class CryptoTransportLayer(TransportLayer):
       @param key: the 160-bit key (i.e. the node or value ID) to search for
       @type key: str
 
-      @return: A list of contact triples closest to the specified key.
-               This method will return C{k} (or C{count}, if specified)
-               contacts if at all possible; it will only return fewer if the
-               node is returning all of the contacts that it knows of.
-      @rtype: list
       """
       # Get the sender's ID (if any)
       senderID = msg['senderID']
@@ -109,10 +115,261 @@ class CryptoTransportLayer(TransportLayer):
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact.guid, contact.uri) )
-      self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
+      if self._peers[uri]:
+          self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
+      else:
+          self._log.error("There is no peer for that URI: %s" % uri)
 
     def _on_findNodeResponse(self, msg):
-      self.extendShortlist(msg)
+      nodeID = self.extendShortlist(msg)
+      print 'Found node',nodeID
+
+      if nodeID != False:
+          self.cancelActiveProbe(nodeID)
+      else:
+          print 'Remove from shortlist'
+
+      self._alreadyContacted.append(nodeID)
+      self._contactedNow += 1
+
+      if self._contactedNow == constants.alpha:
+        return
+
+      if len(self._activeProbes) > self._slowNodeCount[0] or (len(self._shortlist) < constants.k and len(self._activeContacts) < len(self._shortlist) and len(self._activeProbes) > 0):
+        #print '----------- scheduling next call -------------'
+        # Schedule the next iteration if there are any active calls (Kademlia uses loose parallelism)
+        #call = twisted.internet.reactor.callLater(constants.iterativeLookupDelay, searchIteration) #IGNORE:E1101
+        yield gen.Task(IOLoop.instance().add_timeout, time.time() + constants.iterativeLookupDelay)
+        self.searchIteration()
+      # Check for a quick contact response that made an update to the shortList
+      elif self._prevShortlistLength < len(self._shortlist):
+        # Ensure that the closest contacts are taken from the updated shortList
+        self.searchIteration()
+      else:
+        #print '++++++++++++++ DONE (logically) +++++++++++++\n\n'
+        # If no probes were sent, there will not be any improvement, so we're done
+        #outerDf.callback(activeContacts)
+        print 'Done'
+
+    # KADEMLIA
+
+    def cancelActiveProbe(self,   contactID):
+      self._activeProbes.pop()
+      if len(self._activeProbes) <= constants.alpha/2 and len(self._pendingIterationCalls):
+          # Force the iteration
+          self._pendingIterationCalls[0].cancel()
+          del self._pendingIterationCalls[0]
+          #print 'forcing iteration ================='
+          self.searchIteration()
+
+    def iterativeStore(self, key, value, originalPublisherID=None, age=0):
+        """ The Kademlia store operation
+
+        Call this to store/republish data in the DHT.
+
+        @param key: The hashtable key of the data
+        @type key: str
+        @param value: The actual data (the value associated with C{key})
+        @type value: str
+        @param originalPublisherID: The node ID of the node that is the
+                                    B{original} publisher of the data
+        @type originalPublisherID: str
+        @param age: The relative age of the data (time in seconds since it was
+                    originally published). Note that the original publish time
+                    isn't actually given, to compensate for clock skew between
+                    different nodes.
+        @type age: int
+        """
+        if originalPublisherID == None:
+            originalPublisherID = self._guid
+
+        self.iterativeFindNode(key, 'store')
+
+        # Find k nodes closest to the key...
+        #df = self.iterativeFindNode(key)
+        # ...and send them STORE RPCs as soon as they've been found
+        #df.addCallback(executeStoreRPCs)
+        #return df
+
+    def executeStoreRPCs(nodes):
+        #print '        .....execStoreRPCs called'
+        if len(nodes) >= constants.k:
+            # If this node itself is closer to the key than the last (furthest) node in the list,
+            # we should store the value at ourselves as well
+            if self._routingTable.distance(key, self.id) < self._routingTable.distance(key, nodes[-1].id):
+                nodes.pop()
+                self.store(key, value, originalPublisherID=originalPublisherID, age=age)
+        else:
+            self.store(key, value, originalPublisherID=originalPublisherID, age=age)
+        for contact in nodes:
+            contact.store(key, value, originalPublisherID, age)
+        return nodes
+
+    def iterativeFindNode(self, key):
+        """ The basic Kademlia node lookup operation
+
+        Call this to find a remote node in the P2P overlay network.
+
+        @param key: the 160-bit key (i.e. the node or value ID) to search for
+        @type key: str
+
+        @return: This immediately returns a deferred object, which will return
+                 a list of k "closest" contacts (C{kademlia.contact.Contact}
+                 objects) to the specified key as soon as the operation is
+                 finished.
+        @rtype: twisted.internet.defer.Deferred
+        """
+        return self._iterativeFind(key)
+
+    def extendShortlist(self, response):
+          """ @type response: json response """
+          nodeID = response['guid']
+          nodeURI = response['uri']
+          findValue = False
+          result = response['findValue']
+
+          uri = response['uri'] # tuple: (ip adress, udp port)
+          print self._activePeers, response
+
+          # Make sure the responding node is valid, and abort the operation if it isn't
+          if nodeID in self._activePeers or nodeID == self._guid:
+              return nodeID
+
+          # Mark this node as active
+          if nodeID in self._shortlist:
+              print 'Mark node active'
+              # Get the contact information from the shortlist...
+              #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
+              aPeer = PeerConnection(self, nodeURI, nodeID)
+          else:
+              print 'Mark node with real node ID'
+              # If it's not in the shortlist; we probably used a fake ID to reach it
+              # - reconstruct the contact, using the real node ID this time
+              #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
+              aPeer = PeerConnection(self, nodeURI, nodeID)
+
+          self._activePeers.append(aPeer)
+          print 'Active Peers:', self._activePeers
+
+          # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
+          if nodeID not in self._alreadyContacted:
+              self._alreadyContacted.append(nodeID)
+
+          print 'Already Contacted: ', self._alreadyContacted
+
+          # Now grow extend the (unverified) shortlist with the returned contacts
+          #result = responseMsg.response
+
+          #TODO: some validation on the result (for guarding against attacks)
+
+          # If we are looking for a value, first see if this result is the value
+          # we are looking for before treating it as a list of contact triples
+          if findValue == True and type(result) == dict:
+              # We have found the value
+              self._findValueResult[key] = result[key]
+          else:
+              if findValue == True:
+                  # We are looking for a value, and the remote node didn't have it
+                  # - mark it as the closest "empty" node, if it is
+                  if 'closestNodeNoValue' in self._findValueResult:
+                      if self._routingTable.distance(key, responseMsg.nodeID) < self._routingTable.distance(key, activeContacts[0].id):
+                          self._findValueResult['closestNodeNoValue'] = aContact
+                  else:
+                      self._findValueResult['closestNodeNoValue'] = aContact
+              for contactTriple in result:
+                  print contactTriple
+                  #if isinstance(contactTriple, (list, tuple)) and len(contactTriple) == 3:
+                  testContact = Contact(contactTriple[0], contactTriple[1])
+                  if testContact not in self._shortlist:
+                      self._shortlist.append(testContact)
+          return nodeID
+
+
+    def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
+
+      # Determine if we're looking for a node or a key
+      if call != 'findNode':
+        findValue = True
+      else:
+        findValue = False
+
+      if startupShortlist == []:
+        closeNodes = self._routingTable.findCloseNodes(key, constants.alpha)
+
+        for closeNode in closeNodes:
+          ip = urlparse(closeNode._address).hostname
+          port = urlparse(closeNode._address).port
+          guid = closeNode._guid
+          self._shortlist.append((ip, port, guid))
+
+        if key != self._guid:
+          self._routingTable.touchKBucket(key)
+          
+        if len(self._shortlist) == 0:
+          if(callback != None):
+            callback([])
+          else:
+            return []
+
+      else:
+        self._shortlist = startupShortlist
+
+      prevClosestNode = [None]
+
+      def searchIteration():
+
+        self._slowNodeCount[0] = len(self._activeProbes)
+
+        # Sort closest to farthest
+        self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
+        while len(self._pendingIterationCalls):
+          del self._pendingIterationCalls[0]
+
+        if key in self._findValueResult:
+          return findValueResult
+
+        elif len(self._activePeers) and findValue == False:
+          if (len(self._activePeers) >= constants.k) or (self._activeContacts[0] == prevClosestNode[0] and len(self._activeProbes) == self._slowNodeCount[0]):
+
+            return self._activePeers
+
+        if len(self._activePeers):
+          prevClosestNode[0] = self._activePeers[0]
+
+        contactedNow = 0
+
+        self._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
+        prevShortlistLength = len(self._shortlist)
+
+        for node in self._shortlist:
+          if node not in self._alreadyContacted:
+
+              self._activeProbes.append(node)
+
+              #rpcMethod = getattr(node, rpc)
+              #df = rpcMethod(key, rawResponse=True)
+
+              # Ping peer
+
+              uri = "tcp://%s:%s" % (node[0], node[1])
+              msg = {"type":"findNode", "uri":self._uri, "senderID":self._guid, "key":key, "findValue":findValue}
+
+              contact = self._routingTable.getContact(node[2])
+
+              contact.send_raw(json.dumps(msg), callback)
+
+
+      # Start searching
+      results = searchIteration()
+
+      if(callback != None):
+        callback(results)
+      else:
+        return results
+
+
+
+
 
     # Return data array with details from the crypto file
     # TODO: This needs to be protected better; potentially encrypted file or DB
@@ -131,7 +388,7 @@ class CryptoTransportLayer(TransportLayer):
     def get_profile(self):
         peers = {}
 
-        self.settings = self._db.settings.find_one({'id':"%s"%self.market_id})
+        self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
         self._log.info('SETTINGS %s' % self.settings)
         for uri, peer in self._peers.iteritems():
             if peer._pub:
@@ -195,9 +452,10 @@ class CryptoTransportLayer(TransportLayer):
                            % (msg['type'], uri))
             self._peers[uri].send_raw(json.dumps(msg))
 
-    def init_peer(self, msg):
 
-        self._log.info('Initialize Peer: %s' % msg)
+
+
+    def init_peer(self, msg):
 
         uri = msg['uri']
         pub = msg.get('pub')
@@ -208,22 +466,24 @@ class CryptoTransportLayer(TransportLayer):
             self._log.info("Peer " + uri + " is not valid.")
             return
 
+        # Insert peer into k-bucket
+
         node_ip = urlparse(uri).hostname
         node_port = urlparse(uri).port
-        node_guid = hashlib.new('sha1')
-        node_guid.update("%s:%s" % (node_ip, node_port))
-        node_guid = node_guid.digest().encode('hex')
+        node_guid = "AFDSDAFDAS"
+        # node_guid = self.generate_guid(node_ip, node_port)
+        #
+        # if (node_ip, node_port, node_guid) not in self._knownNodes:
+        #     self._knownNodes.append((node_ip, node_port, node_guid))
+        #
+        # # Add to routing table
+        # aContact = Contact(node_guid, uri)
+        # self._routingTable.addContact(aContact)
 
-        if (node_ip, node_port, node_guid) not in self._knownNodes:
-            self._knownNodes.append((node_ip, node_port, node_guid))
-
-        # Add to routing table
-        aContact = Contact(node_guid, uri)
-        self._routingTable.addContact(aContact)
 
         if uri not in self._peers:
-            # unknown peer
-            self._log.info('Found a new peer: %s' % uri)
+            # Unknown peer
+            self._log.info('Add unknown peer: %s' % uri)
             self.create_peer(uri, pub, node_guid)
 
             if not msg_type:
@@ -232,7 +492,7 @@ class CryptoTransportLayer(TransportLayer):
                 self.send_enc(uri, hello_response(self.get_profile()))
 
         else:
-            # known peer
+            # Known peer
             if pub:
                 # test if we have to update the pubkey
                 if not self._peers[uri]._pub:
@@ -250,177 +510,6 @@ class CryptoTransportLayer(TransportLayer):
             if msg_type == 'hello_request':
                 # reply only if necessary
                 self.send_enc(uri, hello_response(self.get_profile()))
-
-    def extendShortlist(self, response):
-          """ @type responseMsg: kademlia.msgtypes.ResponseMessage """
-          # The "raw response" tuple contains the response message, and the originating address info
-          print "Extend Shortlist",response
-          nodeID = response['guid']
-          nodeURI = response['uri']
-          findValue = response['findValue']
-
-          uri = response['uri'] # tuple: (ip adress, udp port)
-          print self._activePeers, response
-
-          # Make sure the responding node is valid, and abort the operation if it isn't
-          if nodeID in self._activePeers or nodeID == self._guid:
-              return nodeID
-
-          # Mark this node as active
-          if nodeID in self._shortlist:
-              print 'Mark node active'
-              # Get the contact information from the shortlist...
-              #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
-              aPeer = PeerConnection(self, nodeURI, nodeID)
-          else:
-              print 'Mark node with real node ID'
-              # If it's not in the shortlist; we probably used a fake ID to reach it
-              # - reconstruct the contact, using the real node ID this time
-              #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
-              aPeer = PeerConnection(self, nodeURI, nodeID)
-
-          self._activePeers.append(aPeer)
-          print 'Active Peers:', self._activePeers
-
-          # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
-          if nodeID not in self._alreadyContacted:
-              self._alreadyContacted.append(nodeID)
-
-          print 'Already Contacted: ', self._alreadyContacted
-
-          # Now grow extend the (unverified) shortlist with the returned contacts
-          #result = responseMsg.response
-
-          #TODO: some validation on the result (for guarding against attacks)
-
-          # If we are looking for a value, first see if this result is the value
-          # we are looking for before treating it as a list of contact triples
-          if findValue == True and type(result) == dict:
-              # We have found the value
-              self._findValueResult[key] = result[key]
-          else:
-              if findValue == True:
-                  # We are looking for a value, and the remote node didn't have it
-                  # - mark it as the closest "empty" node, if it is
-                  if 'closestNodeNoValue' in self._findValueResult:
-                      if self._routingTable.distance(key, responseMsg.nodeID) < self._routingTable.distance(key, activeContacts[0].id):
-                          self._findValueResult['closestNodeNoValue'] = aContact
-                  else:
-                      self._findValueResult['closestNodeNoValue'] = aContact
-              for contactTriple in result:
-                  if isinstance(contactTriple, (list, tuple)) and len(contactTriple) == 3:
-                      testContact = Contact(contactTriple[0], contactTriple[1], contactTriple[2], self._protocol)
-                      if testContact not in shortlist:
-                          shortlist.append(testContact)
-          return nodeID
-
-    def _iterativeFind(self, key, startupShortlist=None, call='findNode'):
-
-      # Determine if we're looking for a node or a key
-      if call != 'findNode':
-        findValue = True
-      else:
-        findValue = False
-
-      print 'Startup Shortlist: ', startupShortlist
-
-      if startupShortlist == []:
-        self._shortlist = self._routingTable.findCloseNodes(key, constants.alpha)
-
-        if key != self._guid:
-          self._routingTable.touchKBucket(key)
-        if len(self._shortlist) == 0:
-          return []
-
-      else:
-        self._shortlist = startupShortlist
-
-      activeProbes = []
-
-
-      pendingIterationCalls = []
-      prevClosestNode = [None]
-
-      slowNodeCount = [0]
-
-      def searchIteration():
-        slowNodeCount[0] = len(activeProbes)
-
-        # Sort closest to farthest
-        self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
-        while len(pendingIterationCalls):
-          del pendingIterationCalls[0]
-
-        if key in self._findValueResult:
-          #outerDf.callback(findValueResult)
-          return findValueResult
-
-        elif len(self._activePeers) and findValue == False:
-          if (len(self._activePeers) >= constants.k) or (activeContacts[0] == prevClosestNode[0] and len(activeProbes) == slowNodeCount[0]):
-            #outerDf.callback(activeContacts)
-            return self._activePeers
-
-        if len(self._activePeers):
-          prevClosestNode[0] = self._activePeers[0]
-
-        contactedNow = 0
-
-        self._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.id, targetKey), self._routingTable.distance(secondContact.id, targetKey)))
-
-        prevShortlistLength = len(self._shortlist)
-
-        for node in self._shortlist:
-          if node[2] not in self._alreadyContacted:
-              activeProbes.append(node[2])
-
-              #rpcMethod = getattr(node, rpc)
-              #df = rpcMethod(key, rawResponse=True)
-
-              # Ping peer
-              uri = "tcp://%s:%s" % (node[0], node[1])
-              msg = {"type":"findNode", "uri":self._uri, "senderID":self._guid, "key":key, "findValue":findValue}
-
-              self._peers[uri].send_raw(json.dumps(msg))
-
-
-              # df.addCallback(extendShortlist)
-              # df.addErrback(removeFromShortlist)
-              # df.addCallback(cancelActiveProbe)
-
-              # Send method call which returns some raw response
-              # and send it to extendShortlist
-
-              #alreadyContacted.append(node[2])
-              #contactedNow += 1
-
-        #   if contactedNow == constants.alpha:
-        #       break
-        # if len(activeProbes) > slowNodeCount[0] \
-        #     or (len(shortlist) < constants.k and len(activeContacts) < len(shortlist) and len(activeProbes) > 0):
-        #     #print '----------- scheduling next call -------------'
-        #     # Schedule the next iteration if there are any active calls (Kademlia uses loose parallelism)
-        #     call = twisted.internet.reactor.callLater(constants.iterativeLookupDelay, searchIteration) #IGNORE:E1101
-        #     pendingIterationCalls.append(call)
-        # # Check for a quick contact response that made an update to the shortList
-        # elif prevShortlistLength < len(shortlist):
-        #     # Ensure that the closest contacts are taken from the updated shortList
-        #     searchIteration()
-        # else:
-        #     #print '++++++++++++++ DONE (logically) +++++++++++++\n\n'
-        #     # If no probes were sent, there will not be any improvement, so we're done
-        #     outerDf.callback(activeContacts)
-
-
-
-
-
-      #outerDf = defer.Deferred()
-
-      # Start searching
-      results = searchIteration()
-
-      return results
-
 
     def on_raw_message(self, serialized):
 

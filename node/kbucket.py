@@ -28,11 +28,11 @@ class KBucket(object):
                                             already
 
         @param contact: The contact to add
-        @type contact: kademlia.contact.Contact
+        @type contact: p2p.PeerConnection
         """
         if contact in self._contacts:
             # Move the existing contact to the end of the list
-            # - using the new contact to allow add-on data (e.g. optimization-specific stuff) to pe updated as well
+            # - using the new contact to allow add-on data (e.g. optimization-specific stuff) to be updated as well
             self._contacts.remove(contact)
             self._contacts.append(contact)
         elif len(self._contacts) < constants.k:
@@ -42,8 +42,11 @@ class KBucket(object):
 
     def getContact(self, contactID):
         """ Get the contact specified node ID"""
-        index = self._contacts.index(contactID)
-        return self._contacts[index]
+        print self._contacts
+        for contact in self._contacts:
+          print contact._guid,' ',contactID
+          if contact._guid == contactID:
+            return contact
 
     def getContacts(self, count=-1, excludeContact=None):
         """ Returns a list containing up to the first count number of contacts
@@ -120,7 +123,6 @@ class KBucket(object):
         """
         if isinstance(key, str):
             key = long(key.encode('hex'), 16)
-        print self.rangeMin, key, self.rangeMax
         return self.rangeMin <= key < self.rangeMax
 
     def __len__(self):

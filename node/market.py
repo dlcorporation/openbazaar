@@ -32,18 +32,14 @@ class Market(object):
         self.orders = Orders(self._transport)
         self.order_entries = self.orders._orders
 
-        # TODO: Persistent storage of nicknames and pages
         self.nicks = {}
         self.pages = {}
 
-        # Connect to database
         MONGODB_URI = 'mongodb://localhost:27017'
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
         self.settings = self._db.settings.find_one()
-
-
 
         welcome = True
 
@@ -61,13 +57,12 @@ class Market(object):
 
         self.load_page(welcome)
 
+
     def generate_new_secret(self):
 
         key = bitcoin.EllipticCurveKey()
         key.new_key_pair()
         hexkey = key.secret.encode('hex')
-
-        self._log.info('Pubkey generate: %s' % key._public_key.pubkey)
 
         self._db.settings.update({}, {"$set": {"secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')}})
 
@@ -156,7 +151,7 @@ class Market(object):
 
 
     def get_products(self):
-        self._log.info(self._transport.market_id)
+        self._log.info(self._transport._market_id)
         products = self._db.products.find()
         my_products = []
 
@@ -182,8 +177,8 @@ class Market(object):
         self._db.settings.update({'id':'%s'%self._transport.market_id}, {'$set':msg}, True)
 
     def get_settings(self):
-        self._log.info(self._transport.market_id)
-        settings = self._db.settings.find_one({'id':'%s'%self._transport.market_id})
+        self._log.info(self._transport._market_id)
+        settings = self._db.settings.find_one({'id':'%s'%self._transport._market_id})
         print settings
         if settings:
             return { "bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
@@ -204,8 +199,6 @@ class Market(object):
                 "arbiterDescription": settings['arbiterDescription'] if settings.has_key("arbiterDescription") else "",
                 "arbiter": settings['arbiter'] if settings.has_key("arbiter") else "",
                 }
-
-
 
 
     # PAGE QUERYING
@@ -235,7 +228,7 @@ class Market(object):
 
     def on_query_myorders(self, peer):
         self._log.info("Someone is querying for your page")
-        
+
 
     def on_peer(self, peer):
         pass
