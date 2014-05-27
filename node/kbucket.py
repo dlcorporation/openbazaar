@@ -42,9 +42,8 @@ class KBucket(object):
 
     def getContact(self, contactID):
         """ Get the contact specified node ID"""
-        print self._contacts
+        print "Find contact with ID: %s" % contactID
         for contact in self._contacts:
-          print contact._guid,' ',contactID
           if contact._guid == contactID:
             return contact
 
@@ -93,8 +92,7 @@ class KBucket(object):
 
         if excludeContact in contactList:
             contactList.remove(excludeContact)
-
-        print 'Contact List: ',contactList
+        
         return contactList
 
     def removeContact(self, contact):
