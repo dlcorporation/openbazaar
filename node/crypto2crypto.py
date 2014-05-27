@@ -111,13 +111,17 @@ class CryptoTransportLayer(TransportLayer):
       key = msg['key']
       uri = msg['uri']
 
+      # Add contact to routing table
+      newContact = Contact(senderID, uri)
+      self._routingTable.addContact(newContact)
+
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact._guid, contact._address) )
           print contactTriples,'triples'
           foundContact = self._routingTable.getContact(senderID)
-          print foundContact
+
           #.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
 
 
