@@ -309,9 +309,7 @@ class TreeRoutingTable(RoutingTable):
         @return: The index of the k-bucket responsible for the specified key
         @rtype: int
         """
-        print key
         valKey = long(key, 16)
-        print valKey
 
         i = 0
         for bucket in self._buckets:
