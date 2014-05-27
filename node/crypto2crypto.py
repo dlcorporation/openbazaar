@@ -112,8 +112,9 @@ class CryptoTransportLayer(TransportLayer):
       uri = msg['uri']
 
       # Add contact to routing table
-      newContact = Contact(senderID, uri)
+      newContact = PeerConnection(self, uri, senderID)
       self._routingTable.addContact(newContact)
+
 
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
       contactTriples = []
