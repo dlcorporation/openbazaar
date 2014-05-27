@@ -112,7 +112,7 @@ class CryptoTransportLayer(TransportLayer):
 
       # Add contact to routing table
       newContact = PeerConnection(self, uri, senderID)
-      if not self._routingTable.getContact(newContact):
+      if not self._routingTable.getContact(senderID):
           self._routingTable.addContact(newContact)
 
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
