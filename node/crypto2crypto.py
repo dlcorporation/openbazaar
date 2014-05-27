@@ -90,7 +90,6 @@ class CryptoTransportLayer(TransportLayer):
 
     def _on_ping(self, peer):
       uri = peer['uri']
-      print "peer",peer
       self._peers[uri].send_raw(json.dumps({"type":"pong", "guid": self._guid, "uri":self._uri, "findValue":peer['findValue']}))
       self._log.info("Got a ping")
 
@@ -113,14 +112,13 @@ class CryptoTransportLayer(TransportLayer):
 
       # Add contact to routing table
       newContact = PeerConnection(self, uri, senderID)
-      self._routingTable.addContact(newContact)
-
+      if not self._routingTable.getContact(newContact):
+          self._routingTable.addContact(newContact)
 
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact._guid, contact._address) )
-          print contactTriples,'triples'
           foundContact = self._routingTable.getContact(senderID)
 
           #.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
@@ -134,7 +132,6 @@ class CryptoTransportLayer(TransportLayer):
     def _on_findNodeResponse(self, msg):
 
       nodeID = self.extendShortlist(msg)
-      print 'Found node',nodeID
 
       if nodeID != False:
           self.cancelActiveProbe(nodeID)
@@ -309,7 +306,7 @@ class CryptoTransportLayer(TransportLayer):
 
               def extendShortlist(response):
 
-                    print 'HERES RESPONSE: ', response
+                    print 'Extend shortlist'
 
                     # """ @type response: json response """
                     # nodeID = response['guid']
