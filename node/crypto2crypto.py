@@ -114,7 +114,7 @@ class CryptoTransportLayer(TransportLayer):
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
       contactTriples = []
       for contact in contacts:
-          contactTriples.append( (contact.guid, contact.uri) )
+          contactTriples.append( (contact._guid, contact.uri) )
       if self._peers[uri]:
           self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
       else:
@@ -304,7 +304,7 @@ class CryptoTransportLayer(TransportLayer):
 
         if key != self._guid:
           self._routingTable.touchKBucket(key)
-          
+
         if len(self._shortlist) == 0:
           if(callback != None):
             callback([])
