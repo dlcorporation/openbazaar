@@ -144,17 +144,17 @@ class TransportLayer(object):
             self._routingTable.addContact(seed_node)
 
 
-        # Send findNode call to other nodes to let them know we're online
-        def joinedNetwork(msg):
+            # Send findNode call to other nodes to let them know we're online
+            def joinedNetwork(msg):
 
-            if msg != None:
-              msg = json.loads(msg)
-              if msg['type'] == 'ok':
-                print 'Found myself: %s' % self._guid
+                if msg != None:
+                  msg = json.loads(msg)
+                  if msg['type'] == 'ok':
+                    print 'Found myself: %s' % self._guid
 
-        self._iterativeFind(self._guid, self._knownNodes, 'findNode', joinedNetwork)
+            self._iterativeFind(self._guid, self._knownNodes, 'findNode', joinedNetwork)
 
-        # Referesh the k-buckets periodically
+        
 
 
     def listen(self):
