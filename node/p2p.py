@@ -82,16 +82,16 @@ class PeerConnection(object):
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
-    def __init__(self, my_ip, my_port):
+    def __init__(self, my_ip, my_port, my_guid):
         self._peers = {}
         self._callbacks = defaultdict(list)
         self._port = my_port
         self._ip = my_ip
+        self._guid = my_guid
         self._uri = 'tcp://%s:%s' % (self._ip, self._port)
-        self._guid = self.generate_guid().encode('hex')
 
         # Routing table
-        self._routingTable = routingtable.OptimizedTreeRoutingTable(self._guid)
+        self._routingTable = routingtable.OptimizedTreeRoutingTable(self.guid)
         self._dataStore = datastore.MongoDataStore()
         self._knownNodes = []
 
@@ -102,10 +102,7 @@ class TransportLayer(object):
     def add_callback(self, section, callback):
         self._callbacks[section].append(callback)
 
-    def generate_guid(self):
-      guid = hashlib.sha1()
-      guid.update("%s:%s" % (self._ip, self._port))
-      return guid.digest()
+
 
     def trigger_callbacks(self, section, *data):
         for cb in self._callbacks[section]:
@@ -239,7 +236,7 @@ class TransportLayer(object):
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
         self._log.info("Data received: %s" % msg)
-        self.trigger_callbacks(msg.get('type'), msg)
+        self.trigger_callbacks(msg['type'], msg)
 
     def on_raw_message(self, serialized):
         self._log.info("connected " + str(len(serialized)))
