@@ -84,7 +84,7 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--my_market_port", type=int, default=12345)
     parser.add_argument("-s", "--seed_uri")
     parser.add_argument("-l", "--log_file", default='node.log')
-    parser.add_argument("-u", "--userid", default=1)
+    parser.add_argument("-u", "--market_id", default=1)
     args = parser.parse_args()
     start_node(args.my_market_ip,
-               args.my_market_port, args.seed_uri, args.log_file, args.userid)
+               args.my_market_port, args.seed_uri, args.log_file, args.market_id)
