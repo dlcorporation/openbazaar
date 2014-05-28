@@ -18,6 +18,7 @@ We are continually on IRC chat at #OpenBazaar on Freenode
 ## Features (Notional)
 - Full market editor for management of items catalog
 - Order management system
+- Ricardian-style contracts  
 - Escrow-based transactions
 - Arbiter management
 - Private messaging
