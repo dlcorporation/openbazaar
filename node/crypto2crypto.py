@@ -121,13 +121,8 @@ class CryptoTransportLayer(TransportLayer):
           contactTriples.append( (contact._guid, contact._address) )
           foundContact = self._routingTable.getContact(senderID)
 
-          #.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
+      newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
 
-
-      # if self._peers[uri]:
-      #     self._peers[uri].send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples}))
-      # else:
-      #     self._log.error("There is no peer for that URI: %s" % uri)
 
     def _on_findNodeResponse(self, msg):
 
@@ -301,8 +296,7 @@ class CryptoTransportLayer(TransportLayer):
 
               def extendShortlist(response):
 
-                    print 'Extend shortlist'
-
+                    print response
                     # """ @type response: json response """
                     # nodeID = response['guid']
                     # nodeURI = response['uri']
