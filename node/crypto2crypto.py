@@ -89,7 +89,7 @@ class CryptoTransportLayer(TransportLayer):
             signedPubkey = self._myself.sign(pubkey)
             self.pubkey = pubkey.encode('hex')
 
-            # Generate a node ID by SHA512 hashing the signed pubkey
+            # Generate a node ID by ripemd160 hashing the signed pubkey
             guid = hashlib.new('ripemd160')
             guid.update(signedPubkey)
             self.guid = guid.digest().encode('hex')
