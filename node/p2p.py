@@ -131,15 +131,10 @@ class TransportLayer(object):
             node_guid.update("%s:%s" % (node_ip, node_port))
             node_guid = node_guid.digest().encode('hex')
 
-
             if (node_ip, node_port, node_guid) not in self._knownNodes:
                 self._knownNodes.append((node_ip, node_port, node_guid))
-                # Need to persist this in MongoDB
-                # Used when starting server back up
 
             # Add to routing table
-            #aContact = Contact(node_guid, uri)
-            #self._routingTable.addContact(aContact)
             seed_node = PeerConnection(self, seed_uri, node_guid)
             self._routingTable.addContact(seed_node)
 
@@ -154,7 +149,7 @@ class TransportLayer(object):
 
             self._iterativeFind(self._guid, self._knownNodes, 'findNode', joinedNetwork)
 
-        
+
 
 
     def listen(self):
@@ -177,11 +172,10 @@ class TransportLayer(object):
             except:
               pass
 
-
         while True:
             message = self._socket.recv()
             self.on_raw_message(message)
-            self._socket.send(json.dumps({'type': "ok"}))
+            #self._socket.send(json.dumps({'type': 'ok'}))
 
     def closed(self, *args):
         self._log.info("client left")

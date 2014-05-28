@@ -126,6 +126,8 @@ class CryptoTransportLayer(TransportLayer):
 
     def _on_findNodeResponse(self, msg):
 
+      print 'find node resposne'
+
       nodeID = self.extendShortlist(msg)
 
       if nodeID != False:
@@ -296,7 +298,7 @@ class CryptoTransportLayer(TransportLayer):
 
               def extendShortlist(response):
 
-                    print response
+                    print "EXTEND", response
                     # """ @type response: json response """
                     # nodeID = response['guid']
                     # nodeURI = response['uri']
