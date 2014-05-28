@@ -20,9 +20,8 @@ class Market(object):
     def __init__(self, transport):
 
         self._log = logging.getLogger(self.__class__.__name__)
-        self._log.info("Initializing")
+        self._log.info("Loading Market")
 
-        # for now we have the id in the transport
         self._myself = transport._myself
         self._peers = transport._peers
         self._transport = transport
@@ -39,7 +38,7 @@ class Market(object):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
-        self.settings = self._db.settings.find_one()
+        self.settings = self._transport.settings
 
         welcome = True
 
@@ -56,15 +55,6 @@ class Market(object):
         transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
         self.load_page(welcome)
-
-
-    def generate_new_secret(self):
-
-        key = bitcoin.EllipticCurveKey()
-        key.new_key_pair()
-        hexkey = key.secret.encode('hex')
-
-        self._db.settings.update({}, {"$set": {"secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')}})
 
 
     def lookup(self, msg):
@@ -94,19 +84,8 @@ class Market(object):
 
         self._transport.send(protocol.negotiate_pubkey(nickname, key))
 
-	# Load default information for your market from your file
+
     def load_page(self, welcome):
-
-        #self._log.info("Loading market config from %s." % self.store_file)
-
-        #with open(self.store_file) as f:
-        #    data = json.loads(f.read())
-
-        #self._log.info("Configuration data: " + json.dumps(data))
-
-        #assert "desc" in data
-        #nickname = data["nickname"]
-        #desc = data["desc"]
 
         nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
         storeDescription = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
@@ -116,17 +95,12 @@ class Market(object):
         self.nickname = nickname
         self.signature = self._transport._myself.sign(tagline)
 
-
         if welcome:
             self._db.settings.update({}, {"$set":{"welcome":"noshow"}})
         else:
             self.welcome = False
 
 
-        #self._log.info("Tagline signature: " + self.signature.encode("hex"))
-
-
-    # Products
     def save_product(self, msg):
         self._log.info("Product to save %s" % msg)
         self._log.info(self._transport)

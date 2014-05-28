@@ -75,9 +75,10 @@ class PeerConnection(object):
 
 
     def on_message(self, msg, callback=None):
-        if callback:
+        if json.loads(msg)['type'] != 'ok' and callback:
+          self._log.info('Executing callback: %s' % callback)
           callback(msg)
-        self._log.info("message received! %s" % msg)
+        self._log.info("Message received: %s" % msg)
 
 
 # Transport layer manages a list of peers
@@ -114,25 +115,25 @@ class TransportLayer(object):
     def get_profile(self):
         return {'type': 'hello_request', 'uri': self._uri}
 
-    def join_network(self, seed_uri):
+    def join_network(self, seed_uri, seed_guid):
 
         self.listen() # Turn on zmq socket
 
         if seed_uri:
-            self.init_peer({'uri': seed_uri})
 
-            # Get Seed info
-            node_ip = urlparse(seed_uri).hostname
-            node_port = urlparse(seed_uri).port
-            node_guid = hashlib.new('sha1')
-            node_guid.update("%s:%s" % (node_ip, node_port))
-            node_guid = node_guid.digest().encode('hex')
+            self._log.info('Initializing Seed Peer(s): [%s %s]' % (seed_uri, seed_guid))
+            # Turning off peers
+            #self.init_peer({'uri': seed_uri, 'guid':seed_guid})
 
-            if (node_ip, node_port, node_guid) not in self._knownNodes:
-                self._knownNodes.append((node_ip, node_port, node_guid))
+            ip = urlparse(seed_uri).hostname
+            port = urlparse(seed_uri).port
+
+
+            if (ip, port, seed_guid) not in self._knownNodes:
+                self._knownNodes.append((ip, port, seed_guid))
 
             # Add to routing table
-            seed_node = PeerConnection(self, seed_uri, node_guid)
+            seed_node = PeerConnection(self, seed_uri, seed_guid)
             self._routingTable.addContact(seed_node)
 
 
@@ -155,7 +156,7 @@ class TransportLayer(object):
         t.start()
 
     def _listen(self):
-        self._log.info("init server %s %s" % (self._ip, self._port))
+        self._log.info("Listening at: %s:%s" % (self._ip, self._port))
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REP)
 
