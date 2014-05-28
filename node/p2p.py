@@ -49,11 +49,13 @@ class PeerConnection(object):
         queue = Queue()
         # queue element is false if something went wrong and the peer
         # has to be removed
+
         p = Process(target=self._send_raw_process, args=(serialized, queue, callback))
         p.start()
         if not queue.get():
             self._log.info("Peer %s timed out." % self._address)
-            self._transport.remove_peer(self._address)
+            self._transport.remove_peer(self._address, self._guid)
+
         p.join()
 
     def _send_raw_process(self, serialized, queue, callback=None):
@@ -63,13 +65,14 @@ class PeerConnection(object):
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
-        if poller.poll(self._timeout * 5000):
+        if poller.poll(self._timeout * 1000):
             msg = self._socket.recv()
             self.on_message(msg, callback)
             self.cleanup_socket()
             queue.put(True)
 
         else:
+            self._log.info("Node timed out: %s" % self._address)
             self.cleanup_socket()
             queue.put(False)
 
@@ -184,18 +187,28 @@ class TransportLayer(object):
         if uri not in self._peers:
             self._peers[uri] = PeerConnection(self, uri)
 
-    def remove_peer(self, uri):
+    def remove_peer(self, uri, guid):
         self._log.info("Removing peer %s", uri)
-        try:
-            del self._peers[uri]
-            msg = {
-                'type': 'peer_remove',
-                'uri': uri
-            }
-            self.trigger_callbacks(msg['type'], msg)
+        ip = urlparse(uri).hostname
+        port = urlparse(uri).port
+        if (ip, port, guid) in self._shortlist:
+            self._shortlist.remove((ip, port, guid))
 
-        except KeyError:
-            self._log.info("Peer %s was already removed", uri)
+        self._log.info('Removed')
+
+
+        # try:
+        #     del self._peers[uri]
+        #     msg = {
+        #         'type': 'peer_remove',
+        #         'uri': uri
+        #     }
+        #     self.trigger_callbacks(msg['type'], msg)
+        #
+        # except KeyError:
+        #     self._log.info("Peer %s was already removed", uri)
+
+
 
     def send(self, data, send_to=None):
 
