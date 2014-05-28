@@ -174,7 +174,7 @@ class Market(object):
     def save_settings(self, msg):
         self._log.info("Settings to save %s" % msg)
         self._log.info(self._transport)
-        self._db.settings.update({'id':'%s'%self._transport.market_id}, {'$set':msg}, True)
+        self._db.settings.update({'id':'%s'%self._transport._market_id}, {'$set':msg}, True)
 
     def get_settings(self):
         self._log.info(self._transport._market_id)
