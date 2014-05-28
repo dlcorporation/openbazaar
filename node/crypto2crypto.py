@@ -294,11 +294,6 @@ class CryptoTransportLayer(TransportLayer):
 
               self._activeProbes.append(node)
 
-              #rpcMethod = getattr(node, rpc)
-              #df = rpcMethod(key, rawResponse=True)
-
-              # Ping peer
-
               uri = "tcp://%s:%s" % (node[0], node[1])
               msg = {"type":"findNode", "uri":self._uri, "senderID":self._guid, "key":key, "findValue":findValue}
 
