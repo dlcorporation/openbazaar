@@ -194,13 +194,13 @@ class CryptoTransportLayer(TransportLayer):
               aPeer = PeerConnection(self, uri, guid)
 
           self._activePeers.append(aPeer)
-          self._log.debug('Active Peers:', self._activePeers)
+          self._log.debug('Active Peers: %s' % self._activePeers)
 
           # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
           if guid not in self._alreadyContacted:
               self._alreadyContacted.append(guid)
 
-          self._log.debug('Already Contacted: ', self._alreadyContacted)
+          self._log.debug('Already Contacted: %s' % self._alreadyContacted)
 
           #TODO: some validation on the result (for guarding against attacks)
 
@@ -232,7 +232,7 @@ class CryptoTransportLayer(TransportLayer):
 
           self._log.debug('Shortlist Updated: %s' % self._shortlist)
 
-    def cancelActiveProbe(self,   contactID):
+    def cancelActiveProbe(self, contactID):
       self._activeProbes.pop()
       if len(self._activeProbes) <= constants.alpha/2 and len(self._pendingIterationCalls):
           # Force the iteration
