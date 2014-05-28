@@ -41,8 +41,7 @@ class KBucket(object):
             raise BucketFull("No space in bucket to insert contact")
 
     def getContact(self, contactID):
-        """ Get the contact specified node ID"""
-        print "Find contact with ID: %s" % contactID
+        """ Get the contact specified node ID"""        
         for contact in self._contacts:
           if contact._guid == contactID:
             return contact
@@ -92,7 +91,7 @@ class KBucket(object):
 
         if excludeContact in contactList:
             contactList.remove(excludeContact)
-        
+
         return contactList
 
     def removeContact(self, contact):

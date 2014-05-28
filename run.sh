@@ -4,6 +4,7 @@ MY_MARKET_PORT=12345
 
 # Specify a seed URI or you will be put into demo mode
 SEED_URI=tcp://seed.openbazaar.org:12345
+SEED_GUID=caf438e3b55603f94d62ef6d150f9724c67f91cb
 
 # Run in local test mode if not production
 MODE=production
@@ -28,7 +29,7 @@ fi
 if [ $MODE == production ]; then
 
   $PYTHON ident/identity.py &
-	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT -l $LOGDIR/node.log -u 1 &
+	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -g $SEED_GUID -p $MY_MARKET_PORT -l $LOGDIR/node.log -u 1 &
 
 else
 

@@ -150,7 +150,7 @@ class ProtocolHandler:
 
     def client_generate_secret(self, socket_handler, msg):
 
-      new_secret = self.node.generate_new_secret()
+      new_secret = self._transport.generate_new_keypair()
       self.send_opening()
 
 

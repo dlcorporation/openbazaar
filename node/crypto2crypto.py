@@ -36,6 +36,8 @@ class CryptoTransportLayer(TransportLayer):
 
     def __init__(self, my_ip, my_port, market_id):
 
+        self._log = logging.getLogger(self.__class__.__name__)
+
         self._myself = ec.ECC(curve='secp256k1')
         self._market_id = market_id
         self.nick_mapping = {}
@@ -51,12 +53,10 @@ class CryptoTransportLayer(TransportLayer):
         TransportLayer.__init__(self, my_ip, my_port, self.guid)
 
         # Set up callbacks
-        self.add_callback('ping', self._on_ping)
-        self.add_callback('pong', self._on_pong)
         self.add_callback('findNode', self._on_findNode)
         self.add_callback('findNodeResponse', self._on_findNodeResponse)
 
-        self._log = logging.getLogger(self.__class__.__name__)
+
 
     def _init_dht(self):
         self._activePeers = []
@@ -80,51 +80,38 @@ class CryptoTransportLayer(TransportLayer):
             self.guid = self.settings['guid']
         else:
             self.nickname = 'Default'
+            self.generate_new_keypair()
+            self.settings = self._db.settings.find_one({'id':"%s" % market_id})
 
-            # Generate new keypair
-            key = bitcoin.EllipticCurveKey()
-            key.new_key_pair()
-            self.secret = key.secret.encode('hex')
-            pubkey = bitcoin.GetPubKey(key._public_key.pubkey, False)
-            signedPubkey = self._myself.sign(pubkey)
-            self.pubkey = pubkey.encode('hex')
+        self._log.debug('Retrieved Settings: %s', self.settings)
 
-            # Generate a node ID by ripemd160 hashing the signed pubkey
-            guid = hashlib.new('ripemd160')
-            guid.update(signedPubkey)
-            self.guid = guid.digest().encode('hex')
+    def generate_new_keypair(self):
 
-            # Insert new record for the new user
-            self._db.settings.insert({"id":'%s' % market_id, "secret":self.secret, "pubkey":self.pubkey, "guid":self.guid})
+      # Generate new keypair
+      key = bitcoin.EllipticCurveKey()
+      key.new_key_pair()
+      self.secret = key.secret.encode('hex')
+      pubkey = bitcoin.GetPubKey(key._public_key.pubkey, False)
+      signedPubkey = self._myself.sign(pubkey)
+      self.pubkey = pubkey.encode('hex')
 
-            self.settings = self._db.settings.find_one({'id':"%s" % market_id})        
+      # Generate a node ID by ripemd160 hashing the signed pubkey
+      guid = hashlib.new('ripemd160')
+      guid.update(signedPubkey)
+      self.guid = guid.digest().encode('hex')
 
-    def generate_guid(self, secret, pubkey):
+      # Insert new record for the new user
+      #self._db.settings.insert({"id":'%s' % market_id, "secret":self.secret, "pubkey":self.pubkey, "guid":self.guid})
 
-      guid = hashlib.sha1()
-      guid.update("%s:%s" % (self._ip, self._port))
-      return guid.digest()
+      self._db.settings.update({"id":'%s' % market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
+
 
     # CALLBACKS
 
-    def _on_ping(self, peer):
-      uri = peer['uri']
-      self._peers[uri].send_raw(json.dumps({"type":"pong", "guid": self._guid, "uri":self._uri, "findValue":peer['findValue']}))
-      self._log.info("Got a ping")
-
-    def _on_pong(self, msg):
-      self._log.info("PONG %s" % msg)
-      nodeID = self.extendShortlist(msg)
-
     def _on_findNode(self, msg):
-      """ Finds a number of known nodes closest to the node/value with the
-      specified key.
 
-      @param key: the 160-bit key (i.e. the node or value ID) to search for
-      @type key: str
+      self._log.info('Received a findNode request: %s' % msg)
 
-      """
-      # Get the sender's ID (if any)
       senderID = msg['senderID']
       key = msg['key']
       uri = msg['uri']
@@ -132,6 +119,7 @@ class CryptoTransportLayer(TransportLayer):
       # Add contact to routing table
       newContact = PeerConnection(self, uri, senderID)
       if not self._routingTable.getContact(senderID):
+          self._log.info('Adding contact to routing table')
           self._routingTable.addContact(newContact)
 
       contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
@@ -145,7 +133,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _on_findNodeResponse(self, msg):
 
-      print 'find node resposne'
+      self._log.info('Receive a findNode Response: %s' % msg)
 
       nodeID = self.extendShortlist(msg)
       #
@@ -180,40 +168,39 @@ class CryptoTransportLayer(TransportLayer):
 
     def extendShortlist(self, response):
 
+          self._log.info('Extending short list')
+
           findValue = False
-          nodeID = response['guid']
-          nodeURI = response['uri']
-          result = response['findValue']
           uri = response['uri']
+          guid = response['guid']
+          result = response['findValue']
 
           # Make sure the responding node is valid, and abort the operation if it isn't
-          if nodeID in self._activePeers or nodeID == self._guid:
-              return nodeID
+          if guid in self._activePeers or guid == self._guid:
+              self._log.info('Node is not valid for extending shortlist')
+              return
 
           # Mark this node as active
-          if nodeID in self._shortlist:
-              print 'Mark node active'
+          if guid in self._shortlist:
+              self._log.info('Getting node from shortlist')
               # Get the contact information from the shortlist...
               #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
-              aPeer = PeerConnection(self, nodeURI, nodeID)
+              aPeer = PeerConnection(self, uri, guid)
           else:
-              print 'Mark node with real node ID'
+              self._log.info('Node is not in the shortlist')
               # If it's not in the shortlist; we probably used a fake ID to reach it
               # - reconstruct the contact, using the real node ID this time
               #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
-              aPeer = PeerConnection(self, nodeURI, nodeID)
+              aPeer = PeerConnection(self, uri, guid)
 
           self._activePeers.append(aPeer)
-          print 'Active Peers:', self._activePeers
+          self._log.debug('Active Peers:', self._activePeers)
 
           # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
-          if nodeID not in self._alreadyContacted:
-              self._alreadyContacted.append(nodeID)
+          if guid not in self._alreadyContacted:
+              self._alreadyContacted.append(guid)
 
-          print 'Already Contacted: ', self._alreadyContacted
-
-          # Now grow extend the (unverified) shortlist with the returned contacts
-          #result = responseMsg.response
+          self._log.debug('Already Contacted: ', self._alreadyContacted)
 
           #TODO: some validation on the result (for guarding against attacks)
 
@@ -231,14 +218,19 @@ class CryptoTransportLayer(TransportLayer):
                           self._findValueResult['closestNodeNoValue'] = aContact
                   else:
                       self._findValueResult['closestNodeNoValue'] = aContact
-              for contactTriple in result:
-                  print contactTriple
-                  #if isinstance(contactTriple, (list, tuple)) and len(contactTriple) == 3:
-                  testContact = PeerConnection(self, contactTriple[1], contactTriple[0])#Contact(contactTriple[0], contactTriple[1])
+
+              # Found a node not a value
+              for foundContact in result:
+                  self._log.debug('Contact: %s' % foundContact)
+                  #testContact = PeerConnection(self, foundContact[1], foundContact[0])
+                  ip = urlparse(foundContact[1]).hostname
+                  port = urlparse(foundContact[1]).port
+                  testContact = (ip, port, foundContact[0])
+
                   if testContact not in self._shortlist:
                       self._shortlist.append(testContact)
-          print self._shortlist
-          return nodeID
+
+          self._log.debug('Shortlist Updated: %s' % self._shortlist)
 
     def cancelActiveProbe(self,   contactID):
       self._activeProbes.pop()
@@ -374,13 +366,10 @@ class CryptoTransportLayer(TransportLayer):
 
               uri = "tcp://%s:%s" % (node[0], node[1])
               msg = {"type":"findNode", "uri":self._uri, "senderID":self._guid, "key":key, "findValue":findValue}
+              self._log.info("Sending findNode: %s", msg)
 
               contact = self._routingTable.getContact(node[2])
-
-
-
               contact.send_raw(json.dumps(msg))
-
 
       # Start searching
       results = searchIteration()
@@ -484,30 +473,16 @@ class CryptoTransportLayer(TransportLayer):
         pub = msg.get('pub')
         nickname = msg.get('nickname')
         msg_type = msg.get('type')
+        guid = msg['guid']
 
         if not self.valid_peer_uri(uri):
-            self._log.info("Peer " + uri + " is not valid.")
+            self._log.error("Invalid Peer: %s " % uri)
             return
-
-        # Insert peer into k-bucket
-
-        node_ip = urlparse(uri).hostname
-        node_port = urlparse(uri).port
-        node_guid = "AFDSDAFDAS"
-        # node_guid = self.generate_guid(node_ip, node_port)
-        #
-        # if (node_ip, node_port, node_guid) not in self._knownNodes:
-        #     self._knownNodes.append((node_ip, node_port, node_guid))
-        #
-        # # Add to routing table
-        # aContact = Contact(node_guid, uri)
-        # self._routingTable.addContact(aContact)
-
 
         if uri not in self._peers:
             # Unknown peer
-            self._log.info('Add unknown peer: %s' % uri)
-            self.create_peer(uri, pub, node_guid)
+            self._log.info('Add New Peer: %s' % uri)
+            self.create_peer(uri, pub, guid)
 
             if not msg_type:
                 self.send_enc(uri, hello_request(self.get_profile()))
@@ -537,35 +512,45 @@ class CryptoTransportLayer(TransportLayer):
     def on_raw_message(self, serialized):
 
         try:
+            # Try to deserialize cleartext message
             msg = json.loads(serialized)
-            self._log.info("receive [%s]" % msg.get('type', 'unknown'))
+            self._log.info("Message Received [%s]" % msg.get('type', 'unknown'))
         except ValueError:
             try:
-                msg = json.loads(self._myself.decrypt(serialized))
-                self._log.info("Decrypted raw message [%s]"
+                # Encrypted?
+                try:
+                  msg = self._myself.decrypt(serialized)
+                  msg = json.loads(msg)
+
+                  self._log.info("Decrypted Message [%s]"
                                % msg.get('type', 'unknown'))
+                except:
+                  self._log.error("Could not decrypt message")
+                  return
             except:
-                self._log.info("incorrect msg ! %s..."
+                self._log.info("Bad Message: %s..."
                                % self._myself.decrypt(serialized))
                 traceback.print_exc()
                 return
 
         msg_type = msg.get('type')
         msg_uri = msg.get('uri')
+        msg_guid = msg.get('guid')
 
         if msg_type != '':
 
-            if msg_type.startswith('hello') and msg_uri:
-                self.init_peer(msg)
-                for uri, pub in msg.get('peers', {}).iteritems():
-                    # Do not add yourself as a peer
-                    if uri != self._uri:
-                        self.init_peer({'uri': uri, 'pub': pub})
-                self._log.info("Update peer table [%s peers]" % len(self._peers))
-
-            elif msg_type == 'goodbye' and msg_uri:
-                self._log.info("Received goodbye from %s" % msg_uri)
-                self.remove_peer(msg_uri)
-
-            else:
-                self.on_message(msg)
+            #
+            # if msg_type.startswith('hello') and msg_uri:
+            #     self.init_peer(msg)
+            #     for uri, pub in msg.get('peers', {}).iteritems():
+            #         # Do not add yourself as a peer
+            #         if uri != self._uri:
+            #             self.init_peer({'uri': uri, 'pub': pub})
+            #     self._log.info("Update peer table [%s peers]" % len(self._peers))
+            #
+            # elif msg_type == 'goodbye' and msg_uri:
+            #     self._log.info("Received goodbye from %s" % msg_uri)
+            #     self.remove_peer(msg_uri)
+            #
+            # else:
+            self.on_message(msg)
