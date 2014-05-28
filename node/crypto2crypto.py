@@ -97,9 +97,7 @@ class CryptoTransportLayer(TransportLayer):
             # Insert new record for the new user
             self._db.settings.insert({"id":'%s' % market_id, "secret":self.secret, "pubkey":self.pubkey, "guid":self.guid})
 
-            self.settings = self._db.settings.find_one({'id':"%s" % market_id})
-
-        print self.settings
+            self.settings = self._db.settings.find_one({'id':"%s" % market_id})        
 
     def generate_guid(self, secret, pubkey):
 
