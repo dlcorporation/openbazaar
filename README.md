@@ -28,93 +28,9 @@ We are continually on IRC chat at #OpenBazaar on Freenode
 
 All features are currently in alpha stage. Current functionality includes starting a connection to the distributed marketplace and viewing content in a browser. Transactions are not possible.
 
-## Quick Start
+## Build Instructions
 
-These instructions download a VirtualBox image (Ubuntu Trusty) and use Vagrant to configure an OpenBazaar node inside the virtual environment. When the node is running, you can navigate to http://localhost:8888 on your local machine to access the client. This setup should take less than 10GB and about an hour. These instructions should include all necessary code for starting OpenBazaar.
-
-1. This example is built on an Ubuntu Trusty host. Doesn't work from inside a virtual machine.
-
-    `sudo apt-get update`
-
-    `sudo apt-get install virtualbox git vagrant`
-
-2. clone openbazaar:
-
-    `git clone https://github.com/OpenBazaar/OpenBazaar.git`
-
-    `cd OpenBazaar`
-
-3. Set up vagrant: (this will take a while!)
-
-    `vagrant up`
-
-4. Log into the vagrant instance:
-
-    `vagrant ssh`
-
-5. Start the OpenBazaar node:
-
-    `cd /vagrant && ./run_dev.sh`
-
-6. Now return to your host and open your web browser to:
-
-    `http://127.0.0.1:8888`
-
-
-## Dependencies
-
-**NOTE:** These dependencies are for reference, they do not need to be manually installed if the Quick Start guide is used.
-
-- https://github.com/warner/python-ecdsa
-- https://github.com/darkwallet/python-obelisk
-- MongoDB
-
-`pip install pyzmq`
-`pip install tornado`
-`pip install pyelliptic`
-`pip install pymongo`
-`pip install pycountry`
-
-1. Install python-obelisk
-2. git clone https://github.com/darkwallet/python-obelisk
-3. python setup.py install
-
-
-### MongoDB
-
-OpenBazaar now uses MongoDB as the backend for storing persistent data. At the moment only orders are being tracked there, but this will be fleshed out ongoing. You will need to set up a MongoDB instance on your machine outside of this software and create a database called 'openbazaar'. There is no authentication or encryption configured, but I will be adding in support for this soon.
-
-- Install MongoDB with OpenSSL
-- Start MongoDB
-- Create database named openbazaar
-
-From command line:
-`mongo`
-`use openbazaar`
-
-
-### OSX Users
-
-For OSX there is a CLANG error when installing pyzmq but you can use the following command to ignore warnings:
-
-`sudo ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future easy_install pyzmq`
-
-### Issues with ./run_dev.sh
-If you're getting errors saying `ZMQError: Can't assign requested address` then you probably need to bring up some loopback adapters for those
-IPs higher than 127.0.0.1.
-
-sudo ifconfig lo:1 127.0.0.2
-sudo ifconfig lo:2 127.0.0.3
-sudo ifconfig lo:3 127.0.0.4
-
-## Identity Server
-
-To get the identity server running for querying nicknames in the UI you need to start the identity server. From the base directory of the software run the following:
-
-`python ident/identity.py`
-
-### Tests
-Install [behave](https://github.com/behave/behave) and run `behave` in the OpenBazaar folder. The tests themselves are located in the `features` folder.
+Read the [build instructions wiki](https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions).
 
 
 ## Artwork Contributions
