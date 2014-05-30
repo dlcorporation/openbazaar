@@ -8,6 +8,8 @@ import zmq
 from multiprocessing import Process, Queue
 from threading import Thread
 ioloop.install()
+import tornado
+import constants
 
 from protocol import goodbye
 import network_util
@@ -38,11 +40,11 @@ class PeerConnection(object):
     def send(self, data):
         self.send_raw(json.dumps(data))
 
-    def send_raw(self, serialized, callback=None):
-        Thread(target=self._send_raw, args=(serialized,callback)).start()
+    def send_raw(self, serialized):
+        Thread(target=self._send_raw, args=(serialized,)).start()
         pass
 
-    def _send_raw(self, serialized, callback=None):
+    def _send_raw(self, serialized):
 
         # pyzmq sockets are not threadsafe,
         # they have to run in a separate process
@@ -50,7 +52,7 @@ class PeerConnection(object):
         # queue element is false if something went wrong and the peer
         # has to be removed
 
-        p = Process(target=self._send_raw_process, args=(serialized, queue, callback))
+        p = Process(target=self._send_raw_process, args=(serialized, queue))
         p.start()
         if not queue.get():
             self._log.info("Peer %s timed out." % self._address)
@@ -58,7 +60,7 @@ class PeerConnection(object):
 
         p.join()
 
-    def _send_raw_process(self, serialized, queue, callback=None):
+    def _send_raw_process(self, serialized, queue):
 
         self.create_socket()
         self._socket.send(serialized)
@@ -67,7 +69,7 @@ class PeerConnection(object):
         poller.register(self._socket, zmq.POLLIN)
         if poller.poll(self._timeout * 1000):
             msg = self._socket.recv()
-            self.on_message(msg, callback)
+            self.on_message(msg)
             self.cleanup_socket()
             queue.put(True)
 
@@ -78,9 +80,7 @@ class PeerConnection(object):
 
 
     def on_message(self, msg, callback=None):
-        if json.loads(msg)['type'] != 'ok' and callback:
-          self._log.info('Executing callback: %s' % callback)
-          callback(msg)
+
         self._log.info("Message received: %s" % msg)
 
 
@@ -140,16 +140,12 @@ class TransportLayer(object):
             self._routingTable.addContact(seed_node)
 
 
-            # Send findNode call to other nodes to let them know we're online
-            def joinedNetwork(msg):
+            self._iterativeFind(self._guid, self._knownNodes, 'findNode')
 
-                if msg != None:
-                  msg = json.loads(msg)
-                  if msg['type'] == 'ok':
-                    print 'Found myself: %s' % self._guid
-
-            self._iterativeFind(self._guid, self._knownNodes, 'findNode', joinedNetwork)
-
+            # Periodically refresh buckets
+            loop = tornado.ioloop.IOLoop.instance()
+            refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode, 5000, io_loop=loop)
+            refreshCB.start()
 
 
 
@@ -247,10 +243,17 @@ class TransportLayer(object):
         self.send(msg)
 
     def on_message(self, msg):
+
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
         self._log.info("Data received: %s" % msg)
+
+        # Add to contacts if doesn't exist yet
+        new_peer = PeerConnection(self, msg['uri'], msg['guid'])
+        self._routingTable.addContact(new_peer)
+
         self.trigger_callbacks(msg['type'], msg)
+
 
     def on_raw_message(self, serialized):
         self._log.info("connected " + str(len(serialized)))

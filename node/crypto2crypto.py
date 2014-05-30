@@ -59,11 +59,11 @@ class CryptoTransportLayer(TransportLayer):
 
 
     def _init_dht(self):
-        self._activePeers = []
         self._shortlist = []
+        self._activePeers = []
         self._alreadyContacted = []
-        self._findValueResult = {}
         self._activeProbes = []
+        self._findValueResult = {}
         self._pendingIterationCalls = []
         self._slowNodeCount = [0]
         self._contactedNow = 0
@@ -133,10 +133,19 @@ class CryptoTransportLayer(TransportLayer):
 
     def _on_findNodeResponse(self, msg):
 
-      self._log.info('Receive a findNode Response: %s' % msg)
+      self._log.info('Received a findNode Response: %s' % msg)
 
-      nodeID = self.extendShortlist(msg)
+      self.extendShortlist(msg)
+      print self._shortlist
       #
+      # activeProbes.pop()
+      # if len(activeProbes) <= constants.alpha/2 and len(pendingIterationCalls):
+      #     # Force the iteration
+      #     pendingIterationCalls[0].cancel()
+      #     del pendingIterationCalls[0]
+      #     #print 'forcing iteration ================='
+      #     searchIteration()
+      # #
       # if nodeID != False:
       #     self.cancelActiveProbe(nodeID)
       # else:
@@ -177,7 +186,7 @@ class CryptoTransportLayer(TransportLayer):
 
           # Make sure the responding node is valid, and abort the operation if it isn't
           if guid in self._activePeers or guid == self._guid:
-              self._log.info('Node is not valid for extending shortlist')
+              self._log.info('Already an active peer or this peer is myself')
               return
 
           # Mark this node as active
@@ -193,8 +202,9 @@ class CryptoTransportLayer(TransportLayer):
               #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
               aPeer = PeerConnection(self, uri, guid)
 
-          self._activePeers.append(aPeer)
-          self._log.debug('Active Peers: %s' % self._activePeers)
+          if aPeer not in self._activePeers:
+              self._activePeers.append(aPeer)
+              self._log.debug('Active Peers: %s' % self._activePeers)
 
           # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
           if guid not in self._alreadyContacted:
@@ -226,6 +236,7 @@ class CryptoTransportLayer(TransportLayer):
                   ip = urlparse(foundContact[1]).hostname
                   port = urlparse(foundContact[1]).port
                   testContact = (ip, port, foundContact[0])
+                  print 'Test Contact', testContact
 
                   if testContact not in self._shortlist:
                       self._shortlist.append(testContact)
@@ -311,7 +322,9 @@ class CryptoTransportLayer(TransportLayer):
       else:
         findValue = False
 
-      if startupShortlist == []:
+      self._shortlist = []
+
+      if startupShortlist == [] or startupShortlist == None:
         closeNodes = self._routingTable.findCloseNodes(key, constants.alpha)
 
         for closeNode in closeNodes:
@@ -330,9 +343,11 @@ class CryptoTransportLayer(TransportLayer):
             return []
 
       else:
+        print startupShortlist
         self._shortlist = startupShortlist
 
       prevClosestNode = [None]
+
 
       def searchIteration():
 
@@ -340,26 +355,28 @@ class CryptoTransportLayer(TransportLayer):
 
         # Sort closest to farthest
         self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
+
         while len(self._pendingIterationCalls):
           del self._pendingIterationCalls[0]
 
+        # Found the value we were looking for so return
         if key in self._findValueResult:
           return findValueResult
 
         elif len(self._activePeers) and findValue == False:
-          if (len(self._activePeers) >= constants.k) or (self._activeContacts[0] == prevClosestNode[0] and len(self._activeProbes) == self._slowNodeCount[0]):
-
+          if (len(self._activePeers) >= constants.k) or (self._activePeers[0] == prevClosestNode[0] and len(activeProbes) == self._slowNodeCount[0]):
             return self._activePeers
 
         if len(self._activePeers):
           prevClosestNode[0] = self._activePeers[0]
 
         contactedNow = 0
-
-        self._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
+        print self._shortlist
+        self._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact[2], targetKey), self._routingTable.distance(secondContact[2], targetKey)))
         prevShortlistLength = len(self._shortlist)
 
         for node in self._shortlist:
+
           if node not in self._alreadyContacted:
 
               self._activeProbes.append(node)
@@ -369,18 +386,88 @@ class CryptoTransportLayer(TransportLayer):
               self._log.info("Sending findNode: %s", msg)
 
               contact = self._routingTable.getContact(node[2])
+
               contact.send_raw(json.dumps(msg))
 
+              contactedNow += 1
+
+          if contactedNow == constants.alpha:
+              break
+
       # Start searching
-      results = searchIteration()
+      searchIteration()
+      #
+      # if(callback != None):
+      #   callback(results)
+      # else:
+      #   return results
 
-      if(callback != None):
-        callback(results)
-      else:
-        return results
+
+    def _refreshNode(self):
+        """ Periodically called to perform k-bucket refreshes and data
+        replication/republishing as necessary """
+
+        self._refreshRoutingTable()
+        #self._republishData()
 
 
+    def _refreshRoutingTable(self):
 
+        nodeIDs = self._routingTable.getRefreshList(0, False)
+
+        def searchForNextNodeID(dfResult=None):
+            if len(nodeIDs) > 0:
+                searchID = nodeIDs.pop()
+                self.iterativeFindNode(searchID)
+                searchForNextNodeID()
+            else:
+                # If this is reached, we have finished refreshing the routing table
+                return
+
+        # Start the refreshing cycle
+        searchForNextNodeID()
+        
+
+    def _threadedRepublishData(self, *args):
+        """ Republishes and expires any stored data (i.e. stored
+        C{(key, value pairs)} that need to be republished/expired
+
+        This method should run in a deferred thread
+        """
+        #print '== republishData called, node:',ord(self.id[0])
+        expiredKeys = []
+        for key in self._dataStore:
+            # Filter internal variables stored in the datastore
+            if key == 'nodeState':
+                continue
+            now = int(time.time())
+            originalPublisherID = self._dataStore.originalPublisherID(key)
+            age = now - self._dataStore.originalPublishTime(key)
+            #print '  node:',ord(self.id[0]),'key:',ord(key[0]),'orig publishing time:',self._dataStore.originalPublishTime(key),'now:',now,'age:',age,'lastPublished age:',now - self._dataStore.lastPublished(key),'original pubID:', ord(originalPublisherID[0])
+            if originalPublisherID == self.id:
+                # This node is the original publisher; it has to republish
+                # the data before it expires (24 hours in basic Kademlia)
+                if age >= constants.dataExpireTimeout:
+                    #print '    REPUBLISHING key:', key
+                    #self.iterativeStore(key, self._dataStore[key])
+                    twisted.internet.reactor.callFromThread(self.iterativeStore, key, self._dataStore[key])
+            else:
+                # This node needs to replicate the data at set intervals,
+                # until it expires, without changing the metadata associated with it
+                # First, check if the data has expired
+                if age >= constants.dataExpireTimeout:
+                    # This key/value pair has expired (and it has not been republished by the original publishing node
+                    # - remove it
+                    expiredKeys.append(key)
+                elif now - self._dataStore.lastPublished(key) >= constants.replicateInterval:
+                    # ...data has not yet expired, and we need to replicate it
+                    #print '    replicating key:', key,'age:',age
+                    #self.iterativeStore(key=key, value=self._dataStore[key], originalPublisherID=originalPublisherID, age=age)
+                    twisted.internet.reactor.callFromThread(self.iterativeStore, key=key, value=self._dataStore[key], originalPublisherID=originalPublisherID, age=age)
+        for key in expiredKeys:
+            #print '    expiring key:', key
+            del self._dataStore[key]
+        #print 'done with threadedDataRefresh()'
 
 
     # Return data array with details from the crypto file
