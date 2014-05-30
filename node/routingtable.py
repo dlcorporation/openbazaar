@@ -270,7 +270,7 @@ class TreeRoutingTable(RoutingTable):
         refreshIDs = []
         for bucket in self._buckets[startIndex:]:
             if force or (int(time.time()) - bucket.lastAccessed >= constants.refreshTimeout):
-                searchID = self._randomIDInBucketRange(bucketIndex)
+                searchID = self._randomIDInBucketRange(bucketIndex).encode('hex')
                 refreshIDs.append(searchID)
             bucketIndex += 1
         return refreshIDs
