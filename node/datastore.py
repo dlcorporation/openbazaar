@@ -11,7 +11,7 @@ import UserDict
 from pymongo import MongoClient
 import time
 import os
-
+import logging
 
 class DataStore(UserDict.DictMixin):
     """ Interface for classes implementing physical storage (for data
@@ -63,6 +63,7 @@ class DictDataStore(DataStore):
         # Dictionary format:
         # { <key>: (<value>, <lastPublished>, <originallyPublished> <originalPublisherID>) }
         self._dict = {}
+        self._log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):
         """ Return a list of the keys in this data store """
@@ -112,15 +113,19 @@ class MongoDataStore(DataStore):
         MONGODB_URI = 'mongodb://localhost:27017'
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
+        self._log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):
         """ Return a list of the keys in this data store """
         keys = []
         try:
             db_keys = self._db.data.find({}, { 'key':1 })
+            print db_keys
             for row in db_keys:
-                keys.append(row[0].decode('hex'))
+                keys.append(row['key'].decode('hex'))
+
         finally:
+            self._log.info('Keys: %s' % keys)
             return keys
 
     def lastPublished(self, key):

@@ -1,17 +1,19 @@
+import constants
+from contact import Contact
+import hashlib
 import json
-import pyelliptic as ec
-from p2p import PeerConnection, TransportLayer
-import traceback
-from pymongo import MongoClient
-from protocol import hello_request, hello_response, proto_response_pubkey
-import obelisk
 import logging
 from market import Market
+import obelisk
 from obelisk import bitcoin
+from protocol import hello_request, hello_response, proto_response_pubkey
+from pymongo import MongoClient
+import pyelliptic as ec
+from p2p import PeerConnection, TransportLayer
+from threading import Thread
+import traceback
 from urlparse import urlparse
-import hashlib
-from contact import Contact
-import constants
+
 
 class CryptoPeerConnection(PeerConnection):
 
@@ -68,6 +70,7 @@ class CryptoTransportLayer(TransportLayer):
         self._slowNodeCount = [0]
         self._contactedNow = 0
         self._dhtCallbacks = []
+        self._republishThreads = []
 
     def _setup_settings(self, market_id=1):
 
@@ -408,15 +411,16 @@ class CryptoTransportLayer(TransportLayer):
         replication/republishing as necessary """
 
         self._refreshRoutingTable()
-        #self._republishData()
+        self._republishData()
 
 
     def _refreshRoutingTable(self):
-
+        self._log.debug('Started Refreshing Routing Table')
         nodeIDs = self._routingTable.getRefreshList(0, False)
 
         def searchForNextNodeID(dfResult=None):
             if len(nodeIDs) > 0:
+                self._log.info('Refreshing Routing Table')
                 searchID = nodeIDs.pop()
                 self.iterativeFindNode(searchID)
                 searchForNextNodeID()
@@ -426,7 +430,11 @@ class CryptoTransportLayer(TransportLayer):
 
         # Start the refreshing cycle
         searchForNextNodeID()
-        
+
+    def _republishData(self, *args):
+        self._log.info('Republishing Data')
+        Thread(target=self._threadedRepublishData, args=()).start()
+
 
     def _threadedRepublishData(self, *args):
         """ Republishes and expires any stored data (i.e. stored
@@ -434,40 +442,43 @@ class CryptoTransportLayer(TransportLayer):
 
         This method should run in a deferred thread
         """
-        #print '== republishData called, node:',ord(self.id[0])
+        self._log.debug('Republishing Data for node:')
         expiredKeys = []
-        for key in self._dataStore:
-            # Filter internal variables stored in the datastore
-            if key == 'nodeState':
-                continue
-            now = int(time.time())
-            originalPublisherID = self._dataStore.originalPublisherID(key)
-            age = now - self._dataStore.originalPublishTime(key)
-            #print '  node:',ord(self.id[0]),'key:',ord(key[0]),'orig publishing time:',self._dataStore.originalPublishTime(key),'now:',now,'age:',age,'lastPublished age:',now - self._dataStore.lastPublished(key),'original pubID:', ord(originalPublisherID[0])
-            if originalPublisherID == self.id:
-                # This node is the original publisher; it has to republish
-                # the data before it expires (24 hours in basic Kademlia)
-                if age >= constants.dataExpireTimeout:
-                    #print '    REPUBLISHING key:', key
-                    #self.iterativeStore(key, self._dataStore[key])
-                    twisted.internet.reactor.callFromThread(self.iterativeStore, key, self._dataStore[key])
-            else:
-                # This node needs to replicate the data at set intervals,
-                # until it expires, without changing the metadata associated with it
-                # First, check if the data has expired
-                if age >= constants.dataExpireTimeout:
-                    # This key/value pair has expired (and it has not been republished by the original publishing node
-                    # - remove it
-                    expiredKeys.append(key)
-                elif now - self._dataStore.lastPublished(key) >= constants.replicateInterval:
-                    # ...data has not yet expired, and we need to replicate it
-                    #print '    replicating key:', key,'age:',age
-                    #self.iterativeStore(key=key, value=self._dataStore[key], originalPublisherID=originalPublisherID, age=age)
-                    twisted.internet.reactor.callFromThread(self.iterativeStore, key=key, value=self._dataStore[key], originalPublisherID=originalPublisherID, age=age)
-        for key in expiredKeys:
-            #print '    expiring key:', key
-            del self._dataStore[key]
-        #print 'done with threadedDataRefresh()'
+        self._dataStore.setItem('234324j32k4l32j4kl32j4kl32', 'Brian', 'fds', 'saf', '23432432432432')
+        print self._dataStore.keys()
+        for key in self._dataStore.keys():
+            print key
+        #     # Filter internal variables stored in the datastore
+        #     if key == 'nodeState':
+        #         continue
+        #     now = int(time.time())
+        #     originalPublisherID = self._dataStore.originalPublisherID(key)
+        #     age = now - self._dataStore.originalPublishTime(key)
+        #     #print '  node:',ord(self.id[0]),'key:',ord(key[0]),'orig publishing time:',self._dataStore.originalPublishTime(key),'now:',now,'age:',age,'lastPublished age:',now - self._dataStore.lastPublished(key),'original pubID:', ord(originalPublisherID[0])
+        #     if originalPublisherID == self.id:
+        #         # This node is the original publisher; it has to republish
+        #         # the data before it expires (24 hours in basic Kademlia)
+        #         if age >= constants.dataExpireTimeout:
+        #             #print '    REPUBLISHING key:', key
+        #             #self.iterativeStore(key, self._dataStore[key])
+        #             twisted.internet.reactor.callFromThread(self.iterativeStore, key, self._dataStore[key])
+        #     else:
+        #         # This node needs to replicate the data at set intervals,
+        #         # until it expires, without changing the metadata associated with it
+        #         # First, check if the data has expired
+        #         if age >= constants.dataExpireTimeout:
+        #             # This key/value pair has expired (and it has not been republished by the original publishing node
+        #             # - remove it
+        #             expiredKeys.append(key)
+        #         elif now - self._dataStore.lastPublished(key) >= constants.replicateInterval:
+        #             # ...data has not yet expired, and we need to replicate it
+        #             #print '    replicating key:', key,'age:',age
+        #             #self.iterativeStore(key=key, value=self._dataStore[key], originalPublisherID=originalPublisherID, age=age)
+        #             twisted.internet.reactor.callFromThread(self.iterativeStore, key=key, value=self._dataStore[key], originalPublisherID=originalPublisherID, age=age)
+        # for key in expiredKeys:
+        #     #print '    expiring key:', key
+        #     del self._dataStore[key]
+        # #print 'done with threadedDataRefresh()'
 
 
     # Return data array with details from the crypto file
