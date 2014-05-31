@@ -248,10 +248,9 @@ class TransportLayer(object):
         # we get a "clean" msg which is a dict holding whatever
         self._log.info("Data received: %s" % msg)
 
-        # Add to contacts if doesn't exist yet
-        new_peer = PeerConnection(self, msg['uri'], msg['guid'])
-
-        if not self._routingTable.getContact(new_peer):
+        if not self._routingTable.getContact(msg['guid']):
+            # Add to contacts if doesn't exist yet
+            new_peer = PeerConnection(self, msg['uri'], msg['guid'])
             self._routingTable.addContact(new_peer)
 
         self.trigger_callbacks(msg['type'], msg)
