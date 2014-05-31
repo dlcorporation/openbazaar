@@ -187,29 +187,36 @@ class CryptoTransportLayer(TransportLayer):
 
           findValue = False # Need to make this dynamic
           uri = response['uri']
+          ip = urlparse(uri).hostname
+          port = urlparse(uri).port
           guid = response['guid']
           findID = response['findID']
           result = response['findValue']
 
           # Make sure the responding node is valid, and abort the operation if it isn't
-          if guid in self._activePeers or guid == self._guid:
+          print self._activePeers
+          aPeer = PeerConnection(self, uri, guid)
+
+          if next((peer for peer in self._activePeers if peer._guid == guid), False) or guid == self._guid:
+          #if aPeer in self._activePeers or guid == self._guid:
               self._log.info('Already an active peer or this peer is myself')
               return
 
           # Mark this node as active
-          if guid in self._shortlist[findID]:
+          if (ip, port, guid) in self._shortlist[findID]:
               self._log.info('Getting node from shortlist')
               # Get the contact information from the shortlist...
               #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
-              aPeer = PeerConnection(self, uri, guid)
+              #aPeer = PeerConnection(self, uri, guid)
           else:
               self._log.info('Node is not in the shortlist')
               # If it's not in the shortlist; we probably used a fake ID to reach it
               # - reconstruct the contact, using the real node ID this time
               #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
-              aPeer = PeerConnection(self, uri, guid)
+              #aPeer = PeerConnection(self, uri, guid)
 
           if aPeer not in self._activePeers:
+              self._log.debug('Adding a new active peer')
               self._activePeers.append(aPeer)
               self._log.debug('Active Peers: %s' % self._activePeers)
 
