@@ -395,7 +395,7 @@ class CryptoTransportLayer(TransportLayer):
               self._activeProbes[findID].append(node)
 
               uri = "tcp://%s:%s" % (node[0], node[1])
-              msg = {"type":"findNode", "uri":self._uri, "senderID":self._guid, "key":key, "findValue":findValue, "findID":findID}
+              msg = {"type":"findNode", "uri":self._uri, "guid":self._guid, "key":key, "findValue":findValue, "findID":findID}
               self._log.info("Sending findNode: %s", msg)
 
               contact = self._routingTable.getContact(node[2])
