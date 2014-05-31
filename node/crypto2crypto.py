@@ -117,22 +117,22 @@ class CryptoTransportLayer(TransportLayer):
 
       self._log.info('Received a findNode request: %s' % msg)
 
-      senderID = msg['senderID']
+      guid = msg['guid']
       key = msg['key']
       uri = msg['uri']
       findID = msg['findID']
 
       # Add contact to routing table
-      newContact = PeerConnection(self, uri, senderID)
-      if not self._routingTable.getContact(senderID):
+      newContact = PeerConnection(self, uri, guid)
+      if not self._routingTable.getContact(guid):
           self._log.info('Adding contact to routing table')
           self._routingTable.addContact(newContact)
 
-      contacts = self._routingTable.findCloseNodes(key, constants.k, senderID)
+      contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
       contactTriples = []
       for contact in contacts:
           contactTriples.append( (contact._guid, contact._address) )
-          foundContact = self._routingTable.getContact(senderID)
+          foundContact = self._routingTable.getContact(guid)
 
       newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples, "findID":findID}))
 
