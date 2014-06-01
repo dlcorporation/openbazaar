@@ -23,7 +23,8 @@ class Market(object):
         self._log.info("Loading Market")
 
         self._myself = transport._myself
-        self._peers = transport._peers
+        self._peers = transport._activePeers #transport._peers
+        self._log.info(self._peers)
         self._transport = transport
         self.query_ident = None
 

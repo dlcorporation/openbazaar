@@ -13,7 +13,7 @@ rpcTimeout = 5
 iterativeLookupDelay = rpcTimeout / 2
 
 #: If a k-bucket has not been used for this amount of time, refresh it (in seconds)
-refreshTimeout = 3600 # 1 hour
+refreshTimeout = 20 * 1000 # 1 hour
 #: The interval at which nodes replicate (republish/refresh) data they are holding
 replicateInterval = refreshTimeout
 # The time it takes for data to expire in the network; the original publisher of the data
