@@ -115,7 +115,7 @@ class CryptoTransportLayer(TransportLayer):
 
       self._routingTable.addContact(peer)
 
-      if peer in self._activePeers:
+      if not peer in self._activePeers:
         self._activePeers.append(peer)
 
 
@@ -136,6 +136,10 @@ class CryptoTransportLayer(TransportLayer):
       if not self._routingTable.getContact(guid):
           self._log.info('Adding contact to routing table')
           self._routingTable.addContact(newContact)
+
+
+
+
 
       # Found key in local datastore
       if key in self._dataStore and self._dataStore[key] != None:
