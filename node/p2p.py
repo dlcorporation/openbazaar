@@ -144,7 +144,7 @@ class TransportLayer(object):
 
             # Periodically refresh buckets
             loop = tornado.ioloop.IOLoop.instance()
-            refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode, 5000, io_loop=loop)
+            refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode, constants.refreshTimeout, io_loop=loop)
             refreshCB.start()
 
 

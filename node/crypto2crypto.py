@@ -128,35 +128,41 @@ class CryptoTransportLayer(TransportLayer):
           self._log.info('Adding contact to routing table')
           self._routingTable.addContact(newContact)
 
-      contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
-      contactTriples = []
-      for contact in contacts:
-          contactTriples.append( (contact._guid, contact._address) )
-          foundContact = self._routingTable.getContact(guid)
+      # Found key in local datastore
+      if key in self._dataStore:
+          newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid, "uri":self._uri, "pubkey":self.pubkey, "foundKey":self.dataStore[key], "findID":findID}))
 
-      newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri,"findValue":contactTriples, "findID":findID}))
+      else:
+          contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
+          contactTriples = []
+          for contact in contacts:
+              contactTriples.append( (contact._guid, contact._address) )
+              foundContact = self._routingTable.getContact(guid)
+
+          newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri, "pubkey":self.pubkey,"findValue":contactTriples, "findID":findID}))
 
 
     def _on_findNodeResponse(self, msg):
 
-      self._log.info('Received a findNode Response: %s' % msg)
+      self._log.info('Find Node Response - Received a findNode Response: %s' % msg)
 
-      self.extendShortlist(msg)
-      print self._shortlist
-      #
-      # activeProbes.pop()
-      # if len(activeProbes) <= constants.alpha/2 and len(pendingIterationCalls):
-      #     # Force the iteration
-      #     pendingIterationCalls[0].cancel()
-      #     del pendingIterationCalls[0]
-      #     #print 'forcing iteration ================='
-      #     searchIteration()
-      # #
-      # if nodeID != False:
-      #     self.cancelActiveProbe(nodeID)
-      # else:
-      #     print 'Remove from shortlist'
-      #
+      if 'foundKey' in msg.keys():
+        self._log.info('This node found the key')
+        # Stop the search and return the value
+
+      else:
+        self.extendShortlist(msg)
+
+        findID = msg['findID']
+
+        # Remove active probe to this node for this find ID
+        self._log.debug('Find Node Response - Active Probes Before: %s' % self._activeProbes)
+        if self._activeProbes[findID]:
+            del self._activeProbes[findID]
+        self._log.debug('Find Node Response - Active Probes After: %s' % self._activeProbes)
+
+
+
       # self._alreadyContacted.append(nodeID)
       # self._contactedNow += 1
       #
@@ -194,15 +200,14 @@ class CryptoTransportLayer(TransportLayer):
           result = response['findValue']
 
           # Make sure the responding node is valid, and abort the operation if it isn't
-          print self._activePeers
           aPeer = PeerConnection(self, uri, guid)
 
           if next((peer for peer in self._activePeers if peer._guid == guid), False) or guid == self._guid:
-          #if aPeer in self._activePeers or guid == self._guid:
               self._log.info('Already an active peer or this peer is myself')
               return
 
           # Mark this node as active
+          self._log.debug('Shortlist: %s' % self._shortlist)
           if (ip, port, guid) in self._shortlist[findID]:
               self._log.info('Getting node from shortlist')
               # Get the contact information from the shortlist...
@@ -256,14 +261,7 @@ class CryptoTransportLayer(TransportLayer):
 
           self._log.debug('Shortlist Updated: %s' % self._shortlist[findID])
 
-    def cancelActiveProbe(self, contactID):
-      self._activeProbes[findID].pop()
-      if len(self._activeProbes[findID]) <= constants.alpha/2 and len(self._pendingIterationCalls):
-          # Force the iteration
-          self._pendingIterationCalls[0].cancel()
-          del self._pendingIterationCalls[0]
-          #print 'forcing iteration ================='
-          self.searchIteration()
+
 
     def iterativeStore(self, key, value, originalPublisherID=None, age=0):
         """ The Kademlia store operation
@@ -332,7 +330,6 @@ class CryptoTransportLayer(TransportLayer):
       # Create a unique ID (SHA1) for this iterativeFind request
       findID = hashlib.sha1(os.urandom(128)).hexdigest()
 
-
       # Determine if we're looking for a node or a key
       if call != 'findNode':
         findValue = True
@@ -363,7 +360,7 @@ class CryptoTransportLayer(TransportLayer):
             return []
 
       else:
-        self._log.debug(startupShortlist)
+        self._log.debug('Initial Find Node Process - %s' % startupShortlist)
         self._shortlist[findID] = startupShortlist
 
       prevClosestNode = [None]
@@ -393,6 +390,7 @@ class CryptoTransportLayer(TransportLayer):
         contactedNow = 0
 
         self._shortlist[findID].sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact[2], targetKey), self._routingTable.distance(secondContact[2], targetKey)))
+
         prevShortlistLength = len(self._shortlist[findID])
 
         for node in self._shortlist[findID]:
@@ -406,7 +404,6 @@ class CryptoTransportLayer(TransportLayer):
               self._log.info("Sending findNode: %s", msg)
 
               contact = self._routingTable.getContact(node[2])
-
               contact.send_raw(json.dumps(msg))
 
               contactedNow += 1
@@ -416,11 +413,7 @@ class CryptoTransportLayer(TransportLayer):
 
       # Start searching
       searchIteration()
-      #
-      # if(callback != None):
-      #   callback(results)
-      # else:
-      #   return results
+
 
 
     def _refreshNode(self):
@@ -462,7 +455,7 @@ class CryptoTransportLayer(TransportLayer):
         self._log.debug('Republishing Data')
         expiredKeys = []
 
-        self._dataStore.setItem('23e192e685d3ca73d5d56d2f1c85acb1346ba177', 'Brian', int(time.time()), int(time.time()), '23e192e685d3ca73d5d56d2f1c85acb1346ba176' )
+        #self._dataStore.setItem('23e192e685d3ca73d5d56d2f1c85acb1346ba177', 'Brian', int(time.time()), int(time.time()), '23e192e685d3ca73d5d56d2f1c85acb1346ba176' )
 
         for key in self._dataStore.keys():
 
@@ -495,14 +488,10 @@ class CryptoTransportLayer(TransportLayer):
                     expiredKeys.append(key)
                 elif now - self._dataStore.lastPublished(key) >= constants.replicateInterval:
                     # ...data has not yet expired, and we need to replicate it
-                    #print '    replicating key:', key,'age:',age
-                    #self.iterativeStore(key=key, value=self._dataStore[key], originalPublisherID=originalPublisherID, age=age)
-                    twisted.internet.reactor.callFromThread(self.iterativeStore, key=key, value=self._dataStore[key], originalPublisherID=originalPublisherID, age=age)
+                    Thread(target=self.iterativeStore, args=(key,self._dataStore[key],originalPublisherID,age,)).start()
 
         for key in expiredKeys:
-            #print '    expiring key:', key
             del self._dataStore[key]
-        #print 'done with threadedDataRefresh()'
 
 
     # Return data array with details from the crypto file

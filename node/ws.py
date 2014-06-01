@@ -224,14 +224,16 @@ class ProtocolHandler:
 
     def get_peers(self):
         peers = []
-        for uri, peer in self._transport._peers.items():
-            peer_item = {'uri': uri}
+
+        for peer in self._transport._activePeers:
+            peer_item = {'uri': peer._address}
             if peer._pub:
                 peer_item['pubkey'] = peer._pub.encode('hex')
             else:
                 peer_item['pubkey'] = 'unknown'
             peers.append(peer_item)
 
+        print 'peers', peers
         return peers
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):

@@ -328,6 +328,8 @@ angular.module('app')
   // My information has arrived
   $scope.parse_myself = function(msg) {
 
+    console.log('test',msg)
+
     $scope.myself = msg;
 
 
@@ -747,7 +749,7 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
     var imgUpload = document.getElementById('inputProductImage').files[0];
 
     if(imgUpload) {
-      
+
       if (imgUpload.type != '' && $.inArray(imgUpload.type, ['image/jpeg', 'image/gif', 'image/png']) != -1) {
 
         var r = new FileReader();
