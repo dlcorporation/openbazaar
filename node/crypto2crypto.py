@@ -111,8 +111,13 @@ class CryptoTransportLayer(TransportLayer):
       self._db.settings.update({"id":'%s' % market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
 
     def addCryptoPeer(self, uri, pubkey, guid):
-      seed_node = CryptoPeerConnection(self, uri, pubkey, guid)
-      self._routingTable.addContact(seed_node)
+      peer = CryptoPeerConnection(self, uri, pubkey, guid)
+
+      self._routingTable.addContact(peer)
+
+      if peer in self._activePeers:
+        self._activePeers.append(peer)
+
 
     # CALLBACKS
 
