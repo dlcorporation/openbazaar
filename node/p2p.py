@@ -136,8 +136,7 @@ class TransportLayer(object):
                 self._knownNodes.append((ip, port, seed_guid))
 
             # Add to routing table
-            seed_node = PeerConnection(self, seed_uri, seed_guid)
-            self._routingTable.addContact(seed_node)
+            self.addCryptoPeer(seed_uri, '', seed_guid)
 
 
             self._iterativeFind(self._guid, self._knownNodes, 'findNode')
@@ -181,7 +180,7 @@ class TransportLayer(object):
         uri = msg['uri']
 
         if uri not in self._peers:
-            self._peers[uri] = PeerConnection(self, uri)
+            self._peers[uri] = CryptoPeerConnection(self, uri)
 
     def remove_peer(self, uri, guid):
         self._log.info("Removing peer %s", uri)
@@ -250,7 +249,7 @@ class TransportLayer(object):
 
         if not self._routingTable.getContact(msg['guid']):
             # Add to contacts if doesn't exist yet
-            new_peer = PeerConnection(self, msg['uri'], msg['guid'])
+            new_peer = CryptoPeerConnection(self, msg['uri'], msg['pubkey'], msg['guid'])
             self._routingTable.addContact(new_peer)
 
         self.trigger_callbacks(msg['type'], msg)
