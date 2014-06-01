@@ -166,9 +166,11 @@ class MongoDataStore(DataStore):
 
     def _dbQuery(self, key, columnName):
         row = self._db.data.find_one({ 'key':key.encode('hex')}, {columnName:1})
-        print row
-        value = str(row[columnName])
-        return value
+        if row != None:
+            value = str(row[columnName])
+            return value
+        else:
+            return
 
     def __getitem__(self, key):
         return self._dbQuery(key, 'value')
