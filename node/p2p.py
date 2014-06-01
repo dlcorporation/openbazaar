@@ -249,8 +249,7 @@ class TransportLayer(object):
 
         if not self._routingTable.getContact(msg['guid']):
             # Add to contacts if doesn't exist yet
-            new_peer = CryptoPeerConnection(self, msg['uri'], msg['pubkey'], msg['guid'])
-            self._routingTable.addContact(new_peer)
+            self.addCryptoPeer(msg['uri'], msg['pubkey'], msg['guid'])
 
         self.trigger_callbacks(msg['type'], msg)
 
