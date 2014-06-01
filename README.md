@@ -42,8 +42,9 @@ contributed by Dean Masley
 
 ## Theory Work
 
-1. [Ricardian Contracts](https://github.com/OpenBazaar/OpenBazaar/blob/master/docs/Ricardian-Contracts.md) by Dr Washington Sanchez
+1. [Ricardian Contracts](https://gist.github.com/drwasho/a5380544c170bdbbbad8) by Dr Washington Sanchez
 2. [P2P Lending on OpenBazaar](https://gist.github.com/drwasho/2c40b91e169f55988618) by Dr Washington Sanchez
+3. [Auctions on OpenBazaar](https://gist.github.com/drwasho/d923d2d37f544ea22e6f)
 
 ## Screenshot
 
