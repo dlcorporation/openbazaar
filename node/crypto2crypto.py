@@ -110,6 +110,9 @@ class CryptoTransportLayer(TransportLayer):
 
       self._db.settings.update({"id":'%s' % market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
 
+    def addCryptoPeer(self, uri, pubkey, guid):
+      seed_node = CryptoPeerConnection(self, uri, pubkey, guid)
+      self._routingTable.addContact(seed_node)
 
     # CALLBACKS
 
@@ -120,16 +123,18 @@ class CryptoTransportLayer(TransportLayer):
       guid = msg['guid']
       key = msg['key']
       uri = msg['uri']
+      pubkey = msg['pubkey']
       findID = msg['findID']
 
       # Add contact to routing table
-      newContact = PeerConnection(self, uri, guid)
+      newContact = CryptoPeerConnection(self, uri, pubkey, guid)
       if not self._routingTable.getContact(guid):
           self._log.info('Adding contact to routing table')
           self._routingTable.addContact(newContact)
 
       # Found key in local datastore
-      if key in self._dataStore:
+      if key in self._dataStore and self._dataStore[key] != None:
+
           newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid, "uri":self._uri, "pubkey":self.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
 
       else:
@@ -196,11 +201,12 @@ class CryptoTransportLayer(TransportLayer):
           ip = urlparse(uri).hostname
           port = urlparse(uri).port
           guid = response['guid']
+          pubkey = response['pubkey']
           findID = response['findID']
           result = response['findValue']
 
           # Make sure the responding node is valid, and abort the operation if it isn't
-          aPeer = PeerConnection(self, uri, guid)
+          aPeer = CryptoPeerConnection(self, uri, pubkey, guid)
 
           if next((peer for peer in self._activePeers if peer._guid == guid), False) or guid == self._guid:
               self._log.info('Already an active peer or this peer is myself')
@@ -400,7 +406,7 @@ class CryptoTransportLayer(TransportLayer):
               self._activeProbes[findID].append(node)
 
               uri = "tcp://%s:%s" % (node[0], node[1])
-              msg = {"type":"findNode", "uri":self._uri, "guid":self._guid, "key":key, "findValue":findValue, "findID":findID}
+              msg = {"type":"findNode", "uri":self._uri, "guid":self._guid, "key":key, "findValue":findValue, "findID":findID, "pubkey":self.pubkey}
               self._log.info("Sending findNode: %s", msg)
 
               contact = self._routingTable.getContact(node[2])

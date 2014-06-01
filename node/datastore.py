@@ -169,8 +169,7 @@ class MongoDataStore(DataStore):
         if row != None:
             value = str(row[columnName])
             return value
-        else:
-            return 
+        
 
     def __getitem__(self, key):
         return self._dbQuery(key, 'value')
