@@ -130,7 +130,7 @@ class CryptoTransportLayer(TransportLayer):
 
       # Found key in local datastore
       if key in self._dataStore:
-          newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid, "uri":self._uri, "pubkey":self.pubkey, "foundKey":self.dataStore[key], "findID":findID}))
+          newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid, "uri":self._uri, "pubkey":self.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
 
       else:
           contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
