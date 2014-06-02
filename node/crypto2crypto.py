@@ -58,7 +58,7 @@ class CryptoTransportLayer(TransportLayer):
         self._init_dht()
         self._setup_settings(self._market_id)
 
-        #self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), curve='secp256k1')
+        self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
 
         TransportLayer.__init__(self, my_ip, my_port, self.guid)
 
