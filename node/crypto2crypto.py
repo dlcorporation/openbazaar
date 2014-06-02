@@ -27,17 +27,12 @@ class CryptoPeerConnection(PeerConnection):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def encrypt(self, data):
-        print self._pub, 'pub'
-        #return self._priv.encrypt(data, '031ebd02962c34b876a8f5027724aeb6cd3b7adf4374727b9ee85f22ebaf538e59') #self._pub)
         return self._priv.encrypt(data, self._priv.get_pubkey())
 
     def send(self, data):
 
         # Include guid
         data['guid'] = self._guid
-        print self._pub
-        self._log.info('DATA: %s' % data)
-
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
