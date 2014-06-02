@@ -120,7 +120,7 @@ class MongoDataStore(DataStore):
         keys = []
         try:
             db_keys = self._db.data.find({}, { 'key':1 })
-            print db_keys
+            
             for row in db_keys:
                 keys.append(row['key'].decode('hex'))
 
@@ -169,7 +169,7 @@ class MongoDataStore(DataStore):
         if row != None:
             value = str(row[columnName])
             return value
-        
+
 
     def __getitem__(self, key):
         return self._dbQuery(key, 'value')
