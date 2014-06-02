@@ -27,7 +27,9 @@ class CryptoPeerConnection(PeerConnection):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def encrypt(self, data):
-        return self._priv.encrypt(data, self._pub)
+        print self._pub, 'pub'
+        #return self._priv.encrypt(data, '031ebd02962c34b876a8f5027724aeb6cd3b7adf4374727b9ee85f22ebaf538e59') #self._pub)
+        return self._priv.encrypt(data, self._priv.get_pubkey())
 
     def send(self, data):
 
@@ -49,7 +51,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self._log = logging.getLogger(self.__class__.__name__)
 
-        self._myself = ec.ECC(curve='secp256k1')
+
         self._market_id = market_id
         self.nick_mapping = {}
 
@@ -60,6 +62,8 @@ class CryptoTransportLayer(TransportLayer):
 
         self._init_dht()
         self._setup_settings(self._market_id)
+
+        #self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), curve='secp256k1')
 
         TransportLayer.__init__(self, my_ip, my_port, self.guid)
 
@@ -100,12 +104,12 @@ class CryptoTransportLayer(TransportLayer):
     def generate_new_keypair(self):
 
       # Generate new keypair
-      key = bitcoin.EllipticCurveKey()
-      key.new_key_pair()
-      self.secret = key.secret.encode('hex')
-      pubkey = bitcoin.GetPubKey(key._public_key.pubkey, True)
-      signedPubkey = self._myself.sign(pubkey)
+      key = ec.ECC(curve='secp256k1')
+      self.secret = key.get_privkey().encode('hex')
+      pubkey = key.get_pubkey()
+      signedPubkey = key.sign(pubkey)
       self.pubkey = pubkey.encode('hex')
+      self._myself = key
 
       # Generate a node ID by ripemd160 hashing the signed pubkey
       guid = hashlib.new('ripemd160')
