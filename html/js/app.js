@@ -71,7 +71,7 @@ angular.module('app')
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.pubkey;
-     var query = {'type': 'query_page', 'pubkey': peer.pubkey}
+     var query = {'type': 'query_page', 'guid': peer.guid}
      socket.send('query_page', query)
   }
 
@@ -114,6 +114,7 @@ angular.module('app')
          $scope.parse_response_pubkey(msg)
          break;
       default:
+
          console.log("Unhandled message!",msg)
          break;
     }

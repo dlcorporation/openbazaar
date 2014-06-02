@@ -38,6 +38,7 @@ class PeerConnection(object):
         self._socket.close()
 
     def send(self, data):
+        print 'here is data: %s' % data
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
@@ -138,7 +139,6 @@ class TransportLayer(object):
             # Add to routing table
             self.addCryptoPeer(seed_uri, '', seed_guid)
 
-
             self._iterativeFind(self._guid, self._knownNodes, 'findNode')
 
             # Periodically refresh buckets
@@ -207,21 +207,31 @@ class TransportLayer(object):
 
     def send(self, data, send_to=None):
 
-        # self._log.info("Data sent to p2p: %s" % data);
+        self._log.info("Data sent to p2p: %s" % data);
 
         # directed message
-        if send_to:
-            for peer in self._peers.values():
-                if peer._pub == send_to:
-                    if peer.send(data):
-                        self._log.info('Success')
-                    else:
-                        self._log.info('Failed')
+        if data['guid']:
 
-                    return
+            peer = next((peer for peer in self._activePeers if peer._guid == data['guid']), None)
 
-            self._log.info("Peer not found! %s %s",
-                           send_to, self._myself.get_pubkey())
+            if peer:
+              print 'let\'s send'
+              peer.send(data)
+              return
+
+            #
+            #
+            # for peer in self._peers.values():
+            #     if peer._pub == send_to:
+            #         if peer.send(data):
+            #             self._log.info('Success')
+            #         else:
+            #             self._log.info('Failed')
+            #
+            #         return
+            #
+            # self._log.info("Peer not found! %s %s",
+            #                send_to, self._myself.get_pubkey())
             return
 
         # broadcast
