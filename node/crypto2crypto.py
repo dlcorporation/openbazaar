@@ -27,8 +27,7 @@ class CryptoPeerConnection(PeerConnection):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def encrypt(self, data):
-        print data
-        return self._priv.encrypt(data, self._pub, ephemcurve='secp256k1')
+        return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
 

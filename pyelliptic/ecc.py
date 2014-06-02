@@ -112,7 +112,7 @@ class ECC:
 
     @staticmethod
     def _decode_pubkey(pubkey):
-        print 'PUB KEY: %s' % pubkey
+        
         i = 0
         curve = unpack('!H', pubkey[i:i + 2])[0]
         i += 2
