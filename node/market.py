@@ -24,7 +24,6 @@ class Market(object):
 
         self._myself = transport._myself
         self._peers = transport._activePeers #transport._peers
-        self._log.info(self._peers)
         self._transport = transport
         self.query_ident = None
 
@@ -178,8 +177,10 @@ class Market(object):
 
     # PAGE QUERYING
 
-    def query_page(self, pubkey):
-        self._transport.send(query_page(pubkey))
+    def query_page(self, guid):
+        self._log.info('Querying page: %s' % guid)
+        msg = query_page(guid)        
+        self._transport.send(msg)
 
     def on_page(self, page):
 

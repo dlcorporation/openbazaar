@@ -49,10 +49,10 @@ def proto_page(pubkey, text, signature, nickname):
     return data
 
 
-def query_page(pubkey):
+def query_page(guid):
     data = {}
     data['type'] = 'query_page'
-    data['pubkey'] = pubkey.encode('hex')
+    data['guid'] = guid
     return data
 
 

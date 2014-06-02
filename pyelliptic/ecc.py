@@ -112,6 +112,7 @@ class ECC:
 
     @staticmethod
     def _decode_pubkey(pubkey):
+        print 'PUB KEY: %s' % pubkey
         i = 0
         curve = unpack('!H', pubkey[i:i + 2])[0]
         i += 2
@@ -421,6 +422,7 @@ class ECC:
         """
         Encrypt data with ECIES method using the public key of the recipient.
         """
+        print data, pubkey
         curve, pubkey_x, pubkey_y, i = ECC._decode_pubkey(pubkey)
         return ECC.raw_encrypt(data, pubkey_x, pubkey_y, curve=curve,
                                ephemcurve=ephemcurve, ciphername=ciphername)

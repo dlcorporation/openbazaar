@@ -24,11 +24,19 @@ class CryptoPeerConnection(PeerConnection):
         self._pub = pub
         self._guid = node_guid
         PeerConnection.__init__(self, transport, address, node_guid)
+        self._log = logging.getLogger(self.__class__.__name__)
 
     def encrypt(self, data):
-        return self._priv.encrypt(data, self._pub)
+        print data
+        return self._priv.encrypt(data, self._pub, ephemcurve='secp256k1')
 
     def send(self, data):
+
+        # Include guid
+        data['guid'] = self._guid
+        print self._pub
+        self._log.info('DATA: %s' % data)
+
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
@@ -96,7 +104,7 @@ class CryptoTransportLayer(TransportLayer):
       key = bitcoin.EllipticCurveKey()
       key.new_key_pair()
       self.secret = key.secret.encode('hex')
-      pubkey = bitcoin.GetPubKey(key._public_key.pubkey, False)
+      pubkey = bitcoin.GetPubKey(key._public_key.pubkey, True)
       signedPubkey = self._myself.sign(pubkey)
       self.pubkey = pubkey.encode('hex')
 
@@ -108,7 +116,7 @@ class CryptoTransportLayer(TransportLayer):
       # Insert new record for the new user
       #self._db.settings.insert({"id":'%s' % market_id, "secret":self.secret, "pubkey":self.pubkey, "guid":self.guid})
 
-      self._db.settings.update({"id":'%s' % market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
+      self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
 
     def addCryptoPeer(self, uri, pubkey, guid):
       peer = CryptoPeerConnection(self, uri, pubkey, guid)
@@ -159,6 +167,11 @@ class CryptoTransportLayer(TransportLayer):
     def _on_findNodeResponse(self, msg):
 
       self._log.info('Find Node Response - Received a findNode Response: %s' % msg)
+
+      # Update pubkey if necessary - happens for seed server
+      localPeer = next((peer for peer in self._activePeers if peer._guid == msg['guid']), None)
+      if localPeer._pub != msg['pubkey']:
+        localPeer._pub = msg['pubkey']
 
       if 'foundKey' in msg.keys():
         self._log.info('This node found the key')

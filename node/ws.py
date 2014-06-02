@@ -74,10 +74,10 @@ class ProtocolHandler:
         self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
 
     def client_query_page(self, socket_handler, msg):
-        self._log.info("Message: ", msg)
-        pubkey = msg['pubkey'].decode('hex')
-        self.node.query_page(pubkey)
-        self.node.reputation.query_reputation(pubkey)
+        self._log.info("Message: %s" % msg)
+        guid = msg['guid']
+        self.node.query_page(guid)
+        self.node.reputation.query_reputation(guid)
 
     def client_query_orders(self, socket_handler, msg):
 
@@ -175,7 +175,8 @@ class ProtocolHandler:
 
     # messages coming from "the market"
     def on_node_peer(self, peer):
-        self._log.info("Add peer")
+        self._log.info("Add peer: %s" % peer)
+
 
         response = {'type': 'peer',
                     'pubkey': peer._pub.encode('hex')
@@ -231,9 +232,9 @@ class ProtocolHandler:
                 peer_item['pubkey'] = peer._pub.encode('hex')
             else:
                 peer_item['pubkey'] = 'unknown'
+            peer_item['guid'] = peer._guid
             peers.append(peer_item)
 
-        print 'peers', peers
         return peers
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
