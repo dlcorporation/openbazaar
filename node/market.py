@@ -179,7 +179,10 @@ class Market(object):
 
     def query_page(self, guid):
         self._log.info('Querying page: %s' % guid)
-        msg = query_page(guid)        
+        msg = query_page(guid)
+        msg['uri'] = self._transport._uri
+        msg['pubkey'] = self._transport.pubkey
+        print msg
         self._transport.send(msg)
 
     def on_page(self, page):

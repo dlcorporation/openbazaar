@@ -38,7 +38,6 @@ class PeerConnection(object):
         self._socket.close()
 
     def send(self, data):
-        data['uri'] = self._address
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):

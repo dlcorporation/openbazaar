@@ -26,7 +26,8 @@ class CryptoPeerConnection(PeerConnection):
         PeerConnection.__init__(self, transport, address, node_guid)
         self._log = logging.getLogger(self.__class__.__name__)
 
-    def encrypt(self, data):        
+    def encrypt(self, data):
+        print 'encrypt pubkey:',self._pub
         return self._priv.encrypt(data, self._pub.decode('hex'))
 
     def send(self, data):
@@ -49,6 +50,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self._market_id = market_id
         self.nick_mapping = {}
+        self._uri = "tcp://%s:%s" % (my_ip, my_port)
 
         # Connect to database
         MONGODB_URI = 'mongodb://localhost:27017'
@@ -123,6 +125,8 @@ class CryptoTransportLayer(TransportLayer):
 
       self._routingTable.addContact(peer)
 
+      print 'PUBKEY IS', pubkey
+
       if not peer in self._activePeers:
         self._activePeers.append(peer)
 
@@ -170,8 +174,11 @@ class CryptoTransportLayer(TransportLayer):
 
       # Update pubkey if necessary - happens for seed server
       localPeer = next((peer for peer in self._activePeers if peer._guid == msg['guid']), None)
-      if localPeer._pub != msg['pubkey']:
-        localPeer._pub = msg['pubkey']
+
+      for idx, peer in enumerate(self._activePeers):
+        if peer._guid == msg['guid']:
+          peer._pub = msg['pubkey']
+          self._activePeers[idx] = peer
 
       if 'foundKey' in msg.keys():
         self._log.info('This node found the key')
