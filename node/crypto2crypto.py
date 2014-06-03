@@ -34,6 +34,7 @@ class CryptoPeerConnection(PeerConnection):
 
         # Include guid
         data['guid'] = self._guid
+        print 'data',data
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
