@@ -27,7 +27,7 @@ class CryptoPeerConnection(PeerConnection):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def encrypt(self, data):
-        return self._priv.encrypt(data, self._priv.get_pubkey())
+        return self._priv.encrypt(data, self._pub)
 
     def send(self, data):
 
@@ -59,6 +59,7 @@ class CryptoTransportLayer(TransportLayer):
         self._setup_settings(self._market_id)
 
         self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
+        print 'keys',self.pubkey,self._myself.get_pubkey().encode('hex')
 
         TransportLayer.__init__(self, my_ip, my_port, self.guid)
 
@@ -105,6 +106,7 @@ class CryptoTransportLayer(TransportLayer):
       signedPubkey = key.sign(pubkey)
       self.pubkey = pubkey.encode('hex')
       self._myself = key
+
 
       # Generate a node ID by ripemd160 hashing the signed pubkey
       guid = hashlib.new('ripemd160')
@@ -182,7 +184,7 @@ class CryptoTransportLayer(TransportLayer):
 
         # Remove active probe to this node for this find ID
         self._log.debug('Find Node Response - Active Probes Before: %s' % self._activeProbes)
-        if self._activeProbes[findID]:
+        if findID in self._activeProbes.keys() and self._activeProbes[findID]:
             del self._activeProbes[findID]
         self._log.debug('Find Node Response - Active Probes After: %s' % self._activeProbes)
 
@@ -647,7 +649,6 @@ class CryptoTransportLayer(TransportLayer):
                 self.send_enc(uri, hello_response(self.get_profile()))
 
     def on_raw_message(self, serialized):
-
         try:
             # Try to deserialize cleartext message
             msg = json.loads(serialized)
@@ -656,13 +657,14 @@ class CryptoTransportLayer(TransportLayer):
             try:
                 # Encrypted?
                 try:
+                  print self._myself.get_pubkey().encode('hex')
                   msg = self._myself.decrypt(serialized)
                   msg = json.loads(msg)
 
                   self._log.info("Decrypted Message [%s]"
                                % msg.get('type', 'unknown'))
                 except:
-                  self._log.error("Could not decrypt message")
+                  self._log.error("Could not decrypt message: %s" % msg)
                   return
             except:
                 self._log.info("Bad Message: %s..."
