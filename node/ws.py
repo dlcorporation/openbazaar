@@ -174,7 +174,7 @@ class ProtocolHandler:
         msg['uri'] = self._transport._uri
         msg['pubkey'] = self._transport.pubkey
         msg['guid'] = self._transport.guid
-        print msg
+        print 'MESSAGE:',msg
         self._transport.send(protocol.shout(msg))
 
     # messages coming from "the market"
