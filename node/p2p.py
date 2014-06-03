@@ -37,8 +37,7 @@ class PeerConnection(object):
     def cleanup_socket(self):
         self._socket.close()
 
-    def send(self, data):
-        print 'here is data: %s' % data
+    def send(self, data):        
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
@@ -215,7 +214,7 @@ class TransportLayer(object):
             peer = next((peer for peer in self._activePeers if peer._guid == data['guid']), None)
 
             if peer:
-              print 'let\'s send'
+
               peer.send(data)
               return
 
