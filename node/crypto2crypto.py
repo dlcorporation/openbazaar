@@ -34,6 +34,7 @@ class CryptoPeerConnection(PeerConnection):
 
         # Include guid
         data['guid'] = self._guid
+        print 'data',data
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
@@ -168,7 +169,7 @@ class CryptoTransportLayer(TransportLayer):
           contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
           contactTriples = []
           for contact in contacts:
-              contactTriples.append( (contact._guid, contact._address) )
+              contactTriples.append( (contact._guid, contact._address, contact._pub) )
               foundContact = self._routingTable.getContact(guid)
 
           newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":self._guid,"uri":self._uri, "pubkey":self.pubkey,"findValue":contactTriples, "findID":findID}))
@@ -241,15 +242,13 @@ class CryptoTransportLayer(TransportLayer):
           result = response['findValue']
 
           # Make sure the responding node is valid, and abort the operation if it isn't
-          aPeer = CryptoPeerConnection(self, uri, pubkey, guid)
+          newPeer = CryptoPeerConnection(self, uri, pubkey, guid)
 
-          if next((peer for peer in self._activePeers if peer._guid == guid), False) or guid == self._guid:
-              self._log.info('Already an active peer or this peer is myself')
-              return
+
 
           # Mark this node as active
           self._log.debug('Shortlist: %s' % self._shortlist)
-          if (ip, port, guid) in self._shortlist[findID]:
+          if findID in self._shortlist.keys() and (ip, port, guid) in self._shortlist[findID]:
               self._log.info('Getting node from shortlist')
               # Get the contact information from the shortlist...
               #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
@@ -261,9 +260,12 @@ class CryptoTransportLayer(TransportLayer):
               #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
               #aPeer = PeerConnection(self, uri, guid)
 
-          if aPeer not in self._activePeers:
+
+          for aPeer in result:
+            if not next((peer for peer in self._activePeers if peer._guid == aPeer[0]), False) and aPeer[0] != self.guid:
               self._log.debug('Adding a new active peer')
-              self._activePeers.append(aPeer)
+              aPeer = CryptoPeerConnection(self, aPeer[1], aPeer[2], aPeer[0])
+              self._activePeers.append(newPeer)
               self._log.debug('Active Peers: %s' % self._activePeers)
 
           # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
@@ -290,6 +292,7 @@ class CryptoTransportLayer(TransportLayer):
                       self._findValueResult['closestNodeNoValue'] = aContact
 
               # Found a node not a value
+
               for foundContact in result:
                   self._log.debug('Contact: %s' % foundContact)
                   #testContact = PeerConnection(self, foundContact[1], foundContact[0])
