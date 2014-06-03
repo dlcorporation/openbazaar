@@ -265,9 +265,9 @@ class TransportLayer(object):
         # we get a "clean" msg which is a dict holding whatever
         self._log.info("Data received: %s" % msg)
 
-        if not self._routingTable.getContact(msg['guid']):
+        if not self._routingTable.getContact(msg['senderGUID']):
             # Add to contacts if doesn't exist yet
-            self.addCryptoPeer(msg['uri'], msg['pubkey'], msg['guid'])
+            self.addCryptoPeer(msg['uri'], msg['pubkey'], msg['senderGUID'])
 
         self.trigger_callbacks(msg['type'], msg)
 

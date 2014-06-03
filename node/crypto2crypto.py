@@ -125,7 +125,7 @@ class CryptoTransportLayer(TransportLayer):
       peer = CryptoPeerConnection(self, uri, pubkey, guid)
 
       peerExists = False
-      for idx, aPeer in enumerate(self._activePeers):        
+      for idx, aPeer in enumerate(self._activePeers):
         if aPeer._guid == guid:
           print 'guids match'
           peerExists = True
@@ -162,7 +162,7 @@ class CryptoTransportLayer(TransportLayer):
       # Found key in local datastore
       if key in self._dataStore and self._dataStore[key] != None:
 
-          newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid, "uri":self._uri, "pubkey":self.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
+          newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":self._guid, "uri":self._uri, "pubkey":self.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
 
       else:
           contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
@@ -171,7 +171,7 @@ class CryptoTransportLayer(TransportLayer):
               contactTriples.append( (contact._guid, contact._address) )
               foundContact = self._routingTable.getContact(guid)
 
-          newContact.send_raw(json.dumps({"type":"findNodeResponse","guid":self._guid,"uri":self._uri, "pubkey":self.pubkey,"findValue":contactTriples, "findID":findID}))
+          newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":self._guid,"uri":self._uri, "pubkey":self.pubkey,"findValue":contactTriples, "findID":findID}))
 
 
     def _on_findNodeResponse(self, msg):
@@ -441,7 +441,7 @@ class CryptoTransportLayer(TransportLayer):
               self._activeProbes[findID].append(node)
 
               uri = "tcp://%s:%s" % (node[0], node[1])
-              msg = {"type":"findNode", "uri":self._uri, "guid":self._guid, "key":key, "findValue":findValue, "findID":findID, "pubkey":self.pubkey}
+              msg = {"type":"findNode", "uri":self._uri, "senderGUID":self._guid, "key":key, "findValue":findValue, "findID":findID, "pubkey":self.pubkey}
               self._log.info("Sending findNode: %s", msg)
 
               contact = self._routingTable.getContact(node[2])
