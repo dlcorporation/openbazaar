@@ -212,12 +212,15 @@ class TransportLayer(object):
 
             peer = next((peer for peer in self._activePeers if peer._guid == data['guid']), None)
 
+            print peer._pub
+
             if peer:
 
               if peer.send(data):
                 self._log.info('Message sent successfully')
               else:
-                self._log.info('Problem sending message')
+
+                self._log.info('Problem sending message %s ' % data)
               return
 
             #
