@@ -75,8 +75,8 @@ class ProtocolHandler:
 
     def client_query_page(self, socket_handler, msg):
         self._log.info("Message: %s" % msg)
-        guid = msg['guid']
-        self.node.query_page(guid)
+        findGUID = msg['findGUID']
+        self.node.query_page(findGUID)
         #self.node.reputation.query_reputation(guid)
 
     def client_query_orders(self, socket_handler, msg):
