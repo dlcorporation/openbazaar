@@ -71,7 +71,7 @@ angular.module('app')
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.guid;
-     var query = {'type': 'query_page', 'guid': peer.guid}
+     var query = {'type': 'query_page', 'findGUID': peer.guid}
      socket.send('query_page', query)
   }
 

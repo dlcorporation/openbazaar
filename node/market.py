@@ -177,10 +177,11 @@ class Market(object):
 
     # PAGE QUERYING
 
-    def query_page(self, guid):
-        self._log.info('Querying page: %s' % guid)
-        msg = query_page(guid)
+    def query_page(self, findGUID):
+        self._log.info('Querying page: %s' % findGUID)
+        msg = query_page(findGUID)
         msg['uri'] = self._transport._uri
+        msg['guid'] = self._transport.guid
         msg['pubkey'] = self._transport.pubkey
         print msg
         self._transport.send(msg)
@@ -205,6 +206,7 @@ class Market(object):
         self._transport.send(proto_page(self._transport._uri,
                                         self._transport.pubkey,
                                         self._transport.guid,
+
                                         self.settings['storeDescription'],
                                         self.signature,
                                         self.settings['nickname']))
