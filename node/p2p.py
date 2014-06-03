@@ -37,7 +37,7 @@ class PeerConnection(object):
     def cleanup_socket(self):
         self._socket.close()
 
-    def send(self, data):
+    def send(self, data):        
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
@@ -208,10 +208,8 @@ class TransportLayer(object):
 
         self._log.info("Outgoing Data: %s" % data);
 
-        # directed message
+        # Directed message
         if send_to:
-
-            #peer = next((peer for peer in self._activePeers if peer._guid == data['guid']), None)
 
             for peer in self._activePeers:
               print peer._address,peer._pub
@@ -225,26 +223,14 @@ class TransportLayer(object):
               else:
 
                 self._log.info('Problem sending message %s ' % data)
-              return
 
-            #
-            #
-            # for peer in self._peers.values():
-            #     if peer._pub == send_to:
-            #         if peer.send(data):
-            #             self._log.info('Success')
-            #         else:
-            #             self._log.info('Failed')
-            #
-            #         return
-            #
-            # self._log.info("Peer not found! %s %s",
-            #                send_to, self._myself.get_pubkey())
             return
 
-        # broadcast
-        for peer in self._peers.values():
+        # Broadcast to close peers
+        for peer in self._activePeers:
             try:
+
+                data['senderGUID'] = self._guid
                 if peer._pub:
                     peer.send(data)
                 else:
