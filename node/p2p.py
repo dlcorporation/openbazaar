@@ -205,17 +205,20 @@ class TransportLayer(object):
 
     def send(self, data, send_to=None):
 
-        self._log.info("Data sent to p2p: %s" % data);
+        self._log.info("Outgoing Data: %s" % data);
 
         # directed message
         if data['guid']:
 
-            peer = next((peer for peer in self._activePeers if peer._guid == data['guid']), None)
+            #peer = next((peer for peer in self._activePeers if peer._guid == data['guid']), None)
 
-            print peer._pub
+            for peer in self._activePeers:
+              print peer._address,peer._pub
+              if peer._guid == data['guid']:
+                print 'tested here'
 
             if peer:
-
+              print peer
               if peer.send(data):
                 self._log.info('Message sent successfully')
               else:
