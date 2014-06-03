@@ -209,13 +209,13 @@ class TransportLayer(object):
         self._log.info("Outgoing Data: %s" % data);
 
         # directed message
-        if data['findGUID']:
+        if send_to:
 
             #peer = next((peer for peer in self._activePeers if peer._guid == data['guid']), None)
 
             for peer in self._activePeers:
               print peer._address,peer._pub
-              if peer._guid == data['findGUID']:
+              if peer._guid == send_to:
                 print 'tested here'
 
             if peer:
