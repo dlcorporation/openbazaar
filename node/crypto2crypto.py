@@ -146,7 +146,7 @@ class CryptoTransportLayer(TransportLayer):
 
       self._log.info('Received a findNode request: %s' % msg)
 
-      guid = msg['guid']
+      guid = msg['senderGUID']
       key = msg['key']
       uri = msg['uri']
       pubkey = msg['pubkey']
@@ -179,10 +179,10 @@ class CryptoTransportLayer(TransportLayer):
       self._log.info('Find Node Response - Received a findNode Response: %s' % msg)
 
       # Update pubkey if necessary - happens for seed server
-      localPeer = next((peer for peer in self._activePeers if peer._guid == msg['guid']), None)
+      localPeer = next((peer for peer in self._activePeers if peer._guid == msg['senderGUID']), None)
 
       for idx, peer in enumerate(self._activePeers):
-        if peer._guid == msg['guid']:
+        if peer._guid == msg['senderGUID']:
           peer._pub = msg['pubkey']
           self._activePeers[idx] = peer
 
