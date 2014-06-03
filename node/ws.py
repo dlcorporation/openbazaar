@@ -74,10 +74,10 @@ class ProtocolHandler:
         self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
 
     def client_query_page(self, socket_handler, msg):
-        self._log.info("Message: ", msg)
-        pubkey = msg['pubkey'].decode('hex')
-        self.node.query_page(pubkey)
-        self.node.reputation.query_reputation(pubkey)
+        self._log.info("Message: %s" % msg)
+        findGUID = msg['findGUID']
+        self.node.query_page(findGUID)
+        #self.node.reputation.query_reputation(guid)
 
     def client_query_orders(self, socket_handler, msg):
 
@@ -150,7 +150,7 @@ class ProtocolHandler:
 
     def client_generate_secret(self, socket_handler, msg):
 
-      new_secret = self.node.generate_new_secret()
+      new_secret = self._transport.generate_new_keypair()
       self.send_opening()
 
 
@@ -171,11 +171,15 @@ class ProtocolHandler:
             self.send_to_client(*response)
 
     def client_shout(self, socket_handler, msg):
+        msg['uri'] = self._transport._uri
+        msg['pubkey'] = self._transport.pubkey
+        msg['guid'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
     # messages coming from "the market"
     def on_node_peer(self, peer):
-        self._log.info("Add peer")
+        self._log.info("Add peer: %s" % peer)
+
 
         response = {'type': 'peer',
                     'pubkey': peer._pub.encode('hex')
@@ -189,6 +193,7 @@ class ProtocolHandler:
         self.send_to_client(None, msg)
 
     def on_node_page(self, page):
+        print page
         self.send_to_client(None, page)
 
     def on_node_message(self, *args):
@@ -224,12 +229,14 @@ class ProtocolHandler:
 
     def get_peers(self):
         peers = []
-        for uri, peer in self._transport._peers.items():
-            peer_item = {'uri': uri}
+
+        for peer in self._transport._activePeers:
+            peer_item = {'uri': peer._address}
             if peer._pub:
                 peer_item['pubkey'] = peer._pub.encode('hex')
             else:
                 peer_item['pubkey'] = 'unknown'
+            peer_item['guid'] = peer._guid
             peers.append(peer_item)
 
         return peers

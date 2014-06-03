@@ -20,12 +20,12 @@ class MainHandler(tornado.web.RequestHandler):
 
 class MarketApplication(tornado.web.Application):
 
-    def __init__(self, my_market_ip, my_market_port, seed_uri, market_id):
+    def __init__(self, my_market_ip, my_market_port, seed_uri, market_id, seed_guid):
 
         self.transport = CryptoTransportLayer(my_market_ip,
                                               my_market_port,
                                               market_id)
-        self.transport.join_network(seed_uri)
+        self.transport.join_network(seed_uri, seed_guid)
         self.market = Market(self.transport)
 
         handlers = [
@@ -44,14 +44,14 @@ class MarketApplication(tornado.web.Application):
         return self.transport
 
 
-def start_node(my_market_ip, my_market_port, seed_uri, log_file, userid):
-    logging.basicConfig(level=logging.INFO,
+def start_node(my_market_ip, my_market_port, seed_uri, log_file, userid, seed_guid):
+    logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s - %(name)s -  \
                                 %(levelname)s - %(message)s',
                         filename=log_file)
 
     application = MarketApplication(my_market_ip,
-                                    my_market_port, seed_uri, userid)
+                                    my_market_port, seed_uri, userid, seed_guid)
 
     error = True
     port = 8888
@@ -83,8 +83,9 @@ if __name__ == "__main__":
     parser.add_argument("my_market_ip")
     parser.add_argument("-p", "--my_market_port", type=int, default=12345)
     parser.add_argument("-s", "--seed_uri")
+    parser.add_argument("-g", "--seed_guid")
     parser.add_argument("-l", "--log_file", default='node.log')
-    parser.add_argument("-u", "--userid", default=1)
+    parser.add_argument("-u", "--market_id", default=1)
     args = parser.parse_args()
     start_node(args.my_market_ip,
-               args.my_market_port, args.seed_uri, args.log_file, args.userid)
+               args.my_market_port, args.seed_uri, args.log_file, args.market_id, args.seed_guid)
