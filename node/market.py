@@ -201,8 +201,9 @@ class Market(object):
         self._log.info("Someone is querying for your page")
         self.settings = self.get_settings()
         self._log.info(base64.b64encode(self.settings['storeDescription'].encode('ascii')))
-        self._transport.send(proto_page(self._transport._myself.get_pubkey().encode('hex'),
-                                        self.settings['storeDescription'], self.signature,
+        self._transport.send(proto_page(self._transport._guid,
+                                        self.settings['storeDescription'],
+                                        self.signature,
                                         self.settings['nickname']))
 
     def on_query_myorders(self, peer):

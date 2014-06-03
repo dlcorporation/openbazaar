@@ -39,10 +39,10 @@ def proto_query_reputation(pubkey):
     return data
 
 
-def proto_page(pubkey, text, signature, nickname):
+def proto_page(guid, text, signature, nickname):
     data = {}
     data['type'] = 'page'
-    data['pubkey'] = pubkey
+    data['guid'] = guid
     data['signature'] = signature.encode('hex')
     data['text'] = text
     data['nickname'] = nickname
