@@ -4,7 +4,7 @@ MY_MARKET_PORT=12345
 
 # Specify a seed URI or you will be put into demo mode
 SEED_URI=tcp://seed.openbazaar.org:12345
-SEED_GUID=caf438e3b55603f94d62ef6d150f9724c67f91cb
+SEED_GUID=14d67214b0a2a335c3894181073a00f893237b85
 
 # Run in local test mode if not production
 MODE=production

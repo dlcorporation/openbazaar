@@ -125,14 +125,16 @@ class CryptoTransportLayer(TransportLayer):
 
       self._routingTable.addContact(peer)
 
-      print 'PUBKEY IS', pubkey
-
       peerExists = False
-      for aPeer in self._activePeers:
-        if pubkey and aPeer._pub == pubkey:
+      for idx, aPeer in enumerate(self._activePeers):
+        print aPeer._guid,aPeer._pub,aPeer._address,guid, uri
+        if aPeer._guid == guid:
+          print 'guids match'
           peerExists = True
-          if aPeer._pub == '':
-            print 'empty peer key'
+          if pubkey and aPeer._pub == '':
+            print 'no pubkey'
+            aPeer._pub = pubkey
+            self._activePeers[idx] = aPeer
 
       if not peerExists:
         self._activePeers.append(peer)
@@ -446,9 +448,13 @@ class CryptoTransportLayer(TransportLayer):
               self._log.info("Sending findNode: %s", msg)
 
               contact = self._routingTable.getContact(node[2])
-              contact.send_raw(json.dumps(msg))
 
-              contactedNow += 1
+              if contact:
+                contact.send_raw(json.dumps(msg))
+
+                contactedNow += 1
+              else:
+                self._log.error('No contact was found for this guid: %s' % node[2])
 
           if contactedNow == constants.alpha:
               break
@@ -484,7 +490,6 @@ class CryptoTransportLayer(TransportLayer):
         searchForNextNodeID()
 
     def _republishData(self, *args):
-        self._log.info('Republishing Data')
         Thread(target=self._threadedRepublishData, args=()).start()
 
 

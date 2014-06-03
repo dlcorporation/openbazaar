@@ -70,7 +70,7 @@ angular.module('app')
      console.log('Shop',peer);
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
-     $scope.awaitingShop = peer.pubkey;
+     $scope.awaitingShop = peer.guid;
      var query = {'type': 'query_page', 'guid': peer.guid}
      socket.send('query_page', query)
   }
@@ -78,7 +78,9 @@ angular.module('app')
 
  // Open the websocket connection and handle messages
   var socket = new Connection(function(msg) {
+
    switch(msg.type) {
+
       case 'peer':
          $scope.add_peer(msg)
          break;
@@ -258,7 +260,7 @@ angular.module('app')
 
   $scope.parse_page = function(msg) {
 
-    if (msg.pubkey != $scope.awaitingShop)
+    if (msg.guid != $scope.awaitingShop)
        return
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
         $scope.reviews[msg.pubkey] = []

@@ -288,7 +288,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             return
 
     def _send_response(self, response):
-        if self.ws_connection:
+        if self.ws_connection:                        
             self.write_message(json.dumps(response))
         #try:
         #    self.write_message(json.dumps(response))
