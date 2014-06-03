@@ -821,7 +821,7 @@
                   <td width="40"><identicon icon-size="38" hash="peer.pubkey" title="{{peer.pubkey}}"></identicon></td>
 
                   <td style="font-size:13px;"><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}<br>
-                  <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.pubkey?peer.pubkey.slice(0,20):'unknown'}}...</span></span></td>
+                  <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.guid?peer.guid.slice(0,20):'unknown'}}...</span></span></td>
 
                   <td align="right"><button ng-click="queryShop(peer)" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-share-alt"></span> Visit</button></td>
               </tr>
