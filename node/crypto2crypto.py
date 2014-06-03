@@ -121,13 +121,11 @@ class CryptoTransportLayer(TransportLayer):
       self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
 
     def addCryptoPeer(self, uri, pubkey, guid):
+
       peer = CryptoPeerConnection(self, uri, pubkey, guid)
 
-      self._routingTable.addContact(peer)
-
       peerExists = False
-      for idx, aPeer in enumerate(self._activePeers):
-        print aPeer._guid,aPeer._pub,aPeer._address,guid, uri
+      for idx, aPeer in enumerate(self._activePeers):        
         if aPeer._guid == guid:
           print 'guids match'
           peerExists = True
@@ -137,6 +135,8 @@ class CryptoTransportLayer(TransportLayer):
             self._activePeers[idx] = aPeer
 
       if not peerExists:
+        print 'ADDING PEER %s' % peer._pub
+        self._routingTable.addContact(peer)
         self._activePeers.append(peer)
 
 
@@ -154,13 +154,10 @@ class CryptoTransportLayer(TransportLayer):
 
       # Add contact to routing table
       newContact = CryptoPeerConnection(self, uri, pubkey, guid)
+
       if not self._routingTable.getContact(guid):
           self._log.info('Adding contact to routing table')
           self._routingTable.addContact(newContact)
-
-
-
-
 
       # Found key in local datastore
       if key in self._dataStore and self._dataStore[key] != None:

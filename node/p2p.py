@@ -56,7 +56,7 @@ class PeerConnection(object):
         p.start()
         if not queue.get():
             self._log.info("Peer %s timed out." % self._address)
-            self._transport.remove_peer(self._address, self._guid)
+            #self._transport.remove_peer(self._address, self._guid)
 
         p.join()
 
@@ -67,7 +67,7 @@ class PeerConnection(object):
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
-        if poller.poll(self._timeout * 1000):
+        if poller.poll(self._timeout * 3000):
             msg = self._socket.recv()
             self.on_message(msg)
             self.cleanup_socket()
@@ -135,9 +135,10 @@ class TransportLayer(object):
                 self._knownNodes.append((ip, port, seed_guid))
 
             # Add to routing table
-            self.addCryptoPeer(seed_uri, '', seed_guid)
+            self.addCryptoPeer(seed_uri, '02ca00209fe518b9f13a387a61bafa0f49f8bea416662e7bdc87b5f03a6a534c8b5a6816002004cb93220f7ae28ceafbdcdb8679684adcf5e8906f7987e2b07fe8e2ba88f009', seed_guid)
 
             self._iterativeFind(self._guid, self._knownNodes, 'findNode')
+
 
             # Periodically refresh buckets
             loop = tornado.ioloop.IOLoop.instance()
