@@ -44,7 +44,7 @@ def proto_page(uri, pubkey, guid, text, signature, nickname):
     data['type'] = 'page'
     data['uri'] = uri
     data['pubkey'] = pubkey
-    data['guid'] = guid
+    data['senderGUID'] = guid
     data['signature'] = signature.encode('hex')
     data['text'] = text
     data['nickname'] = nickname
