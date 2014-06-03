@@ -131,7 +131,7 @@ class CryptoTransportLayer(TransportLayer):
       for aPeer in self._activePeers:
         if pubkey and aPeer._pub == pubkey:
           peerExists = True
-          if aPeer.pubkey == '':
+          if aPeer._pub == '':
             print 'empty peer key'
 
       if not peerExists:

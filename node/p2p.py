@@ -214,7 +214,10 @@ class TransportLayer(object):
 
             if peer:
 
-              peer.send(data)
+              if peer.send(data):
+                self._log.info('Message sent successfully')
+              else:
+                self._log.info('Problem sending message')
               return
 
             #
