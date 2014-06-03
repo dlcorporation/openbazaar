@@ -206,7 +206,6 @@ class Market(object):
         self._transport.send(proto_page(self._transport._uri,
                                         self._transport.pubkey,
                                         self._transport.guid,
-
                                         self.settings['storeDescription'],
                                         self.signature,
                                         self.settings['nickname']))
