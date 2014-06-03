@@ -153,7 +153,7 @@ class Market(object):
     def get_settings(self):
         self._log.info(self._transport._market_id)
         settings = self._db.settings.find_one({'id':'%s'%self._transport._market_id})
-        
+
         if settings:
             return { "bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
                 "email": settings['email'] if settings.has_key("email") else "",
@@ -179,7 +179,7 @@ class Market(object):
 
     def query_page(self, guid):
         self._log.info('Querying page: %s' % guid)
-        msg = query_page(guid)
+        msg = query_page(guid)        
         self._transport.send(msg)
 
     def on_page(self, page):
