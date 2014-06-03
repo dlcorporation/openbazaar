@@ -70,15 +70,17 @@ angular.module('app')
      console.log('Shop',peer);
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
-     $scope.awaitingShop = peer.pubkey;
-     var query = {'type': 'query_page', 'pubkey': peer.pubkey}
+     $scope.awaitingShop = peer.guid;
+     var query = {'type': 'query_page', 'findGUID': peer.guid}
      socket.send('query_page', query)
   }
 
 
  // Open the websocket connection and handle messages
   var socket = new Connection(function(msg) {
+
    switch(msg.type) {
+
       case 'peer':
          $scope.add_peer(msg)
          break;
@@ -114,6 +116,7 @@ angular.module('app')
          $scope.parse_response_pubkey(msg)
          break;
       default:
+
          console.log("Unhandled message!",msg)
          break;
     }
@@ -256,8 +259,9 @@ angular.module('app')
   }
 
   $scope.parse_page = function(msg) {
+    console.log(msg)
 
-    if (msg.pubkey != $scope.awaitingShop)
+    if (msg.senderGUID != $scope.awaitingShop)
        return
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
         $scope.reviews[msg.pubkey] = []
@@ -327,6 +331,8 @@ angular.module('app')
 
   // My information has arrived
   $scope.parse_myself = function(msg) {
+
+    console.log('test',msg)
 
     $scope.myself = msg;
 
@@ -747,7 +753,7 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
     var imgUpload = document.getElementById('inputProductImage').files[0];
 
     if(imgUpload) {
-      
+
       if (imgUpload.type != '' && $.inArray(imgUpload.type, ['image/jpeg', 'image/gif', 'image/png']) != -1) {
 
         var r = new FileReader();

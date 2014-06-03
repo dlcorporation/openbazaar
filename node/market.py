@@ -20,11 +20,10 @@ class Market(object):
     def __init__(self, transport):
 
         self._log = logging.getLogger(self.__class__.__name__)
-        self._log.info("Initializing")
+        self._log.info("Loading Market")
 
-        # for now we have the id in the transport
         self._myself = transport._myself
-        self._peers = transport._peers
+        self._peers = transport._activePeers #transport._peers
         self._transport = transport
         self.query_ident = None
 
@@ -32,18 +31,14 @@ class Market(object):
         self.orders = Orders(self._transport)
         self.order_entries = self.orders._orders
 
-        # TODO: Persistent storage of nicknames and pages
         self.nicks = {}
         self.pages = {}
 
-        # Connect to database
         MONGODB_URI = 'mongodb://localhost:27017'
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
-        self.settings = self._db.settings.find_one()
-
-
+        self.settings = self._transport.settings
 
         welcome = True
 
@@ -60,16 +55,6 @@ class Market(object):
         transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
         self.load_page(welcome)
-
-    def generate_new_secret(self):
-
-        key = bitcoin.EllipticCurveKey()
-        key.new_key_pair()
-        hexkey = key.secret.encode('hex')
-
-        self._log.info('Pubkey generate: %s' % key._public_key.pubkey)
-
-        self._db.settings.update({}, {"$set": {"secret":hexkey, "pubkey":bitcoin.GetPubKey(key._public_key.pubkey, False).encode('hex')}})
 
 
     def lookup(self, msg):
@@ -99,19 +84,8 @@ class Market(object):
 
         self._transport.send(protocol.negotiate_pubkey(nickname, key))
 
-	# Load default information for your market from your file
+
     def load_page(self, welcome):
-
-        #self._log.info("Loading market config from %s." % self.store_file)
-
-        #with open(self.store_file) as f:
-        #    data = json.loads(f.read())
-
-        #self._log.info("Configuration data: " + json.dumps(data))
-
-        #assert "desc" in data
-        #nickname = data["nickname"]
-        #desc = data["desc"]
 
         nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
         storeDescription = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
@@ -121,17 +95,12 @@ class Market(object):
         self.nickname = nickname
         self.signature = self._transport._myself.sign(tagline)
 
-
         if welcome:
             self._db.settings.update({}, {"$set":{"welcome":"noshow"}})
         else:
             self.welcome = False
 
 
-        #self._log.info("Tagline signature: " + self.signature.encode("hex"))
-
-
-    # Products
     def save_product(self, msg):
         self._log.info("Product to save %s" % msg)
         self._log.info(self._transport)
@@ -148,7 +117,7 @@ class Market(object):
           msg['productQuantity'] = 1
 
         self._db.products.update({'id':product_id}, {'$set':msg}, True)
-        
+
 
     def remove_product(self, msg):
         self._log.info("Product to remove %s" % msg)
@@ -156,7 +125,7 @@ class Market(object):
 
 
     def get_products(self):
-        self._log.info(self._transport.market_id)
+        self._log.info(self._transport._market_id)
         products = self._db.products.find()
         my_products = []
 
@@ -179,12 +148,12 @@ class Market(object):
     def save_settings(self, msg):
         self._log.info("Settings to save %s" % msg)
         self._log.info(self._transport)
-        self._db.settings.update({'id':'%s'%self._transport.market_id}, {'$set':msg}, True)
+        self._db.settings.update({'id':'%s'%self._transport._market_id}, {'$set':msg}, True)
 
     def get_settings(self):
-        self._log.info(self._transport.market_id)
-        settings = self._db.settings.find_one({'id':'%s'%self._transport.market_id})
-        print settings
+        self._log.info(self._transport._market_id)
+        settings = self._db.settings.find_one({'id':'%s'%self._transport._market_id})
+
         if settings:
             return { "bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
                 "email": settings['email'] if settings.has_key("email") else "",
@@ -206,38 +175,43 @@ class Market(object):
                 }
 
 
-
-
     # PAGE QUERYING
 
-    def query_page(self, pubkey):
-        self._transport.send(query_page(pubkey))
+    def query_page(self, findGUID):
+        self._log.info('Querying page: %s' % findGUID)
+        msg = query_page(findGUID)
+        msg['uri'] = self._transport._uri
+        msg['senderGUID'] = self._transport.guid
+        msg['pubkey'] = self._transport.pubkey
+        self._transport.send(msg, findGUID)
 
     def on_page(self, page):
 
         self._log.info("Page returned: " + str(page))
 
-        pubkey = page.get('pubkey')
+        #pubkey = page.get('pubkey')
+        guid = page.get('senderGUID')
         page = page.get('text')
 
-        if pubkey and page:
-            self._log.info(page)
-            self.pages[pubkey] = page
+        if guid and page:
+            self._log.info(page+guid)
+            self.pages[guid] = page
 
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
         self.settings = self.get_settings()
         self._log.info(base64.b64encode(self.settings['storeDescription'].encode('ascii')))
-        self._transport.send(proto_page(self._transport._myself.get_pubkey().encode('hex'),
-                                        self.settings['storeDescription'], self.signature,
-                                        self.settings['nickname']))
+        self._transport.send(proto_page(self._transport._uri,
+                                        self._transport.pubkey,
+                                        self._transport.guid,
+                                        self.settings['storeDescription'],
+                                        self.signature,
+                                        self.settings['nickname']), peer['senderGUID'])
 
     def on_query_myorders(self, peer):
         self._log.info("Someone is querying for your page")
-        self._transport.send(proto_page(self._transport._myself.get_pubkey(),
-                                        self.mypage, self.signature,
-                                        self.nickname))
+
 
     def on_peer(self, peer):
         pass
