@@ -259,8 +259,9 @@ angular.module('app')
   }
 
   $scope.parse_page = function(msg) {
+    console.log(msg)
 
-    if (msg.guid != $scope.awaitingShop)
+    if (msg.senderGUID != $scope.awaitingShop)
        return
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
         $scope.reviews[msg.pubkey] = []

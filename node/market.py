@@ -190,11 +190,11 @@ class Market(object):
         self._log.info("Page returned: " + str(page))
 
         #pubkey = page.get('pubkey')
-        guid = page.get('guid')
+        guid = page.get('senderGUID')
         page = page.get('text')
 
         if guid and page:
-            self._log.info(page)
+            self._log.info(page+guid)
             self.pages[guid] = page
 
     # Return your page info if someone requests it on the network

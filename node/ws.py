@@ -193,6 +193,7 @@ class ProtocolHandler:
         self.send_to_client(None, msg)
 
     def on_node_page(self, page):
+        print page
         self.send_to_client(None, page)
 
     def on_node_message(self, *args):
