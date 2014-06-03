@@ -235,7 +235,7 @@ class CryptoTransportLayer(TransportLayer):
           uri = response['uri']
           ip = urlparse(uri).hostname
           port = urlparse(uri).port
-          guid = response['guid']
+          guid = response['senderGUID']
           pubkey = response['pubkey']
           findID = response['findID']
           result = response['findValue']
