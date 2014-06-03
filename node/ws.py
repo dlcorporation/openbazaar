@@ -171,6 +171,9 @@ class ProtocolHandler:
             self.send_to_client(*response)
 
     def client_shout(self, socket_handler, msg):
+        msg['uri'] = self._transport._uri
+        msg['pubkey'] = self._transport.pubkey
+        msg['guid'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
     # messages coming from "the market"
@@ -288,7 +291,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             return
 
     def _send_response(self, response):
-        if self.ws_connection:                        
+        if self.ws_connection:
             self.write_message(json.dumps(response))
         #try:
         #    self.write_message(json.dumps(response))
