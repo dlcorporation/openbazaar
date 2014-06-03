@@ -37,7 +37,7 @@ class PeerConnection(object):
     def cleanup_socket(self):
         self._socket.close()
 
-    def send(self, data):        
+    def send(self, data):
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
@@ -80,7 +80,6 @@ class PeerConnection(object):
 
 
     def on_message(self, msg, callback=None):
-
         self._log.info("Message received: %s" % msg)
 
 
