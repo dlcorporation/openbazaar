@@ -202,7 +202,9 @@ class Market(object):
         self._log.info("Someone is querying for your page")
         self.settings = self.get_settings()
         self._log.info(base64.b64encode(self.settings['storeDescription'].encode('ascii')))
-        self._transport.send(proto_page(self._transport._guid,
+        self._transport.send(proto_page(self._transport._uri,
+                                        self._transport.pubkey,
+                                        self._transport.guid,
                                         self.settings['storeDescription'],
                                         self.signature,
                                         self.settings['nickname']))
