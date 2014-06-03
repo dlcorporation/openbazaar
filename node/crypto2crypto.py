@@ -264,6 +264,7 @@ class CryptoTransportLayer(TransportLayer):
           for aPeer in result:
             if not next((peer for peer in self._activePeers if peer._guid == aPeer[0]), False) and aPeer[0] != self.guid:
               self._log.debug('Adding a new active peer')
+              aPeer = CryptoPeerConnection(self, aPeer[1], aPeer[2], aPeer[0])
               self._activePeers.append(newPeer)
               self._log.debug('Active Peers: %s' % self._activePeers)
 
