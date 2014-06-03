@@ -182,8 +182,8 @@ class Market(object):
         msg = query_page(findGUID)
         msg['uri'] = self._transport._uri
         msg['senderGUID'] = self._transport.guid
-        msg['pubkey'] = self._transport.pubkey        
-        self._transport.send(msg)
+        msg['pubkey'] = self._transport.pubkey
+        self._transport.send(msg, findGUID)
 
     def on_page(self, page):
 
