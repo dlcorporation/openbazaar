@@ -67,7 +67,7 @@ def start_node(my_market_ip, my_market_port, seed_uri, log_file, userid, seed_gu
 
     # handle shutdown
     def shutdown(x, y):
-        application.get_transport().broadcast_goodbye()
+        #application.get_transport().broadcast_goodbye()
         sys.exit(0)
     try:
         signal.signal(signal.SIGTERM, shutdown)
