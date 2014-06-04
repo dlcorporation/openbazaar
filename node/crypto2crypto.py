@@ -129,6 +129,7 @@ class CryptoTransportLayer(TransportLayer):
       for idx, aPeer in enumerate(self._activePeers):
 
         if aPeer._guid == guid or aPeer._pub == pubkey or aPeer._address == uri:
+
           print 'guids or pubkey match'
           peerExists = True
           if pubkey and aPeer._pub == '':
@@ -157,6 +158,7 @@ class CryptoTransportLayer(TransportLayer):
 
       # Add contact to routing table
       newContact = CryptoPeerConnection(self, uri, pubkey, guid)
+      print 'On Find Node: %s %s %s' % (uri , pubkey, guid)
 
       if not self._routingTable.getContact(guid):
           self._log.info('Adding contact to routing table')
@@ -164,7 +166,6 @@ class CryptoTransportLayer(TransportLayer):
 
       # Found key in local datastore
       if key in self._dataStore and self._dataStore[key] != None:
-
           newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":self._guid, "uri":self._uri, "pubkey":self.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
 
       else:
