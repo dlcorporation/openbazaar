@@ -135,7 +135,7 @@ class TransportLayer(object):
                 self._knownNodes.append((ip, port, seed_guid))
 
             # Add to routing table
-            self.addCryptoPeer(seed_uri, '02ca00209fe518b9f13a387a61bafa0f49f8bea416662e7bdc87b5f03a6a534c8b5a6816002004cb93220f7ae28ceafbdcdb8679684adcf5e8906f7987e2b07fe8e2ba88f009', seed_guid)
+            self.addCryptoPeer(seed_uri, '02ca002034810b281c2e3b760a955b58847554291f2173a67ec2268dd68b509bf16cf48800208bfac9c6484a2282222e26da821b5354b63f4ea3c0c84a619cd95025d4f0dda2', seed_guid)
 
             self._iterativeFind(self._guid, self._knownNodes, 'findNode')
 
