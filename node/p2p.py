@@ -56,6 +56,7 @@ class PeerConnection(object):
         p.start()
         if not queue.get():
             self._log.info("Peer %s timed out." % self._address)
+            print 'got here'
             self._transport.remove_peer(self._address, self._guid)
 
         p.join()
@@ -188,7 +189,9 @@ class TransportLayer(object):
         if (ip, port, guid) in self._shortlist:
             self._shortlist.remove((ip, port, guid))
 
+
         self._log.info('Removed')
+
 
 
         # try:
