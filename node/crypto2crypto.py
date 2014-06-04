@@ -34,7 +34,7 @@ class CryptoPeerConnection(PeerConnection):
 
         # Include guid
         data['guid'] = self._guid
-        print 'data',data
+        print self._transport._activePeers
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
@@ -127,8 +127,9 @@ class CryptoTransportLayer(TransportLayer):
 
       peerExists = False
       for idx, aPeer in enumerate(self._activePeers):
-        if aPeer._guid == guid:
-          print 'guids match'
+
+        if aPeer._guid == guid or aPeer._pub == pubkey or aPeer._address == uri:
+          print 'guids or pubkey match'
           peerExists = True
           if pubkey and aPeer._pub == '':
             print 'no pubkey'
@@ -138,6 +139,7 @@ class CryptoTransportLayer(TransportLayer):
       if not peerExists:
         print 'ADDING PEER %s' % peer._pub
         self._routingTable.addContact(peer)
+
         self._activePeers.append(peer)
 
 
