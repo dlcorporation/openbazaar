@@ -189,9 +189,13 @@ class Market(object):
 
         self._log.info("Page returned: " + str(page))
 
+
+
         #pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
         page = page.get('text')
+
+        print guid, page
 
         if guid and page:
             #self._log.info(page+guid)
