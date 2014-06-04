@@ -135,7 +135,7 @@ class TransportLayer(object):
                 self._knownNodes.append((ip, port, seed_guid))
 
             # Add to routing table
-            self.addCryptoPeer(seed_uri, '02ca002034810b281c2e3b760a955b58847554291f2173a67ec2268dd68b509bf16cf48800208bfac9c6484a2282222e26da821b5354b63f4ea3c0c84a619cd95025d4f0dda2', seed_guid)
+            self.addCryptoPeer(seed_uri, '02ca0020861566ca51bc8da4b2088240fd32ea8fe57766ee9313db8713a7e080a3866a3c0020e3bb8689333fe21a1eb14a7698a21f7c291441cba74ee00fa88b07b897df73f3', seed_guid)
 
             self._iterativeFind(self._guid, self._knownNodes, 'findNode')
 
@@ -214,17 +214,13 @@ class TransportLayer(object):
         if send_to:
 
             for peer in self._activePeers:
-              print peer._address,peer._pub
+
               if peer._guid == send_to:
-                print 'tested here'
+                self._log.info('Sending to myself')
 
             if peer:
-              print peer
-              if peer.send(data):
-                self._log.info('Message sent successfully')
-              else:
-
-                self._log.info('Problem sending message %s ' % data)
+              peer.send(data)
+              self._log.info('Sent message: %s ' % data)
 
             return
 

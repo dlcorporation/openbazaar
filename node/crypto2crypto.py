@@ -27,14 +27,13 @@ class CryptoPeerConnection(PeerConnection):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def encrypt(self, data):
-        print 'encrypt pubkey:',self._pub
         return self._priv.encrypt(data, self._pub.decode('hex'))
 
     def send(self, data):
 
         # Include guid
         data['guid'] = self._guid
-        print self._transport._activePeers
+        self._log.debug('Sending to peer: %s %s' % (self._guid, self._pub))
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
@@ -62,7 +61,7 @@ class CryptoTransportLayer(TransportLayer):
         self._setup_settings(self._market_id)
 
         self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
-        print 'keys',self.pubkey,self._myself.get_pubkey().encode('hex')
+
 
         TransportLayer.__init__(self, my_ip, my_port, self.guid)
 
@@ -130,15 +129,15 @@ class CryptoTransportLayer(TransportLayer):
 
         if aPeer._guid == guid or aPeer._pub == pubkey or aPeer._address == uri:
 
-          print 'guids or pubkey match'
+          self._log.info('guids or pubkey match')
           peerExists = True
           if pubkey and aPeer._pub == '':
-            print 'no pubkey'
+            self._log.info('no pubkey')
             aPeer._pub = pubkey
             self._activePeers[idx] = aPeer
 
       if not peerExists:
-        print 'ADDING PEER %s' % peer._pub
+        self._log.info('ADDING PEER %s' % peer._pub)
         self._routingTable.addContact(peer)
 
         self._activePeers.append(peer)
@@ -158,7 +157,7 @@ class CryptoTransportLayer(TransportLayer):
 
       # Add contact to routing table
       newContact = CryptoPeerConnection(self, uri, pubkey, guid)
-      print 'On Find Node: %s %s %s' % (uri , pubkey, guid)
+      self._log.info( 'On Find Node: %s %s %s' % (uri , pubkey, guid))
 
       if not self._routingTable.getContact(guid):
           self._log.info('Adding contact to routing table')
@@ -272,7 +271,7 @@ class CryptoTransportLayer(TransportLayer):
               self._log.debug('Active Peers: %s' % self._activePeers)
 
           # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
-          if guid not in self._alreadyContacted:
+          if guid not in self._alreadyContacted[findID]:
               self._alreadyContacted[findID].append(guid)
 
           self._log.debug('Already Contacted: %s' % self._alreadyContacted)
