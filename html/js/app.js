@@ -44,7 +44,7 @@ angular.module('app')
   $scope.createShout = function() {
      // launch a shout
      console.log($scope)
-     var newShout = {'type': 'shout', 'text': $scope.newShout, 'pubkey': $scope.myself.pubkey}
+     var newShout = {'type': 'shout', 'text': $scope.newShout, 'pubkey': $scope.myself.pubkey, 'senderGUID': $scope.myself.guid}
      socket.send('shout', newShout)
      $scope.shouts.push(newShout)
      $scope.newShout = '';
@@ -78,7 +78,7 @@ angular.module('app')
 
  // Open the websocket connection and handle messages
   var socket = new Connection(function(msg) {
-   
+
    switch(msg.type) {
 
       case 'peer':
