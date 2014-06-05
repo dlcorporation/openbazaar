@@ -176,13 +176,13 @@ class CryptoTransportLayer(TransportLayer):
       peerExists = False
       for idx, aPeer in enumerate(self._activePeers):
 
-        if aPeer._guid == peer.guid or aPeer._pub == peer.pubkey or aPeer._address == peer._uri:
+        if aPeer._guid == peer._guid or aPeer._pub == peer._pub or aPeer._address == peer._address:
 
           self._log.info('guids or pubkey match')
           peerExists = True
-          if peer.pubkey and aPeer._pub == '':
+          if peer._pub and aPeer._pub == '':
             self._log.info('no pubkey')
-            aPeer._pub = peer.pubkey
+            aPeer._pub = peer._pub
             self._activePeers[idx] = aPeer
 
       if not peerExists:
