@@ -38,7 +38,7 @@ class PeerConnection(object):
         self._socket.close()
 
     def send(self, data):
-        msg = self.send_raw(json.dumps(data))        
+        msg = self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
 
@@ -131,12 +131,12 @@ class TransportLayer(object):
 
 
 
-    def listen(self):
-        t = Thread(target=self._listen)
+    def listen(self, pubkey):
+        t = Thread(target=self._listen, args=(pubkey,))
         t.setDaemon(True)
         t.start()
 
-    def _listen(self):
+    def _listen(self, pubkey):
         self._log.info("Listening at: %s:%s" % (self._ip, self._port))
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REP)
@@ -154,7 +154,7 @@ class TransportLayer(object):
         while True:
             message = self._socket.recv()
             self.on_raw_message(message)
-            self._socket.send(json.dumps({'type': 'ok', 'senderGUID':self._guid, 'pubkey':''}))
+            self._socket.send(json.dumps({'type': 'ok', 'senderGUID':self._guid, 'pubkey':pubkey}))
 
     def closed(self, *args):
         self._log.info("client left")
