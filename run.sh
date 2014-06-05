@@ -4,10 +4,10 @@ MY_MARKET_PORT=12345
 
 # Specify a seed URI or you will be put into demo mode
 SEED_URI=tcp://seed.openbazaar.org:12345
-SEED_GUID=7fe4bb19bfd75e678ed2c0eca10d77140c6f8b69
 
 # Run in local test mode if not production
 MODE=production
+#MODE=development
 
 # Store config file
 STOREFILE=ppl/default
@@ -28,21 +28,20 @@ fi
 
 if [ $MODE == production ]; then
 
-  $PYTHON ident/identity.py &
-	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -g $SEED_GUID -p $MY_MARKET_PORT -l $LOGDIR/node.log -u 1 &
+  # Identity server is coming soon
+  #$PYTHON ident/identity.py &
+	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT -l $LOGDIR/node.log -u 1 &
 
 else
 
 	# Primary Market - No SEED_URI specified
-	$PYTHON node/tornadoloop.py 127.0.0.1 -l $LOGDIR/demo_node1.log &
+	$PYTHON node/tornadoloop.py 127.0.0.1 -l $LOGDIR/demo_node1.log -u 2 &
 
 	# Demo Peer Market
 	sleep 2
-    STOREFILE2=ppl/s_tec
-	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node2.log &
+	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node2.log -u 3 &
 
 	sleep 2
-    STOREFILE3=ppl/genjix
-	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node3.log &
+	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node3.log -u 4 &
 
 fi
