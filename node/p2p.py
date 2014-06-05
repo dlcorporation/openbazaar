@@ -154,7 +154,7 @@ class TransportLayer(object):
         while True:
             message = self._socket.recv()
             self.on_raw_message(message)
-            self._socket.send(json.dumps({'type': 'ok', 'senderGUID':self._transport.guid, 'pubkey':self._transport.pubkey}))
+            self._socket.send(json.dumps({'type': 'ok', 'senderGUID':self._guid, 'pubkey':''}))
 
     def closed(self, *args):
         self._log.info("client left")
