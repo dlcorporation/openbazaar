@@ -18,14 +18,14 @@ import routingtable
 import datastore
 from urlparse import urlparse
 
+
 # Connection to one peer
 class PeerConnection(object):
-    def __init__(self, transport, address, guid):
+    def __init__(self, transport, address):
         # timeout in seconds
         self._timeout = 10
         self._transport = transport
         self._address = address
-        self._guid = guid
         self._log = logging.getLogger(self.__class__.__name__)
 
     def create_socket(self):
@@ -41,10 +41,15 @@ class PeerConnection(object):
         self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
-        Thread(target=self._send_raw, args=(serialized,)).start()
+
+        queue = Queue()
+        Thread(target=self._send_raw, args=(serialized,queue,)).start()
+        msg = queue.get()
+        print msg
+
         pass
 
-    def _send_raw(self, serialized):
+    def _send_raw(self, serialized, raw_queue):
 
         # pyzmq sockets are not threadsafe,
         # they have to run in a separate process
@@ -54,11 +59,16 @@ class PeerConnection(object):
 
         p = Process(target=self._send_raw_process, args=(serialized, queue))
         p.start()
-        if not queue.get():
+        msg = queue.get()
+        if not msg:
             self._log.info("Peer %s timed out." % self._address)
             #self._transport.remove_peer(self._address, self._guid)
+        else:
+            raw_queue.put(msg)
 
         p.join()
+
+
 
     def _send_raw_process(self, serialized, queue):
 
@@ -67,11 +77,11 @@ class PeerConnection(object):
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
-        if poller.poll(self._timeout * 3000):
+        if poller.poll(self._timeout * 1000):
             msg = self._socket.recv()
             self.on_message(msg)
             self.cleanup_socket()
-            queue.put(True)
+            queue.put(msg)
 
         else:
             self._log.info("Node timed out: %s" % self._address)
@@ -117,33 +127,7 @@ class TransportLayer(object):
     def get_profile(self):
         return {'type': 'hello_request', 'uri': self._uri}
 
-    def join_network(self, seed_uri, seed_guid):
 
-        self.listen() # Turn on zmq socket
-
-        if seed_uri:
-
-            self._log.info('Initializing Seed Peer(s): [%s %s]' % (seed_uri, seed_guid))
-            # Turning off peers
-            #self.init_peer({'uri': seed_uri, 'guid':seed_guid})
-
-            ip = urlparse(seed_uri).hostname
-            port = urlparse(seed_uri).port
-
-
-            if (ip, port, seed_guid) not in self._knownNodes:
-                self._knownNodes.append((ip, port, seed_guid))
-
-            # Add to routing table
-            self.addCryptoPeer(seed_uri, '02ca0020861566ca51bc8da4b2088240fd32ea8fe57766ee9313db8713a7e080a3866a3c0020e3bb8689333fe21a1eb14a7698a21f7c291441cba74ee00fa88b07b897df73f3', seed_guid)
-
-            self._iterativeFind(self._guid, self._knownNodes, 'findNode')
-
-
-            # Periodically refresh buckets
-            loop = tornado.ioloop.IOLoop.instance()
-            refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode, constants.refreshTimeout, io_loop=loop)
-            refreshCB.start()
 
 
 
@@ -170,7 +154,7 @@ class TransportLayer(object):
         while True:
             message = self._socket.recv()
             self.on_raw_message(message)
-            self._socket.send(json.dumps({'type': 'ok'}))
+            self._socket.send(json.dumps({'type': 'ok', 'senderGUID':self._transport.guid, 'pubkey':self._transport.pubkey}))
 
     def closed(self, *args):
         self._log.info("client left")
