@@ -165,7 +165,9 @@ class CryptoTransportLayer(TransportLayer):
             refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode, constants.refreshTimeout, io_loop=loop)
             refreshCB.start()
 
-
+    def _addCryptoPeer(self, uri, guid, pubkey):
+      peer = CryptoPeerConnection(self, uri, pubkey, guid)
+      self.addCryptoPeer(peer)
 
     def addCryptoPeer(self, peer):
 
