@@ -135,7 +135,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def join_network(self, seed_uri):
 
-        self.listen() # Turn on zmq socket
+        self.listen(self.pubkey) # Turn on zmq socket
 
         if seed_uri:
 
@@ -185,7 +185,7 @@ class CryptoTransportLayer(TransportLayer):
             self._activePeers[idx] = aPeer
 
       if not peerExists:
-        self._log.info('ADDING PEER %s' % peer._pub)
+        self._log.info('Adding crypto peer %s' % peer._pub)
         self._routingTable.addContact(peer)
 
         self._activePeers.append(peer)
