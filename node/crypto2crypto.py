@@ -13,6 +13,7 @@ import pyelliptic as ec
 from p2p import PeerConnection, TransportLayer
 from threading import Thread
 import time
+import tornado
 import traceback
 from urlparse import urlparse
 
@@ -28,11 +29,10 @@ class CryptoPeerConnection(PeerConnection):
         if node_guid != None:
           self._guid = node_guid
         else:
-          # Get guid and pubkey from PING
-          print 'Getting guid'
-          self.send_raw(json.dumps({'type':'ping', 'uri':address, 'senderGUID':self._transport.guid, 'pubkey':self._transport.pubkey}))
-
-
+          # Get guid from PING
+          msg = self.send_raw(json.dumps({'type':'ping', 'uri':address, 'senderGUID':self._transport.guid, 'pubkey':self._transport.pubkey}))
+          msg = json.loads(msg)
+          self._guid = msg['senderGUID']
 
         self._log = logging.getLogger(self.__class__.__name__)
 
@@ -152,11 +152,11 @@ class CryptoTransportLayer(TransportLayer):
             port = urlparse(seed_uri).port
 
 
-            if (ip, port, seed_guid) not in self._knownNodes:
-                self._knownNodes.append((ip, port, seed_guid))
+            if (ip, port, seed_peer._guid) not in self._knownNodes:
+                self._knownNodes.append((ip, port, seed_peer._guid))
 
             # Add to routing table
-            self.addCryptoPeer(seed_uri, '02ca0020861566ca51bc8da4b2088240fd32ea8fe57766ee9313db8713a7e080a3866a3c0020e3bb8689333fe21a1eb14a7698a21f7c291441cba74ee00fa88b07b897df73f3', seed_guid)
+            #self.addCryptoPeer(seed_uri, seed_guid)
 
             self._iterativeFind(self._guid, self._knownNodes, 'findNode')
 
