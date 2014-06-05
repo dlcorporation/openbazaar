@@ -208,19 +208,20 @@ class TransportLayer(object):
 
             return
 
-        # Broadcast to close peers
-        for peer in self._activePeers:
-            try:
+        else:
+            # Broadcast to close peers
+            for peer in self._activePeers:
+                try:
 
-                data['senderGUID'] = self._guid
-                if peer._pub:
-                    peer.send(data)
-                else:
-                    serialized = json.dumps(data)
-                    peer.send_raw(serialized)
-            except:
-                self._log.info("Error sending over peer!")
-                traceback.print_exc()
+                    data['senderGUID'] = self._guid
+                    if peer._pub:
+                        peer.send(data)
+                    else:
+                        serialized = json.dumps(data)
+                        peer.send_raw(serialized)
+                except:
+                    self._log.info("Error sending over peer!")
+                    traceback.print_exc()
 
     def broadcast_goodbye(self):
         self._log.info("Broadcast goodbye")

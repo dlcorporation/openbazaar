@@ -41,7 +41,7 @@ def proto_query_reputation(pubkey):
 
 def proto_page(uri, pubkey, guid, text, signature, nickname):
     data = {}
-    data['type'] = 'page'
+    data['type'] = 'node_page'
     data['uri'] = uri
     data['pubkey'] = pubkey
     data['senderGUID'] = guid

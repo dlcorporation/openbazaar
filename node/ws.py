@@ -18,7 +18,7 @@ class ProtocolHandler:
         # register on transport events to forward..
         transport.add_callback('peer', self.on_node_peer)
         transport.add_callback('peer_remove', self.on_node_remove_peer)
-        transport.add_callback('page', self.on_node_page)
+        transport.add_callback('nodepage', self.on_node_page)
         transport.add_callback('all', self.on_node_message)
 
         # handlers from events coming from websocket, we shouldnt need this
@@ -174,7 +174,6 @@ class ProtocolHandler:
         msg['uri'] = self._transport._uri
         msg['pubkey'] = self._transport.pubkey
         msg['guid'] = self._transport.guid
-        print 'MESSAGE:',msg
         self._transport.send(protocol.shout(msg))
 
     # messages coming from "the market"
@@ -194,7 +193,6 @@ class ProtocolHandler:
         self.send_to_client(None, msg)
 
     def on_node_page(self, page):
-        print page
         self.send_to_client(None, page)
 
     def on_node_message(self, *args):

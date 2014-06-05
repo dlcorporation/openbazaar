@@ -15,7 +15,7 @@ function Connection(onMessage) {
    console.log("error", evt)
   }
 
-  websocket.onmessage = function(evt) {        
+  websocket.onmessage = function(evt) {
    	var data = JSON.parse(evt.data)
     onMessage(data.result)
   }
@@ -28,7 +28,8 @@ function Connection(onMessage) {
         "command": command,
         "params": msg
     };
-    var message = JSON.stringify(request);
+
+    var message = JSON.stringify(request);    
     self.websocket.send(message);
 
   }

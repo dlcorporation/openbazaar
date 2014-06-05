@@ -78,7 +78,7 @@ angular.module('app')
 
  // Open the websocket connection and handle messages
   var socket = new Connection(function(msg) {
-
+   
    switch(msg.type) {
 
       case 'peer':
@@ -259,6 +259,7 @@ angular.module('app')
   }
 
   $scope.parse_page = function(msg) {
+
     console.log(msg)
 
     if (msg.senderGUID != $scope.awaitingShop)
