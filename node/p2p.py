@@ -38,14 +38,14 @@ class PeerConnection(object):
         self._socket.close()
 
     def send(self, data):
-        self.send_raw(json.dumps(data))
+        msg = self.send_raw(json.dumps(data))        
 
     def send_raw(self, serialized):
 
         queue = Queue()
         Thread(target=self._send_raw, args=(serialized,queue,)).start()
         msg = queue.get()
-        print msg
+        return msg
 
         pass
 
