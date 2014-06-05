@@ -185,7 +185,7 @@ class CryptoTransportLayer(TransportLayer):
 
       if not peerExists:
         self._log.info('Adding crypto peer %s' % peer._pub)
-        self._routingTable.addContact(peer)
+        #self._routingTable.addContact(peer)
 
         self._activePeers.append(peer)
 
