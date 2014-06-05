@@ -30,7 +30,7 @@ class CryptoPeerConnection(PeerConnection):
           self._guid = node_guid
         else:
           # Get guid from PING
-          msg = self.send_raw(json.dumps({'type':'ping', 'uri':address, 'senderGUID':self._transport.guid, 'pubkey':self._transport.pubkey}))
+          msg = self.send_raw(json.dumps({'type':'ping', 'uri':self._transport._uri, 'senderGUID':self._transport.guid, 'pubkey':self._transport.pubkey}))
           msg = json.loads(msg)
           self._guid = msg['senderGUID']
 
@@ -144,7 +144,6 @@ class CryptoTransportLayer(TransportLayer):
             seed_peer = CryptoPeerConnection(self, seed_uri)
 
 
-
             # Turning off peers
             #self.init_peer({'uri': seed_uri, 'guid':seed_guid})
 
@@ -156,7 +155,7 @@ class CryptoTransportLayer(TransportLayer):
                 self._knownNodes.append((ip, port, seed_peer._guid))
 
             # Add to routing table
-            #self.addCryptoPeer(seed_uri, seed_guid)
+            self.addCryptoPeer(seed_peer)
 
             self._iterativeFind(self._guid, self._knownNodes, 'findNode')
 
@@ -168,9 +167,7 @@ class CryptoTransportLayer(TransportLayer):
 
 
 
-    def addCryptoPeer(self, uri, pubkey, guid):
-
-      peer = CryptoPeerConnection(self, uri, pubkey, guid)
+    def addCryptoPeer(self, peer):
 
       peerExists = False
       for idx, aPeer in enumerate(self._activePeers):
@@ -464,6 +461,7 @@ class CryptoTransportLayer(TransportLayer):
       def searchIteration():
 
         self._slowNodeCount[0] = len(self._activeProbes[findID])
+        print 'probes: %s' % self._activeProbes
 
         # Sort closest to farthest
         self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
@@ -492,6 +490,9 @@ class CryptoTransportLayer(TransportLayer):
         for node in self._shortlist[findID]:
 
           if node not in self._alreadyContacted[findID]:
+
+              if findID not in self._activeProbes.keys():
+                return
 
               self._activeProbes[findID].append(node)
 
