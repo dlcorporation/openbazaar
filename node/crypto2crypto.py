@@ -33,10 +33,12 @@ class CryptoPeerConnection(PeerConnection):
           msg = self.send_raw(json.dumps({'type':'ping', 'uri':self._transport._uri, 'senderGUID':self._transport.guid, 'pubkey':self._transport.pubkey}))
           msg = json.loads(msg)
           self._guid = msg['senderGUID']
+          self._pub = msg['pubkey']
 
         self._log = logging.getLogger(self.__class__.__name__)
 
     def encrypt(self, data):
+        print data
         return self._priv.encrypt(data, self._pub.decode('hex'))
 
     def send(self, data):
@@ -174,13 +176,13 @@ class CryptoTransportLayer(TransportLayer):
       peerExists = False
       for idx, aPeer in enumerate(self._activePeers):
 
-        if aPeer._guid == guid or aPeer._pub == pubkey or aPeer._address == uri:
+        if aPeer._guid == peer.guid or aPeer._pub == peer.pubkey or aPeer._address == peer._uri:
 
           self._log.info('guids or pubkey match')
           peerExists = True
-          if pubkey and aPeer._pub == '':
+          if peer.pubkey and aPeer._pub == '':
             self._log.info('no pubkey')
-            aPeer._pub = pubkey
+            aPeer._pub = peer.pubkey
             self._activePeers[idx] = aPeer
 
       if not peerExists:
