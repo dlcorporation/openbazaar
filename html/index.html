@@ -99,7 +99,7 @@
         			  <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
         			</ul>
 
-              <identicon icon-size="45" hash="myself.pubkey" title="{{myself.pubkey}}" style="float:right;vertical-align:middle; margin-right:10px;"></identicon>
+              <identicon icon-size="45" hash="myself.guid" title="{{myself.guid}}" style="float:right;vertical-align:middle; margin-right:10px;"></identicon>
 
           	</div>
 
@@ -679,7 +679,7 @@
       <div ng-show="page" class="" style="margin-top:40px;">
 
         <div>
-          <h2><identicon icon-size="64" hash="page.pubkey" title="{{page.pubkey}}"></identicon>  {{page.nickname}}</h2>
+          <h2><identicon icon-size="64" hash="page.guid" title="{{page.guid}}"></identicon>  {{page.nickname}}</h2>
 
   				<ul class="nav nav-pills">
   				  <li class="active" ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
@@ -818,7 +818,7 @@
       <div class="peers-area" ng-repeat="peer in peers | limitTo:5">
           <table class="peers-table">
               <tr>
-                  <td width="40"><identicon icon-size="38" hash="peer.pubkey" title="{{peer.pubkey}}"></identicon></td>
+                  <td width="40"><identicon icon-size="38" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
 
                   <td style="font-size:13px;"><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}<br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.guid?peer.guid.slice(0,20):'unknown'}}...</span></span></td>
@@ -839,7 +839,7 @@
 
           <div class="shout-chats">
               <div ng-repeat="shout in shouts.slice().reverse()" style="padding-bottom:5px;">
-                  <div><identicon icon-size="25" hash="shout.pubkey" title="{{shout.pubkey}}" style="float:left;margin-right:10px;"></identicon></div><div>{{shout.text}}</div>
+                  <div><identicon icon-size="25" hash="shout.senderGUID" title="{{shout.senderGUID}}" style="float:left;margin-right:10px;"></identicon></div><div>{{shout.text}}</div>
               </div>
           </div>
       </div>

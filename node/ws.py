@@ -57,6 +57,7 @@ class ProtocolHandler:
             'pubkey': self._transport._myself.get_pubkey().encode('hex'),
             'peers': peers,
             'settings': settings,
+            'guid': self._transport.guid,
             'countryCodes': countryCodes,
             'reputation': self.node.reputation.get_my_reputation()
         }
@@ -173,7 +174,7 @@ class ProtocolHandler:
     def client_shout(self, socket_handler, msg):
         msg['uri'] = self._transport._uri
         msg['pubkey'] = self._transport.pubkey
-        msg['guid'] = self._transport.guid
+        msg['senderGUID'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
     # messages coming from "the market"
