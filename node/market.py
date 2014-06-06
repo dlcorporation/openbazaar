@@ -194,13 +194,12 @@ class Market(object):
         #pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
         page = page.get('text')
-
-        print guid, page
+        
 
         if guid and page:
             #self._log.info(page+guid)
             self.pages[guid] = page
-            
+
 
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):

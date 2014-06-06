@@ -38,7 +38,6 @@ class CryptoPeerConnection(PeerConnection):
         self._log = logging.getLogger(self.__class__.__name__)
 
     def encrypt(self, data):
-        print data
         return self._priv.encrypt(data, self._pub.decode('hex'))
 
     def send(self, data):
@@ -465,7 +464,7 @@ class CryptoTransportLayer(TransportLayer):
       def searchIteration():
 
         self._slowNodeCount[0] = len(self._activeProbes[findID])
-        print 'probes: %s' % self._activeProbes
+        
 
         # Sort closest to farthest
         self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
@@ -733,7 +732,6 @@ class CryptoTransportLayer(TransportLayer):
             try:
                 # Encrypted?
                 try:
-                  print self._myself.get_pubkey().encode('hex')
                   msg = self._myself.decrypt(serialized)
                   msg = json.loads(msg)
 

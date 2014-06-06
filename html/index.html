@@ -679,7 +679,7 @@
       <div ng-show="page" class="" style="margin-top:40px;">
 
         <div>
-          <h2><identicon icon-size="64" hash="page.guid" title="{{page.guid}}"></identicon>  {{page.nickname}}</h2>
+          <h2><identicon icon-size="64" hash="page.senderGUID" title="{{page.senderGUID}}"></identicon>  {{page.nickname}}</h2>
 
   				<ul class="nav nav-pills">
   				  <li class="active" ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
@@ -814,6 +814,7 @@
     <div id="sidebar" ng-show="sidebar" class="shoutbox-area col-sm-4" style="margin-top:20px;">
 
       <h3>Online Markets</h3>
+      My GUID: {{myself.guid}}
 
       <div class="peers-area" ng-repeat="peer in peers | limitTo:5">
           <table class="peers-table">

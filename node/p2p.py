@@ -195,16 +195,15 @@ class TransportLayer(object):
         self._log.info("Outgoing Data: %s" % data);
 
         # Directed message
-        if send_to:
+        print 'Direct: %s ' % send_to
+        if send_to != None:
 
             for peer in self._activePeers:
 
               if peer._guid == send_to:
-                self._log.info('Sending to myself')
-
-            if peer:
-              peer.send(data)
-              self._log.info('Sent message: %s ' % data)
+                self._log.info('Found a matching peer')
+                peer.send(data)
+                self._log.debug('Sent message: %s ' % data)
 
             return
 
