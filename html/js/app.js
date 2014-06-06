@@ -71,6 +71,7 @@ angular.module('app')
      $scope.dashboard = false;
      $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.guid;
+     console.log('Querying for shop: ',peer);
      var query = {'type': 'query_page', 'findGUID': peer.guid}
      socket.send('query_page', query)
   }
@@ -260,7 +261,8 @@ angular.module('app')
 
   $scope.parse_page = function(msg) {
 
-    console.log(msg)
+    console.log('Receive a page for: ',msg)
+    console.log('Waiting for: '+$scope.awaitingShop)
 
     if (msg.senderGUID != $scope.awaitingShop)
        return
