@@ -62,6 +62,7 @@ class PeerConnection(object):
         msg = queue.get()
         if not msg:
             self._log.info("Peer %s timed out." % self._address)
+            raw_queue.put(False)
             #self._transport.remove_peer(self._address, self._guid)
         else:
             raw_queue.put(msg)
