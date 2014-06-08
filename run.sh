@@ -6,11 +6,8 @@ MY_MARKET_PORT=12345
 SEED_URI=tcp://seed.openbazaar.org:12345
 
 # Run in local test mode if not production
-MODE=production
-#MODE=development
-
-# Store config file
-STOREFILE=ppl/default
+#MODE=production
+MODE=development
 
 # Location of log directory
 LOGDIR=logs
@@ -39,9 +36,9 @@ else
 
 	# Demo Peer Market
 	sleep 2
-	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node2.log -u 3 &
+	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node1.log -u 3 &
 
 	sleep 2
-	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node3.log -u 4 &
+	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node1.log -u 4 &
 
 fi

@@ -368,10 +368,10 @@ angular.module('app')
     }
   }
   $scope.search = ""
-  $scope.searchNickname = function() {
-     var query = {'type': 'search', 'text': $scope.search };
+  $scope.searchNetwork = function() {
+     var query = {'type': 'search', 'key': $scope.search };     
      $scope.searching = $scope.search;
-     //socket.send('search', query)
+     socket.send('search', query)
      $scope.search = ""
   }
 

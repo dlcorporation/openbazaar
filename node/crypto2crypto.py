@@ -35,7 +35,7 @@ class CryptoPeerConnection(PeerConnection):
           self._guid = msg['senderGUID']
           self._pub = msg['pubkey']
 
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub.decode('hex'))
@@ -56,7 +56,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def __init__(self, my_ip, my_port, market_id):
 
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
 
         self._market_id = market_id
@@ -76,7 +76,7 @@ class CryptoTransportLayer(TransportLayer):
         self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
 
 
-        TransportLayer.__init__(self, my_ip, my_port, self.guid)
+        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid)
 
         # Set up callbacks
         self.add_callback('findNode', self._on_findNode)
@@ -186,7 +186,9 @@ class CryptoTransportLayer(TransportLayer):
 
       if not peerExists:
         self._log.info('Adding crypto peer %s' % peer._pub)
-        #self._routingTable.addContact(peer)
+
+
+        self._routingTable.addContact(peer)
 
         self._activePeers.append(peer)
 
@@ -432,13 +434,23 @@ class CryptoTransportLayer(TransportLayer):
       else:
         findValue = False
 
+      if not findValue and key == self._guid:
+        print 'Finding self'
+        return 'Self'
+
+      if not findValue:
+        for node in self._activePeers:
+          if node._guid == key:
+            return [node]
+
       self._shortlist[findID] = []
       self._activeProbes[findID] = []
       self._alreadyContacted[findID] = []
 
       if startupShortlist == [] or startupShortlist == None:
 
-        closeNodes = self._routingTable.findCloseNodes(key, constants.alpha)
+        closeNodes = self._routingTable.findCloseNodes(key, constants.alpha, self.guid)
+        self._log.debug('Found close nodes: %s' % closeNodes)
 
         for closeNode in closeNodes:
           ip = urlparse(closeNode._address).hostname
@@ -456,7 +468,6 @@ class CryptoTransportLayer(TransportLayer):
             return []
 
       else:
-        self._log.debug('Initial Find Node Process - %s' % startupShortlist)
         self._shortlist[findID] = startupShortlist
 
       prevClosestNode = [None]
@@ -464,7 +475,6 @@ class CryptoTransportLayer(TransportLayer):
       def searchIteration():
 
         self._slowNodeCount[0] = len(self._activeProbes[findID])
-        
 
         # Sort closest to farthest
         self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
@@ -507,7 +517,6 @@ class CryptoTransportLayer(TransportLayer):
 
               if contact:
                 contact.send_raw(json.dumps(msg))
-
                 contactedNow += 1
               else:
                 self._log.error('No contact was found for this guid: %s' % node[2])
