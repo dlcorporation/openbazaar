@@ -19,7 +19,7 @@ class Market(object):
 
     def __init__(self, transport):
 
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
         self._log.info("Loading Market")
 
         self._myself = transport._myself
@@ -183,7 +183,15 @@ class Market(object):
         msg['uri'] = self._transport._uri
         msg['senderGUID'] = self._transport.guid
         msg['pubkey'] = self._transport.pubkey
-        self._transport.send(msg, findGUID)
+
+        # Find nodes
+        matching_peers = self._transport._iterativeFind(findGUID)
+
+        if len(matching_peers) == 1:
+          self._transport.send(msg, matching_peers[0]._guid)
+          return True
+        else:
+          return False
 
     def on_page(self, page):
 
@@ -194,7 +202,7 @@ class Market(object):
         #pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
         page = page.get('text')
-        
+
 
         if guid and page:
             #self._log.info(page+guid)

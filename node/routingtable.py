@@ -10,6 +10,7 @@ import time, random
 import constants
 import kbucket
 import p2p
+import logging
 #from protocol import TimeoutError
 
 class RoutingTable(object):
@@ -24,6 +25,10 @@ class RoutingTable(object):
                              routing table belongs
         @type parentNodeID: str
         """
+
+        self._log = logging.getLogger(self.__class__.__name__)
+
+
     def addContact(self, contact):
         """ Add the given contact to the correct k-bucket; if it already
         exists, its status will be updated
@@ -126,6 +131,9 @@ class TreeRoutingTable(RoutingTable):
                              routing table belongs
         @type parentNodeID: str
         """
+
+        self._log = logging.getLogger(self.__class__.__name__)
+
         # Create the initial (single) k-bucket covering the range of the entire 160-bit ID space
         self._buckets = [kbucket.KBucket(rangeMin=0, rangeMax=2**160)]
         self._parentNodeID = parentNodeID
@@ -138,55 +146,61 @@ class TreeRoutingTable(RoutingTable):
         @type contact: p2p.PeerConnection
         """
 
+
+
+        # If contact is itself return
         if contact._guid == self._parentNodeID:
             return
 
         bucketIndex = self._kbucketIndex(contact._guid)
 
-        try:
-            self._buckets[bucketIndex].addContact(contact)
-        except kbucket.BucketFull:
-            # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
-            if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
-                self._splitBucket(bucketIndex)
-                # Retry the insertion attempt
-                self.addContact(contact)
-            else:
-                # We can't split the k-bucket
-                # NOTE:
-                # In section 2.4 of the 13-page version of the Kademlia paper, it is specified that
-                # in this case, the new contact should simply be dropped. However, in section 2.2,
-                # it states that the head contact in the k-bucket (i.e. the least-recently seen node)
-                # should be pinged - if it does not reply, it should be dropped, and the new contact
-                # added to the tail of the k-bucket. This implementation follows section 2.2 regarding
-                # this point.
+        # If already added then update
+        if not self._buckets[bucketIndex].getContact(contact):
 
-                def replaceContact(failure):
-                    """ Callback for the deferred PING RPC to see if the head
-                    node in the k-bucket is still responding
+          try:
+              self._buckets[bucketIndex].addContact(contact)
+          except kbucket.BucketFull:
+              # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
+              if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
+                  self._splitBucket(bucketIndex)
+                  # Retry the insertion attempt
+                  self.addContact(contact)
+              else:
+                  # We can't split the k-bucket
+                  # NOTE:
+                  # In section 2.4 of the 13-page version of the Kademlia paper, it is specified that
+                  # in this case, the new contact should simply be dropped. However, in section 2.2,
+                  # it states that the head contact in the k-bucket (i.e. the least-recently seen node)
+                  # should be pinged - if it does not reply, it should be dropped, and the new contact
+                  # added to the tail of the k-bucket. This implementation follows section 2.2 regarding
+                  # this point.
 
-                    @type failure: twisted.python.failure.Failure
-                    """
-                    failure.trap(TimeoutError)
-                    print '==replacing contact=='
-                    # Remove the old contact...
-                    deadContactID = failure.getErrorMessage()
-                    try:
-                        self._buckets[bucketIndex].removeContact(deadContactID)
-                    except ValueError:
-                        # The contact has already been removed (probably due to a timeout)
-                        pass
-                    # ...and add the new one at the tail of the bucket
-                    self.addContact(contact)
+                  def replaceContact(failure):
+                      """ Callback for the deferred PING RPC to see if the head
+                      node in the k-bucket is still responding
 
-                # Ping the least-recently seen contact in this k-bucket
-                headContact = self._buckets[bucketIndex]._contacts[0]
+                      @type failure: twisted.python.failure.Failure
+                      """
+                      failure.trap(TimeoutError)
+                      print '==replacing contact=='
+                      # Remove the old contact...
+                      deadContactID = failure.getErrorMessage()
+                      try:
+                          self._buckets[bucketIndex].removeContact(deadContactID)
+                      except ValueError:
+                          # The contact has already been removed (probably due to a timeout)
+                          pass
+                      # ...and add the new one at the tail of the bucket
+                      self.addContact(contact)
 
-                headContact.send_raw(json.dumps({"type":"ping", "guid": self._guid, "uri":self._uri, "findValue":peer['findValue']}))
+                  # Ping the least-recently seen contact in this k-bucket
+                  headContact = self._buckets[bucketIndex]._contacts[0]
 
-                df = headContact.ping()
-                # If there's an error (i.e. timeout), remove the head contact, and append the new one
-                df.addErrback(replaceContact)
+                  headContact.send_raw(json.dumps({"type":"ping", "guid": self._guid, "uri":self._uri, "findValue":peer['findValue']}))
+
+                  df = headContact.ping()
+                  # If there's an error (i.e. timeout), remove the head contact, and append the new one
+                  df.addErrback(replaceContact)
 
     def findCloseNodes(self, key, count, nodeID=None):
         """ Finds a number of known nodes closest to the node/value with the
@@ -227,6 +241,8 @@ class TreeRoutingTable(RoutingTable):
                 closestNodes.extend(self._buckets[bucketIndex+i].getContacts(constants.k - len(closestNodes), _rpcNodeID))
                 canGoHigher = bucketIndex+(i+1) < len(self._buckets)
             i += 1
+
+        self._log.debug('Closest Nodes: %s' % closestNodes)
         return closestNodes
 
     def getContact(self, contactID):

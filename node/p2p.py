@@ -26,7 +26,7 @@ class PeerConnection(object):
         self._timeout = 10
         self._transport = transport
         self._address = address
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
 
     def create_socket(self):
         self._ctx = zmq.Context()
@@ -96,7 +96,7 @@ class PeerConnection(object):
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
-    def __init__(self, my_ip, my_port, my_guid):
+    def __init__(self, market_id, my_ip, my_port, my_guid):
         self._peers = {}
         self._callbacks = defaultdict(list)
         self._port = my_port
@@ -110,7 +110,7 @@ class TransportLayer(object):
         self._knownNodes = []
 
 
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
         # signal.signal(signal.SIGTERM, lambda x, y: self.broadcast_goodbye())
 
     def add_callback(self, section, callback):
@@ -199,6 +199,8 @@ class TransportLayer(object):
         print 'Direct: %s ' % send_to
         if send_to != None:
 
+
+
             for peer in self._activePeers:
 
               if peer._guid == send_to:
@@ -209,9 +211,16 @@ class TransportLayer(object):
             return
 
         else:
-            # Broadcast to close peers
+            # FindKey and then send
+
+
+
+
+
             for peer in self._activePeers:
                 try:
+
+
 
                     data['senderGUID'] = self._guid
                     if peer._pub:

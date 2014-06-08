@@ -41,7 +41,7 @@ class ProtocolHandler:
             "generate_secret":	self.client_generate_secret,
         }
 
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
 
     def send_opening(self):
         peers = self.get_peers()
@@ -77,8 +77,14 @@ class ProtocolHandler:
     def client_query_page(self, socket_handler, msg):
         self._log.info("Message: %s" % msg)
         findGUID = msg['findGUID']
-        self.node.query_page(findGUID)
-        #self.node.reputation.query_reputation(guid)
+
+        if self.node.query_page(findGUID):
+          #self.node.reputation.query_reputation(guid)
+          print 'Find reputation'
+        else:
+          self._log.info('Could not find page')
+
+
 
     def client_query_orders(self, socket_handler, msg):
 
@@ -164,12 +170,18 @@ class ProtocolHandler:
         rating = msg['rating']
         self.node.reputation.create_review(pubkey, text, rating)
 
+
+    # Search across the network
     def client_search(self, socket_handler, msg):
         self._log.info("[Search] %s"% msg)
-        response = self.node.lookup(msg)
-        if response:
-            self._log.info(response)
-            self.send_to_client(*response)
+
+        result = self._transport.iterativeFindNode(msg['key'])
+        print 'Result: %s' % result
+
+        #response = self.node.lookup(msg)
+        #if response:
+        #    self._log.info(response)
+            #self.send_to_client(*response)
 
     def client_shout(self, socket_handler, msg):
         msg['uri'] = self._transport._uri

@@ -1,4 +1,5 @@
 import constants
+import logging
 
 class BucketFull(Exception):
     """ Raised when the bucket is full """
@@ -18,6 +19,8 @@ class KBucket(object):
         self.rangeMin = rangeMin
         self.rangeMax = rangeMax
         self._contacts = list()
+
+        self._log = logging.getLogger(self.__class__.__name__)
 
     def addContact(self, contact):
         """ Add contact to _contact list in the right order. This will move the
@@ -41,7 +44,8 @@ class KBucket(object):
             raise BucketFull("No space in bucket to insert contact")
 
     def getContact(self, contactID):
-        """ Get the contact specified node ID"""        
+        """ Get the contact specified node ID"""
+        self._log.info('Getting contact from bucket: %s' % contactID)
         for contact in self._contacts:
           if contact._guid == contactID:
             return contact
