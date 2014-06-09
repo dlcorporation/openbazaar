@@ -46,6 +46,7 @@ contributed by Dean Masley
 2. [P2P Lending on OpenBazaar](https://gist.github.com/drwasho/2c40b91e169f55988618) by Dr Washington Sanchez
 3. [Auctions on OpenBazaar](https://gist.github.com/drwasho/d923d2d37f544ea22e6f) by Dr Washington Sanchez
 4. [Services on OpenBazaar](https://gist.github.com/drwasho/632d126a4189467c1280) by Dr Washington Sanchez
+5. [The Issuance and P2P Transfer of Shares on OpenBazaar](https://gist.github.com/drwasho/3670bb1c59e620fffb24) by Dr Washington Sanchez and Delain Markos
 
 ## Screenshot
 
