@@ -45,7 +45,6 @@ class ProtocolHandler:
 
     def send_opening(self):
         peers = self.get_peers()
-        print peers
 
         countryCodes = []
         for country in pycountry.countries:
@@ -174,15 +173,18 @@ class ProtocolHandler:
 
     # Search across the network
     def client_search(self, socket_handler, msg):
+
+
         self._log.info("[Search] %s"% msg)
 
-        result = self._transport._dht.iterativeFindNode(msg['key'])
-        self._log.info('Result: %s' % result)
+        self._transport._dht.iterativeFindNode(msg['key'], callback=self.on_node_peer)
+        #self._log.info('Result: %s' % result)
 
         #response = self._market.lookup(msg)
         #if response:
         #    self._log.info(response)
             #self.send_to_client(*response)
+
 
     def client_shout(self, socket_handler, msg):
         msg['uri'] = self._transport._uri
@@ -196,11 +198,14 @@ class ProtocolHandler:
 
 
         response = {'type': 'peer',
-                    'pubkey': peer._pub.encode('hex')
+                    'pubkey': peer._pub
                               if peer._pub
                               else 'unknown',
-                    #'nickname': peer.
+                    'guid': peer._guid
+                              if peer._guid
+                              else '',
                     'uri': peer._address}
+        print response
         self.send_to_client(None, response)
 
     def on_node_remove_peer(self, msg):

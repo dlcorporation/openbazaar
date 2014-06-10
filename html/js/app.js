@@ -286,7 +286,7 @@ angular.module('app')
 
   $scope.add_peer = function(msg) {
 
-    console.log('Add peer: ',msg);
+    console.log('Add peer: ', msg);
 
     /* get index if peer is already known */
     var index = [-1].concat($scope.peers).reduce(
@@ -369,7 +369,7 @@ angular.module('app')
   }
   $scope.search = ""
   $scope.searchNetwork = function() {
-     var query = {'type': 'search', 'key': $scope.search };     
+     var query = {'type': 'search', 'key': $scope.search };
      $scope.searching = $scope.search;
      socket.send('search', query)
      $scope.search = ""

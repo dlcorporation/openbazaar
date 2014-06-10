@@ -77,7 +77,7 @@ class PeerConnection(object):
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
         if poller.poll(self._timeout * 1000):
-            msg = self._socket.recv()            
+            msg = self._socket.recv()
             self.on_message(msg)
             self.cleanup_socket()
             queue.put(msg)
@@ -198,7 +198,7 @@ class TransportLayer(object):
         else:
             # FindKey and then send
 
-            for peer in self._activePeers:
+            for peer in self._dht._activePeers:
                 try:
 
 
