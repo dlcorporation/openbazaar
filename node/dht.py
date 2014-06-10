@@ -51,6 +51,8 @@ class DHT():
 
   def add_active_peer(self, new_peer):
 
+    print new_peer._guid
+
     foundPeer = False
     for idx, peer in enumerate(self._activePeers):
       if peer._guid == new_peer._guid:
@@ -114,7 +116,7 @@ class DHT():
 
         foundContact = self._routingTable.getContact(guid)
         if foundContact:
-          print 'Found the node'
+          self._log.info('Found the node')
           foundNode = (foundContact._guid, foundContact._address, foundContact._pub)
           newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":newContact._transport.guid,"uri":newContact._transport._uri, "pubkey":newContact._transport.pubkey,"foundNode":foundNode, "findID":findID}))
 
@@ -143,6 +145,7 @@ class DHT():
         peer._pub = msg['pubkey']
         self._activePeers[idx] = peer
 
+
     if 'foundKey' in msg.keys():
       self._log.info('This node found the key')
       return msg['foundKey']# Stop the search and return the value
@@ -151,6 +154,17 @@ class DHT():
 
       if 'foundNode' in msg.keys():
         self._log.info('You found the node on the network')
+
+        foundNode = msg['foundNode']
+
+        # Add foundNode to active peers list and routing table
+        new_peer = transport.getCryptoPeer(foundNode[0], foundNode[1], foundNode[2])
+        #self.add_active_peer(new_peer)
+
+        for idx, search in enumerate(self._searches):
+          if search._findID == msg['findID']:
+            del self._searches[idx]
+            print self._searches
 
       else:
 
@@ -456,10 +470,15 @@ class DHT():
     prevShortlistLength = len(new_search._shortlist)
 
     for node in new_search._shortlist:
-
       if node not in new_search._alreadyContacted:
 
-          if new_search._findID not in new_search._activeProbes.keys():
+          # See if search was cancelled
+          print self._searches
+          activeSearchExists = False
+          for search in self._searches:
+            if new_search._findID == search._findID:
+              activeSearchExists = True
+          if not activeSearchExists:
             return
 
           new_search._activeProbes.append(node)
@@ -469,12 +488,12 @@ class DHT():
           contact = self._routingTable.getContact(node[2])
           msg = []
 
-          msg = {"type":"findNode", "uri":contact._transport._uri, "senderGUID":contact._transport._guid, "key":key, "findValue":findValue, "findID":findID, "pubkey":contact._transport.pubkey}
+          msg = {"type":"findNode", "uri":contact._transport._uri, "senderGUID":contact._transport._guid, "key":key, "findValue":findValue, "findID":new_search._findID, "pubkey":contact._transport.pubkey}
           self._log.info("Sending findNode: %s", msg)
 
           if contact:
             contact.send_raw(json.dumps(msg))
-            contactedNow += 1
+            new_search._contactedNow += 1
           else:
             self._log.error('No contact was found for this guid: %s' % node[2])
 
