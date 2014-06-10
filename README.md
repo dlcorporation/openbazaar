@@ -50,9 +50,10 @@ contributed by Dean Masley
 
 ## Screenshot
 
-This screen shot looks horrible and is just a placeholder ATM. Designers wanted. Apply to brian@openbazaar.org if you're interested in helping out.
+Here are some screenshots of the alpha UI so far as well as the HTML contract generation tool being built.
 
 ![Screen 1](http://i.imgur.com/qwByrqk.png)
 ![Screen 2](http://i.imgur.com/v3gRVgi.png)
 ![Screen 3](http://i.imgur.com/65eSjjz.png)
+![Contract Tool](http://i.imgur.com/jvIRbxS.png)
 =======
