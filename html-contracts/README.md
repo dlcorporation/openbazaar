@@ -12,4 +12,4 @@ Download the entire contents of this directory, and run the index.html file.  Th
 
 As the definition of what a contract in OpenBazaar should contain is still fairly fluid, this interface has been and is being built to be able to adapt to future needs of contracts.  With this in mind, we plan to create many small functions in javascript to run the application, so that as the scope of openBazaar contracts change, the application can adapt relativly easily.
 
-All fields in contracts are specified in a javascript array, with options for minimum length, maximum length, and regular expresion validation to confirm the values a user inputs is valid data for the particular field.  For example, in the BTC address feild, the regular expression ^[13][a-zA-Z0-9]{26,33}$ forces the user to enter a valid Bitcoin Address.
+All fields in contracts are specified in a javascript array, with options for minimum length, maximum length, and regular expresion validation to confirm the values a user inputs is valid data for the particular field.  For example, in the BTC address feild, the regular expression *^[13][a-zA-Z0-9]{26,33}$* forces the user to enter a valid Bitcoin Address.
