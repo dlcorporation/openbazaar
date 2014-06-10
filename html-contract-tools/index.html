@@ -17,7 +17,7 @@
 
     <script src="site.js" ></script>
     <script src="openpgp.min.js" ></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="site.css">
 
 </head>
 <body>
@@ -188,7 +188,7 @@
                                 <li>OpenPGP.js library from <a href="https://github.com/openpgpjs">https://github.com/openpgpjs</a></li>
                                 <li>Key functions used are as follows
                                     <ul>
-
+                                       
                                     </ul>
                             </ul>
                         </li>
@@ -213,7 +213,7 @@
                <div class="form-group">
                 <label for="field_id" class="col-sm-4 control-label">fieldname</label>
                 <div class="col-sm-7">
-                  <input type="fieldtype" onchange="gen_form_data_change(this);" class="form-control" name="gen_input_field[]" id="field_id">
+                  <input type="fieldtype" onchange="gen_form_data_change(this);" class="form-control form_gen_input" name="gen_input_field[]" id="field_id">
                 </div>
                 <div class='col-sm-1'>
                     <div class='btn btn-danger' onclick='gen_del_el(this)'>delete</div>
@@ -225,7 +225,7 @@
                <div class="form-group">
                 <label for="field_id" class="col-sm-4 control-label">fieldname</label>
                 <div class="col-sm-7 form_input_cont">
-                  <input type="fieldtype"  onchange="gen_form_data_change(this);" class="form-control" name="gen_input_field[]" id="field_id">
+                  <input type="fieldtype"  onchange="gen_form_data_change(this);" class="form-control form_gen_input" name="gen_input_field[]" id="field_id">
                 </div>
                 <div class='col-sm-1'>
                     <div class='btn btn-danger' onclick='gen_del_el(this)'>delete</div>
@@ -246,13 +246,47 @@
                 <h3>Private Key</h3>
                 <p>Please enter your PGP private key for signing of the contract(your public key will be displayed)</p>
                 <div class="form-group">
-                 <label for="PGP_private_key" class="col-sm-4 control-label">Your PGP private key</label>
-                
-                     <textarea rows='8' class="form-control"  name="PGP_private_key" id="PGP_private_key"></textarea>
-                
+                    <label for="PGP_priv_key" class="col-sm-4 control-label">Your PGP private key</label>
+                    <textarea rows='8' class="form-control"  name="PGP_priv_key" id="PGP_priv_key"></textarea>
                 </div>
+                
+                <div class="form-group">
+                    <label for="PGP_pub_key" class="col-sm-4 control-label">Your PGP Public key</label>
+                    <textarea rows='8' class="form-control"  name="PGP_pub_key" id="PGP_pub_key" >
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2.0.22 (MingW32)
+
+mQENBFOWIT0BCAC7C6p/vRAJKApBpmmGvWbKyRCc9AKupII1/APml0NgonywuRq2
+llkR/ozsivVL5xVudo/3aXcIJY3LgPx8UhQ36fr6tXNHdG17qTF+j+mnfqQPkaHR
+34Q9BGtzxopSwOXDouzkIx/fe++v+8koParwFleFwf9/S2Cxgl1KbVYQut96WYvd
+gOXG5bZoMsKxIhUsUi/wZ/CPmvSpHebd8l/3Sd+pfxK4rOhvHJ793M0W+gvyb7a5
+5jSDY0SQtFR5BBnb6UWAuHqbYpsCavU8ig3ERdDn3UvzpI73l2c9Zzr95G52PJIn
+feXU6jpuzbHVCOyNVFqZKLHg93FXKJMmPujlABEBAAG0NURlbGFpbk0gKFRlc3Qg
+UEdQIGtleSBmb3IgT3BlbkJhemFhcikgPHRlc3RAdGVzdC5jb20+iQE5BBMBAgAj
+BQJTliE9AhsPBwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQg8KLNrqFZ51e
+gQgAjgOgDuu5E8cCBKkQ/X7zv/FMCrDTlM5vuv6lfZz7xf3XKZ9UgGghPlRNpHf1
+ElyX84hPItAtbO4asJcguMNhdeYq4+Yj6lK7PFZkK4csAIXK0vYr60XDsx8uldTS
+6lfbUqICWc399pUeifZGe226NVBKuCCsRgjZoIlL4W7nI7IsDvy4U/BdFLTvyqPj
+kyMEmhgsPC5o/GBEWljM4TIpWTfhJcyrQIAMbkZguPl6RPym1fV1Tjn0KTdwj/Nx
+jZQLDchSEhQknIwZ2NY61wU5FSV8lo1gBm2XVBCfWUvjptYKzVCQ3k5fufusam1c
+OS5+1UPRBSKzAsObHw0QaP31Pw==
+=Hvjs
+-----END PGP PUBLIC KEY BLOCK-----
+                    </textarea>
+                </div>
+                
                 <p><span onclick="gen_sign_con()" class="btn btn-info">Generate contract and PGP sign</span></p>
                     
+               
+            </div>
+
+            <div id="template_popup_pgp_load">
+                <h3>PGP Key Pair</h3>
+                <p>It appears that you have not set a PGP key pair to use, Please specify one before continuing.  Alternatively, you can use the application without setting this, though some features will not be available</p>
+                <div class="form-group">
+                    <label for="pgp_key_pair" class="control-label">Please select your pgp key pair file</label>
+                    <input type='file' class="form-control" onchange="pgp_file_load()"  name="pgp_key_pair" id="pgp_key_pair">
+                </div>
                
             </div>
 
