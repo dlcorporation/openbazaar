@@ -26,7 +26,7 @@ var form_gen_elements = {
     asset_name:{dataID:'asset_name',name:"Name of item to sell", type:"text",min_len:5,required:true,single_field:true,default_value:"1 french cat"},
     asset_price:{dataID:'asset_price',name:"Price (in BTC) of item to sell", type:"currency",required:true,single_field:true,default_value:"1.0"},
     contract_exp:{dataID:'contract_exp',name:"Offer expiry date", type:"date",required:true,single_field:true,default_value:"2014-07-22 12:00:00"},
-    //pgp_public_key:{dataID:'pgp_public_key',name:"Your PGP public key",type:"textarea",single_field:true}
+    pgp_public_key:{dataID:'pgp_public_key',name:"Your PGP public key",type:"textarea",single_field:true}          
     };
     
 
@@ -41,6 +41,13 @@ $(function() {
     $("#page_generator").fadeIn({duration:500});
     
     form_gen_create_list();
+    
+    //If no keypair exist, prompt for one at startup,
+    if(localStorage.PGP_keypair ===undefined)
+        {
+        $("#popup_content").html($("#template_popup_pgp_load").html());
+        $("#popup_modal").modal("show");
+        }   
 });
 
 
@@ -59,6 +66,54 @@ function menu(div){
 }
 
 
+
+
+
+
+// ======================== PGP Functions ======================== 
+// 
+// 
+//  function for loading a PGP key
+function pgp_file_load(){
+    //Get the file to a var
+    var file = $('#pgp_key_pair').get(0).files[0];
+    
+    //Create a file reader for reading the file
+    var r = new FileReader();
+   
+   
+    // Set the onload function for when the file has been read by the reader
+    r.onload = function(f){
+        //Store the PGP keys in temporary val
+        
+        //
+        //console.log(f.target.result);
+        //var keysstring = f.target.result;
+        //var keysstring = '-----BEGIN PGP PUBLIC KEY BLOCK----- \r\n Version: Mailvelope v0.8.2';
+        var pub_key = f.target.result.match(new RegExp('-----BEGIN PGP PUBLIC KEY BLOCK-----[\r\n](.*[\r\n]){2,}-----END PGP PUBLIC KEY BLOCK-----'))[0];
+        var priv_key = f.target.result.match(new RegExp('-----BEGIN PGP PRIVATE KEY BLOCK-----[\r\n](.*[\r\n]){2,}-----END PGP PRIVATE KEY BLOCK-----'))[0];
+        
+        //If either of the keys length is less than 100 than we did not get them
+        if(pub_key.length < 100 || priv_key.length < 100){
+           console.log("failed to load keys");
+        }
+        //else store the keys
+        else {
+            var priv_key = openpgp.key.readArmored(priv_key).keys[0];
+            var pub_key = openpgp.key.readArmored(pub_key).keys[0];
+            localStorage.PGP_public = pub_key;
+        }
+        
+      //  var keyPackets = openpgp.readArmored();
+    
+        
+        //console.log("Result : " + keyPackets.length);
+    }; 
+     
+    //Read the file as a text
+     r.readAsText(file);
+    
+}
 
 
 
@@ -110,7 +165,7 @@ function form_gen_get_element(elementname){
 //Function adds a linke for a form element to the left menu for adding to the contract
 function form_gen_add_link_line(finfo){
     $("#form_gen_field_list").append("<li id='form_gen_add_" + finfo.dataID + "'><a href='#' onclick='gen_add_el(\""+  finfo.dataID  +"\")'>" + finfo.name + "</a></li>");
-    //console.log("Adding " + finfo.name + " with type " + ftype.name);
+    
 }
 
 
@@ -148,15 +203,9 @@ function gen_add_el(elname){
     $("#form_gen_fields :last div input").addClass(type.class);
     
     //If a default value is set, set it in the input feild
-    if(element.default_value !== undefined){
-        $("#form_gen_fields :last div input").val(element.default_value);
-        console.log($("#form_gen_fields").children(":last .form_input_cont input").html());
+    if(element.default_value !== undefined)
+        $("#form_gen_fields").children(":last").children('div').children('.form_gen_input').val(element.default_value);
         
-        
-    }
-    else console.log("not set for " + element.name);
-    
-    
     
 }
 
@@ -176,10 +225,11 @@ function gen_create_con(){
     
     var checks = gen_check_con();
     //If the checks did not return true, 
-    if(checks!==true)$("#xml_contract").html("Errors with some of the fields, " +checks).show();
+    if(checks!==true && checks !==undefined)$("#xml_contract").html(checks).show();
     
     //If all values are correct ,then show the sign and encrypt modal
     else {
+        $("#xml_contract").html(xmlVals).show();
         $("#popup_content").html($("#input_sign_and_encrypt_PGP").html() + checks);
         $("#popup_modal").modal('show');
     }
@@ -193,23 +243,32 @@ function gen_check_con(){
     //Check if all required inputs are present
     var required_inputs_check = gen_check_inputs_required();
     
-    //for each input that is present, Run the validation check
+    //Prepare an array for storing the result of checking all values
     var valid_checks = new Array();
+    //for each input that is present, Run the validation check
     $("#form_gen_fields").find('input[name="gen_input_field[]"]').each(function(){
         //Change the form appearance
         var res = gen_form_data_change(this);
-        if(res!==true)valid_checks.push(res);
+        
+        //If the result is not true, then add it to the errors list
+        if(res!==true)
+            valid_checks.push(res);
     });
     
     
     
-    //If no message was returned from required inputs, return true
-    if(required_inputs_check==="" && valid_checks.length < 1)return true;
-    //else if data was returned from required inputs, this means something is wrong, so return this data
-    else{
-        if(required_inputs_check.length >1)return required_inputs_check;
-        else return valid_checks.join();
-    }
+    //If we have errors in the required_inputs_check result, return text/html error
+    if(required_inputs_check.length > 0)
+        return "Not all required fields are present : <p> " + required_inputs_check.join("<br>") + "</p>";
+    
+    
+    //If we have errors in the valid_checks result, return text/html error
+    else if(valid_checks.length > 0 )
+        return "Found some errors with Fields :<p> " + valid_checks.join("<br>") + "</p>";
+    
+    //Else return true :)
+    else return true;
+    
         
 }
 
@@ -224,7 +283,6 @@ function gen_form_data_change(obj){
     var validation = data_validation(obj);
     
     //log an entry so we can see what is happening
-    console.log("Validation result : " + validation);
     //If the result is false, something failed spectaculy,
     if(validation===false)alert("Error validating Data, please make sure there are no modifications to the code")
     else if (validation===true){
@@ -252,7 +310,7 @@ function gen_form_input_msg(element,msgTxt,status){
     var par = $(element).parent().parent();
     //first, remove any classes that may exist on this obj
     par.removeClass("has-error has-warning has-success");
-    //console.log("Attempting to add message for " +$(element).attr("id") + ", result = " + status);
+    
     //If there is a helper, remove it
     $(par).children(".help-block").remove();
     
@@ -300,7 +358,7 @@ function data_validation(inputObj){
    
     //if min lenght is set on the element, check it
     if(el.min_len !==undefined){
-        console.log("element min length is set " +el.min_len);
+        
         //Check the value
         if(val < el.min_len)errors.push(el.name + " must be at least " + el.min_len + " characters long \r\n");
     }
@@ -341,27 +399,41 @@ function data_validation(inputObj){
 }
 
 function gen_sign_con(){
-    //Function signs contract and displays on screen
-    alert("Wouldn't it be great if this button did what you thought it would do... Unfortunatly it does not quite yet");
+    
+    //get the private key
+    var key = $('#PGP_priv_key').val();
+    
+    //Read the private key
+    var privKey = openpgp.key.readArmored(key);
+    
+    //Sign the contract with the private key,
+    var pgpSignedContract = openpgp.signClearMessage(privKey.keys, $("#xml_contract").html());
+
+    //write the contract to the contract location
+    $("#xml_contract").replaceWith(pgpSignedContract);
+     
+    //Set the modal back to blank, and remove all input fields
+    $("#popup_content").html("");
+    $("#form_gen_fields").html("");
 }
 
 function gen_check_inputs_required(){
     //Prepare a var for storing messages in 
-    var msgs = "";
-         //console.log("Checking required inputs" + form_gen_elements);
+    var msgs = new Array();
     
     //For each available input field,
      $.each(form_gen_elements,function(c,el){
-         var dat = $("#"+el.dataID).html();
-         //console.log("Checking " + c + " - Obj : " + dat);
+         var dat = $("#"+el.dataID).html
+         
          //If the field does not exist in the html form
          if(dat===undefined)
              if(el.required===true)
-                msgs = msgs+"<br> You must include the " + el.name + " field in your contract";
+                //add the error to the array
+                msgs.push("You must include the " + el.name + " field in your contract");
          
     });
     //If the msgs string is set, return it, 
-    if(msgs.length > 0)return msgs;
+    if(msgs.length >= 1)return msgs;
     //Else return true
     else return true;
 }
