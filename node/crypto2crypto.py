@@ -157,7 +157,7 @@ class CryptoTransportLayer(TransportLayer):
 
 
     def getCryptoPeer(self, guid, uri, pubkey):
-      peer = CryptoPeerConnection(self, uri, pubkey)
+      peer = CryptoPeerConnection(self, uri, pubkey, guid=guid)
       return peer
 
     def addCryptoPeer(self, peer):
