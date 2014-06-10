@@ -176,8 +176,8 @@ class ProtocolHandler:
     def client_search(self, socket_handler, msg):
         self._log.info("[Search] %s"% msg)
 
-        result = self._transport.iterativeFindNode(msg['key'])
-        print 'Result: %s' % result
+        result = self._transport._dht.iterativeFindNode(msg['key'])
+        self._log.info('Result: %s' % result)
 
         #response = self._market.lookup(msg)
         #if response:
@@ -306,7 +306,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def _send_response(self, response):
         if self.ws_connection:
-            print response
+            self._log.info('Response: %s' % response)
             self.write_message(json.dumps(response))
         #try:
         #    self.write_message(json.dumps(response))

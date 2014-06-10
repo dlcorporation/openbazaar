@@ -224,7 +224,7 @@ class TreeRoutingTable(RoutingTable):
         """
 
         bucketIndex = self._kbucketIndex(key)
-        closestNodes = self._buckets[bucketIndex].getContacts(constants.k, nodeID)
+        closestNodes = self._buckets[bucketIndex].getContacts(constants.k, nodeID)        
 
         # This method must return k contacts (even if we have the node with the specified key as node ID),
         # unless there is less than k remote nodes in the routing table

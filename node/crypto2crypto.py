@@ -27,6 +27,7 @@ class CryptoPeerConnection(PeerConnection):
         self._priv = transport._myself
         self._pub = pub
         self._guid = guid
+        self._transport = transport
         self._ip = urlparse(address).hostname
         self._port = urlparse(address).port
 
@@ -88,11 +89,27 @@ class CryptoTransportLayer(TransportLayer):
 
         # Set up callbacks
         self.add_callback('ping', self._dht._on_ping)
-        self.add_callback('findNode', self._dht._on_findNode)
-        self.add_callback('findNodeResponse', self._dht._on_findNodeResponse)
+        self.add_callback('findNode', self._findNode)
+        self.add_callback('findNodeResponse', self._findNodeResponse)
 
 
+    def _findNode(self, msg):
 
+        guid = msg['senderGUID']
+        uri = msg['uri']
+        pubkey = msg['pubkey']
+
+        msg['new_peer'] = CryptoPeerConnection(self, uri, pubkey, guid)
+        self._dht._on_findNode(msg)
+
+    def _findNodeResponse(self, msg):
+
+        guid = msg['senderGUID']
+        uri = msg['uri']
+        pubkey = msg['pubkey']
+
+        #msg['new_peer'] = CryptoPeerConnection(self, uri, pubkey, guid)
+        self._dht._on_findNodeResponse(self, msg)
 
     def _setup_settings(self):
 
@@ -139,9 +156,9 @@ class CryptoTransportLayer(TransportLayer):
             self._dht.start(seed_peer)
 
 
-    def _addCryptoPeer(self, uri, guid, pubkey):
+    def getCryptoPeer(self, guid, uri, pubkey):
       peer = CryptoPeerConnection(self, uri, pubkey)
-      self.addCryptoPeer(peer)
+      return peer
 
     def addCryptoPeer(self, peer):
 
