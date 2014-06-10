@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>OpenBazaar Contract Tools</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+    <script src="site.js" ></script>
+    <script src="openpgp.min.js" ></script>
+    <link rel="stylesheet" href="site.css">
+
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-xs-10 col-xs-offset-1">
+            
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="container-fluid">
+
+                  <!-- Brand and toggle get grouped for better mobile display -->
+                  <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                      <span class="sr-only">Toggle navigation</span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">OpenBazaar HTML Contract Tools</a>
+                  </div>
+
+                    <div class="collapse navbar-collapse" id="navbar-collapse">
+                        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+                            <div class="container">
+                                <ul class="nav navbar-nav nav_container">
+                                    <li id='menu_li_page_generator' onclick="menu('page_generator')" class="active"><a href="#">Contract Generator</a></li>
+                                    <li id='menu_li_page_reader'><a onclick="menu('page_reader')" href="#">Contract Reader</a></li>
+                                    <li id='menu_li_page_options'><a onclick="menu('page_options')" href="#">Options</a></li>
+                                    <li id='menu_li_page_about'><a onclick="menu('page_about')" href="#">About / Structure</a></li>
+                                </ul>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- MODEL for popups -->
+            <div id="popup_modal" class="modal fade">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                      
+                    </div>
+                    <div id="popup_content" class="modal-body">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+              </div><!-- /.modal -->
+            
+            
+            <!-- Contact Generator section -->
+            <div class="row page_wrap" id="page_generator">
+                <div class="col-xs-12">
+                    <h1 class=" text-center">Contract Generator</h1>
+                    
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <ul id="form_gen_field_list" class="nav nav-pills nav-stacked">
+                                <li><h3 class="text-center">Available Fields</h3></li>
+
+                            </ul>
+                        </div>
+                        <div class="col-sm-8">
+                            <h3 class="text-center">Contract</h3>
+                            <p>Click <a href="#" onclick="gen_create_con()">here</a> to generate contract in format specified in the options menu</p>
+                            <form  id="form_gen_fields" class="form-horizontal" role="form">
+
+                            </form>
+                            <pre style="display:none" id="xml_contract">
+                                
+                            </pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- Contract Reader section section -->
+            <div class="row page_wrap" id="page_reader">
+                <div class="col-xs-12">
+                    <h1>The Contract Reader</h1>
+                    <p>
+                        This bit is not yet build, but here you should be able to paste in JSON or XML contracts, and the javascript will check all the data to make sure it is valid
+                    </p>
+                </div>
+            </div>
+
+
+            <!-- Options section -->
+            <div class="row page_wrap" id="page_options">
+                <div class="col-xs-12">
+                    <h1>Options</h1>
+                    <p>Please configure the options as you see fit, All options are stored using HTML5 access to local storage.</p>
+                    <p>To reset all options to the defaults, and delete the stored keypairs, please <b>doubleclick</b> the "clear local storage" button</p>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="option_contract_format" class="col-sm-6 control-label"> Contract Format</label>
+                            <div class="col-sm-6">
+                                <select class="form-control" id='option_contract_format' onchange='set_option("option_contract_format")'>
+                                    <option>Formatted</option><option>JSON</option><option>XML</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="option_contract_format" class="col-sm-6 control-label">Clear Local storage</label>
+                            <div class="col-sm-6">
+                                <div class="btn btn-danger" ondblclick="localStorage.clear();location.reload();">Delete</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- About / Structure section -->
+            <div class="row page_wrap" id="page_about">
+                <div class="col-xs-12">
+                    <h1>About</h1>
+                    <p>
+                        This utility originally created by DrWasho and DelainM to create an easy interface for creating and managing contracts.
+                    </p>
+                    <h3>Planned Features</h3>
+                    <ul>
+                        <li>Contract generator
+                            <ul>
+                                <li>Dynamic generation of standard contracts</li>
+                                <li>Live error checking of contracts</li>
+                                <li>Generation to XML or JSON data for contracts</li>
+                                <li>storing of contracts in local database</li>
+                                <li>Encryption on all local storage</li>
+                            </ul>
+                        </li>
+                        <li>Contract Viewer
+                            <ul>
+                                <li>Extraction of JSON or XML contracts to just data</li>
+                                <li>Semi intelligent interpretation of what contract.</li>
+                            </ul>
+                        </li>
+                        <li>Options
+                            <ul>
+                                <li>Enable/Disable storage options</li>
+                            </ul>
+                        </li>
+                        
+                    </ul>
+
+
+                    <h1>Program Structure</h1>
+                    <h2>Files and purpose</h2>   
+                    <ul>
+                        <li>index.html
+                            <ul>
+                                <li>Contains base source code for site, and all HTML content</li>
+                                <li>Various pages are coded in here, but hidden/shown using Javascript and CSS</li>
+                            </ul>                                        
+                        </li>
+                        <li>site.js
+                            <ul>
+                                <li>Contains local site javascript functions</li>
+                                <li>Function on start for doing things</li>
+                                <li>Functions : 
+                                    <ul>
+                                        <li>$(function(); <i>Page completed loading function</i></li>
+                                        <li>menu(div); <i>For changing menu / pages</i></li>
+                                        <li>gen_add_el(elname); <i>Add's an element to the contract Generator form, Uses the element name from form_gen_elements</i></li>
+                                        <li>gen_del_el(); <i>Removes an element from the Generator form, uses javascript "this" to identify element</i></li>
+                                        <li>gen_create_con(); <i>Creates a contract from the form generation elements, Calls gen_check_con as part of the process</i></li>
+                                        <li>gen_check_con(); <i>Error checks the contract for potential issues</i></li>
+                                        <li>Array() form_gen_types <i>Holds an array of various types of form elements that can be referenced by form_gen_elements</i></li>
+                                        <li>Array() form_gen_elements <i>Holds an array of options that can be added into each contract form, References form_gen_elements for input types</i></li>
+                                    </ul>
+                                </li>
+                            </ul>      
+                        </li>
+                        <li>style.css - Style guide... Duh</li>
+                        <li>openpgp.js
+                            <ul>
+                                <li>OpenPGP.js library from <a href="https://github.com/openpgpjs">https://github.com/openpgpjs</a></li>
+                                <li>Key functions used are as follows
+                                    <ul>
+                                       
+                                    </ul>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+
+
+    <!-- The following section is for all elements to be added into various forms by javascript -->
+    <div class="row hidden">
+        <div class="col-xs-12">
+            Form Elements
+
+            <div id="form_input_template_text">
+               <div class="form-group">
+                <label for="field_id" class="col-sm-4 control-label">fieldname</label>
+                <div class="col-sm-7">
+                  <input type="fieldtype" onchange="gen_form_data_change(this);" class="form-control form_gen_input" name="gen_input_field[]" id="field_id">
+                </div>
+                <div class='col-sm-1'>
+                    <div class='btn btn-danger' onclick='gen_del_el(this)'>delete</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="form_input_template_datetime">
+               <div class="form-group">
+                <label for="field_id" class="col-sm-4 control-label">fieldname</label>
+                <div class="col-sm-7 form_input_cont">
+                  <input type="fieldtype"  onchange="gen_form_data_change(this);" class="form-control form_gen_input" name="gen_input_field[]" id="field_id">
+                </div>
+                <div class='col-sm-1'>
+                    <div class='btn btn-danger' onclick='gen_del_el(this)'>delete</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="form_input_template_textarea">
+               <div class="form-group">
+                <label for="field_id" class="col-sm-4 control-label">fieldname</label>
+                <div class="col-sm-8">
+                    <textarea rows='8' class="form-control"  name="gen_input_field[]" id="field_id"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div id="input_sign_and_encrypt_PGP">
+                <h3>Private Key</h3>
+                <p>Please enter your passphrase for your private key.  This is not stored anywhere within this application.</p>
+                <div id='decrypt_alert'></div>
+                <div class='form-group'>
+                    <input type='password' class='form-control' id='pgp_pass'>
+                </div>
+                
+                <p><span onclick="gen_sign_con()" class="btn btn-info">Generate contract and PGP sign</span></p>
+                    
+               
+            </div>
+
+            <div id="template_popup_pgp_load">
+                <h3>PGP Key Pair</h3>
+                <p>It appears that you have not set a PGP key pair to use, Please specify one before continuing.  Alternatively, you can use the application without setting this, though some features will not be available</p>
+                <div class="alert alert-danger alert-dismissable">IMPORTANT! : At the moment this stores your public and private key in clear text within your browser's HTML5 storage.</div>
+                <p>We will provide options in the future for encryption, but at this stage it is not secure.  You can delete all local storage from the options menu.</p>
+                <div class="form-group">
+                    <label for="pgp_key_pair" class="control-label">Please select your pgp key pair file</label>
+                    <input type='file' class="form-control" onchange="pgp_file_load()"  name="pgp_key_pair" id="pgp_key_pair">
+                </div>
+               
+            </div>
+
+
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
