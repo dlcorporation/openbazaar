@@ -51,8 +51,6 @@ class DHT():
 
   def add_active_peer(self, new_peer):
 
-    print new_peer._guid
-
     foundPeer = False
     for idx, peer in enumerate(self._activePeers):
       if peer._guid == new_peer._guid:
@@ -60,6 +58,7 @@ class DHT():
         peer._pub = new_peer._pub
         self._activePeers[idx] = peer
     if not foundPeer:
+      self._log.info('Adding an active Peer: %s' % new_peer._guid)
       self._activePeers.append(new_peer)
 
     if not self._routingTable.getContact(new_peer._guid):
@@ -114,7 +113,7 @@ class DHT():
 
     else:
 
-        foundContact = self._routingTable.getContact(guid)
+        foundContact = self._routingTable.getContact(key)
         if foundContact:
           self._log.info('Found the node')
           foundNode = (foundContact._guid, foundContact._address, foundContact._pub)
@@ -156,15 +155,20 @@ class DHT():
         self._log.info('You found the node on the network')
 
         foundNode = msg['foundNode']
+        self._log.info('Found Node: %s' % foundNode)
 
         # Add foundNode to active peers list and routing table
         new_peer = transport.getCryptoPeer(foundNode[0], foundNode[1], foundNode[2])
-        #self.add_active_peer(new_peer)
 
         for idx, search in enumerate(self._searches):
           if search._findID == msg['findID']:
+
+            # Execute callback
+            if search._callback != None:
+              search._callback(new_peer)
+
+            # Clear search
             del self._searches[idx]
-            print self._searches
 
       else:
 
@@ -378,7 +382,7 @@ class DHT():
           contact.store(key, value, originalPublisherID, age)
       return nodes
 
-  def iterativeFindNode(self, key):
+  def iterativeFindNode(self, key, callback=None):
       """ The basic Kademlia node lookup operation
 
       Call this to find a remote node in the P2P overlay network.
@@ -392,12 +396,12 @@ class DHT():
                finished.
       @rtype: twisted.internet.defer.Deferred
       """
-      return self._iterativeFind(key)
+      self._iterativeFind(key, callback=callback)
 
 
   def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
 
-    new_search = DHTSearch(key, call)
+    new_search = DHTSearch(key, call, callback=callback)
     self._searches.append(new_search)
 
     # Determine if we're looking for a node or a key
@@ -503,12 +507,13 @@ class DHT():
 
 class DHTSearch():
 
-  def __init__(self, key, call="findNode"):
+  def __init__(self, key, call="findNode", callback=None):
 
     print 'DHTSearch'
 
     self._key = key
     self._call = call
+    self._callback = callback
     self._shortlist = []
     self._activeProbes = []
     self._alreadyContacted = []
