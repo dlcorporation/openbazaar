@@ -10,16 +10,16 @@ import logging
 import pycountry
 
 class ProtocolHandler:
-    def __init__(self, transport, node, handler):
-        self.node = node
+    def __init__(self, transport, market, handler):
+        self._market = market
         self._transport = transport
         self._handler = handler
 
         # register on transport events to forward..
-        transport.add_callback('peer', self.on_node_peer)
-        transport.add_callback('peer_remove', self.on_node_remove_peer)
-        transport.add_callback('node_page', self.on_node_page)
-        transport.add_callback('all', self.on_node_message)
+        self._transport.add_callback('peer', self.on_node_peer)
+        self._transport.add_callback('peer_remove', self.on_node_remove_peer)
+        self._transport.add_callback('node_page', self.on_node_page)
+        self._transport.add_callback('all', self.on_node_message)
 
         # handlers from events coming from websocket, we shouldnt need this
         self._handlers = {
@@ -45,12 +45,13 @@ class ProtocolHandler:
 
     def send_opening(self):
         peers = self.get_peers()
+        print peers
 
         countryCodes = []
         for country in pycountry.countries:
           countryCodes.append({"code":country.alpha2, "name":country.name})
 
-        settings = self.node.get_settings()
+        settings = self._market.get_settings()
 
         message = {
             'type': 'myself',
@@ -59,7 +60,7 @@ class ProtocolHandler:
             'settings': settings,
             'guid': self._transport.guid,
             'countryCodes': countryCodes,
-            'reputation': self.node.reputation.get_my_reputation()
+            'reputation': []#self._transport.reputation.get_my_reputation()
         }
 
         self.send_to_client(None, message)
@@ -78,9 +79,9 @@ class ProtocolHandler:
         self._log.info("Message: %s" % msg)
         findGUID = msg['findGUID']
 
-        if self.node.query_page(findGUID):
-          #self.node.reputation.query_reputation(guid)
-          print 'Find reputation'
+        if self._market.query_page(findGUID):
+          #self._market.reputation.query_reputation(guid)
+          self._log.info('Find reputation')
         else:
           self._log.info('Could not find page')
 
@@ -91,7 +92,7 @@ class ProtocolHandler:
         self._log.info("Querying for Orders")
 
         # Query mongo for orders
-        orders = self.node.orders.get_orders()
+        orders = self._market.orders.get_orders()
 
         self.send_to_client(None, { "type": "myorders", "orders": orders } )
 
@@ -100,7 +101,7 @@ class ProtocolHandler:
         self._log.info("Querying for Products")
 
         # Query mongo for products
-        products = self.node.get_products()
+        products = self._market.get_products()
 
         self.send_to_client(None, { "type": "products", "products": products } )
 
@@ -110,7 +111,7 @@ class ProtocolHandler:
 
 
         # Query mongo for order
-        order = self.node.orders.get_order(msg['orderId'])
+        order = self._market.orders.get_order(msg['orderId'])
 
         self.send_to_client(None, { "type": "orderinfo", "order": order } )
 
@@ -121,39 +122,39 @@ class ProtocolHandler:
         self.send_to_client(None, { "type": "settings", "values": msg })
 
         # Update settings in mongo
-        self.node.save_settings(msg['settings'])
+        self._market.save_settings(msg['settings'])
 
     def client_save_product(self, socket_handler, msg):
         self._log.info("Save product: %s" % msg)
 
         # Update settings in mongo
-        self.node.save_product(msg)
+        self._market.save_product(msg)
 
     def client_remove_product(self, socket_handler, msg):
         self._log.info("Remove product: %s" % msg)
 
         # Update settings in mongo
-        self.node.remove_product(msg)
+        self._market.remove_product(msg)
 
     def client_pay_order(self, socket_handler, msg):
 
         self._log.info("Marking Order as Paid: %s" % msg)
 
         # Update order in mongo
-        order = self.node.orders.get_order(msg['orderId'])
+        order = self._market.orders.get_order(msg['orderId'])
 
         # Send to exchange partner
-        self.node.orders.pay_order(order)
+        self._market.orders.pay_order(order)
 
     def client_ship_order(self, socket_handler, msg):
 
         self._log.info("Shipping order out: %s" % msg)
 
         # Update order in mongo
-        order = self.node.orders.get_order(msg['orderId'])
+        order = self._market.orders.get_order(msg['orderId'])
 
         # Send to exchange partner
-        self.node.orders.send_order(order)
+        self._market.orders.send_order(order)
 
     def client_generate_secret(self, socket_handler, msg):
 
@@ -162,13 +163,13 @@ class ProtocolHandler:
 
 
     def client_order(self, socket_handler, msg):
-        self.node.orders.on_order(msg)
+        self._market.orders.on_order(msg)
 
     def client_review(self, socket_handler, msg):
         pubkey = msg['pubkey'].decode('hex')
         text = msg['text']
         rating = msg['rating']
-        self.node.reputation.create_review(pubkey, text, rating)
+        self._market.reputation.create_review(pubkey, text, rating)
 
 
     # Search across the network
@@ -178,7 +179,7 @@ class ProtocolHandler:
         result = self._transport.iterativeFindNode(msg['key'])
         print 'Result: %s' % result
 
-        #response = self.node.lookup(msg)
+        #response = self._market.lookup(msg)
         #if response:
         #    self._log.info(response)
             #self.send_to_client(*response)
@@ -242,7 +243,7 @@ class ProtocolHandler:
     def get_peers(self):
         peers = []
 
-        for peer in self._transport._activePeers:
+        for peer in self._transport._dht._activePeers:
             peer_item = {'uri': peer._address}
             if peer._pub:
                 peer_item['pubkey'] = peer._pub.encode('hex')
@@ -260,11 +261,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     # Protects listeners
     listen_lock = threading.Lock()
 
-    def initialize(self, transport, node):
+    def initialize(self, transport, market):
         self._log = logging.getLogger(self.__class__.__name__)
         self._log.info("Initialize websockethandler")
-        self._app_handler = ProtocolHandler(transport, node, self)
-        self.node = node
+        self._app_handler = ProtocolHandler(transport, market, self)
+        self.market = market
         self._transport = transport
 
     def open(self):
@@ -305,6 +306,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def _send_response(self, response):
         if self.ws_connection:
+            print response
             self.write_message(json.dumps(response))
         #try:
         #    self.write_message(json.dumps(response))

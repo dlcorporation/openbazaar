@@ -11,6 +11,7 @@ from ws import WebSocketHandler
 import logging
 import signal
 import threading
+from dht import DHT
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -20,12 +21,13 @@ class MainHandler(tornado.web.RequestHandler):
 
 class MarketApplication(tornado.web.Application):
 
-    def __init__(self, my_market_ip, my_market_port, seed_uri, market_id):
+    def __init__(self, market_ip, market_port, seed_uri, market_id):
 
-        self.transport = CryptoTransportLayer(my_market_ip,
-                                              my_market_port,
-                                              market_id)
+        self.transport = CryptoTransportLayer(market_ip,
+                                               market_port,
+                                               market_id)
         self.transport.join_network(seed_uri)
+
         self.market = Market(self.transport)
 
         handlers = [
@@ -33,7 +35,7 @@ class MarketApplication(tornado.web.Application):
             (r"/main", MainHandler),
             (r"/html/(.*)", tornado.web.StaticFileHandler, {'path': './html'}),
             (r"/ws", WebSocketHandler,
-                dict(transport=self.transport, node=self.market))
+                dict(transport=self.transport, market=self.market))
         ]
 
         # TODO: Move debug settings to configuration location
@@ -41,7 +43,7 @@ class MarketApplication(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
     def get_transport(self):
-        return self.transport
+        return self.dht._transport
 
 
 def start_node(my_market_ip, my_market_port, seed_uri, log_file, market_id):

@@ -19,20 +19,24 @@ class Market(object):
 
     def __init__(self, transport):
 
-        self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
-        self._log.info("Loading Market")
-
-        self._myself = transport._myself
-        self._peers = transport._activePeers #transport._peers
+        # Current
         self._transport = transport
-        self.query_ident = None
+        self._dht = transport._dht
+        self._market_id = self._transport._market_id
+        self._myself = self._transport._myself
+        self._peers = self._dht._activePeers
 
+        # Legacy for now
+        self.query_ident = None
         self.reputation = Reputation(self._transport)
         self.orders = Orders(self._transport)
         self.order_entries = self.orders._orders
-
         self.nicks = {}
         self.pages = {}
+
+        self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
+        self._log.info("Loading Market %s" % self._market_id)
+
 
         MONGODB_URI = 'mongodb://localhost:27017'
         _dbclient = MongoClient()
@@ -47,12 +51,12 @@ class Market(object):
                 welcome = False
 
         # Register callbacks for incoming events
-        transport.add_callback('query_myorders', self.on_query_myorders)
-        transport.add_callback('peer', self.on_peer)
-        transport.add_callback('query_page', self.on_query_page)
-        transport.add_callback('page', self.on_page)
-        transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
-        transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
+        self._transport.add_callback('query_myorders', self.on_query_myorders)
+        self._transport.add_callback('peer', self.on_peer)
+        self._transport.add_callback('query_page', self.on_query_page)
+        self._transport.add_callback('page', self.on_page)
+        self._transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
+        self._transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
         self.load_page(welcome)
 
@@ -185,7 +189,7 @@ class Market(object):
         msg['pubkey'] = self._transport.pubkey
 
         # Find nodes
-        matching_peers = self._transport._iterativeFind(findGUID)
+        matching_peers = self._transport._dht._iterativeFind(findGUID)
 
         if len(matching_peers) == 1:
           self._transport.send(msg, matching_peers[0]._guid)
