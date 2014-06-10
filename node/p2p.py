@@ -2,7 +2,6 @@ import json
 import logging
 from collections import defaultdict
 import traceback
-
 from zmq.eventloop import ioloop
 import zmq
 from multiprocessing import Process, Queue
@@ -10,7 +9,6 @@ from threading import Thread
 ioloop.install()
 import tornado
 import constants
-
 from protocol import goodbye
 import network_util
 import hashlib
@@ -19,7 +17,6 @@ import datastore
 from urlparse import urlparse
 
 
-# Connection to one peer
 class PeerConnection(object):
     def __init__(self, transport, address):
         # timeout in seconds
@@ -41,10 +38,11 @@ class PeerConnection(object):
         msg = self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
-
         queue = Queue()
+
         Thread(target=self._send_raw, args=(serialized,queue,)).start()
         msg = queue.get()
+
         return msg
 
         pass
@@ -79,7 +77,7 @@ class PeerConnection(object):
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
         if poller.poll(self._timeout * 1000):
-            msg = self._socket.recv()
+            msg = self._socket.recv()            
             self.on_message(msg)
             self.cleanup_socket()
             queue.put(msg)
@@ -97,26 +95,20 @@ class PeerConnection(object):
 # Transport layer manages a list of peers
 class TransportLayer(object):
     def __init__(self, market_id, my_ip, my_port, my_guid):
+
         self._peers = {}
         self._callbacks = defaultdict(list)
         self._port = my_port
         self._ip = my_ip
         self._guid = my_guid
+        self._market_id = market_id
         self._uri = 'tcp://%s:%s' % (self._ip, self._port)
-
-        # Routing table
-        self._routingTable = routingtable.OptimizedTreeRoutingTable(self.guid)
-        self._dataStore = datastore.MongoDataStore()
-        self._knownNodes = []
-
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
         # signal.signal(signal.SIGTERM, lambda x, y: self.broadcast_goodbye())
 
     def add_callback(self, section, callback):
         self._callbacks[section].append(callback)
-
-
 
     def trigger_callbacks(self, section, *data):
         for cb in self._callbacks[section]:
@@ -127,10 +119,6 @@ class TransportLayer(object):
 
     def get_profile(self):
         return {'type': 'hello_request', 'uri': self._uri}
-
-
-
-
 
     def listen(self, pubkey):
         t = Thread(target=self._listen, args=(pubkey,))
@@ -196,12 +184,9 @@ class TransportLayer(object):
         self._log.info("Outgoing Data: %s" % data);
 
         # Directed message
-        print 'Direct: %s ' % send_to
         if send_to != None:
 
-
-
-            for peer in self._activePeers:
+            for peer in self._dht._activePeers:
 
               if peer._guid == send_to:
                 self._log.info('Found a matching peer')
@@ -212,10 +197,6 @@ class TransportLayer(object):
 
         else:
             # FindKey and then send
-
-
-
-
 
             for peer in self._activePeers:
                 try:
