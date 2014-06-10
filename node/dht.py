@@ -6,8 +6,10 @@ import p2p
 import constants
 import hashlib
 import os
-import urlparse
+from urlparse import urlparse
 import tornado
+from multiprocessing import Process, Queue
+from threading import Thread
 
 
 class DHT():
@@ -19,15 +21,12 @@ class DHT():
     self._settings = settings
 
     self._knownNodes = []
-    self._shortlist = {}
+
+    self._searches = []
+
+    self._searchKeys = {}
     self._activePeers = []
-    self._alreadyContacted = {}
-    self._activeProbes = {}
-    self._findValueResult = {}
-    self._pendingIterationCalls = []
-    self._slowNodeCount = [0]
-    self._contactedNow = 0
-    self._dhtCallbacks = []
+
     self._republishThreads = []
 
     # Routing table
@@ -61,6 +60,10 @@ class DHT():
     if not foundPeer:
       self._activePeers.append(new_peer)
 
+    if not self._routingTable.getContact(new_peer._guid):
+        self._log.info('Adding contact to routing table')
+        self._routingTable.addContact(new_peer)
+
 
 
   def add_known_node(self, node):
@@ -68,6 +71,7 @@ class DHT():
     if node not in self._knownNodes:
       #self._log.debug('Adding known node: %s' % node)
       self._knownNodes.append(node)
+
 
 
   def _on_ping(self, msg):
@@ -94,34 +98,46 @@ class DHT():
 
 
     # Add contact to routing table
-    newContact = CryptoPeerConnection(self, uri, pubkey, guid)
+    newContact = msg['new_peer']
     self._log.info( 'On Find Node: %s %s %s' % (uri , pubkey, guid))
 
     if not self._routingTable.getContact(guid):
         self._log.info('Adding contact to routing table')
         self._routingTable.addContact(newContact)
 
+
     # Found key in local datastore
     if key in self._dataStore and self._dataStore[key] != None:
         newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":self._guid, "uri":self._uri, "pubkey":self.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
 
     else:
-        contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
-        contactTriples = []
-        for contact in contacts:
-            contactTriples.append( (contact._guid, contact._address, contact._pub) )
-            foundContact = self._routingTable.getContact(guid)
 
-        newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":self._guid,"uri":self._uri, "pubkey":self.pubkey,"findValue":contactTriples, "findID":findID}))
+        foundContact = self._routingTable.getContact(guid)
+        if foundContact:
+          print 'Found the node'
+          foundNode = (foundContact._guid, foundContact._address, foundContact._pub)
+          newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":newContact._transport.guid,"uri":newContact._transport._uri, "pubkey":newContact._transport.pubkey,"foundNode":foundNode, "findID":findID}))
+
+        else:
+          contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
+          contactTriples = []
+          for contact in contacts:
+              contactTriples.append( (contact._guid, contact._address, contact._pub) )
 
 
-  def _on_findNodeResponse(self, msg):
 
-    self._log.info('Find Node Response - Received a findNode Response: %s' % msg)
+          self._log.debug('Raw: %s' % msg)
+          newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":newContact._transport.guid,"uri":newContact._transport._uri, "pubkey":newContact._transport.pubkey,"foundKey":contactTriples, "findID":findID}))
+
+
+  def _on_findNodeResponse(self, transport, msg):
+
+    self._log.info('Received a findNode Response: %s' % msg)
 
     # Update pubkey if necessary - happens for seed server
     localPeer = next((peer for peer in self._activePeers if peer._guid == msg['senderGUID']), None)
 
+    # Update existing peer's pubkey if active peer
     for idx, peer in enumerate(self._activePeers):
       if peer._guid == msg['senderGUID']:
         peer._pub = msg['pubkey']
@@ -129,18 +145,24 @@ class DHT():
 
     if 'foundKey' in msg.keys():
       self._log.info('This node found the key')
-      # Stop the search and return the value
+      return msg['foundKey']# Stop the search and return the value
 
     else:
-      self.extendShortlist(msg)
 
-      findID = msg['findID']
+      if 'foundNode' in msg.keys():
+        self._log.info('You found the node on the network')
 
-      # Remove active probe to this node for this find ID
-      self._log.debug('Find Node Response - Active Probes Before: %s' % self._activeProbes)
-      if findID in self._activeProbes.keys() and self._activeProbes[findID]:
-          del self._activeProbes[findID]
-      self._log.debug('Find Node Response - Active Probes After: %s' % self._activeProbes)
+      else:
+
+        self.extendShortlist(msg)
+
+        findID = msg['findID']
+
+        # Remove active probe to this node for this find ID
+        self._log.debug('Find Node Response - Active Probes Before: %s' % self._activeProbes)
+        if findID in self._activeProbes.keys() and self._activeProbes[findID]:
+            del self._activeProbes[findID]
+        self._log.debug('Find Node Response - Active Probes After: %s' % self._activeProbes)
 
 
   def _refreshNode(self):
@@ -226,6 +248,7 @@ class DHT():
         self._log.info('Extending short list')
 
         findValue = False # Need to make this dynamic
+
         uri = response['uri']
         ip = urlparse(uri).hostname
         port = urlparse(uri).port
@@ -234,40 +257,35 @@ class DHT():
         findID = response['findID']
         result = response['findValue']
 
-        # Make sure the responding node is valid, and abort the operation if it isn't
-        newPeer = CryptoPeerConnection(self, uri, pubkey, guid)
-
-
-
         # Mark this node as active
-        self._log.debug('Shortlist: %s' % self._shortlist)
-        if findID in self._shortlist.keys() and (ip, port, guid) in self._shortlist[findID]:
-            self._log.info('Getting node from shortlist')
-            # Get the contact information from the shortlist...
-            #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
-            #aPeer = PeerConnection(self, uri, guid)
-        else:
-            self._log.info('Node is not in the shortlist')
-            # If it's not in the shortlist; we probably used a fake ID to reach it
-            # - reconstruct the contact, using the real node ID this time
-            #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
-            #aPeer = PeerConnection(self, uri, guid)
+        self._log.debug('Start Shortlist: %s' % self._shortlist[findID])
+        # if findID in self._shortlist.keys() and (ip, port, guid) in self._shortlist[findID]:
+        #     self._log.info('Getting node from shortlist')
+        #     # Get the contact information from the shortlist...
+        #     #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
+        #     #aPeer = PeerConnection(self, uri, guid)
+        # else:
+        #     self._log.info('Node is not in the shortlist')
+        #     # If it's not in the shortlist; we probably used a fake ID to reach it
+        #     # - reconstruct the contact, using the real node ID this time
+        #     #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
+        #     #aPeer = PeerConnection(self, uri, guid)
 
 
-        for aPeer in result:
-          if not next((peer for peer in self._activePeers if peer._guid == aPeer[0]), False) and aPeer[0] != self.guid:
-            self._log.debug('Adding a new active peer')
-            aPeer = CryptoPeerConnection(self, aPeer[1], aPeer[2], aPeer[0])
-            self._activePeers.append(newPeer)
-            self._log.debug('Active Peers: %s' % self._activePeers)
+        # for aPeer in result:
+        #   for peer in self._activePeers:
+        #     if peer._guid == aPeer[0] and newPeer._transport.guid:
+        #       self._log.debug('Adding a new active peer')
+        #       aPeer = newPeer.getCryptoPeer(aPeer[1], aPeer[2], aPeer[0])
+        #       self._activePeers.append(aPeer)
+        #       self._log.debug('Active Peers: %s' % self._activePeers)
 
         # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
         if guid not in self._alreadyContacted[findID]:
+            self._log.debug('Add to Already Connected List')
             self._alreadyContacted[findID].append(guid)
 
         self._log.debug('Already Contacted: %s' % self._alreadyContacted)
-
-        #TODO: some validation on the result (for guarding against attacks)
 
         # If we are looking for a value, first see if this result is the value
         # we are looking for before treating it as a list of contact triples
@@ -284,14 +302,16 @@ class DHT():
                 else:
                     self._findValueResult['closestNodeNoValue'] = aContact
 
-            # Found a node not a value
+            # Got some nodes back rather than a result
+            for node in result:
 
-            for foundContact in result:
-                self._log.debug('Contact: %s' % foundContact)
-                #testContact = PeerConnection(self, foundContact[1], foundContact[0])
-                ip = urlparse(foundContact[1]).hostname
-                port = urlparse(foundContact[1]).port
-                testContact = (ip, port, foundContact[0])
+                self._log.debug('Close Node Returned: %s' % node)
+
+                ip = urlparse(node[1]).hostname
+                port = urlparse(node[1]).port
+                guid = node[0]
+
+                testContact = (ip, port, guid)
 
                 if testContact not in self._shortlist:
                     self._shortlist[findID].append(testContact)
@@ -361,108 +381,125 @@ class DHT():
       return self._iterativeFind(key)
 
 
-
-
   def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
 
-    # Create a unique ID (SHA1) for this iterativeFind request
-    findID = hashlib.sha1(os.urandom(128)).hexdigest()
+    new_search = DHTSearch(key, call)
+    self._searches.append(new_search)
 
     # Determine if we're looking for a node or a key
-    if call != 'findNode':
-      findValue = True
-    else:
-      findValue = False
+    findValue = True if call != 'findNode' else False
 
     if not findValue and key == self._settings['guid']:
-      print 'Finding self'
-      return 'Self'
+      return 'You are looking for yourself'
 
+    # Check if node key is in active peers already
     if not findValue:
       for node in self._activePeers:
         if node._guid == key:
           return [node]
 
-    self._shortlist[findID] = []
-    self._activeProbes[findID] = []
-    self._alreadyContacted[findID] = []
-
+    # Normal search
     if startupShortlist == [] or startupShortlist == None:
 
       closeNodes = self._routingTable.findCloseNodes(key, constants.alpha, self._settings['guid'])
       self._log.debug('Found close nodes: %s' % closeNodes)
 
       for closeNode in closeNodes:
-        ip = urlparse(closeNode._address).hostname
-        port = urlparse(closeNode._address).port
+        ip = closeNode._ip
+        port = closeNode._port
         guid = closeNode._guid
-        self._shortlist[findID].append((ip, port, guid))
+        new_search._shortlist.append((ip, port, guid))
 
-      if key != self._guid:
+      if key != self._settings['guid']:
         self._routingTable.touchKBucket(key)
 
-      if len(self._shortlist[findID]) == 0:
+      if len(new_search._shortlist) == 0:
         if(callback != None):
           callback([])
         else:
           return []
 
+    # Seeded startup search
     else:
-      self._shortlist[findID] = startupShortlist
-
-    prevClosestNode = [None]
-
-    def searchIteration():
-
-      self._slowNodeCount[0] = len(self._activeProbes[findID])
-
-      # Sort closest to farthest
-      self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
-
-      while len(self._pendingIterationCalls):
-        del self._pendingIterationCalls[0]
-
-      # Found the value we were looking for so return
-      if key in self._findValueResult:
-        return findValueResult
-
-      elif len(self._activePeers) and findValue == False:
-        if (len(self._activePeers) >= constants.k) or (self._activePeers[0] == prevClosestNode[0] and len(self._activeProbes[findID]) == self._slowNodeCount[0]):
-          return self._activePeers
-
-      # Since we sorted, first peer is closest
-      if len(self._activePeers):
-        prevClosestNode[0] = self._activePeers[0]
-
-      contactedNow = 0
-
-      self._shortlist[findID].sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact[2], targetKey), self._routingTable.distance(secondContact[2], targetKey)))
-
-      prevShortlistLength = len(self._shortlist[findID])
-
-      for node in self._shortlist[findID]:
-
-        if node not in self._alreadyContacted[findID]:
-
-            if findID not in self._activeProbes.keys():
-              return
-
-            self._activeProbes[findID].append(node)
-
-            uri = "tcp://%s:%s" % (node[0], node[1])
-            msg = {"type":"findNode", "uri":self._uri, "senderGUID":self._guid, "key":key, "findValue":findValue, "findID":findID, "pubkey":self.pubkey}
-            self._log.info("Sending findNode: %s", msg)
-
-            contact = self._routingTable.getContact(node[2])
-
-            if contact:
-              contact.send_raw(json.dumps(msg))
-              contactedNow += 1
-            else:
-              self._log.error('No contact was found for this guid: %s' % node[2])
-
-        if contactedNow == constants.alpha:
-            break
+      new_search._shortlist = startupShortlist
 
     # Start searching
-    searchIteration()
+    self._searchIteration(new_search)
+
+
+  def _searchIteration(self, new_search, findValue=False):
+
+    key = new_search._key
+
+    new_search._slowNodeCount[0] = len(new_search._activeProbes)
+
+    # Sort closest to farthest
+    self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
+
+    # while len(self._pendingIterationCalls):
+    #   del self._pendingIterationCalls[0]
+
+    # Found the value we were looking for so return
+    if key in new_search._findValueResult:
+      return new_search._findValueResult
+
+    elif len(self._activePeers) and findValue == False:
+      if (len(self._activePeers) >= constants.k) or (self._activePeers[0] == new_search._prevClosestNode and len(new_search._activeProbes) == new_search._slowNodeCount[0]):
+        return self._activePeers
+
+    # Since we sorted, first peer is closest
+    if len(self._activePeers):
+      new_search._prevClosestNode = self._activePeers[0]
+
+    new_search._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact[2], targetKey), self._routingTable.distance(secondContact[2], targetKey)))
+
+    prevShortlistLength = len(new_search._shortlist)
+
+    for node in new_search._shortlist:
+
+      if node not in new_search._alreadyContacted:
+
+          if new_search._findID not in new_search._activeProbes.keys():
+            return
+
+          new_search._activeProbes.append(node)
+
+          uri = "tcp://%s:%s" % (node[0], node[1])
+
+          contact = self._routingTable.getContact(node[2])
+          msg = []
+
+          msg = {"type":"findNode", "uri":contact._transport._uri, "senderGUID":contact._transport._guid, "key":key, "findValue":findValue, "findID":findID, "pubkey":contact._transport.pubkey}
+          self._log.info("Sending findNode: %s", msg)
+
+          if contact:
+            contact.send_raw(json.dumps(msg))
+            contactedNow += 1
+          else:
+            self._log.error('No contact was found for this guid: %s' % node[2])
+
+      if new_search._contactedNow == constants.alpha:
+          break
+
+
+class DHTSearch():
+
+  def __init__(self, key, call="findNode"):
+
+    print 'DHTSearch'
+
+    self._key = key
+    self._call = call
+    self._shortlist = []
+    self._activeProbes = []
+    self._alreadyContacted = []
+    self._prevClosestNode = None
+
+    self._findValueResult = {}
+    self._pendingIterationCalls = []
+    self._slowNodeCount = [0]
+    self._contactedNow = 0
+    self._dhtCallbacks = []
+
+    # Create a unique ID (SHA1) for this iterativeFind request
+    self._findID = hashlib.sha1(os.urandom(128)).hexdigest()
