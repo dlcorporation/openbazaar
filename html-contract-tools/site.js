@@ -25,13 +25,10 @@ var form_gen_elements = {
     btc_addr:{dataID:'btc_addr',name:"Your Bitcoin address",type:"btc_addr",required:true,single_field:true,default_value:"1P1GFYLWUhPzFazFKhp2ZHAzaBBKD6AKX1"},
     asset_name:{dataID:'asset_name',name:"Name of item to sell", type:"text",min_len:5,required:true,single_field:true,default_value:"1 french cat"},
     asset_price:{dataID:'asset_price',name:"Price (in BTC) of item to sell", type:"currency",required:true,single_field:true,default_value:"1.0"},
-    contract_exp:{dataID:'contract_exp',name:"Offer expiry date", type:"date",required:true,single_field:true,default_value:"2014-07-22 12:00:00"},
-    pgp_public_key:{dataID:'pgp_public_key',name:"Your PGP public key",type:"textarea",single_field:true}          
+    contract_exp:{dataID:'contract_exp',name:"Offer expiry date", type:"date",required:true,single_field:true,default_value:"2014-07-22 12:00:00"}
+            
     };
     
-
-
-
 
 // ======================== Main Docoument Functions ======================== 
 
@@ -47,7 +44,18 @@ $(function() {
         {
         $("#popup_content").html($("#template_popup_pgp_load").html());
         $("#popup_modal").modal("show");
-        }   
+        }
+   
+   
+   //Set options to stored values
+    if(localStorage.options !==undefined){
+        //for each option
+        $.each(JSON.parse(localStorage.options),function(i,v){
+            //Set the value of the div id for this index to its value
+            $("#"+i).val(v);
+        });
+    }
+    
 });
 
 
@@ -66,7 +74,22 @@ function menu(div){
 }
 
 
-
+function set_option(opt){
+    //Prepare an array variable
+    var options = {};
+    
+    //if there is already local options stored,
+    if(localStorage.options!==undefined)
+        //parse the data to the options var
+        options = JSON.parse(localStorage.options);
+    
+    
+    //Set the option into the array
+    options[opt]=$("#" + opt).val();
+    //Write all options back to local storage
+    localStorage.options = JSON.stringify(options);
+    
+}
 
 
 
@@ -99,15 +122,11 @@ function pgp_file_load(){
         }
         //else store the keys
         else {
-            var priv_key = openpgp.key.readArmored(priv_key).keys[0];
-            var pub_key = openpgp.key.readArmored(pub_key).keys[0];
-            localStorage.PGP_public = pub_key;
+            //Store the keys
+            localStorage.PGP_keypair = JSON.stringify([pub_key,priv_key]);
+            location.reload();
         }
         
-      //  var keyPackets = openpgp.readArmored();
-    
-        
-        //console.log("Result : " + keyPackets.length);
     }; 
      
     //Read the file as a text
@@ -217,23 +236,61 @@ function gen_del_el(cel){
 
 //Function to generate teh contract
 function gen_create_con(){
-    var xmlVals = "";
+    //intialise an varialbe to hold an object array of values
+    var contract_values = {};
     $("#form_gen_fields").find('input[name="gen_input_field[]"]').each(function(){
         var id = $(this).attr('id');
-        xmlVals = xmlVals + "<"+id+">"+$(this).val()+"</"+id+">\r\n";
+        contract_values[id] = $(this).val();
     });
     
+    //Check the contract values and get reulst to variable.
     var checks = gen_check_con();
+    
     //If the checks did not return true, 
     if(checks!==true && checks !==undefined)$("#xml_contract").html(checks).show();
     
     //If all values are correct ,then show the sign and encrypt modal
     else {
-        $("#xml_contract").html(xmlVals).show();
-        $("#popup_content").html($("#input_sign_and_encrypt_PGP").html() + checks);
+        //get parsed data
+        var parsedValues = gen_parse_values(contract_values);
+        
+        $("#xml_contract").html(parsedValues).show();
+        $("#popup_content").html($("#input_sign_and_encrypt_PGP").html());
         $("#popup_modal").modal('show');
     }
         
+}
+
+//Function parses all variables into a particular type (eg JSON, XML, etc) and returns a string of the parsed values
+function gen_parse_values(v){
+    
+    //get the type from the drop down box
+    var type=$("#option_contract_format").val();
+    
+    //For XML Data
+    if(type==="XML"){
+        //Prepare a var for holding data
+        var resultData = "";
+        $.each(v,function( index,value ) {
+                        resultData = resultData + "<"+index+">" + value + "</"+index+">\r\n";
+        });
+        
+        //Once completed, return result data
+        return resultData;
+    }
+    else if(type==="JSON")
+        return JSON.stringify(v);
+    
+    //Else parse in HTML type format
+    else{
+        var resultData = "";
+        $.each(v,function( index,value ) {
+                        resultData = resultData + index + " : " + value + "\r\n";
+        });
+        
+        //Once completed, return result data
+        return resultData;
+    }
 }
 
 //function to check the submitted contract fields
@@ -400,22 +457,44 @@ function data_validation(inputObj){
 
 function gen_sign_con(){
     
-    //get the private key
-    var key = $('#PGP_priv_key').val();
     
-    //Read the private key
-    var privKey = openpgp.key.readArmored(key);
-    
-    //Sign the contract with the private key,
-    var pgpSignedContract = openpgp.signClearMessage(privKey.keys, $("#xml_contract").html());
+    //First, if the keypair is not set
+      if(localStorage.PGP_keypair ===undefined)
+        {
+        //Show the popup to load the keypair
+        $("#popup_content").html($("#template_popup_pgp_load").html());
+        $("#popup_modal").modal("show");
+        }
+    else{
+        //Get the key to a val
+        var pgp_priv_key = openpgp.key.readArmored(JSON.parse(localStorage.PGP_keypair)[1]).keys[0];
+        var pgp_pub_key = openpgp.key.readArmored(JSON.parse(localStorage.PGP_keypair)[0]).keys[0];
+        
+        
+        
+        //Attempt to decrypt the public key
+        if(pgp_priv_key.decrypt($("#pgp_pass").val())){
+           
+            
+            //Sign the contract with the private key,
+            var pgpSignedContract = openpgp.signClearMessage([pgp_priv_key], $("#xml_contract").html());
 
-    //write the contract to the contract location
-    $("#xml_contract").replaceWith(pgpSignedContract);
-     
-    //Set the modal back to blank, and remove all input fields
-    $("#popup_content").html("");
-    $("#form_gen_fields").html("");
+            //write the contract to the contract location
+            $("#xml_contract").html(pgpSignedContract);
+
+            //Set the modal back to blank, and remove all input fields
+            $("#popup_content").html("");
+            $("#form_gen_fields").html("");
+
+        }
+        //If the key decryption failes
+        else{
+           //notify the user
+           $("#decrypt_alert").html('<div class="alert alert-danger alert-dismissable">Failed to decrypt key, do you have the correct passphrase?</div>');
+        }
+    }
 }
+  
 
 function gen_check_inputs_required(){
     //Prepare a var for storing messages in 
