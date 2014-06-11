@@ -55,5 +55,5 @@ Here are some screenshots of the alpha UI so far as well as the HTML contract ge
 ![Screen 1](http://i.imgur.com/qwByrqk.png)
 ![Screen 2](http://i.imgur.com/v3gRVgi.png)
 ![Screen 3](http://i.imgur.com/65eSjjz.png)
-![Contract Tool](http://i.imgur.com/jvIRbxS.png)
+![Contract Tool](http://s29.postimg.org/aog95fcrr/Open_Bazaar_Contract_Maker.png)
 =======
