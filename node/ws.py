@@ -171,13 +171,12 @@ class ProtocolHandler:
         self._market.reputation.create_review(pubkey, text, rating)
 
 
-    # Search across the network
+    # Search for markets ATM
+    # TODO: multi-faceted search support
     def client_search(self, socket_handler, msg):
 
-
         self._log.info("[Search] %s"% msg)
-
-        self._transport._dht.iterativeFindNode(msg['key'], callback=self.on_node_peer)
+        self._transport._dht.iterativeFindNode(msg['key'], callback=self.on_node_search_results)
         #self._log.info('Result: %s' % result)
 
         #response = self._market.lookup(msg)
@@ -192,6 +191,14 @@ class ProtocolHandler:
         msg['senderGUID'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
+    def on_node_search_results(self, results):
+        if len(results) > 1:
+          self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+        else:
+          self.on_node_peer(results[0])
+
+
+
     # messages coming from "the market"
     def on_node_peer(self, peer):
         self._log.info("Add peer: %s" % peer)
@@ -205,7 +212,6 @@ class ProtocolHandler:
                               if peer._guid
                               else '',
                     'uri': peer._address}
-        print response
         self.send_to_client(None, response)
 
     def on_node_remove_peer(self, msg):

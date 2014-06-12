@@ -62,6 +62,9 @@ class CryptoPeerConnection(PeerConnection):
         # this are just acks
         pass
 
+    def peer_to_tuple(self):
+        return (self._ip, self._port, self._guid)
+
 
 class CryptoTransportLayer(TransportLayer):
 
@@ -157,6 +160,11 @@ class CryptoTransportLayer(TransportLayer):
 
 
     def getCryptoPeer(self, guid, uri, pubkey):
+
+      if guid == self.guid:
+        self._log.info('Trying to get cryptopeer for yourself')
+        return
+
       peer = CryptoPeerConnection(self, uri, pubkey, guid=guid)
       return peer
 
@@ -174,10 +182,10 @@ class CryptoTransportLayer(TransportLayer):
             aPeer._pub = peer._pub
             self._activePeers[idx] = aPeer
 
-      if not peerExists:
+      if not peerExists and peer._guid != self._guid:
         self._log.info('Adding crypto peer %s' % peer._pub)
         self._routingTable.addContact(peer)
-        self._activePeers.append(peer)
+        self._dht.add_active_peer(peer)
 
 
 
@@ -261,8 +269,6 @@ class CryptoTransportLayer(TransportLayer):
             self._log.info("Sending unencrypted [%s] message to %s"
                            % (msg['type'], uri))
             self._peers[uri].send_raw(json.dumps(msg))
-
-
 
 
     def init_peer(self, msg):
