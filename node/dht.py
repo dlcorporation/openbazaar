@@ -115,9 +115,15 @@ class DHT():
         self._routingTable.addContact(newContact)
 
 
-    if msg['type'] == 'findValue' and key in self._dataStore and self._dataStore[key] != None:
-        # Found key in local datastore
-        newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":newContact._transport.guid, "uri":newContact._transport._uri, "pubkey":newContact._transport.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
+    if msg['findValue'] == True:
+       print 'finding a value'
+
+       print self._dataStore[key]
+
+       if key in self._dataStore and self._dataStore[key] != None:
+        
+         # Found key in local datastore
+         newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":newContact._transport.guid, "uri":newContact._transport._uri, "pubkey":newContact._transport.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
 
     else:
         # Search for contact in routing table
@@ -153,10 +159,14 @@ class DHT():
     if 'foundKey' in msg.keys():
       self._log.debug('Found the key-value pair. Executing callback.')
 
-      self._searches[msg['findID']]._callback(msg['foundKey'])
+      for idx, s in enumerate(self._searches):
+        if s._findID == msg['findID']:
+          s._callback(msg['foundKey'])
+          del self._searches[idx]
+      #self._searches[msg['findID']]._callback(msg['foundKey'])
 
       # Remove active search
-      del self._searches[msg['findID']]
+
 
     else:
 
@@ -360,7 +370,7 @@ class DHT():
       originallyPublished = now - age
 
       # Store it in your own node
-      self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self._market_id)
+      self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, market_id=self._market_id)
 
       for node in nodes:
 
@@ -428,7 +438,7 @@ class DHT():
 
         now = int(time.time())
         originallyPublished = now - age
-        self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self._market_id)
+        self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, market_id=self._market_id)
         return 'OK'
 
 
@@ -507,7 +517,7 @@ class DHT():
       # TODO: Right now this is just hardcoded to be seed URIs but should pull from db
       new_search._shortlist = startupShortlist
 
-    self._searchIteration(new_search)
+    self._searchIteration(new_search, findValue=findValue)
 
 
   def _searchIteration(self, new_search, findValue=False):
@@ -582,6 +592,14 @@ class DHT():
         return True
     if not activeSearchExists:
       return False
+
+
+  def iterativeFindValue(self, key, callback=None):
+
+        self._log.debug('[Iterative Find Value]')
+        self._iterativeFind(key, call='findValue', callback=callback)
+
+
 
 
 class DHTSearch():

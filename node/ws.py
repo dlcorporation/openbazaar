@@ -176,7 +176,7 @@ class ProtocolHandler:
     def client_search(self, socket_handler, msg):
 
         self._log.info("[Search] %s"% msg)
-        self._transport._dht.iterativeFindNode(msg['key'], callback=self.on_node_search_results)
+        self._transport._dht.iterativeFindValue(msg['key'], callback=self.on_node_search_value)
         #self._log.info('Result: %s' % result)
 
         #response = self._market.lookup(msg)
@@ -191,7 +191,8 @@ class ProtocolHandler:
         msg['senderGUID'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
-
+    def on_node_search_value(self, results):
+      print 'Search value: %s' % results
 
     def on_node_search_results(self, results):
         if len(results) > 1:
