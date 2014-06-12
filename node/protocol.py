@@ -79,6 +79,14 @@ def order(id, buyer, seller, state, text, escrows=[], tx=None):
     # new -> accepted/rejected -> payed -> sent -> received
     return data
 
+def proto_store(key, value, originalPublisherID, age):
+    data = {}
+    data['type'] = 'store'
+    data['key'] = key
+    data['value'] = value
+    data['originalPublisherID'] = originalPublisherID
+    data['age'] = age
+    return data
 
 def negotiate_pubkey(nickname, ident_pubkey):
     data = {}

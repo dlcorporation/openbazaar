@@ -19,14 +19,15 @@ class RoutingTable(object):
     Classes inheriting from this should provide a suitable routing table for
     a parent Node object (i.e. the local entity in the Kademlia network)
     """
-    def __init__(self, parentNodeID):
+    def __init__(self, parentNodeID, market_id=1):
         """
         @param parentNodeID: The 160-bit node ID of the node to which this
                              routing table belongs
         @type parentNodeID: str
         """
+        self._market_id = market_id
 
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
 
     def addContact(self, contact):
@@ -125,17 +126,17 @@ class TreeRoutingTable(RoutingTable):
     C{PING} RPC-based k-bucket eviction algorithm described in section 2.2 of
     that paper.
     """
-    def __init__(self, parentNodeID):
+    def __init__(self, parentNodeID, market_id):
         """
         @param parentNodeID: The 160-bit node ID of the node to which this
                              routing table belongs
         @type parentNodeID: str
         """
 
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
         # Create the initial (single) k-bucket covering the range of the entire 160-bit ID space
-        self._buckets = [kbucket.KBucket(rangeMin=0, rangeMax=2**160)]
+        self._buckets = [kbucket.KBucket(rangeMin=0, rangeMax=2**160, market_id=market_id)]
         self._parentNodeID = parentNodeID
 
     def addContact(self, contact):
@@ -224,7 +225,7 @@ class TreeRoutingTable(RoutingTable):
         """
 
         bucketIndex = self._kbucketIndex(key)
-        closestNodes = self._buckets[bucketIndex].getContacts(constants.k, nodeID)        
+        closestNodes = self._buckets[bucketIndex].getContacts(constants.k, nodeID)
 
         # This method must return k contacts (even if we have the node with the specified key as node ID),
         # unless there is less than k remote nodes in the routing table
@@ -363,7 +364,7 @@ class TreeRoutingTable(RoutingTable):
         oldBucket = self._buckets[oldBucketIndex]
         splitPoint = oldBucket.rangeMax - (oldBucket.rangeMax - oldBucket.rangeMin)/2
         # Create a new k-bucket to cover the range split off from the old bucket
-        newBucket = kbucket.KBucket(splitPoint, oldBucket.rangeMax)
+        newBucket = kbucket.KBucket(splitPoint, oldBucket.rangeMax, self._market_id)
         oldBucket.rangeMax = splitPoint
         # Now, add the new bucket into the routing table tree
         self._buckets.insert(oldBucketIndex + 1, newBucket)
@@ -380,8 +381,8 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
     along with contact accounting optimizations specified in section 4.1 of
     of the 13-page version of the Kademlia paper.
     """
-    def __init__(self, parentNodeID):
-        TreeRoutingTable.__init__(self, parentNodeID)
+    def __init__(self, parentNodeID, market_id):
+        TreeRoutingTable.__init__(self, parentNodeID, market_id)
         # Cache containing nodes eligible to replace stale k-bucket entries
         self._replacementCache = {}
 

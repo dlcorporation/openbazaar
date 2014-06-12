@@ -8,19 +8,20 @@ class BucketFull(Exception):
 class KBucket(object):
     """ Description - later
     """
-    def __init__(self, rangeMin, rangeMax):
+    def __init__(self, rangeMin, rangeMax, market_id=1):
         """
         @param rangeMin: The lower boundary for the range in the 160-bit ID
                          space covered by this k-bucket
         @param rangeMax: The upper boundary for the range in the ID space
                          covered by this k-bucket
         """
+
         self.lastAccessed = 0
         self.rangeMin = rangeMin
         self.rangeMax = rangeMax
         self._contacts = list()
 
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
     def addContact(self, contact):
         """ Add contact to _contact list in the right order. This will move the
@@ -45,9 +46,10 @@ class KBucket(object):
 
     def getContact(self, contactID):
         """ Get the contact specified node ID"""
-        self._log.info('Getting contact from bucket: %s' % contactID)
+        self._log.debug('Searching for contact in bucket: %s' % contactID)
         for contact in self._contacts:
           if contact._guid == contactID:
+            self._log.debug('Found this contact in the bucket: %s' % contactID)
             return contact
 
     def getContacts(self, count=-1, excludeContact=None):

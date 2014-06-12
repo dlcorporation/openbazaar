@@ -37,15 +37,14 @@ class CryptoPeerConnection(PeerConnection):
 
         if pub == None or guid == None:
           self._log.debug('About to say hello')
-          msg = self.send_raw(json.dumps({'type':'hello', 'pubkey':transport.pubkey, 'uri':transport._uri, 'senderGUID':transport.guid }))
-          msg = json.loads(msg)
-          self._guid = msg['senderGUID']
-          self._pub = msg['pubkey']
+          msg = self.send_raw(json.dumps({'type':'', 'pubkey':transport.pubkey, 'uri':transport._uri, 'senderGUID':transport.guid }))
 
-        transport._dht.add_active_peer(self)
-        ip = urlparse(address).hostname
-        port = urlparse(address).port
-        transport._dht.add_known_node((ip, port, self._guid))
+          if msg:
+            msg = json.loads(msg)
+            self._guid = msg['senderGUID']
+            self._pub = msg['pubkey']
+
+
         self._log.info(transport._dht._activePeers)
 
 
@@ -56,9 +55,12 @@ class CryptoPeerConnection(PeerConnection):
 
         # Include guid
         data['guid'] = self._guid
-        self._log.debug('Sending to peer: %s %s' % (self._guid, self._pub))
-        self._log.debug('Sending data: %s' % self.encrypt(json.dumps(data)))
-        self.send_raw(self.encrypt(json.dumps(data)))
+        data['senderGUID'] = self._transport.guid
+        data['uri'] = self._transport._uri
+        data['pubkey'] = self._transport.pubkey
+
+        self._log.debug('Sending to peer: %s %s' % (self._guid, data))
+        print self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
         # this are just acks
@@ -86,7 +88,7 @@ class CryptoTransportLayer(TransportLayer):
         # Set up
         self._setup_settings()
 
-        self._dht = DHT(market_id, self.settings)
+        self._dht = DHT(self, market_id, self.settings)
 
         self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
 
@@ -96,7 +98,16 @@ class CryptoTransportLayer(TransportLayer):
         self.add_callback('ping', self._dht._on_ping)
         self.add_callback('findNode', self._findNode)
         self.add_callback('findNodeResponse', self._findNodeResponse)
+        self.add_callback('store', self._storeValue)
 
+
+    def _storeValue(self, msg):
+        guid = msg['senderGUID']
+        uri = msg['uri']
+        pubkey = msg['pubkey']
+
+        msg['new_peer'] = CryptoPeerConnection(self, uri, pubkey, guid)
+        self._dht._on_storeValue(msg)
 
     def _findNode(self, msg):
 
@@ -321,7 +332,7 @@ class CryptoTransportLayer(TransportLayer):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        self._log.info("Data received: %s" % msg)
+        self._log.info("[On Message] Data received: %s" % msg)
 
         pubkey = msg.get('pubkey')
         uri = msg.get('uri')
@@ -329,8 +340,7 @@ class CryptoTransportLayer(TransportLayer):
         port = urlparse(uri).port
         guid = msg.get('senderGUID')
 
-        new_peer = CryptoPeerConnection(self, uri, pubkey, guid)
-        self._dht.add_active_peer(new_peer)
+        self._dht.add_active_peer(self, (pubkey, uri, guid))
         self._dht.add_known_node((ip, port, guid))
 
 

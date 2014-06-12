@@ -82,8 +82,7 @@ class Market(object):
 
 
     def save_product(self, msg):
-        self._log.info("Product to save %s" % msg)
-        self._log.info(self._transport)
+        self._log.debug("Saving product: %s" % msg)
 
         msg['market_id'] = self._market_id
 
@@ -105,19 +104,24 @@ class Market(object):
         # Save product listing to DHT
         listing = json.dumps(msg)
         listingKey = hashlib.sha1(listing).hexdigest()
-        self._log.debug('Listing Key: %s' % listingKey)
+
+        h = hashlib.new('ripemd160')
+        h.update(listingKey)
+        listingKey = h.hexdigest()
+
+        self._log.debug('New Listing Key: %s' % listingKey)
 
         #self._transport._dht._dataStore.setItem(listingKey, listing, int(time.time()), int(time.time()), self._transport._guid )
-        self._transport._dht.iterativeStore(listingKey, listing, self._transport._guid)
+        self._transport._dht.iterativeStore(self._transport, listingKey, listing, self._transport._guid)
 
 
     def remove_product(self, msg):
-        self._log.info("Product to remove %s" % msg)
+        self._log.info("Removing product: %s" % msg)
         self._db.products.remove({'id':msg['productID']})
 
 
     def get_products(self):
-        self._log.info(self._transport._market_id)
+        self._log.info('Getting products for market: %s' % self._transport._market_id)
         products = self._db.products.find({'market_id':self._transport._market_id})
         my_products = []
 
