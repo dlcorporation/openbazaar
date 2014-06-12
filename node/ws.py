@@ -191,11 +191,17 @@ class ProtocolHandler:
         msg['senderGUID'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
+
+
     def on_node_search_results(self, results):
         if len(results) > 1:
           self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
         else:
+          # Add peer to list of markets
           self.on_node_peer(results[0])
+
+          # Load page for the store
+          self._market.query_page(results[0]._guid)
 
 
 

@@ -76,7 +76,7 @@ class PeerConnection(object):
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
-        if poller.poll(self._timeout * 1000):
+        if poller.poll(self._timeout * 1000 - 9000):
             msg = self._socket.recv()
             self.on_message(msg)
             self.cleanup_socket()

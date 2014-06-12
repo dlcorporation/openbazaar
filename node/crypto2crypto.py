@@ -36,6 +36,7 @@ class CryptoPeerConnection(PeerConnection):
         PeerConnection.__init__(self, transport, address)
 
         if pub == None or guid == None:
+          self._log.debug('About to say hello')
           msg = self.send_raw(json.dumps({'type':'hello', 'pubkey':transport.pubkey, 'uri':transport._uri, 'senderGUID':transport.guid }))
           msg = json.loads(msg)
           self._guid = msg['senderGUID']
@@ -56,6 +57,7 @@ class CryptoPeerConnection(PeerConnection):
         # Include guid
         data['guid'] = self._guid
         self._log.debug('Sending to peer: %s %s' % (self._guid, self._pub))
+        self._log.debug('Sending data: %s' % self.encrypt(json.dumps(data)))
         self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):

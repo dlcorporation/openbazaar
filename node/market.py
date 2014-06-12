@@ -170,6 +170,7 @@ class Market(object):
     # PAGE QUERYING
 
     def query_page(self, findGUID):
+
         self._log.info('Querying page: %s' % findGUID)
         msg = query_page(findGUID)
         msg['uri'] = self._transport._uri
@@ -177,13 +178,12 @@ class Market(object):
         msg['pubkey'] = self._transport.pubkey
 
         # Find nodes
-        matching_peers = self._transport._dht._iterativeFind(findGUID)
+        #matching_peers = self._transport._dht._iterativeFind(findGUID)
 
-        if len(matching_peers) == 1:
-          self._transport.send(msg, matching_peers[0]._guid)
-          return True
-        else:
-          return False
+        #if len(matching_peers) == 1:
+        if msg:
+           self._transport.send(msg, findGUID)
+
 
     def on_page(self, page):
 
