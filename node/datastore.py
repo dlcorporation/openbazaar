@@ -95,6 +95,7 @@ class DictDataStore(DataStore):
         this should set the "last published" value for the (key, value)
         pair to the current time
         """
+        print 'Here is the key: %s' % key
         self._dict[key] = (value, lastPublished, originallyPublished, originalPublisherID)
 
     def __getitem__(self, key):
@@ -120,7 +121,7 @@ class MongoDataStore(DataStore):
         keys = []
         try:
             db_keys = self._db.data.find({}, { 'key':1 })
-            
+
             for row in db_keys:
                 keys.append(row['key'].decode('hex'))
 
@@ -149,15 +150,14 @@ class MongoDataStore(DataStore):
         was originally published """
         return int(self._dbQuery(key, 'originallyPublished'))
 
-    def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID):
-        # Encode the key so that it doesn't corrupt the database
-        encodedKey = key.encode('hex')
-        #self._cursor.execute("select key from data where key=:reqKey", {'reqKey': encodedKey})
-        row = self._db.data.update({'key':encodedKey}, {'key':encodedKey,
+    def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id=1):
+
+        row = self._db.data.update({'key':key}, {'key':key,
                                                         'value':value,
                                                         'lastPublished':lastPublished,
                                                         'originallyPublished':originallyPublished,
-                                                        'originalPublisherID':originalPublisherID}, True)
+                                                        'originalPublisherID':originalPublisherID,
+                                                        'market_id':market_id}, True)
 
         # if self._cursor.fetchone() == None:
         #     self._cursor.execute('INSERT INTO data(key, value, lastPublished, originallyPublished, originalPublisherID) VALUES (?, ?, ?, ?, ?)', (encodedKey, buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID))

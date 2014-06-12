@@ -24,6 +24,7 @@ class PeerConnection(object):
         self._transport = transport
         self._address = address
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
+        self._queue = Queue()
 
     def create_socket(self):
         self._ctx = zmq.Context()
@@ -38,10 +39,10 @@ class PeerConnection(object):
         msg = self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
-        queue = Queue()
 
-        Thread(target=self._send_raw, args=(serialized,queue,)).start()
-        msg = queue.get()
+
+        Thread(target=self._send_raw, args=(serialized,self._queue,)).start()
+        msg = self._queue.get()
 
         return msg
 
@@ -60,10 +61,10 @@ class PeerConnection(object):
         msg = queue.get()
         if not msg:
             self._log.info("Peer %s timed out." % self._address)
-            raw_queue.put(False)
+            self._queue.put(False)
             #self._transport.remove_peer(self._address, self._guid)
         else:
-            raw_queue.put(msg)
+            self._queue.put(msg)
 
         p.join()
 
@@ -76,14 +77,14 @@ class PeerConnection(object):
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
-        if poller.poll(self._timeout * 1000 - 9000):
+        if poller.poll(self._timeout * 100):
             msg = self._socket.recv()
             self.on_message(msg)
             self.cleanup_socket()
             queue.put(msg)
 
         else:
-            self._log.info("Node timed out: %s" % self._address)
+            self._log.info("Node timed out: %s %s" % (self._address, serialized))
             self.cleanup_socket()
             queue.put(False)
 
@@ -142,6 +143,7 @@ class TransportLayer(object):
 
         while True:
             message = self._socket.recv()
+            print 'GOT IT: %s' % message
             self.on_raw_message(message)
             self._socket.send(json.dumps({'type': 'ok', 'senderGUID':self._guid, 'pubkey':pubkey}))
 
@@ -222,11 +224,11 @@ class TransportLayer(object):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        self._log.info("Data received: %s" % msg)
+        self._log.info("[On Message] Data received: %s" % msg)
 
-        if not self._routingTable.getContact(msg['senderGUID']):
+        #if not self._routingTable.getContact(msg['senderGUID']):
             # Add to contacts if doesn't exist yet
-            self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
+            #self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
 
         self.trigger_callbacks(msg['type'], msg)
 

@@ -11,27 +11,26 @@ from urlparse import urlparse
 import tornado
 from multiprocessing import Process, Queue
 from threading import Thread
+from protocol import proto_store
 
 
 class DHT():
 
-  def __init__(self, market_id, settings):
+  def __init__(self, transport, market_id, settings):
 
 
     self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
     self._settings = settings
-
     self._knownNodes = []
-
     self._searches = []
-
     self._searchKeys = {}
     self._activePeers = []
-
     self._republishThreads = []
+    self._transport = transport
+    self._market_id = market_id
 
     # Routing table
-    self._routingTable = routingtable.OptimizedTreeRoutingTable(self._settings['guid'])
+    self._routingTable = routingtable.OptimizedTreeRoutingTable(self._settings['guid'], market_id)
     self._dataStore = datastore.MongoDataStore()
 
 
@@ -40,34 +39,41 @@ class DHT():
     ip = seed_peer._ip
     port = seed_peer._port
     self.add_known_node((ip, port, seed_peer._guid))
-    self.add_active_peer(seed_peer)
+
+    self.add_active_peer(self._transport, (seed_peer._pub, seed_peer._address, seed_peer._guid))
 
     self._iterativeFind(self._settings['guid'], self._knownNodes, 'findNode')
 
     # Periodically refresh buckets
-    loop = tornado.ioloop.IOLoop.instance()
-    refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode, constants.refreshTimeout, io_loop=loop)
-    refreshCB.start()
+    #loop = tornado.ioloop.IOLoop.instance()
+    #refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode, constants.refreshTimeout, io_loop=loop)
+    #refreshCB.start()
 
 
-  def add_active_peer(self, new_peer):
+  def add_active_peer(self, transport, peer_tuple):
 
-    if new_peer._guid == self._settings['guid']:
-      self._log.info('Trying to add yourself to active peers')
+    # PUG
+
+    if peer_tuple[2] == self._settings['guid']:
+      self._log.info('[Add Active Peer] Trying to add yourself to active peers')
       return
 
     foundPeer = False
     for idx, peer in enumerate(self._activePeers):
-      if peer._guid == new_peer._guid:
+      if peer._guid == peer_tuple[2]:
         foundPeer = True
-        peer._pub = new_peer._pub
+        peer._pub = peer_tuple[0]
         self._activePeers[idx] = peer
+
+    print peer_tuple
+
     if not foundPeer:
-      self._log.info('Adding an active Peer: %s' % new_peer._guid)
+      self._log.debug('[Add Active Peer] Adding an active Peer: %s' % peer_tuple[2])
+      new_peer = transport.getCryptoPeer(peer_tuple[2], peer_tuple[1], peer_tuple[0])
       self._activePeers.append(new_peer)
 
-    if not self._routingTable.getContact(new_peer._guid):
-        self._log.info('Adding contact to routing table')
+    if not self._routingTable.getContact(peer_tuple[2]):
+        self._log.debug('Adding contact to routing table')
         self._routingTable.addContact(new_peer)
 
 
@@ -160,14 +166,14 @@ class DHT():
         self._log.debug('Found the node you were looking for: %s' % foundNode)
 
         # Add foundNode to active peers list and routing table
-        new_peer = transport.getCryptoPeer(foundNode[0], foundNode[1], foundNode[2])
+        self.add_active_peer(self._transport, (foundNode[2], foundNode[1], foundNode[0]))
 
         for idx, search in enumerate(self._searches):
           if search._findID == msg['findID']:
 
             # Execute callback
             if search._callback != None:
-              search._callback([new_peer])
+              search._callback((foundNode[2], foundNode[1], foundNode[0]))
 
             # Clear search
             del self._searches[idx]
@@ -283,6 +289,8 @@ class DHT():
 
   def extendShortlist(self, transport, response):
 
+        print response
+
         for s in self._searches:
           if s._findID == response['findID']:
             search = s
@@ -295,108 +303,30 @@ class DHT():
           node_guid, node_uri, node_pubkey = node
           node_ip = urlparse(node_uri).hostname
           node_port = urlparse(node_uri).port
-          cryptopeer = transport.getCryptoPeer(node_guid, node_uri, node_pubkey)
+
 
           # Add to shortlist
           if (node_ip, node_port, node_guid) not in search._shortlist:
             search._shortlist.append((node_ip, node_port, node_guid))
 
-          if cryptopeer in self._activePeers or node_guid == self._settings['guid']:
-            # Already an active peer or it's myself
+          if node_guid == self._settings['guid']:
             continue
-          else:
-            self._log.debug('Adding new peer to active peers list: %s' % node)
 
-            if cryptopeer._guid != self._settings['guid']:
-              self.add_active_peer(cryptopeer)
+          for node in self._activePeers:
+            if node_guid == node._guid:
+              # Already an active peer or it's myself
+              continue
+
+
+          self._log.debug('Adding new peer to active peers list: %s' % node)
+
+          if node_guid != self._settings['guid']:
+            self.add_active_peer(self._transport, (node_pubkey, node_uri, node_guid))
 
         self._log.debug('Short list after: %s' % search._shortlist)
 
-        # # Check if node is in active list or if it's yourself
-        # if response['']
-        #
-        #
-        #
-        #
-        #
-        # findValue = False # Need to make this dynamic
-        #
-        # uri = response['uri']
-        # ip = urlparse(uri).hostname
-        # port = urlparse(uri).port
-        # guid = response['senderGUID']
-        # pubkey = response['pubkey']
-        # findID = response['findID']
-        # result = response['findValue']
-        #
-        #
-        #
-        #
-        # # Mark this node as active
-        # self._log.debug('Start Shortlist: %s' % self._shortlist[findID])
-        # # if findID in self._shortlist.keys() and (ip, port, guid) in self._shortlist[findID]:
-        # #     self._log.info('Getting node from shortlist')
-        # #     # Get the contact information from the shortlist...
-        # #     #aContact = shortlist[shortlist.index(responseMsg.nodeID)]
-        # #     #aPeer = PeerConnection(self, uri, guid)
-        # # else:
-        # #     self._log.info('Node is not in the shortlist')
-        # #     # If it's not in the shortlist; we probably used a fake ID to reach it
-        # #     # - reconstruct the contact, using the real node ID this time
-        # #     #aContact = Contact(nodeID, responseTuple['uri'], responseTuple['uri'], self._protocol)
-        # #     #aPeer = PeerConnection(self, uri, guid)
-        #
-        #
-        # # for aPeer in result:
-        # #   for peer in self._activePeers:
-        # #     if peer._guid == aPeer[0] and newPeer._transport.guid:
-        # #       self._log.debug('Adding a new active peer')
-        # #       aPeer = newPeer.getCryptoPeer(aPeer[1], aPeer[2], aPeer[0])
-        # #       self._activePeers.append(aPeer)
-        # #       self._log.debug('Active Peers: %s' % self._activePeers)
-        #
-        # # This makes sure "bootstrap"-nodes with "fake" IDs don't get queried twice
-        # if guid not in self._alreadyContacted[findID]:
-        #     self._log.debug('Add to Already Connected List')
-        #     self._alreadyContacted[findID].append(guid)
-        #
-        # self._log.debug('Already Contacted: %s' % self._alreadyContacted)
-        #
-        # # If we are looking for a value, first see if this result is the value
-        # # we are looking for before treating it as a list of contact triples
-        # if findValue == True and type(result) == dict:
-        #     # We have found the value
-        #     self._findValueResult[key] = result[key]
-        # else:
-        #     if findValue == True:
-        #         # We are looking for a value, and the remote node didn't have it
-        #         # - mark it as the closest "empty" node, if it is
-        #         if 'closestNodeNoValue' in self._findValueResult:
-        #             if self._routingTable.distance(key, responseMsg.nodeID) < self._routingTable.distance(key, activeContacts[0].id):
-        #                 self._findValueResult['closestNodeNoValue'] = aContact
-        #         else:
-        #             self._findValueResult['closestNodeNoValue'] = aContact
-        #
-        #     # Got some nodes back rather than a result
-        #     for node in result:
-        #
-        #         self._log.debug('Close Node Returned: %s' % node)
-        #
-        #         ip = urlparse(node[1]).hostname
-        #         port = urlparse(node[1]).port
-        #         guid = node[0]
-        #
-        #         testContact = (ip, port, guid)
-        #
-        #         if testContact not in self._shortlist:
-        #             self._shortlist[findID].append(testContact)
-        #
-        # self._log.debug('Active Peers: %s' % self._activePeers)
-        # self._log.debug('Shortlist Updated: %s' % self._shortlist[findID])
 
-
-
-  def iterativeStore(self, key, value, originalPublisherID=None, age=0):
+  def iterativeStore(self, transport, key, value, originalPublisherID=None, age=0):
       """ The Kademlia store operation
 
       Call this to store/republish data in the DHT.
@@ -417,16 +347,90 @@ class DHT():
       if originalPublisherID == None:
           originalPublisherID = self._guid
 
-      self.iterativeFindNode(key, self.storeKeyValue)
+      store = (key, value, originalPublisherID, age)
 
-      # Find k nodes closest to the key...
-      #df = self.iterativeFindNode(key)
-      # ...and send them STORE RPCs as soon as they've been found
-      #df.addCallback(executeStoreRPCs)
-      #return df
+      # Find appropriate storage nodes and save key value
+      self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
 
-  def storeKeyValue(self, msg):
-      print 'Store the KVS: %s' % msg
+
+  def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
+      self._log.debug('Places to store the key-value: %s %s %s' % (nodes, key, value))
+
+      now = int(time.time())
+      originallyPublished = now - age
+
+      # Store it in your own node
+      self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self._market_id)
+
+      for node in nodes:
+
+        self._log.debug(node)
+
+        for p in self._activePeers:
+          if p._guid == node[2]:
+            peer = p
+
+        if not peer:
+          peer = self._routingTable.getContact(node[2])
+
+        if peer:
+          peer.send(proto_store(key, value, originalPublisherID, age))
+
+  def _on_storeValue(self, msg):
+
+      self._log.debug('Received Store Command')
+
+      key = msg['key']
+      value = msg['value']
+      originalPublisherID = msg['originalPublisherID']
+      age = msg['age']
+
+      now = int(time.time())
+      originallyPublished = now - age
+
+
+      self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self._market_id)
+
+
+  def store(self, key, value, originalPublisherID=None, age=0, **kwargs):
+        """ Store the received data in this node's local hash table
+
+        @param key: The hashtable key of the data
+        @type key: str
+        @param value: The actual data (the value associated with C{key})
+        @type value: str
+        @param originalPublisherID: The node ID of the node that is the
+                                    B{original} publisher of the data
+        @type originalPublisherID: str
+        @param age: The relative age of the data (time in seconds since it was
+                    originally published). Note that the original publish time
+                    isn't actually given, to compensate for clock skew between
+                    different nodes.
+        @type age: int
+
+        @rtype: str
+
+        @todo: Since the data (value) may be large, passing it around as a buffer
+               (which is the case currently) might not be a good idea... will have
+               to fix this (perhaps use a stream from the Protocol class?)
+        """
+        # Get the sender's ID (if any)
+        if '_rpcNodeID' in kwargs:
+            rpcSenderID = kwargs['_rpcNodeID']
+        else:
+            rpcSenderID = None
+
+        if originalPublisherID == None:
+            if rpcSenderID != None:
+                originalPublisherID = rpcSenderID
+            else:
+                raise TypeError, 'No publisher specifed, and RPC caller ID not available. Data requires an original publisher.'
+
+        now = int(time.time())
+        originallyPublished = now - age
+        self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self._market_id)
+        return 'OK'
+
 
   def executeStoreRPCs(nodes):
       #print '        .....execStoreRPCs called'
@@ -485,7 +489,7 @@ class DHT():
       closeNodes = self._routingTable.findCloseNodes(key, constants.alpha, self._settings['guid'])
       for closeNode in closeNodes:
         new_search._shortlist.append((closeNode._ip, closeNode._port, closeNode._guid))
-      self._log.debug('Updated short list: %s' % new_search._shortlist)
+      self._log.debug('[_iterativeFind] Updated short list: %s' % new_search._shortlist)
 
       # Refresh the k-bucket for this key
       if key != self._settings['guid']:
