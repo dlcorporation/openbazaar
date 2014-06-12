@@ -456,6 +456,7 @@ class DHT():
                finished.
       @rtype: twisted.internet.defer.Deferred
       """
+      self._log.debug('[Iterative Find Node]')
       self._iterativeFind(key, callback=callback)
 
 
@@ -526,7 +527,8 @@ class DHT():
       # If you have more k amount of nodes in your shortlist then stop
       # or ...
       if (len(new_search._shortlist) >= constants.k) or (new_search._shortlist[0] == new_search._prevClosestNode and len(new_search._activeProbes) == new_search._slowNodeCount[0]):
-        new_search._callback(new_search._shortlist)
+        if new_search._callback != None:
+          new_search._callback(new_search._shortlist)
         return
 
     # Update closest node

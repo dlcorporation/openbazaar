@@ -68,8 +68,6 @@ angular.module('app')
   $scope.awaitingShop = null;
   $scope.queryShop = function(peer) {
      console.log('Shop',peer);
-     $scope.dashboard = false;
-     $scope.showStorePanel('storeProducts');
      $scope.awaitingShop = peer.guid;
      console.log('Querying for shop: ',peer);
      var query = {'type': 'query_page', 'findGUID': peer.guid}
@@ -264,6 +262,9 @@ angular.module('app')
     console.log('Receive a page for: ',msg)
     console.log('Waiting for: '+$scope.awaitingShop)
 
+    $scope.dashboard = false;
+    $scope.showStorePanel('storeProducts');
+
     if (msg.senderGUID != $scope.awaitingShop)
        return
     if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
@@ -371,6 +372,7 @@ angular.module('app')
   $scope.searchNetwork = function() {
      var query = {'type': 'search', 'key': $scope.search };
      $scope.searching = $scope.search;
+     $scope.awaitingShop = $scope.search;
      socket.send('search', query)
      $scope.search = ""
   }
