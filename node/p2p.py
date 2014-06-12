@@ -84,7 +84,7 @@ class PeerConnection(object):
             queue.put(msg)
 
         else:
-            self._log.info("Node timed out: %s %s" % (self._address, serialized))
+            self._log.info("Node timed out: %s" % (self._address))
             self.cleanup_socket()
             queue.put(False)
 

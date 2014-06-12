@@ -164,8 +164,8 @@ class MongoDataStore(DataStore):
         # else:
         #     self._cursor.execute('UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?', (buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID, encodedKey))
 
-    def _dbQuery(self, key, columnName):
-        row = self._db.data.find_one({ 'key':key.encode('hex')}, {columnName:1})
+    def _dbQuery(self, key, columnName):        
+        row = self._db.data.find_one({ 'key':key}, {columnName:1})
         if row != None:
             value = str(row[columnName])
             return value
