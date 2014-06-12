@@ -13,7 +13,8 @@ from ecdsa import SigningKey,SECP256k1
 import random
 from obelisk import bitcoin
 import base64
-
+import hashlib
+import time
 
 class Market(object):
 
@@ -61,32 +62,7 @@ class Market(object):
         self.load_page(welcome)
 
 
-    def lookup(self, msg):
 
-        if self.query_ident is None:
-            self._log.info("Initializing identity query")
-            self.query_ident = lookup.QueryIdent()
-
-        nickname = str(msg["text"])
-        key = self.query_ident.lookup(nickname)
-        if key is None:
-            self._log.info("Key not found for this nickname")
-            return ("Key not found for this nickname", None)
-
-        self._log.info("Found key: %s " % key.encode("hex"))
-        if nickname in self._transport.nick_mapping:
-            self._log.info("Already have a cached mapping, just adding key there.")
-            response = {'nickname': nickname,
-                        'pubkey': self._transport.nick_mapping[nickname][1].encode('hex'),
-                        'signature': self._transport.nick_mapping[nickname][0].encode('hex'),
-                        'type': 'response_pubkey',
-                        'signature': 'unknown'}
-            self._transport.nick_mapping[nickname][0] = key
-            return (None, response)
-
-        self._transport.nick_mapping[nickname] = [key, None]
-
-        self._transport.send(protocol.negotiate_pubkey(nickname, key))
 
 
     def load_page(self, welcome):
@@ -109,6 +85,9 @@ class Market(object):
         self._log.info("Product to save %s" % msg)
         self._log.info(self._transport)
 
+        msg['market_id'] = self._market_id
+
+
         product_id = msg['id'] if msg.has_key("id") else ""
 
         if product_id == "":
@@ -123,6 +102,15 @@ class Market(object):
         self._db.products.update({'id':product_id}, {'$set':msg}, True)
 
 
+        # Save product listing to DHT
+        listing = json.dumps(msg)
+        listingKey = hashlib.sha1(listing).hexdigest()
+        self._log.debug('Listing Key: %s' % listingKey)
+
+        #self._transport._dht._dataStore.setItem(listingKey, listing, int(time.time()), int(time.time()), self._transport._guid )
+        self._transport._dht.iterativeStore(listingKey, listing, self._transport._guid)
+
+
     def remove_product(self, msg):
         self._log.info("Product to remove %s" % msg)
         self._db.products.remove({'id':msg['productID']})
@@ -130,7 +118,7 @@ class Market(object):
 
     def get_products(self):
         self._log.info(self._transport._market_id)
-        products = self._db.products.find()
+        products = self._db.products.find({'market_id':self._transport._market_id})
         my_products = []
 
         for product in products:
@@ -217,7 +205,7 @@ class Market(object):
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
         self.settings = self.get_settings()
-        self._log.info(base64.b64encode(self.settings['storeDescription'].encode('ascii')))
+        #self._log.info(base64.b64encode(self.settings['storeDescription']))
         self._transport.send(proto_page(self._transport._uri,
                                         self._transport.pubkey,
                                         self._transport.guid,
@@ -260,3 +248,33 @@ class Market(object):
                 k, v[1].encode("hex") if v[1] is not None else v[1],
                 v[0].encode("hex") if v[0] is not None else v[0]))
         self._log.info("##################################")
+
+
+
+
+    def lookup(self, msg):
+
+        if self.query_ident is None:
+            self._log.info("Initializing identity query")
+            self.query_ident = lookup.QueryIdent()
+
+        nickname = str(msg["text"])
+        key = self.query_ident.lookup(nickname)
+        if key is None:
+            self._log.info("Key not found for this nickname")
+            return ("Key not found for this nickname", None)
+
+        self._log.info("Found key: %s " % key.encode("hex"))
+        if nickname in self._transport.nick_mapping:
+            self._log.info("Already have a cached mapping, just adding key there.")
+            response = {'nickname': nickname,
+                        'pubkey': self._transport.nick_mapping[nickname][1].encode('hex'),
+                        'signature': self._transport.nick_mapping[nickname][0].encode('hex'),
+                        'type': 'response_pubkey',
+                        'signature': 'unknown'}
+            self._transport.nick_mapping[nickname][0] = key
+            return (None, response)
+
+        self._transport.nick_mapping[nickname] = [key, None]
+
+        self._transport.send(protocol.negotiate_pubkey(nickname, key))
