@@ -115,13 +115,15 @@ class DHT():
         self._routingTable.addContact(newContact)
 
 
+
+
     if msg['findValue'] == True:
        print 'finding a value'
 
        print self._dataStore[key]
 
        if key in self._dataStore and self._dataStore[key] != None:
-        
+
          # Found key in local datastore
          newContact.send_raw(json.dumps({"type":"findNodeResponse","senderGUID":newContact._transport.guid, "uri":newContact._transport._uri, "pubkey":newContact._transport.pubkey, "foundKey":self._dataStore[key], "findID":findID}))
 
@@ -551,7 +553,7 @@ class DHT():
       closestPeer_ip = urlparse(closestPeer._address).hostname
       closestPeer_port = urlparse(closestPeer._address).port
       new_search._prevClosestNode = (closestPeer_ip, closestPeer_port, closestPeer._guid)
-      print 'Previous Closest Node',new_search._prevClosestNode
+      self._log.info('Previous Closest Node %s' % new_search._prevClosestNode)
 
 
     # Sort short list again

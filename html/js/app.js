@@ -263,7 +263,7 @@ angular.module('app')
     console.log('Waiting for: '+$scope.awaitingShop)
 
     $scope.dashboard = false;
-    $scope.showStorePanel('storeProducts');
+    $scope.showStorePanel('storeInfo');
 
     if (msg.senderGUID != $scope.awaitingShop)
        return
@@ -517,10 +517,10 @@ angular.module('app')
 
 
   function resetStorePanels() {
+    $scope.storeInfoPanel = false;
   	$scope.storeProductsPanel = false;
   	$scope.storeReviewsPanel = false;
   	$scope.storeOrdersPanel = false;
-  	$scope.storeInfoPanel = false;
   	$scope.storeOrderHistoryPanel = false;
   }
 
@@ -529,9 +529,11 @@ angular.module('app')
     resetStorePanels();
   	$scope.dashboard = false;
 
-
   	switch(panelName) {
-  		case 'storeProducts':
+      case 'storeInfo':
+        $scope.storeInfoPanel = true;
+        break;
+      case 'storeProducts':
   			$scope.storeProductsPanel = true;
   			break;
   		case 'storeOrders':
@@ -539,9 +541,6 @@ angular.module('app')
   			break;
   		case 'storeReviews':
   			$scope.storeReviewsPanel = true;
-  			break;
-  		case 'storeInfo':
-  			$scope.storeInfoPanel = true;
   			break;
 
   	}

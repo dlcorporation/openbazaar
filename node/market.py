@@ -98,8 +98,6 @@ class Market(object):
         if not msg.has_key("productQuantity") or not msg['productQuantity'] > 0:
           msg['productQuantity'] = 1
 
-        self._db.products.update({'id':product_id}, {'$set':msg}, True)
-
 
         # Save product listing to DHT
         listing = json.dumps(msg)
@@ -109,10 +107,17 @@ class Market(object):
         h.update(listingKey)
         listingKey = h.hexdigest()
 
+        msg['key'] = listingKey
+
+        self._db.products.update({'id':product_id}, {'$set':msg}, True)
+
         self._log.debug('New Listing Key: %s' % listingKey)
 
-        #self._transport._dht._dataStore.setItem(listingKey, listing, int(time.time()), int(time.time()), self._transport._guid )
+        # Store listing
         self._transport._dht.iterativeStore(self._transport, listingKey, listing, self._transport._guid)
+
+        # If keywords store them in the keyword index
+
 
 
     def remove_product(self, msg):
@@ -134,6 +139,7 @@ class Market(object):
                         "productTags":product['productTags'] if product.has_key("productTags") else "",
                         "productImageData":product['productImageData'] if product.has_key("productImageData") else "",
                         "productQuantity":product['productQuantity'] if product.has_key("productQuantity") else "",
+                        "key":product['key'] if product.has_key("key") else "",
                          })
 
         return { "products": my_products }
