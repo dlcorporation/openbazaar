@@ -224,7 +224,7 @@ class TransportLayer(object):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        self._log.info("[On Message] Data received: %s" % msg)
+        self._log.info("[On Message] Data received: %s" % msg)            
 
         #if not self._routingTable.getContact(msg['senderGUID']):
             # Add to contacts if doesn't exist yet
