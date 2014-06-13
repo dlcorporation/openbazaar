@@ -89,6 +89,7 @@ h4 {
 }
 .peers-table { padding:10px; width:100%; color:#999;  }
 .peers-table td { padding:3px 5px; }
+.peers-table td:hover { cursor:pointer; }
 
  .animated {
     -webkit-transition: height 0.2s;

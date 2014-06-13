@@ -535,6 +535,7 @@ angular.module('app')
         break;
       case 'storeProducts':
   			$scope.storeProductsPanel = true;
+        $scope.queryStoreProducts($scope.awaitingShop);
   			break;
   		case 'storeOrders':
   			//$scope.storeOrdersPanel = true;
@@ -544,6 +545,15 @@ angular.module('app')
   			break;
 
   	}
+  }
+
+  // Query for product listings from this store
+  $scope.queryStoreProducts = function(storeID) {
+
+    console.log('Querying for products in store: '+storeID);
+    var query = { 'type':'query_store_products', 'key': storeID }
+    socket.send('query_store_products', query);
+
   }
 
 

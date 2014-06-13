@@ -145,6 +145,20 @@ class Market(object):
         return { "products": my_products }
 
 
+    def get_store_products(self, key):
+
+      ''' Send a get product listings call to the node in question and then cache those listings locally
+      TODO: Ideally we would want to send an array of listing IDs that we have locally and then the node would
+      send back the missing or updated listings. This would save on queries for listings we already have.
+      '''
+      print msg
+
+      # Filter for listings (i.e. limit, keyword, etc.)
+      listingFilter = None
+
+      self._transport._dht.findProductListings(key, listingFilter)
+
+
     # SETTINGS
 
     def save_settings(self, msg):
@@ -187,12 +201,7 @@ class Market(object):
         msg['senderGUID'] = self._transport.guid
         msg['pubkey'] = self._transport.pubkey
 
-        # Find nodes
-        #matching_peers = self._transport._dht._iterativeFind(findGUID)
-
-        #if len(matching_peers) == 1:
-        if msg:
-           self._transport.send(msg, findGUID)
+        self._transport.send(msg, findGUID)
 
 
     def on_page(self, page):

@@ -30,6 +30,7 @@ class ProtocolHandler:
             "order":          self.client_order,
             "search":          self.client_search,
             "shout":          self.client_shout,
+            "query_store_products":	  self.client_query_store_products,
             "query_orders":	  self.client_query_orders,
             "query_products":	  self.client_query_products,
             "update_settings":	self.client_update_settings,
@@ -78,12 +79,8 @@ class ProtocolHandler:
         self._log.info("Message: %s" % msg)
         findGUID = msg['findGUID']
 
-        if self._market.query_page(findGUID):
-          #self._market.reputation.query_reputation(guid)
-          self._log.info('Find reputation')
-        else:
-          self._log.info('Could not find page')
-
+        self._market.query_page(findGUID)
+        #self._market.reputation.query_reputation(guid)
 
 
     def client_query_orders(self, socket_handler, msg):
@@ -103,6 +100,19 @@ class ProtocolHandler:
         products = self._market.get_products()
 
         self.send_to_client(None, { "type": "products", "products": products } )
+
+
+
+    def client_query_store_products(self, socket_handler, msg):
+
+        self._log.info("Querying for Store Products")
+
+
+        # Query mongo for products
+        self._market.get_store_products(msg['key'])
+        products = {} #self._market.get_products()
+
+        self.send_to_client(None, { "type": "store_products", "products": products } )
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
@@ -308,7 +318,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
 
-        self._log.info('Message: %s' % message)
+        self._log.info('[On Message]: %s' % message)
 
         try:
             request = json.loads(message)

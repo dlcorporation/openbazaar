@@ -694,7 +694,7 @@
 
           <div ng-show="storeInfoPanel" class="animated bounceInLeft">
 
-            <div id="page-content" style="margin:10px 0"></div>
+            <p id="page-content" style="margin:10px 0"></p>
 
             <table class="table table-bordered table-striped" style="font-size:14px;width:100%;table-layout:fixed">
             <tr>
@@ -825,19 +825,29 @@
     </div>
     <div id="sidebar" ng-show="sidebar" class="shoutbox-area col-sm-4" style="margin-top:20px;">
 
+      <table class="peers-table" style="margin-top:20px;">
+      <tbody>
+          <tr>
+              <td width="40"><identicon icon-size="38" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
+              <td style="font-size:13px;"><span title="{{myself.pubkey}}">My Store<br>
+              <span style="font-style:italic;">{{myself.nickname ? myself.nickname : myself.guid}}</span></span></td>
+
+
+          </tr>
+      </tbody>
+      </table>
+
       <h3>Online Markets</h3>
-      My GUID: {{myself.guid}}
 
-      <div class="peers-area" ng-repeat="peer in peers | limitTo:5">
-          <table class="peers-table">
-              <tr>
+      <div class="peers-area" >
+          <table id="favorite-peers" class="peers-table table-hover">
+          <tbody>
+              <tr ng-repeat="peer in peers | limitTo:5" ng-click="queryShop(peer)">
                   <td width="40"><identicon icon-size="38" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
-
                   <td style="font-size:13px;"><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}<br>
-                  <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.guid?peer.guid.slice(0,20):'unknown'}}...</span></span></td>
-
-                  <td align="right"><button ng-click="queryShop(peer)" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-share-alt"></span> Visit</button></td>
+                  <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.guid}}</span></span></td>
               </tr>
+          </tbody>
           </table>
       </div>
 
