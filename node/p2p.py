@@ -2,18 +2,15 @@ import json
 import logging
 from collections import defaultdict
 import traceback
-from zmq.eventloop import ioloop
-import zmq
 from multiprocessing import Process, Queue
 from threading import Thread
+
+from zmq.eventloop import ioloop
+import zmq
+
 ioloop.install()
-import tornado
-import constants
 from protocol import goodbye
 import network_util
-import hashlib
-import routingtable
-import datastore
 from urlparse import urlparse
 
 
@@ -41,7 +38,7 @@ class PeerConnection(object):
     def send_raw(self, serialized):
 
 
-        Thread(target=self._send_raw, args=(serialized,self._queue,)).start()
+        Thread(target=self._send_raw, args=(serialized, self._queue,)).start()
         msg = self._queue.get()
 
         return msg
@@ -62,12 +59,11 @@ class PeerConnection(object):
         if not msg:
             self._log.info("Peer %s timed out." % self._address)
             self._queue.put(False)
-            #self._transport.remove_peer(self._address, self._guid)
+            # self._transport.remove_peer(self._address, self._guid)
         else:
             self._queue.put(msg)
 
         p.join()
-
 
 
     def _send_raw_process(self, serialized, queue):
@@ -84,7 +80,7 @@ class PeerConnection(object):
             queue.put(msg)
 
         else:
-            self._log.info("Node timed out: %s" % (self._address))
+            self._log.info("Node timed out: %s" % self._address)
             self.cleanup_socket()
             queue.put(False)
 
@@ -137,15 +133,14 @@ class TransportLayer(object):
             self._socket.bind(self._uri)
         else:
             try:
-              self._socket.bind('tcp://*:%s' % self._port)
+                self._socket.bind('tcp://*:%s' % self._port)
             except:
-              pass
+                pass
 
         while True:
             message = self._socket.recv()
-            print 'GOT IT: %s' % message
             self.on_raw_message(message)
-            self._socket.send(json.dumps({'type': 'ok', 'senderGUID':self._guid, 'pubkey':pubkey}))
+            self._socket.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}))
 
     def closed(self, *args):
         self._log.info("client left")
@@ -163,13 +158,12 @@ class TransportLayer(object):
         if (ip, port, guid) in self._shortlist:
             self._shortlist.remove((ip, port, guid))
 
-
         self._log.info('Removed')
 
 
 
         # try:
-        #     del self._peers[uri]
+        # del self._peers[uri]
         #     msg = {
         #         'type': 'peer_remove',
         #         'uri': uri
@@ -180,20 +174,19 @@ class TransportLayer(object):
         #     self._log.info("Peer %s was already removed", uri)
 
 
-
     def send(self, data, send_to=None):
 
-        self._log.info("Outgoing Data: %s" % data);
+        self._log.info("Outgoing Data: %s" % data)
 
         # Directed message
-        if send_to != None:
+        if send_to is not None:
 
             for peer in self._dht._activePeers:
 
-              if peer._guid == send_to:
-                self._log.info('Found a matching peer')
-                peer.send(data)
-                self._log.debug('Sent message: %s ' % data)
+                if peer._guid == send_to:
+                    self._log.info('Found a matching peer')
+                    peer.send(data)
+                    self._log.debug('Sent message: %s ' % data)
 
             return
 
@@ -202,7 +195,6 @@ class TransportLayer(object):
 
             for peer in self._dht._activePeers:
                 try:
-
 
 
                     data['senderGUID'] = self._guid
@@ -224,11 +216,11 @@ class TransportLayer(object):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        self._log.info("[On Message] Data received: %s" % msg)            
+        self._log.info("[On Message] Data received: %s" % msg)
 
-        #if not self._routingTable.getContact(msg['senderGUID']):
-            # Add to contacts if doesn't exist yet
-            #self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
+        # if not self._routingTable.getContact(msg['senderGUID']):
+        # Add to contacts if doesn't exist yet
+        #self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
 
         self.trigger_callbacks(msg['type'], msg)
 
@@ -256,7 +248,7 @@ class TransportLayer(object):
         except RuntimeError:
             return False
 
-        if not network_util.is_valid_protocol(other_protocol)  \
+        if not network_util.is_valid_protocol(other_protocol) \
                 or not network_util.is_valid_port(other_port):
             return False
 

@@ -1,5 +1,3 @@
-from p2p import PeerConnection
-
 class Contact(object):
     """ Encapsulation for remote contact
 

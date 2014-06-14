@@ -71,7 +71,7 @@ class ClientBase(object):
 
     def trigger_callbacks(self, tx_id, *args):
         if tx_id in self._subscriptions:
-            self._subscriptions[tx_id](*args)
+            self._subscriptions[tx_id]
             del self._subscriptions[tx_id]
 
     # Low level zmq abstraction into obelisk frames

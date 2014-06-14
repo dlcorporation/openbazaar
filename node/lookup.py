@@ -1,5 +1,7 @@
-import zmq
 import logging
+
+import zmq
+
 
 class QueryIdent:
 

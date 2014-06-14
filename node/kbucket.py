@@ -1,5 +1,7 @@
-import constants
 import logging
+
+import constants
+
 
 class BucketFull(Exception):
     """ Raised when the bucket is full """

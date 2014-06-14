@@ -1,17 +1,17 @@
 import sys
 import argparse
+
 import tornado.ioloop
 import tornado.web
 import tornado.ioloop
 from zmq.eventloop import ioloop
+
 ioloop.install()
 from crypto2crypto import CryptoTransportLayer
 from market import Market
 from ws import WebSocketHandler
 import logging
 import signal
-import threading
-from dht import DHT
 
 
 class MainHandler(tornado.web.RequestHandler):

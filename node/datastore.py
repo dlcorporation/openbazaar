@@ -8,10 +8,10 @@
 # may be created by processing this file with epydoc: http://epydoc.sf.net
 
 import UserDict
-from pymongo import MongoClient
-import time
-import os
 import logging
+
+from pymongo import MongoClient
+
 
 class DataStore(UserDict.DictMixin):
     """ Interface for classes implementing physical storage (for data
@@ -166,7 +166,7 @@ class MongoDataStore(DataStore):
 
     def _dbQuery(self, key, columnName):        
         row = self._db.data.find_one({ 'key':key}, {columnName:1})
-        if row != None:
+        if row is not None:
             value = str(row[columnName])
             return value
 
