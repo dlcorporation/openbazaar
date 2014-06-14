@@ -40,7 +40,7 @@ class DataStore(UserDict.DictMixin):
         """ Get the time the C{(key, value)} pair identified by C{key}
         was originally published """
 
-    def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID):
+    def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id):
         """ Set the value of the (key, value) pair identified by C{key};
         this should set the "last published" value for the (key, value)
         pair to the current time
@@ -90,7 +90,7 @@ class DictDataStore(DataStore):
         was originally published """
         return self._dict[key][2]
 
-    def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID):
+    def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id):
         """ Set the value of the (key, value) pair identified by C{key};
         this should set the "last published" value for the (key, value)
         pair to the current time
@@ -152,7 +152,7 @@ class MongoDataStore(DataStore):
 
     def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id=1):
 
-        row = self._db.data.update({'key':key}, {'key':key,
+        row = self._db.data.update({'key':key, 'market_id':market_id}, {'key':key,
                                                         'value':value,
                                                         'lastPublished':lastPublished,
                                                         'originallyPublished':originallyPublished,
@@ -164,10 +164,10 @@ class MongoDataStore(DataStore):
         # else:
         #     self._cursor.execute('UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?', (buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID, encodedKey))
 
-    def _dbQuery(self, key, columnName):        
+    def _dbQuery(self, key, columnName):
         row = self._db.data.find_one({ 'key':key}, {columnName:1})
         if row is not None:
-            value = str(row[columnName])
+            value = row[columnName]
             return value
 
 

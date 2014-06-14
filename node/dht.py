@@ -115,7 +115,7 @@ class DHT(object):
         if msg['findValue'] is True:
             print 'finding a value'
 
-            print self._dataStore[key]
+            print 'dumps', self._dataStore[key]
 
             if key in self._dataStore and self._dataStore[key] is not None:
                 # Found key in local datastore
@@ -343,13 +343,19 @@ class DHT(object):
 
         self._log.debug('Short list after: %s' % search._shortlist)
 
-    @staticmethod
-    def findProductListings(transport, key, listingFilter=None):
+    def find_listings(self, transport, key, listingFilter=None, callback=None):
         ''' Send a get product listings call to the node in question and then cache those listings locally
         TODO: Ideally we would want to send an array of listing IDs that we have locally and then the node would
         send back the missing or updated listings. This would save on queries for listings we already have.
         '''
-        print key, listingFilter
+        listing_index_key = hashlib.sha1('listings-%s' % key).hexdigest()
+        hashvalue = hashlib.new('ripemd160')
+        hashvalue.update(listing_index_key)
+        listing_index_key = hashvalue.hexdigest()
+
+        self._log.info('Finding listings for store: %s' % listing_index_key)
+
+        self.iterativeFindValue(listing_index_key, callback)
 
         # Find appropriate storage nodes and save key value
         # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
@@ -376,7 +382,7 @@ class DHT(object):
             originalPublisherID = self._guid
 
         # Find appropriate storage nodes and save key value
-        self.iterativeFindNode(key, lambda msg, findKey=findKey, value=value, originalPublisherID=originalPublisherID,
+        self.iterativeFindNode(key, lambda msg, findKey=key, value=value, originalPublisherID=originalPublisherID,
                                            age=age: self.storeKeyValue(msg, findKey, value, originalPublisherID, age))
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):

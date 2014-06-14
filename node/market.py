@@ -145,7 +145,7 @@ class Market(object):
 
         # Calculate index of listings
         listing_ids = self._db.products.find({'market_id':self._transport._market_id}, {'key':1})
-        my_listings = []
+        my_listings = []        
         for listing_id in listing_ids:
             my_listings.append(listing_id['key'])
 

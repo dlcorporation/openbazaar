@@ -1,5 +1,6 @@
 import threading
 import json
+import ast
 import random
 import logging
 
@@ -102,14 +103,8 @@ class ProtocolHandler:
 
         self.send_to_client(None, { "type": "products", "products": products } )
 
-
-
-
-
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
-
-
 
         # Query mongo for order
         order = self._market.orders.get_order(msg['orderId'])
@@ -192,17 +187,19 @@ class ProtocolHandler:
         self._log.info("Querying for Store Products")
 
         # Query mongo for products
-        self._transport._dht.findListings(msg['key'], callback=self.on_find_products)
+        self._transport._dht.find_listings(self._transport, msg['key'], callback=self.on_find_products)
 
     def on_find_products(self, results):
 
-      self._log.info('Found Products: %s' % results)
+      self._log.info('Found Products: %s' % type(results))
 
-      products = {} #self._market.get_products()
+      # results = json.dumps(results)
+      #results = json.loads(results)
 
-      self.send_to_client(None, { "type": "store_products", "products": products } )
+      products = results['listings']
+      print products
 
-
+      self.send_to_client(None, { "type": "store_products", "products": results['listings'] } )
 
     def client_shout(self, socket_handler, msg):
         msg['uri'] = self._transport._uri
