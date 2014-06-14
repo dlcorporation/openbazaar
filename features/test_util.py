@@ -33,7 +33,8 @@ def ws_send_raw(port, string):
     return IOLoop.current().run_sync(client)
 
 
-def ws_send(node_index, command, params={}):
+def ws_send(node_index, command, params=None):
+    if not params: params = {}
     port = str(node_to_ws_port(node_index))
     cmd = {'command': command,
            'id': 1,

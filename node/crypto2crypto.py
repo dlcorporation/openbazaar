@@ -1,23 +1,15 @@
-import constants
-from contact import Contact
 import hashlib
 import json
 import logging
-from market import Market
+import traceback
+from urlparse import urlparse
+
 import obelisk
-from obelisk import bitcoin
-import os
 from protocol import hello_request, hello_response, proto_response_pubkey
 from pymongo import MongoClient
 import pyelliptic as ec
 from p2p import PeerConnection, TransportLayer
-from threading import Thread
-import time
-import tornado
-import traceback
-from urlparse import urlparse
 from dht import DHT
-
 
 
 class CryptoPeerConnection(PeerConnection):
@@ -35,7 +27,7 @@ class CryptoPeerConnection(PeerConnection):
 
         PeerConnection.__init__(self, transport, address)
 
-        if pub == None or guid == None:
+        if pub is None or guid is None:
           self._log.debug('About to say hello')
           msg = self.send_raw(json.dumps({'type':'hello', 'pubkey':transport.pubkey, 'uri':transport._uri, 'senderGUID':transport.guid }))
 
@@ -67,7 +59,7 @@ class CryptoPeerConnection(PeerConnection):
         pass
 
     def peer_to_tuple(self):
-        return (self._ip, self._port, self._guid)
+        return self._ip, self._port, self._guid
 
 
 class CryptoTransportLayer(TransportLayer):
@@ -94,11 +86,20 @@ class CryptoTransportLayer(TransportLayer):
 
         TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid)
 
-        # Set up callbacks
-        self.add_callback('ping', self._dht._on_ping)
+        # Set up callbacks        
         self.add_callback('findNode', self._findNode)
         self.add_callback('findNodeResponse', self._findNodeResponse)
         self.add_callback('store', self._storeValue)
+
+    def getDHT(self):
+        return self._dht
+
+    def getMarketID(self):
+        return self._market_id
+
+    def getMyself(self):
+        return self._myself
+
 
 
     def _storeValue(self, msg):
@@ -125,7 +126,7 @@ class CryptoTransportLayer(TransportLayer):
         pubkey = msg['pubkey']
 
         #msg['new_peer'] = CryptoPeerConnection(self, uri, pubkey, guid)
-        self._dht._on_findNodeResponse(self, msg)
+        self._dht.on_findNodeResponse(self, msg)
 
     def _setup_settings(self):
 
@@ -167,7 +168,7 @@ class CryptoTransportLayer(TransportLayer):
         self.listen(self.pubkey) # Turn on zmq socket
 
         if seed_uri:
-            self._log.info('Initializing Seed Peer(s): [%s]' % (seed_uri))
+            self._log.info('Initializing Seed Peer(s): [%s]' % seed_uri)
             seed_peer = CryptoPeerConnection(self, seed_uri)
             self._dht.start(seed_peer)
 
@@ -198,13 +199,15 @@ class CryptoTransportLayer(TransportLayer):
       if not peerExists and peer._guid != self._guid:
         self._log.info('Adding crypto peer %s' % peer._pub)
         self._routingTable.addContact(peer)
-        self._dht.add_active_peer(peer)
+        print peer
+        self._dht.add_active_peer(self, (peer._pub, peer._address, peer._guid))
 
 
 
     # Return data array with details from the crypto file
     # TODO: This needs to be protected better; potentially encrypted file or DB
-    def load_crypto_details(self, store_file):
+    @staticmethod
+    def load_crypto_details(store_file):
         with open(store_file) as f:
             data = json.loads(f.read())
         assert "nickname" in data
@@ -315,7 +318,7 @@ class CryptoTransportLayer(TransportLayer):
                     self._peers[uri]._pub = pub.decode('hex')
                     self.trigger_callbacks('peer', self._peers[uri])
 
-                if (self._peers[uri]._pub != pub.decode('hex')):
+                if self._peers[uri]._pub != pub.decode('hex'):
                     self._log.info("Updating public key for node")
                     self._peers[uri]._nickname = nickname
                     self._peers[uri]._pub = pub.decode('hex')

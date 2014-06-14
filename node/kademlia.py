@@ -21,14 +21,16 @@ from contact import Contact
 
 reactor = twisted.internet.reactor
 
+
 class TimeoutError(Exception):
     """ Raised when a RPC times out """
 
+
 class KademliaProtocol(protocol.DatagramProtocol):
     """ Implements all low-level network-related functions of a Kademlia node """
-    msgSizeLimit = constants.udpDatagramMaxSize-26
-    maxToSendDelay = 10**-3#0.05
-    minToSendDelay = 10**-5#0.01
+    msgSizeLimit = constants.udpDatagramMaxSize - 26
+    maxToSendDelay = 10 ** -3  # 0.05
+    minToSendDelay = 10 ** -5  # 0.01
 
     def __init__(self, node, msgEncoder=encoding.Bencode(), msgTranslator=msgformat.DefaultFormat()):
         self._node = node
@@ -76,7 +78,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
             df._rpcRawResponse = True
 
         # Set the RPC timeout timer
-        timeoutCall = reactor.callLater(constants.rpcTimeout, self._msgTimeout, msg.id) #IGNORE:E1101
+        timeoutCall = reactor.callLater(constants.rpcTimeout, self._msgTimeout, msg.id)  # IGNORE:E1101
         # Transmit the data
         self._send(encodedMsg, msg.id, (contact.address, contact.port))
         self._sentMessages[msg.id] = (contact.id, df, timeoutCall)
@@ -112,7 +114,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
             return
 
         message = self._translator.fromPrimitive(msgPrimitive)
-        remoteContact = Contact(message.nodeID, address[0], address[1], self)
+        remoteContact = Contact(message.nodeID, address[0], address[1])
 
         # Refresh the remote node's details in the local node's k-buckets
         self._node.addContact(remoteContact)
@@ -138,7 +140,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
                     else:
                         localModuleHierarchy = self.__module__.split('.')
                         remoteHierarchy = message.exceptionType.split('.')
-                        #strip the remote hierarchy
+                        # strip the remote hierarchy
                         while remoteHierarchy[0] == localModuleHierarchy[0]:
                             remoteHierarchy.pop(0)
                             localModuleHierarchy.pop(0)
@@ -155,7 +157,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
                     df.callback(message.response)
             else:
                 # If the original message isn't found, it must have timed out
-                #TODO: we should probably do something with this...
+                # TODO: we should probably do something with this...
                 pass
 
     def _send(self, data, rpcID, address):
@@ -185,8 +187,8 @@ class KademliaProtocol(protocol.DatagramProtocol):
             seqNumber = 0
             startPos = 0
             while seqNumber < totalPackets:
-                #reactor.iterate() #IGNORE:E1101
-                packetData = data[startPos:startPos+self.msgSizeLimit]
+                # reactor.iterate() #IGNORE:E1101
+                packetData = data[startPos:startPos + self.msgSizeLimit]
                 encSeqNumber = chr(seqNumber >> 8) + chr(seqNumber & 0xff)
                 txData = '\x00%s%s%s\x00%s' % (encTotalPackets, encSeqNumber, rpcID, packetData)
                 self._sendNext(txData, address)
@@ -204,7 +206,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
             delay = self.minToSendDelay
             self._next = ts + self.minToSendDelay
         else:
-            delay = (self._next-ts) + self.maxToSendDelay
+            delay = (self._next - ts) + self.maxToSendDelay
             self._next += self.maxToSendDelay
         if self.transport:
             laterCall = reactor.callLater(delay, self.transport.write, txData, address)
@@ -259,7 +261,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
                 df.callback(result)
         else:
             # No such exposed method
-            df.errback( failure.Failure( AttributeError('Invalid method: %s' % method) ) )
+            df.errback(failure.Failure(AttributeError('Invalid method: %s' % method)))
 
     def _msgTimeout(self, messageID):
         """ Called when an RPC request message times out """
@@ -277,7 +279,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
                         df.errback(failure.Failure(TimeoutError(remoteContactID)))
                         return
                 # Reset the RPC timeout timer
-                timeoutCall = reactor.callLater(constants.rpcTimeout, self._msgTimeout, messageID) #IGNORE:E1101
+                timeoutCall = reactor.callLater(constants.rpcTimeout, self._msgTimeout, messageID)  # IGNORE:E1101
                 self._sentMessages[messageID] = (remoteContactID, df, timeoutCall)
                 return
             del self._sentMessages[messageID]
@@ -301,5 +303,5 @@ class KademliaProtocol(protocol.DatagramProtocol):
             except Exception, e:
                 print e
             del self._callLaterList[key]
-            #TODO: test: do we really need the reactor.iterate() call?
+            # TODO: test: do we really need the reactor.iterate() call?
             reactor.iterate()

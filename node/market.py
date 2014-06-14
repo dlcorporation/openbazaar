@@ -1,31 +1,40 @@
-from protocol import shout, proto_page, query_page
+"""
+This module manages all market related activities
+"""
+
+import json
+import logging
+import hashlib
+import random
+from threading import Thread
+
+from protocol import proto_page, query_page
 from reputation import Reputation
 from orders import Orders
 import protocol
-import sys
-import json
 import lookup
 from pymongo import MongoClient
-import logging
-import pyelliptic
-import pycountry
-from ecdsa import SigningKey,SECP256k1
-import random
-from obelisk import bitcoin
-import base64
-import hashlib
-import time
+
 
 class Market(object):
 
     def __init__(self, transport):
 
+        """This class manages the active market for the application
+
+        Attributes:
+          _transport (CryptoTransportLayer): Transport layer for messaging between nodes.
+          _dht (DHT): For storage across the network.
+          _market_id (int): Indicates which local market we're working with.
+
+        """
+
         # Current
         self._transport = transport
-        self._dht = transport._dht
-        self._market_id = self._transport._market_id
-        self._myself = self._transport._myself
-        self._peers = self._dht._activePeers
+        self._dht = transport.getDHT()
+        self._market_id = transport.getMarketID()
+        self._myself = transport.getMyself()
+        self._peers = self._dht.getActivePeers()
 
         # Legacy for now
         self.query_ident = None
@@ -34,12 +43,16 @@ class Market(object):
         self.order_entries = self.orders._orders
         self.nicks = {}
         self.pages = {}
+        self.welcome = False
+        self.mypage = None
+        self.signature = None
+        self.nickname = None
 
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
         self._log.info("Loading Market %s" % self._market_id)
 
 
-        MONGODB_URI = 'mongodb://localhost:27017'
+        #MONGODB_URI = 'mongodb://localhost:27017'
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
@@ -68,9 +81,9 @@ class Market(object):
     def load_page(self, welcome):
 
         nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
-        storeDescription = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
+        store_description = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
 
-        tagline = "%s: %s" % (nickname, storeDescription)
+        tagline = "%s: %s" % (nickname, store_description)
         self.mypage = tagline
         self.nickname = nickname
         self.signature = self._transport._myself.sign(tagline)
@@ -90,39 +103,67 @@ class Market(object):
         product_id = msg['id'] if msg.has_key("id") else ""
 
         if product_id == "":
-          product_id = random.randint(0,1000000)
+            product_id = random.randint(0, 1000000)
 
         if not msg.has_key("productPrice") or not msg['productPrice'] > 0:
-          msg['productPrice'] = 0
+            msg['productPrice'] = 0
 
         if not msg.has_key("productQuantity") or not msg['productQuantity'] > 0:
-          msg['productQuantity'] = 1
+            msg['productQuantity'] = 1
 
 
         # Save product listing to DHT
         listing = json.dumps(msg)
-        listingKey = hashlib.sha1(listing).hexdigest()
+        listing_key = hashlib.sha1(listing).hexdigest()
 
-        h = hashlib.new('ripemd160')
-        h.update(listingKey)
-        listingKey = h.hexdigest()
+        hash_value = hashlib.new('ripemd160')
+        hash_value.update(listing_key)
+        listing_key = hash_value.hexdigest()
 
-        msg['key'] = listingKey
+        msg['key'] = listing_key
 
         self._db.products.update({'id':product_id}, {'$set':msg}, True)
 
-        self._log.debug('New Listing Key: %s' % listingKey)
+        self._log.debug('New Listing Key: %s' % listing_key)
 
         # Store listing
-        self._transport._dht.iterativeStore(self._transport, listingKey, listing, self._transport._guid)
+        self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
+
+
+
+        self.update_listings_index()
 
         # If keywords store them in the keyword index
 
+    def update_listings_index(self):
+
+        # Store to marketplace listing index
+        listing_index_key = hashlib.sha1('listings-%s' % self._transport._guid).hexdigest()
+        hashvalue = hashlib.new('ripemd160')
+        hashvalue.update(listing_index_key)
+        listing_index_key = hashvalue.hexdigest()
+
+        # Calculate index of listings
+        listing_ids = self._db.products.find({'market_id':self._transport._market_id}, {'key':1})
+        my_listings = []
+        for listing_id in listing_ids:
+            my_listings.append(listing_id['key'])
+
+        self._log.debug('My Listings: %s' % my_listings)
+
+        # Sign listing index for validation and tamper resistance
+        signature = self._myself.sign(json.dumps(my_listings)).encode('hex')
+
+        value = {'signature': signature, 'listings': my_listings}
+
+        # Pass off to thread to keep GUI snappy
+        Thread(target=self._transport._dht.iterativeStore, args=(self._transport, listing_index_key, value, self._transport._guid,)).start()
 
 
     def remove_product(self, msg):
         self._log.info("Removing product: %s" % msg)
         self._db.products.remove({'id':msg['productID']})
+        self.update_listings_index()
 
 
     def get_products(self):
@@ -131,32 +172,20 @@ class Market(object):
         my_products = []
 
         for product in products:
-          my_products.append({ "productTitle":product['productTitle'] if product.has_key("productTitle") else "",
-                        "id":product['id'] if product.has_key("id") else "",
-                        "productDescription":product['productDescription'] if product.has_key("productDescription") else "",
-                        "productPrice":product['productPrice'] if product.has_key("productPrice") else "",
-                        "productShippingPrice":product['productShippingPrice'] if product.has_key("productShippingPrice") else "",
-                        "productTags":product['productTags'] if product.has_key("productTags") else "",
-                        "productImageData":product['productImageData'] if product.has_key("productImageData") else "",
-                        "productQuantity":product['productQuantity'] if product.has_key("productQuantity") else "",
-                        "key":product['key'] if product.has_key("key") else "",
-                         })
+            my_products.append({"productTitle":product['productTitle'] if product.has_key("productTitle") else "",
+                                "id":product['id'] if product.has_key("id") else "",
+                                "productDescription":product['productDescription'] if product.has_key("productDescription") else "",
+                                "productPrice":product['productPrice'] if product.has_key("productPrice") else "",
+                                "productShippingPrice":product['productShippingPrice'] if product.has_key("productShippingPrice") else "",
+                                "productTags":product['productTags'] if product.has_key("productTags") else "",
+                                "productImageData":product['productImageData'] if product.has_key("productImageData") else "",
+                                "productQuantity":product['productQuantity'] if product.has_key("productQuantity") else "",
+                                "key":product['key'] if product.has_key("key") else "",
+                               })
 
-        return { "products": my_products }
+        return {"products": my_products}
 
 
-    def get_store_products(self, key):
-
-      ''' Send a get product listings call to the node in question and then cache those listings locally
-      TODO: Ideally we would want to send an array of listing IDs that we have locally and then the node would
-      send back the missing or updated listings. This would save on queries for listings we already have.
-      '''
-      print msg
-
-      # Filter for listings (i.e. limit, keyword, etc.)
-      listingFilter = None
-
-      self._transport._dht.findProductListings(key, listingFilter)
 
 
     # SETTINGS
@@ -171,37 +200,37 @@ class Market(object):
         settings = self._db.settings.find_one({'id':'%s'%self._transport._market_id})
 
         if settings:
-            return { "bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
-                "email": settings['email'] if settings.has_key("email") else "",
-                "PGPPubKey": settings['PGPPubKey'] if settings.has_key("PGPPubKey") else "",
-                "pubkey": settings['pubkey'] if settings.has_key("pubkey") else "",
-                "nickname": settings['nickname'] if settings.has_key("nickname") else "",
-                "secret": settings['secret'] if settings.has_key("secret") else "",
-                "welcome": settings['welcome'] if settings.has_key("welcome") else "",
-                "escrowAddresses": settings['escrowAddresses'] if settings.has_key("escrowAddresses") else "",
-                "storeDescription": settings['storeDescription'] if settings.has_key("storeDescription") else "",
-                "city": settings['city'] if settings.has_key("city") else "",
-                "stateRegion": settings['stateRegion'] if settings.has_key("stateRegion") else "",
-                "street1": settings['street1'] if settings.has_key("street1") else "",
-                "street2": settings['street2'] if settings.has_key("street2") else "",
-                "countryCode": settings['countryCode'] if settings.has_key("countryCode") else "",
-                "zip": settings['zip'] if settings.has_key("zip") else "",
-                "arbiterDescription": settings['arbiterDescription'] if settings.has_key("arbiterDescription") else "",
-                "arbiter": settings['arbiter'] if settings.has_key("arbiter") else "",
-                }
+            return {"bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
+                    "email": settings['email'] if settings.has_key("email") else "",
+                    "PGPPubKey": settings['PGPPubKey'] if settings.has_key("PGPPubKey") else "",
+                    "pubkey": settings['pubkey'] if settings.has_key("pubkey") else "",
+                    "nickname": settings['nickname'] if settings.has_key("nickname") else "",
+                    "secret": settings['secret'] if settings.has_key("secret") else "",
+                    "welcome": settings['welcome'] if settings.has_key("welcome") else "",
+                    "escrowAddresses": settings['escrowAddresses'] if settings.has_key("escrowAddresses") else "",
+                    "storeDescription": settings['storeDescription'] if settings.has_key("storeDescription") else "",
+                    "city": settings['city'] if settings.has_key("city") else "",
+                    "stateRegion": settings['stateRegion'] if settings.has_key("stateRegion") else "",
+                    "street1": settings['street1'] if settings.has_key("street1") else "",
+                    "street2": settings['street2'] if settings.has_key("street2") else "",
+                    "countryCode": settings['countryCode'] if settings.has_key("countryCode") else "",
+                    "zip": settings['zip'] if settings.has_key("zip") else "",
+                    "arbiterDescription": settings['arbiterDescription'] if settings.has_key("arbiterDescription") else "",
+                    "arbiter": settings['arbiter'] if settings.has_key("arbiter") else "",
+                   }
 
 
     # PAGE QUERYING
 
-    def query_page(self, findGUID):
+    def query_page(self, find_guid):
 
-        self._log.info('Querying page: %s' % findGUID)
-        msg = query_page(findGUID)
+        self._log.info('Querying page: %s' % find_guid)
+        msg = query_page(find_guid)
         msg['uri'] = self._transport._uri
         msg['senderGUID'] = self._transport.guid
         msg['pubkey'] = self._transport.pubkey
 
-        self._transport.send(msg, findGUID)
+        self._transport.send(msg, find_guid)
 
 
     def on_page(self, page):
@@ -233,7 +262,7 @@ class Market(object):
                                         self.settings['nickname']), peer['senderGUID'])
 
     def on_query_myorders(self, peer):
-        self._log.info("Someone is querying for your page")
+        self._log.info("Someone is querying for your page: %s" % peer)
 
 
     def on_peer(self, peer):
@@ -253,7 +282,7 @@ class Market(object):
         assert "nickname" in response
         assert "signature" in response
         pubkey = response["pubkey"].decode("hex")
-        signature = response["signature"].decode("hex")
+        #signature = response["signature"].decode("hex")
         nickname = response["nickname"]
         # Cache mapping for later.
         if nickname not in self._transport.nick_mapping:
@@ -262,10 +291,10 @@ class Market(object):
         # Add to our dict.
         self._transport.nick_mapping[nickname][1] = pubkey
         self._log.info("[market] mappings: ###############")
-        for k, v in self._transport.nick_mapping.iteritems():
+        for key, value in self._transport.nick_mapping.iteritems():
             self._log.info("'%s' -> '%s' (%s)" % (
-                k, v[1].encode("hex") if v[1] is not None else v[1],
-                v[0].encode("hex") if v[0] is not None else v[0]))
+                key, value[1].encode("hex") if value[1] is not None else value[1],
+                value[0].encode("hex") if value[0] is not None else value[0]))
         self._log.info("##################################")
 
 
@@ -281,7 +310,7 @@ class Market(object):
         key = self.query_ident.lookup(nickname)
         if key is None:
             self._log.info("Key not found for this nickname")
-            return ("Key not found for this nickname", None)
+            return "Key not found for this nickname", None
 
         self._log.info("Found key: %s " % key.encode("hex"))
         if nickname in self._transport.nick_mapping:
@@ -290,9 +319,9 @@ class Market(object):
                         'pubkey': self._transport.nick_mapping[nickname][1].encode('hex'),
                         'signature': self._transport.nick_mapping[nickname][0].encode('hex'),
                         'type': 'response_pubkey',
-                        'signature': 'unknown'}
+                       }
             self._transport.nick_mapping[nickname][0] = key
-            return (None, response)
+            return None, response
 
         self._transport.nick_mapping[nickname] = [key, None]
 

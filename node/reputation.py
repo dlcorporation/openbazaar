@@ -1,34 +1,32 @@
 import json
-from protocol import proto_reputation, proto_query_reputation
 from collections import defaultdict
-from pyelliptic import ECC
 import logging
 
+from protocol import proto_reputation, proto_query_reputation
+from pyelliptic import ECC
+
+
 def review(pubkey, subject, signature, text, rating):
-    data = {}
+    data = {'pubkey': pubkey.encode('hex'), 'subject': subject.encode('hex'), 'sig': signature.encode('hex'),
+            'text': text, 'rating': rating}
     # this is who signs
-    data['pubkey'] = pubkey.encode('hex')
     # this is who the review is about
-    data['subject'] = subject.encode('hex')
     # the signature
-    data['sig'] = signature.encode('hex')
     # some text
-    data['text'] = text
     # rating
-    data['rating'] = rating
     return data
 
 class Reputation(object):
-    def __init__(self, transport):
+    def __init__(self, reputation_transport):
 
-        self._transport = transport
-        self._priv = transport._myself
+        self._transport = reputation_transport
+        self._priv = reputation_transport._myself
 
         # TODO: Pull reviews out of persistent storage
         self._reviews = defaultdict(list)
 
-        transport.add_callback('reputation', self.on_reputation)
-        transport.add_callback('query_reputation', self.on_query_reputation)
+        reputation_transport.add_callback('reputation', self.on_reputation)
+        reputation_transport.add_callback('query_reputation', self.on_query_reputation)
 
         # SAMPLE Review because there is no persistence of reviews ATM
         #self.create_review(self._priv.get_pubkey(), "Initial Review", 10)
@@ -58,16 +56,17 @@ class Reputation(object):
 
 
     # Build JSON for review to be signed
-    def _build_review(self, pubkey, text, rating):
+    @staticmethod
+    def _build_review(pubkey, text, rating):
         return json.dumps([pubkey.encode('hex'),  text, rating])
 
 
-	# Query reputation for pubkey from the network
+    # Query reputation for pubkey from the network
     def query_reputation(self, pubkey):
         self._transport.send(proto_query_reputation(pubkey))
 
 
-	#
+    #
     def parse_review(self, msg):
 
         pubkey = msg['pubkey'].decode('hex')
@@ -107,9 +106,11 @@ if __name__ == '__main__':
         _myself = ECC(curve='secp256k1')
         def add_callback(self, section, cb):
             pass
-        def send(self, msg):
+        @staticmethod
+        def send(msg):
             print 'sending', msg
-        def log(self, msg):
+        @staticmethod
+        def log(msg):
             print msg
     transport = FakeTransport()
     rep = Reputation(transport)

@@ -1,13 +1,14 @@
-import tornado.websocket
 import threading
-import logging
 import json
-import tornado.ioloop
 import random
-import protocol
-import obelisk
 import logging
+
+import tornado.websocket
+import tornado.ioloop
+
+import protocol
 import pycountry
+
 
 class ProtocolHandler:
     def __init__(self, transport, market, handler):
@@ -103,16 +104,7 @@ class ProtocolHandler:
 
 
 
-    def client_query_store_products(self, socket_handler, msg):
 
-        self._log.info("Querying for Store Products")
-
-
-        # Query mongo for products
-        self._market.get_store_products(msg['key'])
-        products = {} #self._market.get_products()
-
-        self.send_to_client(None, { "type": "store_products", "products": products } )
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
@@ -195,13 +187,31 @@ class ProtocolHandler:
             #self.send_to_client(*response)
 
 
+    def client_query_store_products(self, socket_handler, msg):
+
+        self._log.info("Querying for Store Products")
+
+        # Query mongo for products
+        self._transport._dht.findListings(msg['key'], callback=self.on_find_products)
+
+    def on_find_products(self, results):
+
+      self._log.info('Found Products: %s' % results)
+
+      products = {} #self._market.get_products()
+
+      self.send_to_client(None, { "type": "store_products", "products": products } )
+
+
+
     def client_shout(self, socket_handler, msg):
         msg['uri'] = self._transport._uri
         msg['pubkey'] = self._transport.pubkey
         msg['senderGUID'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
-    def on_node_search_value(self, results):
+    @staticmethod
+    def on_node_search_value(results):
       print 'Search value: %s' % results
 
     def on_node_search_results(self, results):
@@ -311,7 +321,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         with WebSocketHandler.listen_lock:
             self.listeners.remove(self)
 
-    def _check_request(self, request):
+    @staticmethod
+    def _check_request(request):
         return request.has_key("command") and request.has_key("id") and \
             request.has_key("params") and type(request["params"]) == dict
             #request.has_key("params") and type(request["params"]) == list
