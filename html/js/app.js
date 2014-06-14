@@ -104,6 +104,9 @@ angular.module('app')
       case 'products':
          $scope.parse_products(msg)
          break;
+      case 'store_products':
+         $scope.parse_store_products(msg)
+         break;
       case 'orderinfo':
          $scope.parse_orderinfo(msg)
          break;
@@ -224,6 +227,21 @@ angular.module('app')
       if (!$scope.$$phase) {
          $scope.$apply();
       }
+
+  }
+
+  $scope.store_products = {};
+  $scope.parse_store_products = function(msg) {
+      console.log(msg)
+
+      $scope.store_products = msg.products;
+      if (!$scope.$$phase) {
+         $scope.$apply();
+      }
+      // $scope.store_products.forEach(function(product) {
+      //   console.log(product);
+      //
+      // })
 
   }
 
