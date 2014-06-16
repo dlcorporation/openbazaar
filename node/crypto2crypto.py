@@ -44,14 +44,18 @@ class CryptoPeerConnection(PeerConnection):
 
     def send(self, data):
 
-        # Include guid
+        # Include guid        
         data['guid'] = self._guid
         data['senderGUID'] = self._transport.guid
         data['uri'] = self._transport._uri
         data['pubkey'] = self._transport.pubkey
 
         self._log.debug('Sending to peer: %s %s' % (self._guid, data))
-        self.send_raw(self.encrypt(json.dumps(data)))
+
+        if self._pub == '':
+            self._log.info('There is no public key for encryption')
+        else:
+            self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
         # this are just acks
@@ -101,41 +105,26 @@ class CryptoTransportLayer(TransportLayer):
         return self._myself
 
     def _ping(self, msg):
+
         self._log.info('Pinged %s ' % msg)
 
         pinger = CryptoPeerConnection(self,msg['uri'], msg['pubkey'], msg['senderGUID'])
-        pinger.send_raw(json.dumps(
+        msg = pinger.send_raw(json.dumps(
             {"type": "hello_response",
              "senderGUID": self.guid,
              "uri": self._uri,
              "pubkey": self.pubkey,
             }))
+        print msg
 
 
     def _storeValue(self, msg):
-        guid = msg['senderGUID']
-        uri = msg['uri']
-        pubkey = msg['pubkey']
-
-        msg['new_peer'] = CryptoPeerConnection(self, uri, pubkey, guid)
         self._dht._on_storeValue(msg)
 
     def _findNode(self, msg):
-
-        guid = msg['senderGUID']
-        uri = msg['uri']
-        pubkey = msg['pubkey']
-
-        msg['new_peer'] = CryptoPeerConnection(self, uri, pubkey, guid)
         self._dht._on_findNode(msg)
 
     def _findNodeResponse(self, msg):
-
-        guid = msg['senderGUID']
-        uri = msg['uri']
-        pubkey = msg['pubkey']
-
-        #msg['new_peer'] = CryptoPeerConnection(self, uri, pubkey, guid)
         self._dht.on_findNodeResponse(self, msg)
 
     def _setup_settings(self):
@@ -361,7 +350,6 @@ class CryptoTransportLayer(TransportLayer):
 
     def on_raw_message(self, serialized):
 
-        self._log.debug('[Raw Message] %s' % serialized)
         try:
             # Try to deserialize cleartext message
             msg = json.loads(serialized)

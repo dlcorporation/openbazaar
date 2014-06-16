@@ -75,11 +75,11 @@ class PeerConnection(object):
         poller.register(self._socket, zmq.POLLIN)
 
         rawid = randint(1,1000)
-        self._log.info('[Outbound Raw Message] %s: %s' % (rawid, serialized))
+        #self._log.info('[Outbound Raw Message] %s: %s' % (rawid, serialized))
 
         #self._log.info('Sending to %s from %s' % (serialized, self._transport._guid))
 
-        if poller.poll(self._timeout * 1000):
+        if poller.poll(self._timeout * 100):
             msg = self._socket.recv()
             self._log.info('[Close Socket] %s: %s' % (rawid, msg))
             self.on_message(msg)
@@ -190,12 +190,20 @@ class TransportLayer(object):
         # Directed message
         if send_to is not None:
 
-            for peer in self._dht._activePeers:
+            peer = self._dht._routingTable.getContact(send_to)
 
-                if peer._guid == send_to:
-                    self._log.info('Found a matching peer: %s' % peer._guid)
-                    peer.send(data)
-                    self._log.debug('Sent message: %s ' % data)
+            new_peer = self._dht._transport.getCryptoPeer(peer._guid, peer._address, peer._pub)
+
+            new_peer.send(data)
+            # for peer in self._dht._activePeers:
+            #
+            #     if peer._guid == send_to:
+            #         self._log.info('Found a matching peer: %s' % peer._guid)
+            #
+            #
+            #         peer.send(data)
+            #
+            #         self._log.debug('Sent message: %s ' % data)
 
             return
 

@@ -715,9 +715,17 @@
           <!-- Store Products -->
           <div ng-show="storeProductsPanel"  class="animated bounceInLeft">
 
-            {{store_products}}<BR>
+            <div ng-repeat="listing in store_listings" style="background-color:#ddd;padding:10px;margin-bottom:20px;">
+                <table class="" width="100%" style="font-size:14px;border:none;" cellpadding="5">
+                <tr>
+                <td width="100"><img src="{{listing['productImageData']}}" width=100/></td>
+                <td><strong>{{listing['productTitle']}}</strong><br/>{{listing['productDescription']}}</td>
+                <td width="50">{{listing['productPrice']}}</td>
+                <td width="60"><button ng-click="creatingOrder=true" class="btn btn-success btn-xl navbar-btn">Buy</button></td>
+                </tr></table>
+            </div>
 
-            <button ng-click="creatingOrder=true" class="btn btn-success btn-xl navbar-btn">Submit an Order</button>
+
 
             <form ng-show="creatingOrder">
                 Text: <input class="form-control" type="text" ng-model="newOrder.text" placeholder="Friendly message"> <a class="btn btn-primary navbar-btn" ng-click="createOrder()" type="submit">Order</a> <a class="btn btn-warning navbar-btn" ng-click="creatingOrder=false" type="cancel">Cancel</a>
