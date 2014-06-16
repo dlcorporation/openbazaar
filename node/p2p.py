@@ -4,6 +4,7 @@ from collections import defaultdict
 import traceback
 from multiprocessing import Process, Queue
 from threading import Thread
+from random import randint
 
 from zmq.eventloop import ioloop
 import zmq
@@ -36,7 +37,6 @@ class PeerConnection(object):
         msg = self.send_raw(json.dumps(data))
 
     def send_raw(self, serialized):
-
 
         Thread(target=self._send_raw, args=(serialized, self._queue,)).start()
         msg = self._queue.get()
@@ -73,13 +73,21 @@ class PeerConnection(object):
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
-        if poller.poll(self._timeout * 100):
+
+        rawid = randint(1,1000)
+        self._log.info('[Outbound Raw Message] %s: %s' % (rawid, serialized))
+
+        #self._log.info('Sending to %s from %s' % (serialized, self._transport._guid))
+
+        if poller.poll(self._timeout * 1000):
             msg = self._socket.recv()
+            self._log.info('[Close Socket] %s: %s' % (rawid, msg))
             self.on_message(msg)
             self.cleanup_socket()
             queue.put(msg)
 
         else:
+            self._log.info('[Close Socket on Timeout] %s' % rawid)
             self._log.info("Node timed out: %s" % self._address)
             self.cleanup_socket()
             queue.put(False)
@@ -139,8 +147,9 @@ class TransportLayer(object):
 
         while True:
             message = self._socket.recv()
-            self.on_raw_message(message)
             self._socket.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}))
+            self.on_raw_message(message)
+
 
     def closed(self, *args):
         self._log.info("client left")
@@ -184,7 +193,7 @@ class TransportLayer(object):
             for peer in self._dht._activePeers:
 
                 if peer._guid == send_to:
-                    self._log.info('Found a matching peer')
+                    self._log.info('Found a matching peer: %s' % peer._guid)
                     peer.send(data)
                     self._log.debug('Sent message: %s ' % data)
 
