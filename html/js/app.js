@@ -107,6 +107,9 @@ angular.module('app')
       case 'store_products':
          $scope.parse_store_products(msg)
          break;
+      case 'new_listing':
+         $scope.parse_new_listing(msg)
+         break;
       case 'orderinfo':
          $scope.parse_orderinfo(msg)
          break;
@@ -232,9 +235,12 @@ angular.module('app')
 
   $scope.store_products = {};
   $scope.parse_store_products = function(msg) {
+
       console.log(msg)
 
       $scope.store_products = msg.products;
+
+
       if (!$scope.$$phase) {
          $scope.$apply();
       }
@@ -381,11 +387,23 @@ angular.module('app')
   // A shout has arrived
   $scope.parse_shout = function(msg) {
     $scope.shouts.push(msg)
-    console.log('Shout',msg)
+    console.log('Shout',$scope.shouts)
     if (!$scope.$$phase) {
        $scope.$apply();
     }
   }
+
+  // A listing has shown up from the network
+  $scope.store_listings = [];
+  $scope.parse_new_listing = function(msg) {
+    listingJSON = jQuery.parseJSON(msg['data']);
+    $scope.store_listings.push(listingJSON)
+    console.log('New Listing',$scope.store_listings)
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+  }
+
   $scope.search = ""
   $scope.searchNetwork = function() {
      var query = {'type': 'search', 'key': $scope.search };

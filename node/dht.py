@@ -67,6 +67,7 @@ class DHT(object):
                 foundPeer = True
                 peer._pub = peer_tuple[0]
                 self._activePeers[idx] = peer
+                new_peer = peer
 
         if not foundPeer:
             self._log.debug('[Add Active Peer] Adding an active Peer: %s' %
@@ -103,20 +104,23 @@ class DHT(object):
         guid = msg['senderGUID']
         key = msg['key']
         findID = msg['findID']
-        newContact = msg['new_peer']
-        msg['new_peer'] = None
+        uri = msg['uri']
+        pubkey = msg['pubkey']
+
+        newContact = self._transport.getCryptoPeer(guid, uri, pubkey)
 
         if guid == self._transport.guid:
             'Received a request from myself'
             return
 
-        # Add contact to routing table if doesn't exist yet
-        if not self._routingTable.getContact(guid):
+        if newContact:
             self._routingTable.addContact(newContact)
 
         if msg['findValue'] is True:
 
             if key in self._dataStore and self._dataStore[key] is not None:
+                self._log.info('Found a key: %s' % key)
+
                 # Found key in local datastore
                 newContact.send_raw(json.dumps(
                     {"type": "findNodeResponse",
@@ -125,6 +129,16 @@ class DHT(object):
                      "pubkey": newContact._transport.pubkey,
                      "foundKey": self._dataStore[key],
                      "findID": findID}))
+            else:
+                self._log.info('Did not find a key: %s' % key)
+                newContact.send_raw(json.dumps(
+                    {"type": "findNodeResponse",
+                     "senderGUID": newContact._transport.guid,
+                     "uri": newContact._transport._uri,
+                     "pubkey": newContact._transport.pubkey,
+                     "foundKey": [],
+                     "findID": findID}))
+
 
         else:
             # Search for contact in routing table
@@ -157,6 +171,9 @@ class DHT(object):
                 contactTriples = []
                 for contact in contacts:
                     contactTriples.append((contact._guid, contact._address, contact._pub))
+
+                contactTriples = self.dedupe(contactTriples)
+
                 self._log.debug('Contact Triples: %s' % contactTriples)
 
                 to_contact = self._routingTable.getContact(guid)
@@ -444,6 +461,8 @@ class DHT(object):
             if not peer:
                 peer = self._transport.getCryptoPeer(guid, uri)
 
+            msg = peer.send_raw(json.dumps({'type':'hello', 'pubkey':self._transport.pubkey, 'uri':self._transport._uri, 'senderGUID':self._transport.guid }))
+
             peer.send(proto_store(key, value, originalPublisherID, age))
 
         # for node in nodes:
@@ -654,7 +673,9 @@ class DHT(object):
                         msg = {"type": "findNode", "uri": contact._transport._uri, "senderGUID": self._transport._guid,
                                "key": new_search._key, "findValue": findValue, "findID": new_search._findID,
                                "pubkey": contact._transport.pubkey}
-                        contact.send_raw(json.dumps(msg))
+                        self._log.info(contact._guid)
+                        msg = contact.send(msg)
+                        self._log.info(msg)
 
                         new_search._contactedNow += 1
 
@@ -677,6 +698,16 @@ class DHT(object):
 
         self._log.debug('[Iterative Find Value]')
         self._iterativeFind(key, call='findValue', callback=callback)
+
+    def dedupe(self, lst):
+        seen = set()
+        result = []
+        for item in lst:
+            fs = frozenset(item)
+            if fs not in seen:
+                result.append(item)
+                seen.add(fs)
+        return result
 
 
 class DHTSearch(object):

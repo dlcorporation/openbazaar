@@ -193,15 +193,21 @@ class ProtocolHandler:
 
       self._log.info('Found Products: %s' % type(results))
       self._log.info(results)
-      data = results['data']
-      listings = data['listings']
-      signature = results['signature']
-      self._log.info('Signature: %s' % signature)
 
-      # TODO: Validate signature of listings matches data
-      #self._transport._myself.
+      if len(results):
+          data = results['data']
+          listings = data['listings']
+          signature = results['signature']
+          self._log.info('Signature: %s' % signature)
 
-      self.send_to_client(None, { "type": "store_products", "products": listings } )
+          # TODO: Validate signature of listings matches data
+          #self._transport._myself.
+
+          # Go get listing metadata and then send it to the GUI
+          for listing in listings:
+              self._transport._dht.iterativeFindValue(listing, callback=self.on_node_search_value)
+
+      #self.send_to_client(None, { "type": "store_products", "products": listings } )
 
     def client_shout(self, socket_handler, msg):
         msg['uri'] = self._transport._uri
@@ -209,9 +215,9 @@ class ProtocolHandler:
         msg['senderGUID'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
-    @staticmethod
-    def on_node_search_value(results):
-      print 'Search value: %s' % results
+    def on_node_search_value(self, results):
+        self._log.info('Listing Data: %s' % results)
+        self.send_to_client(None, { "type": "new_listing", "data": results})
 
     def on_node_search_results(self, results):
         if len(results) > 1:
@@ -345,6 +351,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def _send_response(self, response):
         if self.ws_connection:
             self._log.info('Response: %s' % response)
+
+            
             self.write_message(json.dumps(response))
         #try:
         #    self.write_message(json.dumps(response))
