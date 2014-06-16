@@ -26,18 +26,17 @@ class CryptoPeerConnection(PeerConnection):
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
         PeerConnection.__init__(self, transport, address)
+        self._log.debug('New Crypt Peer: %s %s %s' % (address, pub, guid))
 
         if pub is None or guid is None:
-          self._log.debug('About to say hello')
+          self._log.debug('Sending Hello')
           msg = self.send_raw(json.dumps({'type':'hello', 'pubkey':transport.pubkey, 'uri':transport._uri, 'senderGUID':transport.guid }))
+          self._log.debug('Hello Response: %s' % msg)
 
           if msg:
             msg = json.loads(msg)
             self._guid = msg['senderGUID']
             self._pub = msg['pubkey']
-
-
-        self._log.info(transport._dht._activePeers)
 
 
     def encrypt(self, data):
@@ -52,7 +51,7 @@ class CryptoPeerConnection(PeerConnection):
         data['pubkey'] = self._transport.pubkey
 
         self._log.debug('Sending to peer: %s %s' % (self._guid, data))
-        print self.send_raw(self.encrypt(json.dumps(data)))
+        self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
         # this are just acks
@@ -86,7 +85,8 @@ class CryptoTransportLayer(TransportLayer):
 
         TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid)
 
-        # Set up callbacks        
+        # Set up callbacks
+        self.add_callback('hello', self._ping)
         self.add_callback('findNode', self._findNode)
         self.add_callback('findNodeResponse', self._findNodeResponse)
         self.add_callback('store', self._storeValue)
@@ -100,6 +100,16 @@ class CryptoTransportLayer(TransportLayer):
     def getMyself(self):
         return self._myself
 
+    def _ping(self, msg):
+        self._log.info('Pinged %s ' % msg)
+
+        pinger = CryptoPeerConnection(self,msg['uri'], msg['pubkey'], msg['senderGUID'])
+        pinger.send_raw(json.dumps(
+            {"type": "hello_response",
+             "senderGUID": self.guid,
+             "uri": self._uri,
+             "pubkey": self.pubkey,
+            }))
 
 
     def _storeValue(self, msg):
@@ -173,7 +183,7 @@ class CryptoTransportLayer(TransportLayer):
             self._dht.start(seed_peer)
 
 
-    def getCryptoPeer(self, guid, uri, pubkey):
+    def getCryptoPeer(self, guid, uri, pubkey=None):
 
       if guid == self.guid:
         self._log.info('Trying to get cryptopeer for yourself')
@@ -346,13 +356,12 @@ class CryptoTransportLayer(TransportLayer):
         self._dht.add_active_peer(self, (pubkey, uri, guid))
         self._dht.add_known_node((ip, port, guid))
 
-
         self.trigger_callbacks(msg['type'], msg)
 
 
     def on_raw_message(self, serialized):
 
-
+        self._log.debug('[Raw Message] %s' % serialized)
         try:
             # Try to deserialize cleartext message
             msg = json.loads(serialized)
@@ -382,7 +391,7 @@ class CryptoTransportLayer(TransportLayer):
           msg_uri = msg.get('uri')
           msg_guid = msg.get('guid')
 
-
+          self._log.info(msg.get('type'))
 
           #
           # if msg_type.startswith('hello') and msg_uri:
@@ -399,3 +408,5 @@ class CryptoTransportLayer(TransportLayer):
           #
           # else:
           self.on_message(msg)
+        else:
+          self._log.error('Received a message with no type')

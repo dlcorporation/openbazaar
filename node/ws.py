@@ -30,7 +30,7 @@ class ProtocolHandler:
             "query_page":          self.client_query_page,
             "review":          self.client_review,
             "order":          self.client_order,
-            "search":          self.client_search,
+            "search":          self.client_query_store_products,
             "shout":          self.client_shout,
             "query_store_products":	  self.client_query_store_products,
             "query_orders":	  self.client_query_orders,
@@ -192,14 +192,16 @@ class ProtocolHandler:
     def on_find_products(self, results):
 
       self._log.info('Found Products: %s' % type(results))
+      self._log.info(results)
+      data = results['data']
+      listings = data['listings']
+      signature = results['signature']
+      self._log.info('Signature: %s' % signature)
 
-      # results = json.dumps(results)
-      #results = json.loads(results)
+      # TODO: Validate signature of listings matches data
+      #self._transport._myself.
 
-      products = results['listings']
-      print products
-
-      self.send_to_client(None, { "type": "store_products", "products": results['listings'] } )
+      self.send_to_client(None, { "type": "store_products", "products": listings } )
 
     def client_shout(self, socket_handler, msg):
         msg['uri'] = self._transport._uri

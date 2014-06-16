@@ -145,16 +145,17 @@ class Market(object):
 
         # Calculate index of listings
         listing_ids = self._db.products.find({'market_id':self._transport._market_id}, {'key':1})
-        my_listings = []        
+        my_listings = []
         for listing_id in listing_ids:
             my_listings.append(listing_id['key'])
 
         self._log.debug('My Listings: %s' % my_listings)
 
         # Sign listing index for validation and tamper resistance
-        signature = self._myself.sign(json.dumps(my_listings)).encode('hex')
+        data_string = str({'guid':self._transport._guid, 'listings': my_listings})
+        signature = self._myself.sign(data_string).encode('hex')
 
-        value = {'signature': signature, 'listings': my_listings}
+        value = {'signature': signature, 'data': {'guid':self._transport._guid, 'listings': my_listings}}
 
         # Pass off to thread to keep GUI snappy
         Thread(target=self._transport._dht.iterativeStore, args=(self._transport, listing_index_key, value, self._transport._guid,)).start()
@@ -235,17 +236,13 @@ class Market(object):
 
     def on_page(self, page):
 
-        self._log.info("Page returned: " + str(page))
-
-
+        self._log.info("Page received and being stored in Market")
 
         #pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
         page = page.get('text')
 
-
         if guid and page:
-            #self._log.info(page+guid)
             self.pages[guid] = page
 
 
