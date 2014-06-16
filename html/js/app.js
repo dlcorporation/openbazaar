@@ -398,6 +398,7 @@ angular.module('app')
   $scope.parse_new_listing = function(msg) {
     listingJSON = jQuery.parseJSON(msg['data']);
     $scope.store_listings.push(listingJSON)
+    $scope.store_listings = jQuery.unique($scope.store_listings);
     console.log('New Listing',$scope.store_listings)
     if (!$scope.$$phase) {
        $scope.$apply();
@@ -571,6 +572,7 @@ angular.module('app')
         break;
       case 'storeProducts':
   			$scope.storeProductsPanel = true;
+        $scope.store_listings = [];
         $scope.queryStoreProducts($scope.awaitingShop);
   			break;
   		case 'storeOrders':
