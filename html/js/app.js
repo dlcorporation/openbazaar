@@ -872,6 +872,54 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
 };
 
 
+$scope.BuyItemCtrl = function ($scope, $modal, $log) {
+
+    $scope.open = function (size, productTitle, productPrice, productDescription, productImageData) {
+
+
+
+      // Send socket a request for order info
+      //socket.send('query_order', { orderId: orderId } )
+
+      var modalInstance = $modal.open({
+        templateUrl: 'buyItem.html',
+        controller: BuyItemInstanceCtrl,
+        resolve: {
+            productTitle: function() { return productTitle},
+            productPrice: function() { return productPrice},
+            productDescription: function() { return productDescription},
+            productImageData: function() { return productImageData}
+        },
+        size: size
+      });
+
+      modalInstance.result.then(function () {
+
+      }, function () {
+        $log.info('Modal dismissed at: ' + new Date());
+      });
+    };
+  };
+
+
+ var BuyItemInstanceCtrl = function ($scope, $modalInstance, productTitle, productPrice, productDescription, productImageData) {
+
+    console.log(productTitle, productPrice, productDescription, productImageData);
+    $scope.productTitle = productTitle;
+    $scope.productPrice = productPrice;
+    $scope.productDescription = productDescription;
+    $scope.productImageData = productImageData;
+
+    $scope.ok = function () {
+      $modalInstance.close();
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  };
+
+
 
 
 }])

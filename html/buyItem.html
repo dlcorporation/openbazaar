@@ -1,0 +1,44 @@
+<div class="modal-header">
+    <h3 class="modal-title">Purchase a Product</h3>
+</div>
+
+<div class="modal-body"  style="text-align:left;">
+   <div class="alert alert-info">Wow you're almost ready to purchase an item from an Open Bazaar merchant!</div>
+
+
+    <table>
+        <tr>
+            <td style="background-color:#efefef; width:100px; height:100px; background-image:url('{{productImageData}}');background-size: 100px 100px;padding:0 20px;"></td>
+            <td style="text-align:center;width:100px; height:100px; padding:0 20px;"><span style="font-size:30px;color:#efefef;text-shadow: 1px 1px #bbb;">&#3647;{{productPrice}}</span></td>
+            <td style="">
+                <h3>{{productTitle}}</h3>
+                <p>{{productDescription}}</p>
+            </td>
+        </tr>
+    </table>
+
+
+
+    <div style="margin-top:20px;">
+    <form role="form">
+
+        <!-- Hidden form fields for item -->
+        <input type="hidden" id="inputProductKey" value=""/>
+        <input type="hidden" id="inputProductPrice" value="{{productPrice}}"/>
+
+
+
+        <div class="form-group">
+        <label for="inputMerchantMessage">Special Instructions:</label>
+        <input type="text" class="form-control" id="inputMerchantMessage" placeholder="Enter message for the merchant (optional)">
+        </div>
+
+    </form>
+    </div>
+
+
+</div>
+
+<div class="modal-footer">
+    <a class="btn btn-warning" ng-click="ok()" type="cancel">Cancel</a> <a class="btn btn-primary" ng-click="createOrder()" type="submit">Choose an Arbiter</a>
+</div>

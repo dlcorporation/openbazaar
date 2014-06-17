@@ -707,12 +707,65 @@
         <!-- Store Products -->
         <div ng-show="storeProductsPanel"  class="animated bounceInLeft">
 
+            <div ng-controller="BuyItemCtrl">
+            <script type="text/ng-template" id="viewOrder.html">
+                <div class="modal-header">
+                    <h3 class="modal-title">Order #{{orderId}}</h3>
+                </div>
+                <div class="modal-body" style="text-align:left;">
+
+                    <table class="table table-striped">
+                        <tr>
+                            <td width=200><strong>Order Date:</strong></td>
+                            <td>{{Market.modalOrder.created*1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
+                        </tr>
+                        <tr>
+                            <td width=200><strong>Status:</strong></td>
+                            <td style="vertical-align:middle;"><span class="label label-info">{{Market.modalOrder.state}}</span> <span ng-show="Market.modalOrder.waitingForSellerToShip" style="font-weight:bold;">Waiting for Shipment</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Buyer:</strong></td>
+                            <td style="word-break:break-all">{{Market.modalOrder.buyer}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Seller:</strong></td>
+                            <td style="word-break:break-all">{{Market.modalOrder.seller}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Escrows:</strong></td>
+                            <td style="word-break:break-all">{{Market.modalOrder.escrows}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Payment Address:</strong></td>
+                            <td style="word-break:break-all"><a href="https://blockchain.info/address/{{Market.modalOrder.address}}" target="_blank">{{Market.modalOrder.address}}</a></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Order Description:</strong></td>
+                            <td>{{Market.modalOrder.text}}</td>
+                        </tr>
+                    </table>
+
+                    <div ng-show="Market.modalOrder.waitingForPayment" id="payment_buttons2">
+                        <button ng-click="markOrderPaid(orderId)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
+                        <button ng-click="" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
+                    </div>
+
+                    <button ng-show="Market.modalOrder.waitingForShipment" id="send-order-button" ng-click="markOrderShipped(orderId)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-ok"></span> Mark as Shipped</button>
+
+                    <button ng-show="Market.modalOrder.flagForArbitration" id="send-order-button" ng-click="flagOrderForArbitration(orderId)" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-flag"></span> Flag for Arbiter</button>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-info" ng-click="cancel()">Close</button>
+                </div>
+            </script>
+
             <div class="div-listing" ng-repeat="listing in store_listings">
                 <table class="table-listing" width="100%">
                     <tr>
                         <td width="100"><img src="{{listing['productImageData']}}" width=100/></td>
                         <td><span class="product-title">{{listing['productTitle']}}</span><br/>{{listing['productDescription']}}</td>
-                        <td width="80"><span class="product-price">&#3647;{{listing['productPrice']}}</span><br/><button ng-click="creatingOrder=true" class="btn btn-success btn-xl navbar-btn">Purchase</button></td>
+                        <td width="80"><span class="product-price">&#3647;{{listing['productPrice']}}</span><br/><button class="btn btn-success btn-xl navbar-btn" ng-click="open('lg', listing['productTitle'], listing['productPrice'], listing['productDescription'], listing['productImageData'])">Purchase</button></td>
                     </tr></table>
             </div>
 
@@ -722,7 +775,7 @@
                 Text: <input class="form-control" type="text" ng-model="newOrder.text" placeholder="Friendly message"> <a class="btn btn-primary navbar-btn" ng-click="createOrder()" type="submit">Order</a> <a class="btn btn-warning navbar-btn" ng-click="creatingOrder=false" type="cancel">Cancel</a>
             </form>
 
-
+            </div>
 
         </div>
 
