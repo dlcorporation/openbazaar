@@ -6,8 +6,8 @@ MY_MARKET_PORT=12345
 SEED_URI=tcp://seed.openbazaar.org:12345
 
 # Run in local test mode if not production
-#MODE=production
-MODE=development
+MODE=production
+#MODE=development
 
 # Location of log directory
 LOGDIR=logs

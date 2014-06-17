@@ -197,3 +197,10 @@ ul.pagination { margin: 10px 0 }
 
 .jumbotron { background-color:white; margin-top:20px; }
 #jumboh1 { font-weight:120; }
+
+div.div-listing { padding:10px;margin-bottom:20px; }
+table.table-listing { font-size:14px; border:none; }
+table.table-listing td { padding:5px 10px; vertical-align:top; }
+
+.product-title { font-weight:bold; font-size: 20px; color: #666; }
+.product-price { font-weight:bold; font-size: 20px; }

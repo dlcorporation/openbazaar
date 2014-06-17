@@ -254,7 +254,11 @@ class Market(object):
                                         self._transport.guid,
                                         self.settings['storeDescription'],
                                         self.signature,
-                                        self.settings['nickname']), peer['senderGUID'])
+                                        self.settings['nickname']),
+                                        peer['senderGUID'],
+                                        self.settings['PGPPubKey'],
+                                        self.settings['email'],
+                                        self.settings['bitmessage'])
 
     def on_query_myorders(self, peer):
         self._log.info("Someone is querying for your page: %s" % peer)

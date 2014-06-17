@@ -72,6 +72,8 @@ angular.module('app')
      console.log('Querying for shop: ',peer);
      var query = {'type': 'query_page', 'findGUID': peer.guid}
      socket.send('query_page', query)
+     $('#store-tabs li').removeClass('active');
+  	 $('#store-tabs li').first().addClass('active');
   }
 
 
@@ -399,6 +401,12 @@ angular.module('app')
     listingJSON = jQuery.parseJSON(msg['data']);
     $scope.store_listings.push(listingJSON)
     $scope.store_listings = jQuery.unique($scope.store_listings);
+    $.each( $scope.store_listings, function(index, value){
+        console.log(value);
+        if (!value.productImageData) {
+            $scope.store_listings[index].productImageData = "img/no-photo.png";
+        }
+    });
     console.log('New Listing',$scope.store_listings)
     if (!$scope.$$phase) {
        $scope.$apply();
@@ -559,6 +567,7 @@ angular.module('app')
   	$scope.storeReviewsPanel = false;
   	$scope.storeOrdersPanel = false;
   	$scope.storeOrderHistoryPanel = false;
+
   }
 
   $scope.showStorePanel = function(panelName) {
