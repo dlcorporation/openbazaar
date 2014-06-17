@@ -254,11 +254,11 @@ class Market(object):
                                         self._transport.guid,
                                         self.settings['storeDescription'],
                                         self.signature,
-                                        self.settings['nickname']),
+                                        self.settings['nickname'],
                                         peer['senderGUID'],
-                                        self.settings['PGPPubKey'],
-                                        self.settings['email'],
-                                        self.settings['bitmessage'])
+                                        self.settings['PGPPubKey'] if self.settings.has_key('PGPPubKey') else '',
+                                        self.settings['email'] if self.settings.has_key('email') else '',
+                                        self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ''))
 
     def on_query_myorders(self, peer):
         self._log.info("Someone is querying for your page: %s" % peer)
