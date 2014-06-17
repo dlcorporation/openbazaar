@@ -255,10 +255,11 @@ class Market(object):
                                         self.settings['storeDescription'],
                                         self.signature,
                                         self.settings['nickname'],
-                                        peer['senderGUID'],
                                         self.settings['PGPPubKey'] if self.settings.has_key('PGPPubKey') else '',
                                         self.settings['email'] if self.settings.has_key('email') else '',
-                                        self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ''))
+                                        self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ''),
+                                        peer['senderGUID']
+                                        )
 
     def on_query_myorders(self, peer):
         self._log.info("Someone is querying for your page: %s" % peer)
