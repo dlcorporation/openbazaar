@@ -203,8 +203,8 @@ class TreeRoutingTable(RoutingTable):
                     # Ping the least-recently seen contact in this k-bucket
                     headContact = self._buckets[bucketIndex]._contacts[0]
 
-                    headContact.send_raw(json.dumps(
-                        {"type": "ping", "guid": self._guid, "uri": self._uri, "findValue": peer['findValue']}))
+                    headContact.send(
+                        {"type": "ping", "guid": self._guid, "uri": self._uri, "findValue": peer['findValue']})
 
                     df = headContact.ping()
                     # If there's an error (i.e. timeout), remove the head contact, and append the new one
