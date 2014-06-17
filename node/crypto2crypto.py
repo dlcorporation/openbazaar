@@ -39,6 +39,7 @@ class CryptoPeerConnection(PeerConnection):
             self._pub = msg['pubkey']
 
 
+
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub.decode('hex'))
 
@@ -63,6 +64,9 @@ class CryptoPeerConnection(PeerConnection):
 
     def peer_to_tuple(self):
         return self._ip, self._port, self._guid
+
+    def get_guid(self):
+        return self._guid
 
 
 class CryptoTransportLayer(TransportLayer):
@@ -95,6 +99,9 @@ class CryptoTransportLayer(TransportLayer):
         self.add_callback('findNodeResponse', self._findNodeResponse)
         self.add_callback('store', self._storeValue)
 
+    def get_guid(self):
+        return self._guid
+
     def getDHT(self):
         return self._dht
 
@@ -122,7 +129,7 @@ class CryptoTransportLayer(TransportLayer):
         self._dht._on_storeValue(msg)
 
     def _findNode(self, msg):
-        self._dht._on_findNode(msg)
+        self._dht.on_find_node(msg)
 
     def _findNodeResponse(self, msg):
         self._dht.on_findNodeResponse(self, msg)
@@ -172,7 +179,7 @@ class CryptoTransportLayer(TransportLayer):
             self._dht.start(seed_peer)
 
 
-    def getCryptoPeer(self, guid, uri, pubkey=None):
+    def get_crypto_peer(self, guid, uri, pubkey=None):
 
       if guid == self.guid:
         self._log.info('Trying to get cryptopeer for yourself')

@@ -192,7 +192,7 @@ class TransportLayer(object):
 
             peer = self._dht._routingTable.getContact(send_to)
 
-            new_peer = self._dht._transport.getCryptoPeer(peer._guid, peer._address, peer._pub)
+            new_peer = self._dht._transport.get_crypto_peer(peer._guid, peer._address, peer._pub)
 
             new_peer.send(data)
             # for peer in self._dht._activePeers:
