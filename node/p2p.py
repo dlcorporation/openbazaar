@@ -38,10 +38,34 @@ class PeerConnection(object):
 
     def send_raw(self, serialized):
 
-        Thread(target=self._send_raw, args=(serialized, self._queue,)).start()
-        msg = self._queue.get()
+        self.create_socket()
+        self._socket.send(serialized)
 
-        return msg
+        poller = zmq.Poller()
+        poller.register(self._socket, zmq.POLLIN)
+
+        rawid = randint(1,1000)
+        #self._log.info('[Outbound Raw Message] %s: %s' % (rawid, serialized))
+
+        #self._log.info('Sending to %s from %s' % (serialized, self._transport._guid))
+
+        if poller.poll(self._timeout * 100):
+            msg = self._socket.recv()
+            self._log.info('[Close Socket] %s: %s' % (rawid, msg))
+            self.on_message(msg)
+            self.cleanup_socket()
+            return msg
+
+        else:
+            self._log.info('[Close Socket on Timeout] %s' % rawid)
+            self._log.info("Node timed out: %s" % self._address)
+            self.cleanup_socket()
+            return False
+
+        # Thread(target=self._send_raw, args=(serialized, self._queue,)).start()
+        # msg = self._queue.get()
+        #
+        # return msg
 
         pass
 
