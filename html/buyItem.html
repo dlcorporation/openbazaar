@@ -3,7 +3,8 @@
 </div>
 
 <div class="modal-body"  style="text-align:left;">
-   <div class="alert alert-info">Wow you're almost ready to purchase an item from an Open Bazaar merchant!</div>
+
+    <div class="alert alert-info">Wow you're almost ready to purchase an item from an Open Bazaar merchant!</div>
 
 
     <table>
@@ -20,17 +21,16 @@
 
 
     <div style="margin-top:20px;">
-    <form role="form">
+    <form id="form-item-purchase" role="form">
 
         <!-- Hidden form fields for item -->
-        <input type="hidden" id="inputProductKey" value=""/>
-        <input type="hidden" id="inputProductPrice" value="{{productPrice}}"/>
-
-
+        <input type="hidden" id="inputMerchantGUID" ng-model="newOrder.merchantGUID" value=""/>
+        <input type="hidden" id="inputProductKey" ng-model="newOrder.listingKey" value=""/>
+        <input type="hidden" id="inputProductPrice" ng-model="newOrder.listingTotal" value="{{productPrice}}"/>
 
         <div class="form-group">
         <label for="inputMerchantMessage">Special Instructions:</label>
-        <input type="text" class="form-control" id="inputMerchantMessage" placeholder="Enter message for the merchant (optional)">
+        <input type="text" ng-model="newOrder.message" class="form-control" id="inputMerchantMessage" placeholder="Enter message for the merchant (optional)">
         </div>
 
     </form>
@@ -40,5 +40,5 @@
 </div>
 
 <div class="modal-footer">
-    <a class="btn btn-warning" ng-click="ok()" type="cancel">Cancel</a> <a class="btn btn-primary" ng-click="createOrder()" type="submit">Choose an Arbiter</a>
+    <a class="btn btn-warning" ng-click="cancel()" type="cancel">Cancel</a> <a class="btn btn-primary" ng-click="createOrder()" type="submit">Submit Order</a>
 </div>
