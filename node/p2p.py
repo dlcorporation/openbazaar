@@ -18,7 +18,7 @@ from urlparse import urlparse
 class PeerConnection(object):
     def __init__(self, transport, address):
         # timeout in seconds
-        self._timeout = 10
+        self._timeout = 1
         self._transport = transport
         self._address = address
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
@@ -69,7 +69,7 @@ class PeerConnection(object):
     def _send_raw_process(self, serialized, queue):
 
         self.create_socket()
-        self._socket.send(serialized)
+        self._socket.send(serialized, zmq.NOBLOCK)
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
@@ -79,7 +79,7 @@ class PeerConnection(object):
 
         #self._log.info('Sending to %s from %s' % (serialized, self._transport._guid))
 
-        if poller.poll(self._timeout * 100):
+        if poller.poll(self._timeout * 1000):
             msg = self._socket.recv()
             self._log.info('[Close Socket] %s: %s' % (rawid, msg))
             self.on_message(msg)
