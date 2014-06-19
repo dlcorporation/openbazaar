@@ -71,6 +71,8 @@ angular.module('app')
      $scope.awaitingShop = peer.guid;
      console.log('Querying for shop: ',peer);
      var query = {'type': 'query_page', 'findGUID': peer.guid}
+
+     $('#listing-loader').show();
      socket.send('query_page', query)
      $('#store-tabs li').removeClass('active');
   	 $('#store-tabs li').first().addClass('active');
@@ -226,6 +228,7 @@ angular.module('app')
   $scope.product = {};
   $scope.parse_products = function(msg) {
       console.log(msg.products.products);
+
       $scope.products = msg.products.products;
 
       $scope.product = {};
@@ -239,6 +242,7 @@ angular.module('app')
   $scope.parse_store_products = function(msg) {
 
       console.log(msg)
+
 
       $scope.store_products = msg.products;
 
@@ -362,7 +366,6 @@ angular.module('app')
   // My information has arrived
   $scope.parse_myself = function(msg) {
 
-    console.log('test',msg)
 
     $scope.myself = msg;
 
@@ -407,6 +410,7 @@ angular.module('app')
             $scope.store_listings[index].productImageData = "img/no-photo.png";
         }
     });
+    $('#listing-loader').hide();
     console.log('New Listing',$scope.store_listings)
     if (!$scope.$$phase) {
        $scope.$apply();
@@ -437,17 +441,20 @@ angular.module('app')
 
 
   // Create a new order and send to the network
-  $scope.newOrder = {text:'', tx: ''}
+  $scope.newOrder = {message:'', tx: '', listingKey:'', productTotal:''}
   $scope.createOrder = function() {
+
       $scope.creatingOrder = false;
 
       var newOrder = {
-          'text': $scope.newOrder.text,
+          'text': $scope.newOrder.message,
           'state': 'new',
           'buyer': $scope.myself.pubkey,
-          'seller': $scope.page.pubkey
+          'seller': $scope.page.pubkey,
+          'listingKey': $scope.newOrder.pubkey
       }
-      $scope.newOrder.text = '';
+      console.log(newOrder);
+      //$scope.newOrder.text = '';
       //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
       socket.send('order', newOrder);
       $scope.sentOrder = true;
@@ -580,6 +587,7 @@ angular.module('app')
         $scope.storeInfoPanel = true;
         break;
       case 'storeProducts':
+            $('#listing-loader').show();
   			$scope.storeProductsPanel = true;
         $scope.store_listings = [];
         $scope.queryStoreProducts($scope.awaitingShop);
@@ -874,17 +882,19 @@ var ProductModalInstance = function ($scope, $modalInstance, product) {
 
 $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
-    $scope.open = function (size, productTitle, productPrice, productDescription, productImageData) {
+    $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData) {
 
 
 
       // Send socket a request for order info
       //socket.send('query_order', { orderId: orderId } )
 
-      var modalInstance = $modal.open({
+      modalInstance = $modal.open({
         templateUrl: 'buyItem.html',
-        controller: BuyItemInstanceCtrl,
+        controller: $scope.BuyItemInstanceCtrl,
         resolve: {
+            merchantPubkey: function() { return merchantPubkey },
+            myself: function() { return myself },
             productTitle: function() { return productTitle},
             productPrice: function() { return productPrice},
             productDescription: function() { return productDescription},
@@ -895,16 +905,25 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
       modalInstance.result.then(function () {
 
+        $scope.showDashboardPanel('orders');
+
+        $('#pill-orders').addClass('active').siblings().removeClass('active').blur();
+        $("#orderSuccessAlert").alert();
+        window.setTimeout(function() { $("#orderSuccessAlert").alert('close') } , 5000);
+
       }, function () {
         $log.info('Modal dismissed at: ' + new Date());
+
       });
     };
   };
 
 
- var BuyItemInstanceCtrl = function ($scope, $modalInstance, productTitle, productPrice, productDescription, productImageData) {
+$scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData) {
 
     console.log(productTitle, productPrice, productDescription, productImageData);
+    $scope.myself = myself;
+    $scope.merchantPubkey = merchantPubkey;
     $scope.productTitle = productTitle;
     $scope.productPrice = productPrice;
     $scope.productDescription = productDescription;
@@ -917,6 +936,39 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };
+
+
+    $scope.newOrder = {message:'', tx: '', listingKey:'', listingTotal:'', productTotal:''}
+    $scope.createOrder = function() {
+
+      $scope.creatingOrder = false;
+
+      var newOrder = {
+          'message': $scope.newOrder.message,
+          'state': 'new',
+          'buyer': $scope.myself.pubkey,
+          'seller': $scope.merchantPubkey,
+          'listingKey': $scope.newOrder.listingKey,
+          'listingTotal': $scope.newOrder.listingTotal
+      }
+      //console.log(newOrder);
+      //$scope.newOrder.text = '';
+      //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
+      socket.send('order', newOrder);
+      $scope.sentOrder = true;
+
+      console.log($scope);
+
+      $modalInstance.close();
+
+
+
+
+
+    }
+
+
+
   };
 
 
