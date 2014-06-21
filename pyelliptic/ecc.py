@@ -2,7 +2,33 @@
 # -*- coding: utf-8 -*-
 
 #  Copyright (C) 2011 Yann GUIBET <yannguibet@gmail.com>
-#  See LICENSE for details.
+# This program is free software; you can redistribute it
+# and/or modify it under the terms of version 3 of the
+# GNU General Public License as published by the Free
+# Software Foundation
+#
+# In addition, as a special exception, the author of this
+# program gives permission to link the code of its
+# release with the OpenSSL project's "OpenSSL" library (or
+# with modified versions of it that use the same license as
+# the "OpenSSL" library), and distribute the linked
+# executables. You must obey the GNU General Public
+# License in all respects for all of the code used other
+# than "OpenSSL".  If you modify this file, you may extend
+# this exception to your version of the file, but you are
+# not obligated to do so.  If you do not wish to do so,
+# delete this exception statement from your version.
+#
+# This program is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public
+# License along with this package; if not, write to the Free
+# Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+# Boston, MA  02110-1301 USA
 
 from hashlib import sha512
 from pyelliptic.openssl import OpenSSL
@@ -112,7 +138,6 @@ class ECC:
 
     @staticmethod
     def _decode_pubkey(pubkey):
-        
         i = 0
         curve = unpack('!H', pubkey[i:i + 2])[0]
         i += 2
@@ -422,7 +447,6 @@ class ECC:
         """
         Encrypt data with ECIES method using the public key of the recipient.
         """
-        print data, pubkey
         curve, pubkey_x, pubkey_y, i = ECC._decode_pubkey(pubkey)
         return ECC.raw_encrypt(data, pubkey_x, pubkey_y, curve=curve,
                                ephemcurve=ephemcurve, ciphername=ciphername)
@@ -438,9 +462,9 @@ class ECC:
         pubkey = ephem.get_pubkey()
         iv = OpenSSL.rand(OpenSSL.get_cipher(ciphername).get_blocksize())
         ctx = Cipher(key_e, iv, 1, ciphername)
-        ciphertext = ctx.ciphering(data)
+        ciphertext = iv + pubkey + ctx.ciphering(data)
         mac = hmac_sha256(key_m, ciphertext)
-        return iv + pubkey + ciphertext + mac
+        return ciphertext + mac
 
     def decrypt(self, data, ciphername='aes-256-cbc'):
         """
@@ -451,12 +475,12 @@ class ECC:
         i = blocksize
         curve, pubkey_x, pubkey_y, i2 = ECC._decode_pubkey(data[i:])
         i += i2
-        ciphertext = data[i:len(data)-32]
+        ciphertext = data[i:len(data) - 32]
         i += len(ciphertext)
         mac = data[i:]
         key = sha512(self.raw_get_ecdh_key(pubkey_x, pubkey_y)).digest()
         key_e, key_m = key[:32], key[32:]
-        if hmac_sha256(key_m, ciphertext) != mac:
+        if hmac_sha256(key_m, data[:len(data) - 32]) != mac:
             raise RuntimeError("Fail to verify data")
         ctx = Cipher(key_e, iv, 0, ciphername)
         return ctx.ciphering(ciphertext)
