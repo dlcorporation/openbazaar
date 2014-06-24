@@ -42,6 +42,7 @@ class ProtocolHandler:
             "save_product":	self.client_save_product,
             "remove_product":	self.client_remove_product,
             "generate_secret":	self.client_generate_secret,
+            "republish_listing":	  self.client_republish_listing,
         }
 
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
@@ -102,6 +103,14 @@ class ProtocolHandler:
         products = self._market.get_products()
 
         self.send_to_client(None, { "type": "products", "products": products } )
+
+    def client_republish_listing(self, socket_handler, msg):
+
+        self._log.info("Republishing product listing")
+
+        # Query mongo for products
+        products = self._market.republish_listing(msg)
+
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):

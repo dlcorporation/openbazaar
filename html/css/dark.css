@@ -207,3 +207,6 @@ div#listing-loader { padding:0 0px; }
 
 .product-title { font-weight:bold; font-size: 20px; color: #666; }
 .product-price { font-weight:bold; font-size: 20px; }
+
+div.listing-button { margin-bottom: 5px; }
+div.listing-button button { width: 100%; }

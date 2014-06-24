@@ -256,10 +256,17 @@
                 <td  style="border-left:none;"><a href="#">{{product.productTitle}}</a><BR><span style="font-size:12px">{{product.key}}</span></td>
                 <td width=50>{{product.productQuantity}}</td>
                 <td width=50>&#3647;{{product.productPrice}}</td>
-                <td width=100>
-                    <button type="button" class="btn btn-danger btn-sm" ng-click="removeProduct(product.id)">
-                        <span class="glyphicon glyphicon-trash"></span> Delete
-                    </button>
+                <td width=100 align="center">
+                    <div class="listing-button">
+                        <button type="button" class="btn btn-primary btn-sm" ng-click="republishListing(product.id)">
+                            <span class="glyphicon glyphicon-upload"></span> Republish
+                        </button>
+                    </div>
+                    <div class="listing-button">
+                        <button type="button" class="btn btn-danger btn-sm" ng-click="removeProduct(product.id)">
+                            <span class="glyphicon glyphicon-trash"></span> Delete
+                        </button>
+                    </div>
                 </td>
             </tr>
         </table>
@@ -710,7 +717,7 @@
             <div ng-controller="BuyItemCtrl">
 
             <div id="listing-loader">
-                Loading products from the network...<br/>
+                 <div style="margin-bottom:10px">No listings found yet. Searching...</div>
                  <div class="progress progress-striped active" style="width:50%">
                   <div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 25%">
                     <span class="sr-only">Loading...</span>
@@ -777,7 +784,7 @@
         </div>
 
         <!-- Reviews -->
-        <div ng-show="storeReviewsPanel"  class="animated bounceInUp">
+        <div ng-show="storeReviewsPanel"  class="animated fadeIn">
 
 
             <div ng-repeat="review in currentReviews.slice().reverse()" style="padding:3px;background-color:#333;margin-bottom:5px;">
@@ -824,7 +831,7 @@
                     </div>
                     <a class="btn btn-default navbar-btn" ng-click="addReview()" type="submit">Submit</a>
                 </div>
-                
+
             </form>
 
         </div>
@@ -838,11 +845,11 @@
 </div>
 <div id="sidebar" ng-show="sidebar" class="shoutbox-area col-sm-4" style="margin-top:20px;">
 
-    <table class="peers-table" style="margin-top:20px;">
+    <table class="peers-table no-hover" style="margin-top:20px;">
         <tbody>
         <tr>
             <td width="40"><identicon icon-size="38" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
-            <td style="font-size:13px;"><span title="{{myself.pubkey}}">My Store<br>
+            <td style="font-size:13px;"><span title="{{myself.pubkey}}"><strong>Your Market</strong><br>
               <span style="font-style:italic;">{{myself.nickname ? myself.nickname : myself.guid}}</span></span></td>
 
 
@@ -857,7 +864,7 @@
             <tbody>
             <tr ng-repeat="peer in peers | limitTo:5" ng-click="queryShop(peer)">
                 <td width="40"><identicon icon-size="38" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
-                <td style="font-size:13px;"><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}<br>
+                <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}</strong><br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.guid}}</span></span></td>
             </tr>
             </tbody>
@@ -868,6 +875,7 @@
 
     <div style="width:100%">
         <h3>Chat Stream</h3>
+
 
         <form class="form" ng-submit="createShout(newShout)">
             <input class="shout-input form-control" type="text" ng-model="newShout" placeholder="Type a message">
