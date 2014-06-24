@@ -76,12 +76,13 @@ class DHT(object):
                            'active peers')
             return
 
-        # Update peer's pubkey if necessary
+        # Update peer's pubkey or uri if necessary
         found_peer = False
         for idx, peer in enumerate(self._activePeers):
             if peer.get_guid() == peer_tuple[2]:
                 found_peer = True
                 peer._pub = peer_tuple[0]
+                peer._address = peer_tuple[1]
                 self._activePeers[idx] = peer
 
         if not found_peer:
