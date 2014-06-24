@@ -82,7 +82,8 @@ h4 {
   padding: 10px;
   text-align: left;
   color: #bbb;
-  border-left: 1px solid #bbb;
+  margin-top:10px;
+  border-left: 1px solid #ccc;
 }
 .mastfoot {
   background: #333333;
@@ -90,6 +91,7 @@ h4 {
 .peers-table { padding:10px; width:100%; color:#999;  }
 .peers-table td { padding:3px 5px; }
 .peers-table td:hover { cursor:pointer; }
+.no-hover td:hover { cursor:default; }
 
  .animated {
     -webkit-transition: height 0.2s;

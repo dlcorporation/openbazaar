@@ -491,6 +491,11 @@ angular.module('app')
      socket.send("query_products", {})
   }
 
+  $scope.republishListing = function(productID) {
+     socket.send("republish_listing", {"productID":productID});
+     socket.send("query_products", {})
+  }
+
 
   $scope.addEscrow = function() {
     escrowAddress = $('#inputEscrowAddress').val();

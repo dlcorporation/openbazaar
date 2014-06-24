@@ -1,13 +1,20 @@
+#!/bin/sh
 # Market Info
 MY_MARKET_IP=$(curl -s ifconfig.me)
 MY_MARKET_PORT=12345
 
 # Specify a seed URI or you will be put into demo mode
+#SEED_URI=tcp://205.186.154.163:12345
 SEED_URI=tcp://seed.openbazaar.org:12345
 
-# Run in local test mode if not production
-#MODE=production
-MODE=development
+# Check for argument to turn on production
+if [ $1 == "production" ]; then
+    MODE=production
+else
+    MODE=development
+fi
+
+
 
 # Location of log directory
 LOGDIR=logs

@@ -14,7 +14,10 @@ from orders import Orders
 import protocol
 import lookup
 from pymongo import MongoClient
-
+from data_uri import DataURI
+from PIL import Image, ImageOps
+from StringIO import StringIO
+import base64
 
 class Market(object):
 
@@ -111,6 +114,20 @@ class Market(object):
         if not msg.has_key("productQuantity") or not msg['productQuantity'] > 0:
             msg['productQuantity'] = 1
 
+        uri = DataURI(msg['productImageData'])
+        imageData = uri.data
+        mime_type = uri.mimetype
+        charset = uri.charset
+
+        image = Image.open(StringIO(imageData))
+        croppedImage = ImageOps.fit(image, (100, 100), centering=(0.5, 0.5))
+        data = StringIO()
+        croppedImage.save(data, format='PNG')
+
+
+        new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
+        data.close()
+        msg['productImageData'] = new_uri
 
         # Save product listing to DHT
         listing = json.dumps(msg)
@@ -127,11 +144,28 @@ class Market(object):
         self._log.debug('New Listing Key: %s' % listing_key)
 
         # Store listing
+
+
+
         self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
 
         self.update_listings_index()
 
         # If keywords store them in the keyword index
+
+    def republish_listing(self, msg):
+
+        listing_id = msg.get('productID')
+        listing = self._db.products.find_one({'id':listing_id})
+        key = listing['key']
+
+        listing = json.loads(listing)
+        print listing
+
+        self._transport._dht.iterativeStore(self._transport, key, listing, self._transport._guid)
+
+
+
 
     def update_listings_index(self):
 
