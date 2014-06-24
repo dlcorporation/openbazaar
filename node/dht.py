@@ -695,9 +695,9 @@ class DHT(object):
                         msg = {"type": "findNode", "uri": contact._transport._uri, "senderGUID": self._transport._guid,
                                "key": new_search._key, "findValue": findValue, "findID": new_search._findID,
                                "pubkey": contact._transport.pubkey}
-                        self._log.info(contact._guid)
+                        self._log.info('Contact GUID: %s' % contact._guid)
                         msg = contact.send(msg)
-                        self._log.info(msg)
+                        self._log.info('MSG: %s' % msg)
 
                         new_search._contactedNow += 1
 

@@ -56,6 +56,7 @@ class CryptoPeerConnection(PeerConnection):
         if self._pub == '':
             self._log.info('There is no public key for encryption')
         else:
+            self._log.debug('DATA: %s' % data)
             self.send_raw(self.encrypt(json.dumps(data)))
 
     def on_message(self, msg, callback=None):
@@ -382,13 +383,13 @@ class CryptoTransportLayer(TransportLayer):
                 traceback.print_exc()
                 return
 
-        if msg.get('type') != '':
+        if msg.get('type') is not None:
 
           msg_type = msg.get('type')
           msg_uri = msg.get('uri')
           msg_guid = msg.get('guid')
 
-          self._log.info(msg.get('type'))
+          self._log.info('Type: %s' % msg.get('type'))
 
           #
           # if msg_type.startswith('hello') and msg_uri:

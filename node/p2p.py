@@ -71,12 +71,16 @@ class PeerConnection(object):
     def _send_raw_process(self, serialized, queue):
 
         self.create_socket()
+
+        rawid = randint(1,1000)
+        self._log.info('Sending %s' % rawid)
+
         self._socket.send(serialized, zmq.NOBLOCK)
 
         poller = zmq.Poller()
         poller.register(self._socket, zmq.POLLIN)
 
-        rawid = randint(1,1000)
+
         #self._log.info('[Outbound Raw Message] %s: %s' % (rawid, serialized))
 
         #self._log.info('Sending to %s from %s' % (serialized, self._transport._guid))
