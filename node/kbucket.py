@@ -51,7 +51,6 @@ class KBucket(object):
         self._log.debug('Looking for %s in bucket MIN: %s MAX: %s' % (contactID, self.rangeMin, self.rangeMax))
         for contact in self._contacts:
           if contact._guid == contactID:
-            self._log.debug('Found contact: %s' % contact)
             return contact
 
     def getContacts(self, count=-1, excludeContact=None):

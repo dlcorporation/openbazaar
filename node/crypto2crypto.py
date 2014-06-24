@@ -51,7 +51,7 @@ class CryptoPeerConnection(PeerConnection):
         data['uri'] = self._transport._uri
         data['pubkey'] = self._transport.pubkey
 
-        self._log.debug('Sending to peer: %s %s' % (self._guid, data))
+        #self._log.debug('Sending to peer: %s %s' % (self._guid, data))
 
         if self._pub == '':
             self._log.info('There is no public key for encryption')
@@ -341,7 +341,7 @@ class CryptoTransportLayer(TransportLayer):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        self._log.info("[On Message] Data received: %s" % msg)
+        #self._log.info("[On Message] Data received: %s" % msg)
 
         pubkey = msg.get('pubkey')
         uri = msg.get('uri')
@@ -349,8 +349,10 @@ class CryptoTransportLayer(TransportLayer):
         port = urlparse(uri).port
         guid = msg.get('senderGUID')
 
-        self._dht.add_active_peer(self, (pubkey, uri, guid))
         self._dht.add_known_node((ip, port, guid))
+
+        #self._dht.add_active_peer(self, (pubkey, uri, guid))
+
 
         self.trigger_callbacks(msg['type'], msg)
 

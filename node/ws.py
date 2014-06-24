@@ -225,7 +225,7 @@ class ProtocolHandler:
         self._transport.send(protocol.shout(msg))
 
     def on_node_search_value(self, results):
-        self._log.info('Listing Data: %s' % results)
+        #self._log.info('Listing Data: %s' % results)
         self.send_to_client(None, { "type": "new_listing", "data": results})
 
     def on_node_search_results(self, results):
@@ -359,7 +359,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def _send_response(self, response):
         if self.ws_connection:
-            self._log.info('Response: %s' % response)
+            #self._log.info('Response: %s' % response)
 
             
             self.write_message(json.dumps(response))
