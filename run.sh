@@ -1,4 +1,3 @@
-#!/bin/sh
 # Market Info
 MY_MARKET_IP=$(curl -s ifconfig.me)
 MY_MARKET_PORT=12345
