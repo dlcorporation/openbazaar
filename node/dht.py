@@ -210,7 +210,7 @@ class DHT(object):
 
     def on_findNodeResponse(self, transport, msg):
 
-        self._log.info('Received a findNode Response: %s' % msg)
+        #self._log.info('Received a findNode Response: %s' % msg)
 
         # Update pubkey if necessary - happens for seed server
         # localPeer = next((peer for peer in self._activePeers if peer._guid == msg['senderGUID']), None)

@@ -7,7 +7,7 @@ alpha = 3
 k = 8
 
 #: Timeout for network operations (in seconds)
-rpcTimeout = 1
+rpcTimeout = 0.1
 
 # Delay between iterations of iterative node lookups (for loose parallelism)  (in seconds)
 iterativeLookupDelay = rpcTimeout / 2
