@@ -86,7 +86,7 @@ class PeerConnection(object):
         #self._log.info('Sending to %s from %s' % (serialized, self._transport._guid))
 
         if poller.poll(self._timeout * 1000):
-            msg = self._socket.recv()
+            msg = self._socket.recv(flags=zmq.NOBLOCK)
             self._log.info('[Close Socket] %s: %s' % (rawid, msg))
             self.on_message(msg)
             self.cleanup_socket()
