@@ -114,20 +114,23 @@ class Market(object):
         if not msg.has_key("productQuantity") or not msg['productQuantity'] > 0:
             msg['productQuantity'] = 1
 
-        uri = DataURI(msg['productImageData'])
-        imageData = uri.data
-        mime_type = uri.mimetype
-        charset = uri.charset
 
-        image = Image.open(StringIO(imageData))
-        croppedImage = ImageOps.fit(image, (100, 100), centering=(0.5, 0.5))
-        data = StringIO()
-        croppedImage.save(data, format='PNG')
+        if msg.has_lkey('productImageData'):
+
+            uri = DataURI(msg['productImageData'])
+            imageData = uri.data
+            mime_type = uri.mimetype
+            charset = uri.charset
+
+            image = Image.open(StringIO(imageData))
+            croppedImage = ImageOps.fit(image, (100, 100), centering=(0.5, 0.5))
+            data = StringIO()
+            croppedImage.save(data, format='PNG')
 
 
-        new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
-        data.close()
-        msg['productImageData'] = new_uri
+            new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
+            data.close()
+            msg['productImageData'] = new_uri
 
         # Save product listing to DHT
         listing = json.dumps(msg)
