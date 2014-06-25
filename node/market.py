@@ -115,7 +115,7 @@ class Market(object):
             msg['productQuantity'] = 1
 
 
-        if msg.has_lkey('productImageData'):
+        if msg.has_key('productImageData'):
 
             uri = DataURI(msg['productImageData'])
             imageData = uri.data
