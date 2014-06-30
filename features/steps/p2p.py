@@ -2,7 +2,6 @@ from behave import *
 from threading import Thread
 from test_util import *
 
-
 @given('there is a node')
 def step_impl(context):
     create_nodes(context, 1)

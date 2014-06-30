@@ -28,13 +28,12 @@ def ws_send_raw(port, string):
         message = yield client.read_message()
         client.write_message(json.dumps(string))
         message = yield client.read_message()
-        raise gen.Return(message)
+        raise gen.Return(json.loads(message))
 
     return IOLoop.current().run_sync(client)
 
 
-def ws_send(node_index, command, params=None):
-    if not params: params = {}
+def ws_send(node_index, command, params={}):
     port = str(node_to_ws_port(node_index))
     cmd = {'command': command,
            'id': 1,
@@ -51,7 +50,7 @@ def create_nodes(context, num_nodes):
                             args=('127.0.0.%s' % str(i+1),
                                   12345,
                                   None,
-                                  'logs/test%s.log' % str(i),
+                                  'test%s.log' % str(i),
                                   i)))
         proc[i].start()
         time.sleep(1)
@@ -86,9 +85,9 @@ def settings_set_page(market_id):
         _dbclient = MongoClient()
         _db = _dbclient.openbazaar
 
-        _db.settings.update({'id' : str(market_id)},
+        _db.settings.update({'id' : str(market_id)}, 
                             # {'$set': setting} , True)
-                            {'$set': {'storeDescription':'TEST Market %s' % str(market_id)}} , True)
+                            {'$set': {'storeDescription':'Market %s' % str(market_id)}} , True)
 
 def remove_settings(market_id):
         MONGODB_URI = 'mongodb://localhost:27017'

@@ -3,7 +3,7 @@ Feature: Websocket Client Interface
   Scenario: Connection
     Given there is a node
      When we connect
-     Then it will introduce itself 
+     Then it will introduce itself
 
   Scenario: Connect to a node
     Given there are 2 nodes

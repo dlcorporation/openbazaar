@@ -45,6 +45,10 @@ class DHT(object):
         port = seed_peer._port
         self.add_known_node((ip, port, seed_peer._guid))
 
+
+
+
+
         self.add_active_peer(self._transport, (seed_peer._pub,
                                                seed_peer._address,
                                                seed_peer._guid))
@@ -89,6 +93,8 @@ class DHT(object):
             self._log.debug('[Add Active Peer] Adding an active Peer: %s' %
                             peer_tuple[2])
             self._activePeers.append(new_peer)
+
+
 
         if not self._routingTable.getContact(peer_tuple[2]) and peer_tuple[2] != self._transport.get_guid():
             self._log.debug('Adding contact to routing table')
@@ -139,12 +145,17 @@ class DHT(object):
 
         new_peer = self._transport.get_crypto_peer(guid, uri, pubkey)
 
+        if guid == self._transport.guid:
+            return
+
         if not new_peer:
             return
 
         else:
 
             if msg['findValue'] is True:
+
+                print 'key',key
 
                 if key in self._dataStore and self._dataStore[key] is not None:
 
@@ -160,13 +171,13 @@ class DHT(object):
                          "findID": findID})
                 else:
                     self._log.info('Did not find a key: %s' % key)
-                    new_peer.send(
-                        {"type": "findNodeResponse",
-                         "senderGUID": self._transport.guid,
-                         "uri": self._transport._uri,
-                         "pubkey": self._transport.pubkey,
-                         "foundKey": [],
-                         "findID": findID})
+                    # new_peer.send(
+                    #     {"type": "findNodeResponse",
+                    #      "senderGUID": self._transport.guid,
+                    #      "uri": self._transport._uri,
+                    #      "pubkey": self._transport.pubkey,
+                    #      "foundKey": [],
+                    #      "findID": findID})
 
 
             else:
@@ -195,15 +206,19 @@ class DHT(object):
 
                     self._log.debug('Contact Triples: %s' % contactTriples)
 
-                    to_contact = self._routingTable.getContact(guid)
+                    contact = self._routingTable.getContact(guid)
+
+                    peer = self._transport.get_crypto_peer(contact._guid, contact._address, contact._pub)
+
                     self._log.info('Sending found nodes to: %s' % guid)
-                    to_contact.send(
+                    msg = peer.send(
                         {"type": "findNodeResponse",
                          "senderGUID": self._transport.guid,
                          "uri": self._transport._uri,
                          "pubkey": self._transport.pubkey,
                          "foundNodes": contactTriples,
                          "findID": findID})
+                    self._log.info('GOT: %s' % msg)
 
             if not self._routingTable.getContact(new_peer._guid):
                 self._routingTable.addContact(new_peer)
@@ -223,6 +238,7 @@ class DHT(object):
 
         # If key was found by this node then
         if 'foundKey' in msg.keys():
+            self._log.debug(msg['foundKey'])
             self._log.debug('Found the key-value pair. Executing callback.')
 
             for idx, s in enumerate(self._searches):
@@ -462,7 +478,7 @@ class DHT(object):
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
-        self._log.debug('Places to store the key-value: (%s, %s, %s)' % (nodes, key, value))
+        self._log.debug('Places to store the key-value: (%s, %s)' % (nodes, key))
 
         now = int(time.time())
         originallyPublished = now - age
@@ -480,10 +496,13 @@ class DHT(object):
 
             peer = self._routingTable.getContact(guid)
 
+            if guid == self._transport.guid:
+                break
+
             if not peer:
                 peer = self._transport.get_crypto_peer(guid, uri)
 
-            msg = peer.send_raw(json.dumps({'type':'hello', 'pubkey':self._transport.pubkey, 'uri':self._transport._uri, 'senderGUID':self._transport.guid }))
+            #msg = peer.send_raw(json.dumps({'type':'hello', 'pubkey':self._transport.pubkey, 'uri':self._transport._uri, 'senderGUID':self._transport.guid }))
 
             peer.send(proto_store(key, value, originalPublisherID, age))
 
@@ -688,15 +707,18 @@ class DHT(object):
                 if node[2] != self._transport._guid:
 
                     new_search._active_probes.append(node)
+                    new_search._already_contacted.append(node)
                     contact = self._routingTable.getContact(node[2])
 
                     if contact:
 
+                        peer = self._transport.get_crypto_peer(contact._guid, contact._address, contact._pub)
+
                         msg = {"type": "findNode", "uri": contact._transport._uri, "senderGUID": self._transport._guid,
                                "key": new_search._key, "findValue": findValue, "findID": new_search._findID,
                                "pubkey": contact._transport.pubkey}
-                        self._log.info('Contact GUID: %s' % contact._guid)
-                        msg = contact.send(msg)
+                        self._log.debug('Sending findNode to: %s %s' % (contact._address, msg))
+                        msg = peer.send(msg)
                         self._log.info('MSG: %s' % msg)
 
                         new_search._contactedNow += 1
