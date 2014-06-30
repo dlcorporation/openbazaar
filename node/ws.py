@@ -130,7 +130,7 @@ class ProtocolHandler:
         self._market.save_settings(msg['settings'])
 
     def client_save_product(self, socket_handler, msg):
-        self._log.info("Save product: %s" % msg)
+        #self._log.info("Save product: %s" % msg)
 
         # Update settings in mongo
         self._market.save_product(msg)
@@ -343,7 +343,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
 
-        self._log.info('[On Message]: %s' % message)
+        #self._log.info('[On Message]: %s' % message)
 
         try:
             request = json.loads(message)

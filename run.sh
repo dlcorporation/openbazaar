@@ -1,5 +1,5 @@
 # Market Info
-MY_MARKET_IP=$(curl -s ifconfig.me)
+MY_MARKET_IP=$(wget -qO- icanhazip.com)
 MY_MARKET_PORT=12345
 
 # Specify a seed URI or you will be put into demo mode
@@ -7,13 +7,13 @@ MY_MARKET_PORT=12345
 SEED_URI=tcp://seed.openbazaar.org:12345
 
 # Check for argument to turn on production
-if [ $1 == "production" ]; then
+DEVMODE=development
+MODE=${1:-$DEVMODE}
+if [ $MODE == "production" ]; then
     MODE=production
 else
     MODE=development
 fi
-
-
 
 # Location of log directory
 LOGDIR=logs
@@ -44,7 +44,7 @@ else
 	sleep 2
 	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node1.log -u 3 &
 
-	sleep 2
-	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node1.log -u 4 &
+	#sleep 2
+	#$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node1.log -u 4 &
 
 fi

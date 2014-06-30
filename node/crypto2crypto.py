@@ -12,38 +12,76 @@ from p2p import PeerConnection, TransportLayer
 from dht import DHT
 
 
+import tornado
+
+
 class CryptoPeerConnection(PeerConnection):
 
-    def __init__(self, transport, address, pub=None, guid=None):
+    def __init__(self, transport, address, pub=None, guid=None, callback=lambda msg: None):
 
         self._priv = transport._myself
         self._pub = pub
-        self._guid = guid
-        self._transport = transport
         self._ip = urlparse(address).hostname
         self._port = urlparse(address).port
-
+        PeerConnection.__init__(self, transport, address)
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
-        PeerConnection.__init__(self, transport, address)
-        self._log.debug('New Crypt Peer: %s %s %s' % (address, pub, guid))
+        if guid is not None:
+            self._guid = guid
+            callback(None)
+        else:
+            def cb(msg):
+                msg = msg[0]
+                msg = json.loads(msg)
+                self._guid = msg['senderGUID']
+                self._pub = msg['pubkey']
 
-        if pub is None or guid is None:
-          self._log.debug('Sending Hello')
-          msg = self.send_raw(json.dumps({'type':'hello', 'pubkey':transport.pubkey, 'uri':transport._uri, 'senderGUID':transport.guid }))
-          self._log.debug('Hello Response: %s' % msg)
+                self._log.debug('New Crypt Peer: %s %s %s' % (self._address, self._pub, self._guid))
 
-          if msg:
-            msg = json.loads(msg)
-            self._guid = msg['senderGUID']
-            self._pub = msg['pubkey']
+                callback(msg)
+            try:
+                self.send_raw(json.dumps({'type':'hello', 'pubkey':transport.pubkey,
+                                      'uri':transport._uri,
+                                      'senderGUID':transport.guid }), cb)
+            except:
+                print 'error'
 
+        # self._guid = guid
+        # self._transport = transport
+        # self._ip = urlparse(address).hostname
+        # self._port = urlparse(address).port
+        #
+        #
+        #
+        #
+        # if pub is not None:
+        #     callback(None)
+        # else:
+        #     print 'Need pub'
+
+
+
+
+
+
+
+
+        # if msg:
+        #     msg = json.loads(msg)
+        #     self._guid = msg['senderGUID']
+        #     self._pub = msg['pubkey']
+
+    def __repr__(self):
+        return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
+
+    def setPub(self, msg):
+        print msg
 
 
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub.decode('hex'))
 
-    def send(self, data):
+    def send(self, data, callback=lambda msg: None):
 
         # Include guid        
         data['guid'] = self._guid
@@ -56,12 +94,14 @@ class CryptoPeerConnection(PeerConnection):
         if self._pub == '':
             self._log.info('There is no public key for encryption')
         else:
-            self._log.debug('DATA: %s' % data)
-            self.send_raw(self.encrypt(json.dumps(data)))
+            #self._log.debug('DATA: %s' % data)
+            msg = self.send_raw(self.encrypt(json.dumps(data)), callback)
+            return msg
 
     def on_message(self, msg, callback=None):
         # this are just acks
-        pass
+        if callback is not None:
+            callback(msg)
 
     def peer_to_tuple(self):
         return self._ip, self._port, self._guid
@@ -99,6 +139,10 @@ class CryptoTransportLayer(TransportLayer):
         self.add_callback('findNode', self._findNode)
         self.add_callback('findNodeResponse', self._findNodeResponse)
         self.add_callback('store', self._storeValue)
+
+        self.listen(self.pubkey)
+
+
 
     def get_guid(self):
         return self._guid
@@ -170,14 +214,42 @@ class CryptoTransportLayer(TransportLayer):
       self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
 
 
-    def join_network(self, seed_uri):
-
-        self.listen(self.pubkey) # Turn on zmq socket
+    def join_network(self, seed_uri, callback=lambda msg: None):
 
         if seed_uri:
-            self._log.info('Initializing Seed Peer(s): [%s]' % seed_uri)
-            seed_peer = CryptoPeerConnection(self, seed_uri)
-            self._dht.start(seed_peer)
+            self._log.info('Initializing Seed Peer(s): [%s]' % (seed_uri))
+
+            def cb(msg):
+                self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
+                callback(msg)
+
+            self.connect(seed_uri, callback=cb)
+
+        # self.listen(self.pubkey) # Turn on zmq socket
+        #
+        # if seed_uri:
+        #     self._log.info('Initializing Seed Peer(s): [%s]' % seed_uri)
+        #     seed_peer = CryptoPeerConnection(self, seed_uri)
+        #     self._dht.start(seed_peer)
+
+    def connect(self, uri, callback):
+
+        def cb(msg):
+            ip = urlparse(uri).hostname
+            port = urlparse(uri).port
+
+            self._dht.add_known_node((ip, port, peer._guid))
+
+            # Turning off peers
+            #self.init_peer({'uri': seed_uri, 'guid':seed_guid})
+
+            # Add to routing table
+            self.addCryptoPeer(peer)
+            callback(msg)
+
+        peer = CryptoPeerConnection(self, uri, callback=cb)
+
+        return peer
 
 
     def get_crypto_peer(self, guid, uri, pubkey=None):
@@ -192,7 +264,7 @@ class CryptoTransportLayer(TransportLayer):
     def addCryptoPeer(self, peer):
 
       peerExists = False
-      for idx, aPeer in enumerate(self._activePeers):
+      for idx, aPeer in enumerate(self._dht._activePeers):
 
         if aPeer._guid == peer._guid or aPeer._pub == peer._pub or aPeer._address == peer._address:
 
@@ -205,8 +277,7 @@ class CryptoTransportLayer(TransportLayer):
 
       if not peerExists and peer._guid != self._guid:
         self._log.info('Adding crypto peer %s' % peer._pub)
-        self._routingTable.addContact(peer)
-        print peer
+        self._dht._routingTable.addContact(peer)
         self._dht.add_active_peer(self, (peer._pub, peer._address, peer._guid))
 
 

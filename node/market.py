@@ -98,7 +98,7 @@ class Market(object):
 
 
     def save_product(self, msg):
-        self._log.debug("Saving product: %s" % msg)
+        #self._log.debug("Saving product: %s" % msg)
 
         msg['market_id'] = self._market_id
 
