@@ -238,7 +238,6 @@ class DHT(object):
 
         # If key was found by this node then
         if 'foundKey' in msg.keys():
-            self._log.debug(msg['foundKey'])
             self._log.debug('Found the key-value pair. Executing callback.')
 
             for idx, s in enumerate(self._searches):
