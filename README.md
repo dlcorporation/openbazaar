@@ -48,7 +48,8 @@ contributed by Dean Masley
 4. [Services on OpenBazaar](https://gist.github.com/drwasho/632d126a4189467c1280) by Dr Washington Sanchez
 5. [The Issuance and P2P Transfer of Shares on OpenBazaar](https://gist.github.com/drwasho/3670bb1c59e620fffb24) by Dr Washington Sanchez and Delain Markos
 6. [Voting Pools in OpenBazaar](https://gist.github.com/drwasho/c04f16fcc7be9a666e90) by Dr Washington Sanchez
-7. [Distributed Currency Exchange](https://gist.github.com/drwasho/aa6ab79e92f2a876073e)
+7. [Distributed Currency Exchange](https://gist.github.com/drwasho/aa6ab79e92f2a876073e) by Dr Washington Sanchez
+8. [OpenBazaar Genesis Contract](https://gist.github.com/drwasho/76e1161db1e5b860598a) by Dr Washington Sanchez (arbiter), Brian Hoffman (buyer), and Samuel Patterson (seller)
 
 ## Screenshot
 
