@@ -46,7 +46,6 @@ class PeerConnection(object):
         self._stream.send(serialized)
 
         def cb(msg):
-            print 'callback'
             self.on_message(msg)
             if callback is not None:
                 callback(msg)
@@ -55,7 +54,7 @@ class PeerConnection(object):
 
 
     def on_message(self, msg, callback=lambda msg: None):
-        self._log.info("Message received: %s" % msg)
+        #self._log.info("Message received: %s" % msg)
         callback()
 
 
@@ -108,11 +107,9 @@ class TransportLayer(object):
         #while True:
 
         stream = zmqstream.ZMQStream(socket, io_loop=ioloop.IOLoop.current())
-        print 'stream: %s' % stream
 
         def handle_recv(message):
             for msg in message:
-                print msg
                 self.on_raw_message(msg)
 
 

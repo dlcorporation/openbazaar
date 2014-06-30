@@ -75,7 +75,7 @@ class CryptoPeerConnection(PeerConnection):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
 
     def setPub(self, msg):
-        print msg
+        print 'setpub',msg
 
 
     def encrypt(self, data):
