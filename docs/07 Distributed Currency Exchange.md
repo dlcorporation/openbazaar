@@ -312,7 +312,7 @@ As for chargeback risk, it is clearly preferable for both parties to use a non-r
 ## Listing and Matching Buy/Sell Orders on *OpenBazaar*
 
 ### 1. DHT Listing
-Following the [Bitsqaure model](http://Bitsquare.io), the buy and sell orders are listed in the DHT (for a fee, which I'd like to avoid). The client then matches the buy and sell orders and places both parties in contact with each other over the network.
+Following the [Bitsqaure model](http://Bitsquare.io), the buy and sell orders are listed in the DHT (for a fee, which I'd like to avoid). The client then matches the buy and sell orders and places both parties in contact with each other over the network. Contracts can be found using the inverse keyword search on *OpenBazaar's* DHT, which is a Kademlia-like P2P network.
 
 ### 2. DarkPool
 This model uses a private means of matching buy and sell orders, which I think also encompasses private P2P exchanges between parties that have already discovered each other. In this case, the transfer is fairly straightforward and would proceed as I described under the crypto-crypto section.
@@ -322,4 +322,4 @@ This introduces the concept of a node or groups of nodes where buyers and seller
 
 ## Conclusion
 
-*OpenBazaar* can used as a decentralised currency exchange platform for multiple currency types.
+*OpenBazaar* can be used as a decentralised currency exchange platform for multiple currency types. These proposals are a primer for the *OpenBazaar* community to develop near trustless systems for the distributed exchange of various currencies using Ricardian contracts.
