@@ -35,18 +35,18 @@ if [ $MODE == production ]; then
 
   # Identity server is coming soon
   #$PYTHON ident/identity.py &
-	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT -l $LOGDIR/node.log -u 1 &
+	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT -l $LOGDIR/production.log -u 1 &
 
 else
 
 	# Primary Market - No SEED_URI specified
-	$PYTHON node/tornadoloop.py 127.0.0.1 -l $LOGDIR/demo_node1.log -u 2 &
+	$PYTHON node/tornadoloop.py 127.0.0.1 -l $LOGDIR/development.log -u 2 &
 
 	# Demo Peer Market
 	sleep 4
-	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node1.log -u 3 &
+	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 3 &
 
 	sleep 2
-	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/demo_node1.log -u 4 &
+	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 4 &
 
 fi
