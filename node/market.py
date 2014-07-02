@@ -162,7 +162,7 @@ class Market(object):
         listing = self._db.products.find_one({'id':listing_id})
         key = listing['key']
 
-        listing = json.loads(listing)
+        #listing = json.loads(listing)
         print listing
 
         self._transport._dht.iterativeStore(self._transport, key, listing, self._transport._guid)
