@@ -38,12 +38,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
-    apt-get install -y build-essential python-dev python-pip python-zmq mongodb libjpeg-dev
+    apt-get install -y build-essential python-dev python-pip python-zmq mongodb libjpeg-dev tor
     pip install tornado Twisted pycountry pillow
     easy_install pymongo websocket behave 
     cp -R /vagrant/ecdsa /vagrant/obelisk /usr/local/lib/python2.7/dist-packages/
     mongo --eval "db = db.getSiblingDB('openbazaar')"
     pip install pyelliptic
+    /etc/init.d/tor restart
   SCRIPT
 
   # Create a private network, which allows host-only access to the machine
