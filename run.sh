@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Market Info
 MY_MARKET_IP=$(wget -qO- icanhazip.com)
 MY_MARKET_PORT=12345

@@ -33,6 +33,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      }
    end
 
+  config.vm.synced_folder ".", "/vagrant",  :mount_options => ["dmode=755,fmode=755"]
 
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
