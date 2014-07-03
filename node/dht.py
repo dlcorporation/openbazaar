@@ -45,10 +45,6 @@ class DHT(object):
         port = seed_peer._port
         self.add_known_node((ip, port, seed_peer._guid))
 
-
-
-
-
         self.add_active_peer(self._transport, (seed_peer._pub,
                                                seed_peer._address,
                                                seed_peer._guid))
@@ -63,6 +59,14 @@ class DHT(object):
         # io_loop=loop)
         # refreshCB.start()
 
+    def find_active_peer(self, peer_tuple):
+        found_peer = False
+        for idx, peer in enumerate(self._activePeers):
+            if peer_tuple == (peer._guid, peer._address, peer._pub):
+                found_peer = peer
+        return found_peer
+
+
     def add_active_peer(self, transport, peer_tuple):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
         peers list if it doesn't already reside there.
@@ -70,9 +74,7 @@ class DHT(object):
         :param transport: (CryptoTransportLayer) so we can get a new CryptoPeer
         :param peer_tuple: PUG tuple so we can make a peer connection
         """
-        new_peer = transport.get_crypto_peer(peer_tuple[2],
-                                           peer_tuple[1],
-                                           peer_tuple[0])
+
 
         # Check if peer to add is yourself
         if peer_tuple[2] == self._settings['guid']:
@@ -95,9 +97,10 @@ class DHT(object):
         if not found_peer:
             self._log.debug('[Add Active Peer] Adding an active Peer: %s' %
                             peer_tuple[2])
+            new_peer = transport.get_crypto_peer(peer_tuple[2],
+                                           peer_tuple[1],
+                                           peer_tuple[0])
             self._activePeers.append(new_peer)
-
-
 
         if not self._routingTable.getContact(peer_tuple[2]) and peer_tuple[2] != self._transport.get_guid():
             self._log.debug('Adding contact to routing table')
@@ -146,7 +149,9 @@ class DHT(object):
         assert uri is not None
         assert pubkey is not None
 
-        new_peer = self._transport.get_crypto_peer(guid, uri, pubkey)
+        new_peer = self.find_active_peer((guid, uri, pubkey))
+        if not new_peer:
+            new_peer = self._transport.get_crypto_peer(guid, uri, pubkey)
 
         if guid == self._transport.guid:
             return
