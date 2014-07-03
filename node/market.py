@@ -179,7 +179,7 @@ class Market(object):
 
         self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
 
-
+        self.update_listings_index()
 
 
     def update_listings_index(self):
