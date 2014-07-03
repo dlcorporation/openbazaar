@@ -53,10 +53,6 @@ class PeerConnection(object):
         self._stream.on_recv(cb)
 
 
-    def on_message(self, msg, callback=lambda msg: None):
-        #self._log.info("Message received: %s" % msg)
-        callback()
-
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
@@ -71,7 +67,6 @@ class TransportLayer(object):
         self._uri = 'tcp://%s:%s' % (self._ip, self._port)
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
-        # signal.signal(signal.SIGTERM, lambda x, y: self.broadcast_goodbye())
 
     def add_callback(self, section, callback):
         self._callbacks[section].append(callback)
@@ -87,9 +82,6 @@ class TransportLayer(object):
         return {'type': 'hello_request', 'uri': self._uri}
 
     def listen(self, pubkey):
-        #t = Thread(target=self._listen, args=(pubkey,))
-        #t.setDaemon(True)
-        #t.start()
         self._listen(pubkey)
 
     def _listen(self, pubkey):
@@ -104,27 +96,16 @@ class TransportLayer(object):
         else:
             socket.bind('tcp://*:%s' % self._port)
 
-        #while True:
-
         stream = zmqstream.ZMQStream(socket, io_loop=ioloop.IOLoop.current())
 
         def handle_recv(message):
             for msg in message:
                 self.on_raw_message(msg)
 
-
-
             self._log.info('Sending back OK')
-            #self._socket.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}), flags=zmq.NOBLOCK)
             stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}))
 
         stream.on_recv(handle_recv)
-
-            # t = Thread(target=self.handle_raw_message, args=(message,))
-            # t.setDaemon(True)
-            # t.start()
-
-
 
     def handle_raw_message(self, message):
         self.on_raw_message(message)
@@ -167,22 +148,9 @@ class TransportLayer(object):
 
         # Directed message
         if send_to is not None:
-
             peer = self._dht._routingTable.getContact(send_to)
-
             new_peer = self._dht._transport.get_crypto_peer(peer._guid, peer._address, peer._pub)
-
             new_peer.send(data)
-            # for peer in self._dht._activePeers:
-            #
-            #     if peer._guid == send_to:
-            #         self._log.info('Found a matching peer: %s' % peer._guid)
-            #
-            #
-            #         peer.send(data)
-            #
-            #         self._log.debug('Sent message: %s ' % data)
-
             return
 
         else:
@@ -190,8 +158,6 @@ class TransportLayer(object):
 
             for peer in self._dht._activePeers:
                 try:
-
-
                     data['senderGUID'] = self._guid
                     if peer._pub:
                         peer.send(data)

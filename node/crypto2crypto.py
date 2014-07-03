@@ -46,30 +46,6 @@ class CryptoPeerConnection(PeerConnection):
             except:
                 print 'error'
 
-        # self._guid = guid
-        # self._transport = transport
-        # self._ip = urlparse(address).hostname
-        # self._port = urlparse(address).port
-        #
-        #
-        #
-        #
-        # if pub is not None:
-        #     callback(None)
-        # else:
-        #     print 'Need pub'
-
-
-
-
-
-
-
-
-        # if msg:
-        #     msg = json.loads(msg)
-        #     self._guid = msg['senderGUID']
-        #     self._pub = msg['pubkey']
 
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
@@ -77,6 +53,10 @@ class CryptoPeerConnection(PeerConnection):
     def setPub(self, msg):
         print 'setpub',msg
 
+    def heartbeat(self):
+        def cb(msg):
+            print 'heartbeat'
+        self.send_raw(json.dumps({'type':'heartbeat','guid':self._guid, 'pubkey':self._transport.pubkey, 'senderGUID':self._transport.guid, 'uri':self._transport._uri, 'checkPubkey':self._pub}), cb)
 
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub.decode('hex'))
@@ -99,7 +79,17 @@ class CryptoPeerConnection(PeerConnection):
             return msg
 
     def on_message(self, msg, callback=None):
-        # this are just acks
+
+        # Need to validate that the pubkey coming back is the one we sent out in
+        # case the node updated their keys
+        remote_pub = json.loads(msg[0]).get('pubkey')
+        print 'Local:%s Remote:%s' % (self._pub, remote_pub)
+
+        if self._pub is not None and self._pub != remote_pub:
+            print 'Pubkey doesnt match the GUID, removing active peer'
+            activePeers = self._transport._dht._activePeers
+
+
         if callback is not None:
             callback(msg)
 
@@ -143,6 +133,8 @@ class CryptoTransportLayer(TransportLayer):
         self.listen(self.pubkey)
 
 
+    def _checkok(self, msg):
+        self._log.info('Check ok')
 
     def get_guid(self):
         return self._guid
@@ -449,9 +441,9 @@ class CryptoTransportLayer(TransportLayer):
                   self._log.error("Could not decrypt message: %s" % msg)
                   return
             except:
-                self._log.info("Bad Message: %s..."
-                               % self._myself.decrypt(serialized))
-                traceback.print_exc()
+
+                self._log.error('Message probably sent using incorrect pubkey')
+
                 return
 
         if msg.get('type') is not None:
@@ -462,20 +454,6 @@ class CryptoTransportLayer(TransportLayer):
 
           self._log.info('Type: %s' % msg.get('type'))
 
-          #
-          # if msg_type.startswith('hello') and msg_uri:
-          #     self.init_peer(msg)
-          #     for uri, pub in msg.get('peers', {}).iteritems():
-          #         # Do not add yourself as a peer
-          #         if uri != self._uri:
-          #             self.init_peer({'uri': uri, 'pub': pub})
-          #     self._log.info("Update peer table [%s peers]" % len(self._peers))
-          #
-          # elif msg_type == 'goodbye' and msg_uri:
-          #     self._log.info("Received goodbye from %s" % msg_uri)
-          #     self.remove_peer(msg_uri)
-          #
-          # else:
           self.on_message(msg)
         else:
           self._log.error('Received a message with no type')
