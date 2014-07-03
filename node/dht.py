@@ -162,9 +162,6 @@ class DHT(object):
         else:
 
             if msg['findValue'] is True:
-
-                print 'key',key
-
                 if key in self._dataStore and self._dataStore[key] is not None:
 
                     self._log.debug('Found key: %s' % key)
@@ -179,14 +176,6 @@ class DHT(object):
                          "findID": findID})
                 else:
                     self._log.info('Did not find a key: %s' % key)
-                    # new_peer.send(
-                    #     {"type": "findNodeResponse",
-                    #      "senderGUID": self._transport.guid,
-                    #      "uri": self._transport._uri,
-                    #      "pubkey": self._transport.pubkey,
-                    #      "foundKey": [],
-                    #      "findID": findID})
-
 
             else:
                 # Search for contact in routing table
@@ -211,15 +200,10 @@ class DHT(object):
                         contactTriples.append((contact._guid, contact._address, contact._pub))
 
                     contactTriples = self.dedupe(contactTriples)
-
                     self._log.debug('Contact Triples: %s' % contactTriples)
-
-                    contact = self._routingTable.getContact(guid)
-
-                    peer = self._transport.get_crypto_peer(contact._guid, contact._address, contact._pub)
-
                     self._log.info('Sending found nodes to: %s' % guid)
-                    msg = peer.send(
+                    
+                    msg = new_peer.send(
                         {"type": "findNodeResponse",
                          "senderGUID": self._transport.guid,
                          "uri": self._transport._uri,
