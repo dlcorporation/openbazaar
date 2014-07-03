@@ -53,6 +53,7 @@ class PeerConnection(object):
         self._stream.on_recv(cb)
 
 
+
 # Transport layer manages a list of peers
 class TransportLayer(object):
     def __init__(self, market_id, my_ip, my_port, my_guid):

@@ -8,7 +8,8 @@ MY_MARKET_PORT=12345
 # - If you enable Tor here you will be operating a hidden
 #   service behind your Tor proxy (notional)
 TOR_ENABLE=0
-TOR_CONTROL_PORT=9050
+TOR_CONTROL_PORT=9051
+TOR_SERVER_PORT=9050
 TOR_COOKIE_AUTHN=1
 TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
