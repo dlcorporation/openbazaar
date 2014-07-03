@@ -170,10 +170,7 @@ class Market(object):
                                 listing['productImageData'] if listing.has_key('productImageData') else "")
         listing = json.dumps(listing)
 
-
-
         self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
-
         self.update_listings_index()
 
 
