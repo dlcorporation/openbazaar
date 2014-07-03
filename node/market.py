@@ -140,6 +140,12 @@ class Market(object):
             data.close()
             msg['productImageData'] = new_uri
 
+
+        ''' Create product contract here and send to the network
+
+        '''
+
+
         # Save product listing to DHT
         listing = json.dumps(msg)
         listing_key = hashlib.sha1(listing).hexdigest()

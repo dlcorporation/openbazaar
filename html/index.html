@@ -151,10 +151,25 @@
         <script type="text/ng-template" id="ProductModal.html">
 
             <div class="modal-header">
-                <h3 class="modal-title">Add Product</h3>
+                <h3 class="modal-title">Add Contract</h3>
             </div>
 
             <div class="modal-body"  style="text-align:left;">
+
+                <ul class="nav nav-pills">
+                  <li class="active"><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-fixed').show();$('#add-product-fixed').siblings().hide();">Fixed Price</a></li>
+                  <li><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-auction').show();$('#add-product-auction').siblings().hide();">Auction</a></li>
+                  <li><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-import').show();$('#add-product-import').siblings().hide();">Import Contract</a></li>
+                </ul>
+
+                <div style="margin-top: 10px;">
+
+                <div id="add-product-import" style="display:none;">
+                    <h3>Import contract</h3>
+                    <textarea rows="10" class="col-sm-12" placeholder="Copy and paste your contract code into this box."></textarea>
+                </div>
+
+                <div id="add-product-fixed">
                 <form novalidate role="form" id="productForm" name="productForm">
 
                     <div class="alert alert-info" ng-show="productForm.inputProductTitle.$error.required || productForm.inputProductPrice.$error.required">Please enter a product title and cost.</div>
@@ -226,6 +241,9 @@
 
 
                 </form>
+                </div>
+
+                </div>
 
                 <br clear="both"/>
             </div>
