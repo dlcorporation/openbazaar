@@ -79,7 +79,6 @@ class DHT(object):
         :param peer_tuple: PUG tuple so we can make a peer connection
         """
 
-
         # Check if peer to add is yourself
         if peer_tuple[2] == self._settings['guid']:
             self._log.info('[Add Active Peer] Trying to add yourself to ' +
@@ -87,31 +86,28 @@ class DHT(object):
             return
 
         # Update peer's pubkey or uri if necessary
-        found_peer = False
         for idx, peer in enumerate(self._activePeers):
+
             active_peer_tuple = (peer._pub, peer._address, peer._guid)
 
-            # Matching URI
-            if active_peer_tuple[1] == peer_tuple[1] and active_peer_tuple[2] != peer_tuple[2]:
-                del self._activePeers[idx]
-
             if active_peer_tuple == peer_tuple:
-                found_peer = True
+                self._log.info('Found matching peer, not adding.')
+                return
 
-        if not found_peer:
-            self._log.debug('[Add Active Peer] Adding an active Peer: %s' %
-                            peer_tuple[2])
-            new_peer = transport.get_crypto_peer(peer_tuple[2],
-                                           peer_tuple[1],
-                                           peer_tuple[0])
-            if not new_peer:
-                print 'Problem'
-            else:
-                self._activePeers.append(new_peer)
+            # Found partial match
+            if active_peer_tuple[1] == peer_tuple[1] and active_peer_tuple[2] != peer_tuple[2]:
+                self._log.info('Found partial match')
+                del self._activePeers[idx]
+                self._routingTable.removeContact(peer_tuple[2])
 
-        if not self._routingTable.getContact(peer_tuple[2]) and peer_tuple[2] != self._transport.get_guid():
-            self._log.debug('Adding contact to routing table')
-            self._routingTable.addContact(new_peer)
+
+        new_peer = transport.get_crypto_peer(peer_tuple[2],
+                                             peer_tuple[1],
+                                             peer_tuple[0])
+        self._activePeers.append(new_peer)
+        self._routingTable.addContact(new_peer)
+
+
 
     def add_known_node(self, node):
         """ Accept a peer tuple and add it to known nodes list
