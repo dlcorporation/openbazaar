@@ -166,13 +166,12 @@ class CryptoTransportLayer(TransportLayer):
         self._log.info('Pinged %s ' % msg)
 
         pinger = CryptoPeerConnection(self,msg['uri'], msg['pubkey'], msg['senderGUID'])
-        msg = pinger.send_raw(json.dumps(
+        pinger.send_raw(json.dumps(
             {"type": "hello_response",
              "senderGUID": self.guid,
              "uri": self._uri,
              "pubkey": self.pubkey,
             }))
-        print msg
 
 
     def _storeValue(self, msg):
