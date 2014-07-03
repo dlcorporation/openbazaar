@@ -100,6 +100,8 @@ class DHT(object):
             new_peer = transport.get_crypto_peer(peer_tuple[2],
                                            peer_tuple[1],
                                            peer_tuple[0])
+            if not new_peer:
+                print 'Problem'
             self._activePeers.append(new_peer)
 
         if not self._routingTable.getContact(peer_tuple[2]) and peer_tuple[2] != self._transport.get_guid():

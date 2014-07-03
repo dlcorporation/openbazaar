@@ -10,7 +10,10 @@ from pymongo import MongoClient
 import pyelliptic as ec
 from p2p import PeerConnection, TransportLayer
 from dht import DHT
+from zmq.eventloop import ioloop
 
+ioloop.install()
+import time
 
 import tornado
 
@@ -26,11 +29,14 @@ class CryptoPeerConnection(PeerConnection):
         PeerConnection.__init__(self, transport, address)
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
+        self._peer_alive = False
+
         if guid is not None:
             self._guid = guid
             callback(None)
         else:
             def cb(msg):
+                self._peer_alive = True
                 msg = msg[0]
                 msg = json.loads(msg)
                 self._guid = msg['senderGUID']
@@ -45,6 +51,14 @@ class CryptoPeerConnection(PeerConnection):
                                       'senderGUID':transport.guid }), cb)
             except:
                 print 'error'
+
+            def remove_dead_peer():
+                if not self._peer_alive:
+                    self._log.info('Dead Peer')
+                    return False
+
+            # Set timer for checking if peer alive
+            ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
 
 
     def __repr__(self):
