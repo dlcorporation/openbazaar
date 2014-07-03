@@ -52,7 +52,8 @@ class PeerConnection(object):
         self._responses_received[message_id] = False
 
         def cb(msg):
-            del self._responses_received[message_id]
+            if self._responses_received.has_key(message_id):
+                del self._responses_received[message_id]
             self.on_message(msg)
             if callback is not None:
                 callback(msg)
@@ -68,7 +69,7 @@ class PeerConnection(object):
                 return False
 
         # Set timer for checking if peer alive
-        ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
+        #ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
