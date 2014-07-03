@@ -285,7 +285,6 @@ class CryptoTransportLayer(TransportLayer):
 
         if not foundOutdatedPeer and peer_to_add._guid != self._guid:
             self._log.info('Adding crypto peer at %s' % peer_to_add._address)
-            self._dht._routingTable.addContact(peer_to_add)
             self._dht.add_active_peer(self, (peer_to_add._pub, peer_to_add._address, peer_to_add._guid))
 
 
