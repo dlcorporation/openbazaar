@@ -52,16 +52,17 @@ class PeerConnection(object):
         self._responses_received[message_id] = False
 
         def cb(msg):
-            self._responses_received[message_id] = True
+            del self._responses_received[message_id]
             self.on_message(msg)
             if callback is not None:
                 callback(msg)
 
         self._stream.on_recv(cb)
 
+
         def remove_dead_peer():
-            #print 'got here %s ' % self._responses_received
-            if not self._responses_received[message_id]:
+            self._log.debug('Responses Received: %s' % self._responses_received)
+            if self._responses_received.has_key(message_id):
                 self._log.info('Unreachable Peer. Check your firewall settings.')
                 self._transport._dht.remove_active_peer(self._address)
                 return False
