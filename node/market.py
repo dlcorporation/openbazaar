@@ -8,7 +8,7 @@ import hashlib
 import random
 from threading import Thread
 
-from protocol import proto_page, query_page
+from protocol import proto_page, query_page, proto_listing
 from reputation import Reputation
 from orders import Orders
 import protocol
@@ -147,9 +147,6 @@ class Market(object):
         self._log.debug('New Listing Key: %s' % listing_key)
 
         # Store listing
-
-
-
         self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
 
         self.update_listings_index()
@@ -160,12 +157,27 @@ class Market(object):
 
         listing_id = msg.get('productID')
         listing = self._db.products.find_one({'id':listing_id})
-        key = listing['key']
 
-        listing = json.loads(listing)
-        print listing
 
-        self._transport._dht.iterativeStore(self._transport, key, listing, self._transport._guid)
+
+        listing = proto_listing(listing['productTitle'],
+                                listing['productDescription'] if listing.has_key('productDescription') else "",
+                                listing['productPrice'] if listing.has_key('productPrice') else "",
+                                listing['productQuantity'] if listing.has_key('productQuantity') else "",
+                                listing['market_id'] if listing.has_key('market_id') else "",
+                                listing['productShippingPrice'] if listing.has_key('productShippingPrice') else "",
+                                listing['productImageName'] if listing.has_key('productImageName') else "",
+                                listing['productImageData'] if listing.has_key('productImageData') else "")
+        listing = json.dumps(listing)
+
+        listing_key = hashlib.sha1(listing).hexdigest()
+
+        hash_value = hashlib.new('ripemd160')
+        hash_value.update(listing_key)
+        listing_key = hash_value.hexdigest()
+
+
+        self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
 
 
 
