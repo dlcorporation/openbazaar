@@ -684,24 +684,24 @@
             <p id="page-content" style="margin:10px 0 20px 0"></p>
 
             <table class="table table-bordered table-striped" style="font-size:14px;width:100%;table-layout:fixed">
-                <tr>
+                <tr ng-show="page.email">
                     <td width=170>Email Address</td>
                     <td style="word-wrap:break-word"><a href="mailto:{{page.email}}">{{page.email}}</a></td>
                 </tr>
-                <tr>
-                    <td>Bitmessage Address</td>
+                <tr ng-show="page.bitmessage">
+                    <td width=170>Bitmessage Address</td>
                     <td style="word-wrap:break-word">{{page.bitmessage}}</td>
                 </tr>
                 <tr>
-                    <td>Open Bazaar Public Key</td>
+                    <td width=170>Open Bazaar Public Key</td>
                     <td style="word-wrap:break-word">{{page.pubkey}}</td>
                 </tr>
                 <tr>
-                    <td>Signature</td>
+                    <td width=170>Signature</td>
                     <td style="word-wrap:break-word">{{page.signature}}</td>
                 </tr>
-                <tr>
-                    <td>PGP Key</td>
+                <tr ng-show="page.PGPPubKey">
+                    <td width=170>PGP Key</td>
                     <td style="word-wrap:break-word;font-size:10px;"><pre>{{page.PGPPubKey}}</pre></td>
                 </tr>
             </table>
@@ -862,7 +862,7 @@
     <div class="peers-area" >
         <table id="favorite-peers" class="peers-table table-hover">
             <tbody>
-            <tr ng-repeat="peer in peers | limitTo:5" ng-click="queryShop(peer)">
+            <tr ng-repeat="peer in peers | limitTo:10" ng-click="queryShop(peer)">
                 <td width="40"><identicon icon-size="38" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
                 <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}</strong><br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.guid}}</span></span></td>
