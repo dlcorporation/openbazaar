@@ -52,12 +52,7 @@ class DHT(object):
         self._iterativeFind(self._settings['guid'], self._knownNodes,
                             'findNode')
 
-        # Periodically refresh buckets
-        # loop = tornado.ioloop.IOLoop.instance()
-        # refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode,
-        # constants.refreshTimeout,
-        # io_loop=loop)
-        # refreshCB.start()
+
 
     def find_active_peer(self, peer_tuple):
         found_peer = False
@@ -315,7 +310,7 @@ class DHT(object):
     def _refreshNode(self):
         """ Periodically called to perform k-bucket refreshes and data
         replication/republishing as necessary """
-
+        self._log.info('Refreshing Data')
         self._refreshRoutingTable()
         self._republishData()
 
@@ -357,18 +352,18 @@ class DHT(object):
                 continue
 
             now = int(time.time())
+            key = key.encode('hex')
             originalPublisherID = self._dataStore.originalPublisherID(key)
             age = now - self._dataStore.originalPublishTime(key) + 500000
 
             self._log.debug('oPubID: %s, age: %s' % (originalPublisherID, age))
-            # print '  node:',ord(self.id[0]),'key:',ord(key[0]),'orig publishing time:',self._dataStore.originalPublishTime(key),'now:',now,'age:',age,'lastPublished age:',now - self._dataStore.lastPublished(key),'original pubID:', ord(originalPublisherID[0])
 
             if originalPublisherID == self._settings['guid']:
                 # This node is the original publisher; it has to republish
                 # the data before it expires (24 hours in basic Kademlia)
                 if age >= constants.dataExpireTimeout:
                     self._log.debug('Republishing key: %s' % key)
-                    Thread(target=self.iterativeStore, args=(key, self._dataStore[key],)).start()
+                    Thread(target=self.iterativeStore, args=(self._transport, key, self._dataStore[key],)).start()
                     # self.iterativeStore(key, self._dataStore[key])
                     # twisted.internet.reactor.callFromThread(self.iterativeStore, key, self._dataStore[key])
             else:
@@ -382,7 +377,7 @@ class DHT(object):
                 elif now - self._dataStore.lastPublished(key) >= constants.replicateInterval:
                     # ...data has not yet expired, and we need to replicate it
                     Thread(target=self.iterativeStore,
-                           args=(key, self._dataStore[key], originalPublisherID, age,)).start()
+                           args=(self._transport, key, self._dataStore[key], originalPublisherID, age,)).start()
 
         for key in expiredKeys:
             del self._dataStore[key]
@@ -464,7 +459,7 @@ class DHT(object):
         @type age: int
         """
         if originalPublisherID is None:
-            originalPublisherID = self._guid
+            originalPublisherID = self._transport._guid
 
         # Find appropriate storage nodes and save key value
         self.iterativeFindNode(key, lambda msg, findKey=key, value=value, originalPublisherID=originalPublisherID,

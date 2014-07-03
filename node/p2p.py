@@ -161,11 +161,12 @@ class TransportLayer(object):
 
     def send(self, data, send_to=None):
 
-        self._log.info("Outgoing Data: %s" % data)
+        self._log.info("Outgoing Data: %s %s" % (data, send_to))
 
         # Directed message
         if send_to is not None:
             peer = self._dht._routingTable.getContact(send_to)
+            self._log.debug('%s %s %s' % (peer._guid, peer._address, peer._pub))
             #new_peer = self._dht._transport.get_crypto_peer(peer._guid, peer._address, peer._pub)
             result = peer.send(data)
             return
