@@ -14,7 +14,7 @@ import tornado
 from protocol import goodbye
 import network_util
 from urlparse import urlparse
-import sys
+import sys, time
 
 
 class PeerConnection(object):
@@ -44,13 +44,23 @@ class PeerConnection(object):
     def send_raw(self, serialized, callback=lambda msg: None):
 
         self._stream.send(serialized)
+        response_received = False
 
         def cb(msg):
+            response_received = True
             self.on_message(msg)
             if callback is not None:
                 callback(msg)
 
         self._stream.on_recv(cb)
+
+        def remove_dead_peer():
+            if not self._peer_alive:
+                self._log.info('Dead Peer')
+                return False
+
+        # Set timer for checking if peer alive
+        ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
