@@ -163,7 +163,7 @@ class ProtocolHandler:
 
     def client_generate_secret(self, socket_handler, msg):
 
-      new_secret = self._transport.generate_new_keypair()
+      new_secret = self._transport._generate_new_keypair()
       self.send_opening()
 
 

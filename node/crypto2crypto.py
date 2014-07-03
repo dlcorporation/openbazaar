@@ -82,7 +82,8 @@ class CryptoPeerConnection(PeerConnection):
         data['uri'] = self._transport._uri
         data['pubkey'] = self._transport.pubkey
 
-        #self._log.debug('Sending to peer: %s %s' % (self._guid, data))
+        self._log.debug('Sending to peer: %s %s' % (self._guid, data))
+
 
         if self._pub == '':
             self._log.info('There is no public key for encryption')
@@ -96,7 +97,6 @@ class CryptoPeerConnection(PeerConnection):
         # Need to validate that the pubkey coming back is the one we sent out in
         # case the node updated their keys
         remote_pub = json.loads(msg[0]).get('pubkey')
-        print 'Local:%s Remote:%s' % (self._pub, remote_pub)
 
         if self._pub is not None and self._pub != remote_pub:
             print 'Pubkey doesnt match the GUID, removing active peer'

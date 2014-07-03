@@ -15,6 +15,10 @@ import protocol
 import lookup
 from pymongo import MongoClient
 from data_uri import DataURI
+from zmq.eventloop import ioloop, zmqstream
+import tornado
+import constants
+ioloop.install()
 from PIL import Image, ImageOps
 from StringIO import StringIO
 import base64
@@ -77,8 +81,12 @@ class Market(object):
 
         self.load_page(welcome)
 
-
-
+        # Periodically refresh buckets
+        loop = tornado.ioloop.IOLoop.instance()
+        refreshCB = tornado.ioloop.PeriodicCallback(self._dht._refreshNode,
+                                                    constants.refreshTimeout,
+                                                    io_loop=loop)
+        refreshCB.start()
 
 
     def load_page(self, welcome):
