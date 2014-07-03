@@ -266,24 +266,27 @@ class CryptoTransportLayer(TransportLayer):
       peer = CryptoPeerConnection(self, uri, pubkey, guid=guid)
       return peer
 
-    def addCryptoPeer(self, peer):
+    def addCryptoPeer(self, peer_to_add):
 
-      peerExists = False
-      for idx, aPeer in enumerate(self._dht._activePeers):
+        foundOutdatedPeer = False
+        for idx, peer in enumerate(self._dht._activePeers):
 
-        if aPeer._guid == peer._guid or aPeer._pub == peer._pub or aPeer._address == peer._address:
+            if (peer._address, peer._guid, peer._pub) == (peer_to_add._address, peer_to_add._guid, peer_to_add._pub):
+                self._log.info('Found existing peer, not adding.')
+                return
 
-          self._log.info('guids or pubkey match')
-          peerExists = True
-          if peer._pub and aPeer._pub == '':
-            self._log.info('no pubkey')
-            aPeer._pub = peer._pub
-            self._activePeers[idx] = aPeer
+            if peer._guid == peer_to_add._guid or peer._pub == peer_to_add._pub or peer._address == peer_to_add._address:
 
-      if not peerExists and peer._guid != self._guid:
-        self._log.info('Adding crypto peer %s' % peer._pub)
-        self._dht._routingTable.addContact(peer)
-        self._dht.add_active_peer(self, (peer._pub, peer._address, peer._guid))
+                foundOutdatedPeer = True
+                self._log.info('Found an outdated peer')
+
+                # Update existing peer
+                self._activePeers[idx] = peer_to_add
+
+        if not foundOutdatedPeer and peer_to_add._guid != self._guid:
+            self._log.info('Adding crypto peer at %s' % peer_to_add._address)
+            self._dht._routingTable.addContact(peer_to_add)
+            self._dht.add_active_peer(self, (peer_to_add._pub, peer_to_add._address, peer_to_add._guid))
 
 
 
