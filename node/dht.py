@@ -202,7 +202,7 @@ class DHT(object):
                     contactTriples = self.dedupe(contactTriples)
                     self._log.debug('Contact Triples: %s' % contactTriples)
                     self._log.info('Sending found nodes to: %s' % guid)
-                    
+
                     msg = new_peer.send(
                         {"type": "findNodeResponse",
                          "senderGUID": self._transport.guid,
@@ -493,26 +493,8 @@ class DHT(object):
             if not peer:
                 peer = self._transport.get_crypto_peer(guid, uri)
 
-            #msg = peer.send_raw(json.dumps({'type':'hello', 'pubkey':self._transport.pubkey, 'uri':self._transport._uri, 'senderGUID':self._transport.guid }))
-
             peer.send(proto_store(key, value, originalPublisherID, age))
 
-        # for node in nodes:
-        #     self._log.debug('Publish Node: %s' % node)
-        #
-        #     if node[2] != self._transport._guid:
-        #
-        #       for p in self._activePeers:
-        #           if p._guid == node[2]:
-        #               peer = p
-        #
-        #       if not peer:
-        #           peer = self._routingTable.getContact(node[2])
-        #
-        #       if peer:
-        #           peer.send(proto_store(key, value, originalPublisherID, age))
-        #     else:
-        #       self._log.info('Trying to store on your own node')
 
     def _on_storeValue(self, msg):
 
@@ -703,13 +685,11 @@ class DHT(object):
 
                     if contact:
 
-                        peer = self._transport.get_crypto_peer(contact._guid, contact._address, contact._pub)
-
                         msg = {"type": "findNode", "uri": contact._transport._uri, "senderGUID": self._transport._guid,
                                "key": new_search._key, "findValue": findValue, "findID": new_search._findID,
                                "pubkey": contact._transport.pubkey}
                         self._log.debug('Sending findNode to: %s %s' % (contact._address, msg))
-                        msg = peer.send(msg)
+                        msg = contact.send(msg)
                         self._log.info('MSG: %s' % msg)
 
                         new_search._contactedNow += 1
