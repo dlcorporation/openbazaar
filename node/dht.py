@@ -87,7 +87,7 @@ class DHT(object):
 
         # Update peer's pubkey or uri if necessary
         for idx, peer in enumerate(self._activePeers):
-
+            print peer
             active_peer_tuple = (peer._pub, peer._address, peer._guid)
 
             if active_peer_tuple == peer_tuple:
@@ -95,7 +95,7 @@ class DHT(object):
                 return
 
             # Found partial match
-            if active_peer_tuple[1] == peer_tuple[1] and active_peer_tuple[2] != peer_tuple[2]:
+            if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
                 self._log.info('Found partial match')
                 del self._activePeers[idx]
                 self._routingTable.removeContact(peer_tuple[2])
