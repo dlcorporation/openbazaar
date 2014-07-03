@@ -66,6 +66,10 @@ class DHT(object):
                 found_peer = peer
         return found_peer
 
+    def remove_active_peer(self, uri):
+        for idx, peer in enumerate(self._activePeers):
+            if uri == peer._address:
+                del self._activePeers[idx]
 
     def add_active_peer(self, transport, peer_tuple):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
@@ -102,7 +106,8 @@ class DHT(object):
                                            peer_tuple[0])
             if not new_peer:
                 print 'Problem'
-            self._activePeers.append(new_peer)
+            else:
+                self._activePeers.append(new_peer)
 
         if not self._routingTable.getContact(peer_tuple[2]) and peer_tuple[2] != self._transport.get_guid():
             self._log.debug('Adding contact to routing table')

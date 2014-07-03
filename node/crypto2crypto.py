@@ -54,7 +54,6 @@ class CryptoPeerConnection(PeerConnection):
 
             def remove_dead_peer():
                 if not self._peer_alive:
-                    self._log.info('Dead Peer')
                     return False
 
             # Set timer for checking if peer alive
