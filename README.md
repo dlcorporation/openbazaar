@@ -50,6 +50,7 @@ contributed by Dean Masley
 6. [Voting Pools in OpenBazaar](https://gist.github.com/drwasho/c04f16fcc7be9a666e90) by Dr Washington Sanchez
 7. [Distributed Currency Exchange](https://gist.github.com/drwasho/aa6ab79e92f2a876073e) by Dr Washington Sanchez
 8. [OpenBazaar Genesis Contract](https://gist.github.com/drwasho/76e1161db1e5b860598a) by Dr Washington Sanchez (arbiter), Brian Hoffman (buyer), and Samuel Patterson (seller)
+9. [A pseudonymous trust system for a decentralized anonymous marketplace](https://gist.github.com/SamPatt/40f42d5348489bba7bcd) by Dionysis Zindros
 
 ## Screenshot
 
