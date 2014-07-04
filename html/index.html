@@ -164,84 +164,89 @@
 
                 <div style="margin-top: 10px;">
 
-                <div id="add-product-import" style="display:none;">
-                    <h3>Import contract</h3>
-                    <textarea rows="10" class="col-sm-12" placeholder="Copy and paste your contract code into this box."></textarea>
-                </div>
+                    <div id="add-product-import" class="col-sm-12" style="display:none;">
+                        <h3>Import contract</h3>
+                        <div class="alert alert-info" >Copy-paste your contract into this text box. You can generate custom contracts using the html contract generator.</div>
+                        <textarea rows="10" class="form-control"></textarea>
+                    </div>
 
-                <div id="add-product-fixed">
-                <form novalidate role="form" id="productForm" name="productForm">
+                    <div id="add-product-fixed" class="col-sm-12">
 
-                    <div class="alert alert-info" ng-show="productForm.inputProductTitle.$error.required || productForm.inputProductPrice.$error.required">Please enter a product title and cost.</div>
+                        <h3>Fixed Price Contract</h3>
 
-                    <div class="col-sm-3">
-                        <div class="fileinput fileinput-new" data-provides="fileinput">
-                            <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="width: 200px; height: 150px;"></div>
-                            <div>
-                                <span class="btn btn-default btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="product.productImage" name="..."></span>
-                                <a href="#" class="btn btn-info fileinput-exists" data-dismiss="fileinput">Remove</a>
+                        <form novalidate role="form" id="productForm" name="productForm">
+
+
+                            <div class="alert alert-info" ng-show="productForm.inputProductTitle.$error.required || productForm.inputProductPrice.$error.required">Please enter a product title and cost.</div>
+
+                            <div class="col-sm-3">
+                                <div class="fileinput fileinput-new" data-provides="fileinput">
+                                    <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="width: 200px; height: 150px;"></div>
+                                    <div>
+                                        <span class="btn btn-default btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="product.productImage" name="..."></span>
+                                        <a href="#" class="btn btn-info fileinput-exists" data-dismiss="fileinput">Remove</a>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+
+                            <div class="col-sm-9">
+
+
+
+                                <div class="form-group">
+                                    <label for="inputProductTitle">Product Title</label>
+
+                                    <input type="text" required ng-model="product.productTitle" class="form-control" id="inputProductTitle" name="inputProductTitle" placeholder="Product title"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <textarea class="form-control" ng-model="product.productDescription" id="inputProductDescription" placeholder="Enter a description" rows="5"></textarea>
+                                </div>
+
+                            </div>
+
+                            <div class="col-sm-2">
+                                <div class="form-group">
+                                    <label for="inputProductPrice">Price (&#3647;)</label>
+                                    <input required type="text" class="form-control" ng-model="product.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="form-group">
+                                    <label for="inputProductShippingPrice">Shipping (&#3647;)</label>
+                                    <input type="text" class="form-control" ng-model="product.productShippingPrice" id="inputProductShippingPrice" placeholder="0" value="0"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="form-group">
+                                    <label for="inputProductQuantity">Quantity</label>
+                                    <input type="text" class="form-control" ng-model="product.productQuantity" id="inputProductQuantity" placeholder="1" value="1"/>
+                                </div>
+                            </div>
+                            <br clear="both"/>
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="inputProductTags">Tags</label>
+                                    <input type="text" class="form-control" ng-model="product.productTags" id="inputProductTags" placeholder="Comma separated tags that describe the item. Used for searching."/>
+                                </div>
+                            </div>
+
+                            <br clear="both"/>
+
+                            <div class="col-sm-12">
+                                <a href="#" ng-click="toggleItemAdvanced()"><span class="caret"></span> Advanced Details</a>
+
+                                <div ng-show="itemAdvancedDetails" style="padding:10px 0;">
+                                    <p>Wouldn't you like to see more details here?</p>
+                                </div>
+
+
+                            </div>
+
+
+
+                        </form>
                     </div>
-
-                    <div class="col-sm-9">
-
-
-
-                        <div class="form-group">
-                            <label for="inputProductTitle">Product Title</label>
-
-                            <input type="text" required ng-model="product.productTitle" class="form-control" id="inputProductTitle" name="inputProductTitle" placeholder="Product title"/>
-                        </div>
-
-                        <div class="form-group">
-                            <textarea class="form-control" ng-model="product.productDescription" id="inputProductDescription" placeholder="Enter a description" rows="5"></textarea>
-                        </div>
-
-                    </div>
-
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductPrice">Price (&#3647;)</label>
-                            <input required type="text" class="form-control" ng-model="product.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0"/>
-                        </div>
-                    </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductShippingPrice">Shipping (&#3647;)</label>
-                            <input type="text" class="form-control" ng-model="product.productShippingPrice" id="inputProductShippingPrice" placeholder="0" value="0"/>
-                        </div>
-                    </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductQuantity">Quantity</label>
-                            <input type="text" class="form-control" ng-model="product.productQuantity" id="inputProductQuantity" placeholder="1" value="1"/>
-                        </div>
-                    </div>
-                    <br clear="both"/>
-                    <div class="col-sm-12">
-                        <div class="form-group">
-                            <label for="inputProductTags">Tags</label>
-                            <input type="text" class="form-control" ng-model="product.productTags" id="inputProductTags" placeholder="Comma separated tags that describe the item. Used for searching."/>
-                        </div>
-                    </div>
-
-                    <br clear="both"/>
-
-                    <div class="col-sm-12">
-                        <a href="#" ng-click="toggleItemAdvanced()"><span class="caret"></span> Advanced Details</a>
-
-                        <div ng-show="itemAdvancedDetails" style="padding:10px 0;">
-                            <p>Wouldn't you like to see more details here?</p>
-                        </div>
-
-
-                    </div>
-
-
-
-                </form>
-                </div>
 
                 </div>
 
@@ -249,6 +254,7 @@
             </div>
 
             <div class="modal-footer">
+                <button class="btn btn-default" ng-click="cancel()">Cancel</button>
                 <button class="btn btn-primary" ng-click="saveProduct()">Save</button>
             </div>
 
