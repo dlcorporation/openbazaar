@@ -35,6 +35,7 @@ class ProtocolHandler:
             "query_store_products":	  self.client_query_store_products,
             "query_orders":	  self.client_query_orders,
             "query_products":	  self.client_query_products,
+            "query_messages":	  self.client_query_messages,
             "update_settings":	self.client_update_settings,
             "query_order":	self.client_query_order,
             "pay_order":	self.client_pay_order,
@@ -104,6 +105,15 @@ class ProtocolHandler:
         products = self._market.get_products()
 
         self.send_to_client(None, { "type": "products", "products": products } )
+
+    def client_query_messages(self, socket_handler, msg):
+
+        self._log.info("Querying for Messages")
+
+        # Query bitmessage for messages
+        messages = self._market.get_messages()
+
+        self.send_to_client(None, { "type": "messages", "messages": messages } )
 
     def client_republish_listing(self, socket_handler, msg):
 
