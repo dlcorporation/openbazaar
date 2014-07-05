@@ -1,8 +1,4 @@
-import sys, os, argparse, xmlrpclib
-# Add bitmessage submodule path
-sys.path.insert(1, os.path.join(
-	os.path.dirname(__file__), '..', 'pybitmessage', 'src'))
-import bitmessagemain as bitmessage
+import sys, os, argparse
 
 import tornado.ioloop
 import tornado.web
@@ -24,11 +20,15 @@ class MainHandler(tornado.web.RequestHandler):
 
 class MarketApplication(tornado.web.Application):
 
-    def __init__(self, market_ip, market_port, seed_uri, market_id):
+    def __init__(self, market_ip, market_port, seed_uri, market_id, 
+                    bm_user, bm_pass, bm_port):
 
         self.transport = CryptoTransportLayer(market_ip,
                                                market_port,
-                                               market_id)
+                                               market_id,
+                                               bm_user,
+                                               bm_pass,
+                                               bm_port)
         self.transport.join_network(seed_uri)
 
         self.market = Market(self.transport)
@@ -57,24 +57,8 @@ def start_node(my_market_ip, my_market_port, seed_uri, log_file, market_id, bm_u
     locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
 
     application = MarketApplication(my_market_ip,
-                                    my_market_port, seed_uri, market_id)
-    # Get bitmessage going
-    # First, try to find a local instance
-    bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port))
-    try:
-        result = bitmessage_api.add(2,3)
-        locallogger.info("Bitmessage test result: {}, API is live".format(result))
-    except:
-        locallogger.info("Failed to connect to bitmessage instance, spawning internal instance")
-        #    bitmessage.logger.setLevel(logging.WARNING)
-        #    bitmessage_instance = bitmessage.Main()
-        #    bitmessage_instance.start(daemon=True)
-        #    bminfo = bitmessage_instance.getApiAddress()
-        #    if bminfo is not None:
-        #        locallogger.info("Started bitmessage daemon at %s:%s".format(bminfo['address'], bminfo['port']))
-        #    else:
-        #        locallogger.info("Failed to start bitmessage dameon")
-        #    bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@{}:{}/".format(bm_user, bm_pass, bminfo['address'], bminfo['port']))
+                                    my_market_port, seed_uri, market_id, bm_user, bm_pass,
+                                    bm_port)
         
     error = True
     port = 8888
