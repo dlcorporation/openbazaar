@@ -683,6 +683,36 @@
     <h3>Messages</h3>
 
     <p>This is your private messages inbox.</p>
+    <div>
+        {{settings.bitmessage}}
+    </div>
+    
+    <div ng-repeat="message in myself.messages">
+        {{message.text}}
+    </div>
+
+    <div ng-show="messages">
+        <table class="table table-striped table-bordered" style="margin-top:10px;">
+            <tr>
+                <th></th>
+                <th>Date</th>
+                <th>From</th>
+                <th>Subject</th>
+            </tr>
+            <tr ng-repeat="message in messages">
+                <td width=15><input type="checkbox"/></td>
+                <td  style="border-left:none;">{{message.receivedTime * 1000 | date:'medium'}}</td>
+                <td  style="border-left:none;">{{message.fromAddress}}</td>
+                <td  style="border-left:none;">{{message.subject}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="col-sm-12" ng-show="!messages">
+        <p>There are no messages for your marketplace.</p>
+    </div>
+
+
 
 </div>
 
