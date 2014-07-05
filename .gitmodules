@@ -1,0 +1,3 @@
+[submodule "pybitmessage"]
+	path = pybitmessage
+	url = https://github.com/Bitmessage/PyBitmessage.git

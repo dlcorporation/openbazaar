@@ -108,6 +108,9 @@ angular.module('app')
       case 'products':
          $scope.parse_products(msg)
          break;
+      case 'messages':
+         $scope.parse_messages(msg)
+         break;
       case 'store_products':
          $scope.parse_store_products(msg)
          break;
@@ -125,7 +128,6 @@ angular.module('app')
          $scope.parse_response_pubkey(msg)
          break;
       default:
-
          console.log("Unhandled message!",msg)
          break;
     }
@@ -236,6 +238,21 @@ angular.module('app')
          $scope.$apply();
       }
 
+  }
+
+  $scope.message = {};
+  $scope.parse_messages = function(msg) {
+      console.log(msg);
+      console.log(msg.messages);
+      console.log(msg.messages.messages);
+      console.log(msg.messages.messages.inboxMessages);
+
+      $scope.messages = msg.messages.messages.inboxMessages;
+
+      $scope.message = {};
+      if (!$scope.$$phase) {
+         $scope.$apply();
+      }
   }
 
   $scope.store_products = {};
@@ -546,6 +563,7 @@ angular.module('app')
 
   	switch(panelName) {
   		case 'messages':
+            $scope.queryMessages();
   			$scope.messagesPanel = true;
   			break;
   		case 'reviews':
@@ -555,11 +573,11 @@ angular.module('app')
   			$scope.ordersPanel = true;
   			$scope.queryMyOrder();
   			break;
-      case 'arbitration':
-        $scope.arbitrationPanel = true;
-        break;
+        case 'arbitration':
+            $scope.arbitrationPanel = true;
+            break;
   		case 'productCatalog':
-        $scope.queryProducts();
+            $scope.queryProducts();
   			$scope.productCatalogPanel = true;
   			break;
   		case 'settings':
@@ -630,6 +648,15 @@ angular.module('app')
       var query = {'type': 'query_products', 'pubkey': ''}
       console.log('querying products')
       socket.send('query_products', query)
+
+  }
+
+  $scope.queryMessages = function() {
+      // Query for messages
+      var query = {'type': 'query_messages'}
+      console.log('querying messages')
+      socket.send('query_messages', query)
+      console.log($scope.myself.messages)
 
   }
 
