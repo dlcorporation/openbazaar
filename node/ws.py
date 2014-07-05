@@ -43,6 +43,7 @@ class ProtocolHandler:
             "remove_product":	self.client_remove_product,
             "generate_secret":	self.client_generate_secret,
             "republish_listing":	  self.client_republish_listing,
+            "import_raw_contract":	  self.client_import_raw_contract,
         }
 
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
@@ -111,6 +112,10 @@ class ProtocolHandler:
         # Query mongo for products
         products = self._market.republish_listing(msg)
 
+    def client_import_raw_contract(self, socket_handler, contract):
+
+        self._log.info("Importing New Contract")
+        self._market.import_contract(contract)
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
@@ -343,7 +348,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
 
-        #self._log.info('[On Message]: %s' % message)
+        self._log.info('[On Message]: %s' % message)
 
         try:
             request = json.loads(message)

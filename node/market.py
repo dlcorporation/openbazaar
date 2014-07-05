@@ -22,6 +22,8 @@ ioloop.install()
 from PIL import Image, ImageOps
 from StringIO import StringIO
 import base64
+import datetime
+from contract import OBContract
 
 class Market(object):
 
@@ -103,6 +105,31 @@ class Market(object):
             self._db.settings.update({}, {"$set":{"welcome":"noshow"}})
         else:
             self.welcome = False
+
+
+    def import_contract(self, contract):
+        self._log.debug(contract)
+
+        # Validate contract code
+        ob_contract = OBContract(self._transport)
+        ob_contract.raw_to_contract(contract['contract'])
+
+        contract_digest = hashlib.sha1(contract['contract']).hexdigest()
+        contract_hash = hashlib.new('ripemd160')
+        contract_hash.update(contract_digest)
+        contract_id = contract_hash.hexdigest()
+
+        timestamp = datetime.datetime.utcnow()
+
+        # States (seed, bid, doublesigned, triplesigned, cancelled, receipt)
+        contract_state = "seed"
+
+        # Store in DB
+        self._db.contracts.update({'id':contract_id}, {'$set':{'contract': contract['contract'],
+                                                               'timestamp': timestamp,
+                                                               'state': 'seed'}}, True)
+
+        self._log.debug('New Contract ID: %s' % contract_id)
 
 
     def save_product(self, msg):

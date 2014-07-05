@@ -169,7 +169,7 @@
                     <div id="add-product-import" class="col-sm-12" style="display:none;">
                         <h3>Import contract</h3>
                         <div class="alert alert-info" >Copy-paste your contract into this text box. You can generate custom contracts using the html contract generator.</div>
-                        <textarea rows="10" class="form-control"></textarea>
+                        <textarea rows="10" class="form-control" ng-model="contract.rawText"></textarea>
                     </div>
 
                     <div id="add-product-fixed" class="col-sm-12">
@@ -257,7 +257,8 @@
 
             <div class="modal-footer">
                 <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-                <button class="btn btn-primary" ng-click="saveProduct()">Save</button>
+                <!--<button class="btn btn-primary" ng-click="saveProduct()">Save</button>-->
+                <button class="btn btn-primary" ng-click="importContract()">Save</button>
             </div>
 
         </script>
