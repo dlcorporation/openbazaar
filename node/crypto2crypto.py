@@ -10,7 +10,10 @@ from pymongo import MongoClient
 import pyelliptic as ec
 from p2p import PeerConnection, TransportLayer
 from dht import DHT
+from zmq.eventloop import ioloop
 
+ioloop.install()
+import time
 
 import tornado
 
@@ -26,11 +29,14 @@ class CryptoPeerConnection(PeerConnection):
         PeerConnection.__init__(self, transport, address)
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
+        self._peer_alive = False
+
         if guid is not None:
             self._guid = guid
             callback(None)
         else:
             def cb(msg):
+                self._peer_alive = True
                 msg = msg[0]
                 msg = json.loads(msg)
                 self._guid = msg['senderGUID']
@@ -45,6 +51,13 @@ class CryptoPeerConnection(PeerConnection):
                                       'senderGUID':transport.guid }), cb)
             except:
                 print 'error'
+
+            def remove_dead_peer():
+                if not self._peer_alive:
+                    return False
+
+            # Set timer for checking if peer alive
+            ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
 
 
     def __repr__(self):
@@ -69,7 +82,8 @@ class CryptoPeerConnection(PeerConnection):
         data['uri'] = self._transport._uri
         data['pubkey'] = self._transport.pubkey
 
-        #self._log.debug('Sending to peer: %s %s' % (self._guid, data))
+        self._log.debug('Sending to peer: %s %s' % (self._guid, data))
+
 
         if self._pub == '':
             self._log.info('There is no public key for encryption')
@@ -83,7 +97,6 @@ class CryptoPeerConnection(PeerConnection):
         # Need to validate that the pubkey coming back is the one we sent out in
         # case the node updated their keys
         remote_pub = json.loads(msg[0]).get('pubkey')
-        print 'Local:%s Remote:%s' % (self._pub, remote_pub)
 
         if self._pub is not None and self._pub != remote_pub:
             print 'Pubkey doesnt match the GUID, removing active peer'
@@ -153,13 +166,12 @@ class CryptoTransportLayer(TransportLayer):
         self._log.info('Pinged %s ' % msg)
 
         pinger = CryptoPeerConnection(self,msg['uri'], msg['pubkey'], msg['senderGUID'])
-        msg = pinger.send_raw(json.dumps(
+        pinger.send_raw(json.dumps(
             {"type": "hello_response",
              "senderGUID": self.guid,
              "uri": self._uri,
              "pubkey": self.pubkey,
             }))
-        print msg
 
 
     def _storeValue(self, msg):
@@ -253,24 +265,26 @@ class CryptoTransportLayer(TransportLayer):
       peer = CryptoPeerConnection(self, uri, pubkey, guid=guid)
       return peer
 
-    def addCryptoPeer(self, peer):
+    def addCryptoPeer(self, peer_to_add):
 
-      peerExists = False
-      for idx, aPeer in enumerate(self._dht._activePeers):
+        foundOutdatedPeer = False
+        for idx, peer in enumerate(self._dht._activePeers):
 
-        if aPeer._guid == peer._guid or aPeer._pub == peer._pub or aPeer._address == peer._address:
+            if (peer._address, peer._guid, peer._pub) == (peer_to_add._address, peer_to_add._guid, peer_to_add._pub):
+                self._log.info('Found existing peer, not adding.')
+                return
 
-          self._log.info('guids or pubkey match')
-          peerExists = True
-          if peer._pub and aPeer._pub == '':
-            self._log.info('no pubkey')
-            aPeer._pub = peer._pub
-            self._activePeers[idx] = aPeer
+            if peer._guid == peer_to_add._guid or peer._pub == peer_to_add._pub or peer._address == peer_to_add._address:
 
-      if not peerExists and peer._guid != self._guid:
-        self._log.info('Adding crypto peer %s' % peer._pub)
-        self._dht._routingTable.addContact(peer)
-        self._dht.add_active_peer(self, (peer._pub, peer._address, peer._guid))
+                foundOutdatedPeer = True
+                self._log.info('Found an outdated peer')
+
+                # Update existing peer
+                self._activePeers[idx] = peer_to_add
+
+        if not foundOutdatedPeer and peer_to_add._guid != self._guid:
+            self._log.info('Adding crypto peer at %s' % peer_to_add._address)
+            self._dht.add_active_peer(self, (peer_to_add._pub, peer_to_add._address, peer_to_add._guid))
 
 
 

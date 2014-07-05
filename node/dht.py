@@ -52,12 +52,7 @@ class DHT(object):
         self._iterativeFind(self._settings['guid'], self._knownNodes,
                             'findNode')
 
-        # Periodically refresh buckets
-        # loop = tornado.ioloop.IOLoop.instance()
-        # refreshCB = tornado.ioloop.PeriodicCallback(self._refreshNode,
-        # constants.refreshTimeout,
-        # io_loop=loop)
-        # refreshCB.start()
+
 
     def find_active_peer(self, peer_tuple):
         found_peer = False
@@ -66,6 +61,10 @@ class DHT(object):
                 found_peer = peer
         return found_peer
 
+    def remove_active_peer(self, uri):
+        for idx, peer in enumerate(self._activePeers):
+            if uri == peer._address:
+                del self._activePeers[idx]
 
     def add_active_peer(self, transport, peer_tuple):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
@@ -75,7 +74,6 @@ class DHT(object):
         :param peer_tuple: PUG tuple so we can make a peer connection
         """
 
-
         # Check if peer to add is yourself
         if peer_tuple[2] == self._settings['guid']:
             self._log.info('[Add Active Peer] Trying to add yourself to ' +
@@ -83,28 +81,28 @@ class DHT(object):
             return
 
         # Update peer's pubkey or uri if necessary
-        found_peer = False
         for idx, peer in enumerate(self._activePeers):
+            print peer
             active_peer_tuple = (peer._pub, peer._address, peer._guid)
 
-            # Matching URI
-            if active_peer_tuple[1] == peer_tuple[1] and active_peer_tuple[2] != peer_tuple[2]:
-                del self._activePeers[idx]
-
             if active_peer_tuple == peer_tuple:
-                found_peer = True
+                self._log.info('Found matching peer, not adding.')
+                return
 
-        if not found_peer:
-            self._log.debug('[Add Active Peer] Adding an active Peer: %s' %
-                            peer_tuple[2])
-            new_peer = transport.get_crypto_peer(peer_tuple[2],
-                                           peer_tuple[1],
-                                           peer_tuple[0])
-            self._activePeers.append(new_peer)
+            # Found partial match
+            if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
+                self._log.info('Found partial match')
+                del self._activePeers[idx]
+                self._routingTable.removeContact(peer_tuple[2])
 
-        if not self._routingTable.getContact(peer_tuple[2]) and peer_tuple[2] != self._transport.get_guid():
-            self._log.debug('Adding contact to routing table')
-            self._routingTable.addContact(new_peer)
+
+        new_peer = transport.get_crypto_peer(peer_tuple[2],
+                                             peer_tuple[1],
+                                             peer_tuple[0])
+        self._activePeers.append(new_peer)
+        self._routingTable.addContact(new_peer)
+
+
 
     def add_known_node(self, node):
         """ Accept a peer tuple and add it to known nodes list
@@ -312,7 +310,7 @@ class DHT(object):
     def _refreshNode(self):
         """ Periodically called to perform k-bucket refreshes and data
         replication/republishing as necessary """
-
+        self._log.info('Refreshing Data')
         self._refreshRoutingTable()
         self._republishData()
 
@@ -354,18 +352,18 @@ class DHT(object):
                 continue
 
             now = int(time.time())
+            key = key.encode('hex')
             originalPublisherID = self._dataStore.originalPublisherID(key)
             age = now - self._dataStore.originalPublishTime(key) + 500000
 
             self._log.debug('oPubID: %s, age: %s' % (originalPublisherID, age))
-            # print '  node:',ord(self.id[0]),'key:',ord(key[0]),'orig publishing time:',self._dataStore.originalPublishTime(key),'now:',now,'age:',age,'lastPublished age:',now - self._dataStore.lastPublished(key),'original pubID:', ord(originalPublisherID[0])
 
             if originalPublisherID == self._settings['guid']:
                 # This node is the original publisher; it has to republish
                 # the data before it expires (24 hours in basic Kademlia)
                 if age >= constants.dataExpireTimeout:
                     self._log.debug('Republishing key: %s' % key)
-                    Thread(target=self.iterativeStore, args=(key, self._dataStore[key],)).start()
+                    Thread(target=self.iterativeStore, args=(self._transport, key, self._dataStore[key],)).start()
                     # self.iterativeStore(key, self._dataStore[key])
                     # twisted.internet.reactor.callFromThread(self.iterativeStore, key, self._dataStore[key])
             else:
@@ -379,7 +377,7 @@ class DHT(object):
                 elif now - self._dataStore.lastPublished(key) >= constants.replicateInterval:
                     # ...data has not yet expired, and we need to replicate it
                     Thread(target=self.iterativeStore,
-                           args=(key, self._dataStore[key], originalPublisherID, age,)).start()
+                           args=(self._transport, key, self._dataStore[key], originalPublisherID, age,)).start()
 
         for key in expiredKeys:
             del self._dataStore[key]
@@ -461,7 +459,7 @@ class DHT(object):
         @type age: int
         """
         if originalPublisherID is None:
-            originalPublisherID = self._guid
+            originalPublisherID = self._transport._guid
 
         # Find appropriate storage nodes and save key value
         self.iterativeFindNode(key, lambda msg, findKey=key, value=value, originalPublisherID=originalPublisherID,

@@ -54,10 +54,28 @@ else
 	$PYTHON node/tornadoloop.py 127.0.0.1 -l $LOGDIR/development.log -u 2 &
 
 	# Demo Peer Market
-	sleep 4
+	sleep 2
 	$PYTHON node/tornadoloop.py 127.0.0.2 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 3 &
 
 	sleep 2
 	$PYTHON node/tornadoloop.py 127.0.0.3 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 4 &
+
+#	sleep 2
+#	$PYTHON node/tornadoloop.py 127.0.0.4 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 5 &
+#
+#	sleep 2
+#	$PYTHON node/tornadoloop.py 127.0.0.5 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 6 &
+#
+#	sleep 2
+#	$PYTHON node/tornadoloop.py 127.0.0.6 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 7 &
+#
+#	sleep 2
+#	$PYTHON node/tornadoloop.py 127.0.0.7 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 8 &
+#
+#	sleep 2
+#	$PYTHON node/tornadoloop.py 127.0.0.8 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 9 &
+#
+#	sleep 2
+#	$PYTHON node/tornadoloop.py 127.0.0.9 -s tcp://127.0.0.1:$MY_MARKET_PORT -l $LOGDIR/development.log -u 10 &
 
 fi
