@@ -1,5 +1,8 @@
-import sys
-import argparse
+import sys, os, argparse, xmlrpclib
+# Add bitmessage submodule path
+sys.path.insert(1, os.path.join(
+	os.path.dirname(__file__), '..', 'pybitmessage', 'src'))
+import bitmessagemain as bitmessage
 
 import tornado.ioloop
 import tornado.web
@@ -46,15 +49,33 @@ class MarketApplication(tornado.web.Application):
         return self.dht._transport
 
 
-def start_node(my_market_ip, my_market_port, seed_uri, log_file, market_id):
+def start_node(my_market_ip, my_market_port, seed_uri, log_file, market_id, bm_user, bm_pass, bm_port):
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s - %(name)s -  \
                                 %(levelname)s - %(message)s',
                         filename=log_file)
+    locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
 
     application = MarketApplication(my_market_ip,
                                     my_market_port, seed_uri, market_id)
-
+    # Get bitmessage going
+    # First, try to find a local instance
+    bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port))
+    try:
+        result = bitmessage_api.add(2,3)
+        locallogger.info("Bitmessage test result: {}, API is live".format(result))
+    except:
+        locallogger.info("Failed to connect to bitmessage instance, spawning internal instance")
+        #    bitmessage.logger.setLevel(logging.WARNING)
+        #    bitmessage_instance = bitmessage.Main()
+        #    bitmessage_instance.start(daemon=True)
+        #    bminfo = bitmessage_instance.getApiAddress()
+        #    if bminfo is not None:
+        #        locallogger.info("Started bitmessage daemon at %s:%s".format(bminfo['address'], bminfo['port']))
+        #    else:
+        #        locallogger.info("Failed to start bitmessage dameon")
+        #    bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@{}:{}/".format(bm_user, bm_pass, bminfo['address'], bminfo['port']))
+        
     error = True
     port = 8888
     while error and port < 8988:
@@ -64,10 +85,12 @@ def start_node(my_market_ip, my_market_port, seed_uri, log_file, market_id):
         except:
             port += 1
 
-    logging.getLogger('[%s] %s' % (market_id, 'root')).info("Started user app at http://%s:%s" % (my_market_ip, port))
+    locallogger.info("Started user app at http://%s:%s" % (my_market_ip, port))
 
     # handle shutdown
     def shutdown(x, y):
+        locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
+        locallogger.warning("Received TERMINATE, exiting...")
         #application.get_transport().broadcast_goodbye()
         sys.exit(0)
     try:
@@ -86,6 +109,10 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--seed_uri")
     parser.add_argument("-l", "--log_file", default='production.log')
     parser.add_argument("-u", "--market_id", default=1)
+    parser.add_argument("--bmuser", default='bradley', help="Bitmessage instance user")
+    parser.add_argument("--bmpass", default='password', help="Bitmessage instance pass")
+    parser.add_argument("--bmport", default='8442', help="Bitmessage instance RPC port")
     args = parser.parse_args()
     start_node(args.my_market_ip,
-               args.my_market_port, args.seed_uri, args.log_file, args.market_id)
+               args.my_market_port, args.seed_uri, args.log_file, args.market_id,
+               args.bmuser, args.bmpass, args.bmport)
