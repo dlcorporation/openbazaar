@@ -162,7 +162,7 @@ class DHT(object):
             if msg['findValue'] is True:
                 if key in self._dataStore and self._dataStore[key] is not None:
 
-                    self._log.debug('Found key: %s' % key)
+                    self._log.debug('Found key: %s' % self._dataStore[key])
 
                     # Found key in local data store
                     new_peer.send(

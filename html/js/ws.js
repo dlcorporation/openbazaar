@@ -33,4 +33,6 @@ function Connection(onMessage) {
     self.websocket.send(message);
 
   }
+
+
 }

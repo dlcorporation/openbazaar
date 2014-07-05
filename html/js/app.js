@@ -803,6 +803,9 @@ $scope.ProductModal = function ($scope, $modal, $log) {
         resolve: {
           product: function () {
             return {"product":$scope.product};
+          },
+          contract: function () {
+            return {"contract":$scope.contract};
           }
         }
       });
@@ -818,9 +821,25 @@ $scope.ProductModal = function ($scope, $modal, $log) {
 
 };
 
-var ProductModalInstance = function ($scope, $modalInstance, product) {
+var ProductModalInstance = function ($scope, $modalInstance, product, contract) {
 
   $scope.product = product.product;
+  $scope.contract = contract;
+
+
+
+    $scope.importContract = function() {
+
+        // Imported JSON format contract
+        jsonContract = $scope.contract.rawText;
+        console.log(jsonContract);
+
+        socket.send("import_raw_contract", {'contract':jsonContract});
+        socket.send("query_products", {})
+
+        $modalInstance.dismiss('cancel');
+
+    }
 
   $scope.saveProduct = function () {
 

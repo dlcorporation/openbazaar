@@ -82,7 +82,9 @@ class CryptoPeerConnection(PeerConnection):
         data['uri'] = self._transport._uri
         data['pubkey'] = self._transport.pubkey
 
-        self._log.debug('Sending to peer: %s %s' % (self._guid, data))
+
+
+        self._log.debug('Sending to peer: %s %s' % (self._ip, data))
 
 
         if self._pub == '':
