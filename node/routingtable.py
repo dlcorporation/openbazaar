@@ -459,3 +459,5 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
             if self._replacementCache.has_key(bucketIndex):
                 if len(self._replacementCache[bucketIndex]) > 0:
                     self._buckets[bucketIndex].addContact(self._replacementCache[bucketIndex].pop())
+
+        self._log.debug('Contacts: %s' % self._buckets[bucketIndex]._contacts)

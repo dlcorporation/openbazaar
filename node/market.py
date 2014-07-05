@@ -15,6 +15,10 @@ import protocol
 import lookup
 from pymongo import MongoClient
 from data_uri import DataURI
+from zmq.eventloop import ioloop, zmqstream
+import tornado
+import constants
+ioloop.install()
 from PIL import Image, ImageOps
 from StringIO import StringIO
 import base64
@@ -77,8 +81,12 @@ class Market(object):
 
         self.load_page(welcome)
 
-
-
+        # Periodically refresh buckets
+        loop = tornado.ioloop.IOLoop.instance()
+        refreshCB = tornado.ioloop.PeriodicCallback(self._dht._refreshNode,
+                                                    constants.refreshTimeout,
+                                                    io_loop=loop)
+        refreshCB.start()
 
 
     def load_page(self, welcome):
@@ -132,6 +140,12 @@ class Market(object):
             data.close()
             msg['productImageData'] = new_uri
 
+
+        ''' Create product contract here and send to the network
+
+        '''
+
+
         # Save product listing to DHT
         listing = json.dumps(msg)
         listing_key = hashlib.sha1(listing).hexdigest()
@@ -158,6 +172,8 @@ class Market(object):
         listing_id = msg.get('productID')
         listing = self._db.products.find_one({'id':listing_id})
 
+        listing_key = listing['key']
+
         listing = proto_listing(listing['productTitle'],
                                 listing['productDescription'] if listing.has_key('productDescription') else "",
                                 listing['productPrice'] if listing.has_key('productPrice') else "",
@@ -168,16 +184,8 @@ class Market(object):
                                 listing['productImageData'] if listing.has_key('productImageData') else "")
         listing = json.dumps(listing)
 
-        listing_key = hashlib.sha1(listing).hexdigest()
-
-        hash_value = hashlib.new('ripemd160')
-        hash_value.update(listing_key)
-        listing_key = hash_value.hexdigest()
-
-
         self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
-
-
+        self.update_listings_index()
 
 
     def update_listings_index(self):

@@ -56,6 +56,7 @@
 <div class="container">
 
     <!-- Header -->
+    <div class="row">
     <div id="header">
 
         <!-- Logo -->
@@ -77,7 +78,7 @@
                     <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">Home</a></li>
                     <li id="pill-orders"><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
                     <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
-                    <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Listings</a></li>
+                    <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Contracts</a></li>
                     <li><a href="#arbitration" ng-click="showDashboardPanel('arbitration')">Arbitration</a></li>
                     <li><a href="#messages" ng-click="showDashboardPanel('messages')">Messages</a></li>
                     <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
@@ -89,6 +90,7 @@
         </div>
         <br clear="both"/>
 
+    </div>
     </div>
 
 
@@ -128,7 +130,7 @@
     <div ng-controller="ProductModal" >
 
         <div class="col-sm-3">
-            <h3>Listings</h3>
+            <h3>Contracts</h3>
         </div>
 
         <div class="col-sm-7" style="padding-top:5px;text-align:right;">
@@ -144,93 +146,117 @@
         </div>
 
         <div class="col-sm-2" style="vertical-align:middle;text-align:right;padding-top:20px;padding-right:10px;">
-            <button class="btn btn-info" ng-click="open('lg')">Add Product</button>
+            <button class="btn btn-info" ng-click="open('lg')">Add Contract</button>
         </div>
 
 
         <script type="text/ng-template" id="ProductModal.html">
 
             <div class="modal-header">
-                <h3 class="modal-title">Add Product</h3>
+                <h3 class="modal-title">Add Contract</h3>
             </div>
 
             <div class="modal-body"  style="text-align:left;">
-                <form novalidate role="form" id="productForm" name="productForm">
 
-                    <div class="alert alert-info" ng-show="productForm.inputProductTitle.$error.required || productForm.inputProductPrice.$error.required">Please enter a product title and cost.</div>
+                <ul class="nav nav-pills">
+                  <li class="active"><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-fixed').show();$('#add-product-fixed').siblings().hide();">Fixed Price</a></li>
+                  <li><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-auction').show();$('#add-product-auction').siblings().hide();">Auction</a></li>
+                  <li><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-import').show();$('#add-product-import').siblings().hide();">Import Contract</a></li>
+                </ul>
 
-                    <div class="col-sm-3">
-                        <div class="fileinput fileinput-new" data-provides="fileinput">
-                            <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="width: 200px; height: 150px;"></div>
-                            <div>
-                                <span class="btn btn-default btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="product.productImage" name="..."></span>
-                                <a href="#" class="btn btn-info fileinput-exists" data-dismiss="fileinput">Remove</a>
+                <div style="margin-top: 10px;">
+
+                    <div id="add-product-import" class="col-sm-12" style="display:none;">
+                        <h3>Import contract</h3>
+                        <div class="alert alert-info" >Copy-paste your contract into this text box. You can generate custom contracts using the html contract generator.</div>
+                        <textarea rows="10" class="form-control"></textarea>
+                    </div>
+
+                    <div id="add-product-fixed" class="col-sm-12">
+
+                        <h3>Fixed Price Contract</h3>
+
+                        <form novalidate role="form" id="productForm" name="productForm">
+
+
+                            <div class="alert alert-info" ng-show="productForm.inputProductTitle.$error.required || productForm.inputProductPrice.$error.required">Please enter a product title and cost.</div>
+
+                            <div class="col-sm-3">
+                                <div class="fileinput fileinput-new" data-provides="fileinput">
+                                    <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="width: 200px; height: 150px;"></div>
+                                    <div>
+                                        <span class="btn btn-default btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="product.productImage" name="..."></span>
+                                        <a href="#" class="btn btn-info fileinput-exists" data-dismiss="fileinput">Remove</a>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+
+                            <div class="col-sm-9">
+
+
+
+                                <div class="form-group">
+                                    <label for="inputProductTitle">Product Title</label>
+
+                                    <input type="text" required ng-model="product.productTitle" class="form-control" id="inputProductTitle" name="inputProductTitle" placeholder="Product title"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <textarea class="form-control" ng-model="product.productDescription" id="inputProductDescription" placeholder="Enter a description" rows="5"></textarea>
+                                </div>
+
+                            </div>
+
+                            <div class="col-sm-2">
+                                <div class="form-group">
+                                    <label for="inputProductPrice">Price (&#3647;)</label>
+                                    <input required type="text" class="form-control" ng-model="product.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="form-group">
+                                    <label for="inputProductShippingPrice">Shipping (&#3647;)</label>
+                                    <input type="text" class="form-control" ng-model="product.productShippingPrice" id="inputProductShippingPrice" placeholder="0" value="0"/>
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="form-group">
+                                    <label for="inputProductQuantity">Quantity</label>
+                                    <input type="text" class="form-control" ng-model="product.productQuantity" id="inputProductQuantity" placeholder="1" value="1"/>
+                                </div>
+                            </div>
+                            <br clear="both"/>
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="inputProductTags">Tags</label>
+                                    <input type="text" class="form-control" ng-model="product.productTags" id="inputProductTags" placeholder="Comma separated tags that describe the item. Used for searching."/>
+                                </div>
+                            </div>
+
+                            <br clear="both"/>
+
+                            <div class="col-sm-12">
+                                <a href="#" ng-click="toggleItemAdvanced()"><span class="caret"></span> Advanced Details</a>
+
+                                <div ng-show="itemAdvancedDetails" style="padding:10px 0;">
+                                    <p>Wouldn't you like to see more details here?</p>
+                                </div>
+
+
+                            </div>
+
+
+
+                        </form>
                     </div>
 
-                    <div class="col-sm-9">
-
-
-
-                        <div class="form-group">
-                            <label for="inputProductTitle">Product Title</label>
-
-                            <input type="text" required ng-model="product.productTitle" class="form-control" id="inputProductTitle" name="inputProductTitle" placeholder="Product title"/>
-                        </div>
-
-                        <div class="form-group">
-                            <textarea class="form-control" ng-model="product.productDescription" id="inputProductDescription" placeholder="Enter a description" rows="5"></textarea>
-                        </div>
-
-                    </div>
-
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductPrice">Price (&#3647;)</label>
-                            <input required type="text" class="form-control" ng-model="product.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0"/>
-                        </div>
-                    </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductShippingPrice">Shipping (&#3647;)</label>
-                            <input type="text" class="form-control" ng-model="product.productShippingPrice" id="inputProductShippingPrice" placeholder="0" value="0"/>
-                        </div>
-                    </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductQuantity">Quantity</label>
-                            <input type="text" class="form-control" ng-model="product.productQuantity" id="inputProductQuantity" placeholder="1" value="1"/>
-                        </div>
-                    </div>
-                    <br clear="both"/>
-                    <div class="col-sm-12">
-                        <div class="form-group">
-                            <label for="inputProductTags">Tags</label>
-                            <input type="text" class="form-control" ng-model="product.productTags" id="inputProductTags" placeholder="Comma separated tags that describe the item. Used for searching."/>
-                        </div>
-                    </div>
-
-                    <br clear="both"/>
-
-                    <div class="col-sm-12">
-                        <a href="#" ng-click="toggleItemAdvanced()"><span class="caret"></span> Advanced Details</a>
-
-                        <div ng-show="itemAdvancedDetails" style="padding:10px 0;">
-                            <p>Wouldn't you like to see more details here?</p>
-                        </div>
-
-
-                    </div>
-
-
-
-                </form>
+                </div>
 
                 <br clear="both"/>
             </div>
 
             <div class="modal-footer">
+                <button class="btn btn-default" ng-click="cancel()">Cancel</button>
                 <button class="btn btn-primary" ng-click="saveProduct()">Save</button>
             </div>
 
@@ -684,24 +710,24 @@
             <p id="page-content" style="margin:10px 0 20px 0"></p>
 
             <table class="table table-bordered table-striped" style="font-size:14px;width:100%;table-layout:fixed">
-                <tr>
+                <tr ng-show="page.email">
                     <td width=170>Email Address</td>
                     <td style="word-wrap:break-word"><a href="mailto:{{page.email}}">{{page.email}}</a></td>
                 </tr>
-                <tr>
-                    <td>Bitmessage Address</td>
+                <tr ng-show="page.bitmessage">
+                    <td width=170>Bitmessage Address</td>
                     <td style="word-wrap:break-word">{{page.bitmessage}}</td>
                 </tr>
                 <tr>
-                    <td>Open Bazaar Public Key</td>
+                    <td width=170>Open Bazaar Public Key</td>
                     <td style="word-wrap:break-word">{{page.pubkey}}</td>
                 </tr>
                 <tr>
-                    <td>Signature</td>
+                    <td width=170>Signature</td>
                     <td style="word-wrap:break-word">{{page.signature}}</td>
                 </tr>
-                <tr>
-                    <td>PGP Key</td>
+                <tr ng-show="page.PGPPubKey">
+                    <td width=170>PGP Key</td>
                     <td style="word-wrap:break-word;font-size:10px;"><pre>{{page.PGPPubKey}}</pre></td>
                 </tr>
             </table>
@@ -862,7 +888,7 @@
     <div class="peers-area" >
         <table id="favorite-peers" class="peers-table table-hover">
             <tbody>
-            <tr ng-repeat="peer in peers | limitTo:5" ng-click="queryShop(peer)">
+            <tr ng-repeat="peer in peers | limitTo:10" ng-click="queryShop(peer)">
                 <td width="40"><identicon icon-size="38" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
                 <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}</strong><br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.guid}}</span></span></td>

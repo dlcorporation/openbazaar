@@ -14,7 +14,7 @@ import tornado
 from protocol import goodbye
 import network_util
 from urlparse import urlparse
-import sys
+import sys, time, random
 
 
 class PeerConnection(object):
@@ -23,6 +23,7 @@ class PeerConnection(object):
         self._timeout = 10
         self._transport = transport
         self._address = address
+        self._responses_received = {}
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
         self.create_socket()
 
@@ -45,7 +46,14 @@ class PeerConnection(object):
 
         self._stream.send(serialized)
 
+        # Generate message ID
+        message_id = random.randint(0, 1000000)
+
+        self._responses_received[message_id] = False
+
         def cb(msg):
+            if self._responses_received.has_key(message_id):
+                del self._responses_received[message_id]
             self.on_message(msg)
             if callback is not None:
                 callback(msg)
@@ -53,6 +61,15 @@ class PeerConnection(object):
         self._stream.on_recv(cb)
 
 
+        def remove_dead_peer():
+            self._log.debug('Responses Received: %s' % self._responses_received)
+            if self._responses_received.has_key(message_id):
+                self._log.info('Unreachable Peer. Check your firewall settings.')
+                #self._transport._dht.remove_active_peer(self._address)
+                return False
+
+        # Set timer for checking if peer alive
+        #ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
@@ -144,13 +161,14 @@ class TransportLayer(object):
 
     def send(self, data, send_to=None):
 
-        self._log.info("Outgoing Data: %s" % data)
+        self._log.info("Outgoing Data: %s %s" % (data, send_to))
 
         # Directed message
         if send_to is not None:
             peer = self._dht._routingTable.getContact(send_to)
-            new_peer = self._dht._transport.get_crypto_peer(peer._guid, peer._address, peer._pub)
-            new_peer.send(data)
+            self._log.debug('%s %s %s' % (peer._guid, peer._address, peer._pub))
+            #new_peer = self._dht._transport.get_crypto_peer(peer._guid, peer._address, peer._pub)
+            result = peer.send(data)
             return
 
         else:
@@ -160,10 +178,10 @@ class TransportLayer(object):
                 try:
                     data['senderGUID'] = self._guid
                     if peer._pub:
-                        peer.send(data)
+                        result = peer.send(data)
                     else:
                         serialized = json.dumps(data)
-                        peer.send_raw(serialized)
+                        result = peer.send_raw(serialized)
                 except:
                     self._log.info("Error sending over peer!")
                     traceback.print_exc()
