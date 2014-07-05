@@ -6,6 +6,7 @@ import json
 import logging
 import hashlib
 import random
+from base64 import b64decode
 from threading import Thread
 
 from protocol import proto_page, query_page, proto_listing
@@ -219,6 +220,18 @@ class Market(object):
         self._db.products.remove({'id':msg['productID']})
         self.update_listings_index()
 
+    def get_messages(self):
+        self._log.info("Listing messages for market: %s" % self._transport._market_id)
+        try:
+            inboxmsgs = json.loads(self._transport._bitmessage_api.getAllInboxMessages())
+            # Base64 decode subject and content
+            for m in inboxmsgs['inboxMessages']:
+                m['subject'] = b64decode(m['subject'])
+                m['message'] = b64decode(m['message'])
+            return {"messages": inboxmsgs}
+        except Exception as e:
+            self._log.error("Failed to get inbox messages: %s" % e)
+            return {}
 
     def get_products(self):
         self._log.info('Getting products for market: %s' % self._transport._market_id)

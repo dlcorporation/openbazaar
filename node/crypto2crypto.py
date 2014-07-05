@@ -1,4 +1,4 @@
-import hashlib
+import sys, os, hashlib, xmlrpclib
 import json
 import logging
 import traceback
@@ -88,7 +88,7 @@ class CryptoPeerConnection(PeerConnection):
         if self._pub == '':
             self._log.info('There is no public key for encryption')
         else:
-            #self._log.debug('DATA: %s' % data)
+            self._log.debug('DATA: %s' % data)
             msg = self.send_raw(self.encrypt(json.dumps(data)), callback)
             return msg
 
@@ -115,7 +115,7 @@ class CryptoPeerConnection(PeerConnection):
 
 class CryptoTransportLayer(TransportLayer):
 
-    def __init__(self, my_ip, my_port, market_id):
+    def __init__(self, my_ip, my_port, market_id, bm_user, bm_pass, bm_port):
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
@@ -124,6 +124,33 @@ class CryptoTransportLayer(TransportLayer):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
+        # Get bitmessage going
+        # First, try to find a local instance
+        try:
+            self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port))
+            result = self._bitmessage_api.add(2,3)
+            self._log.info("Bitmessage test result: {}, API is live".format(result))
+        # If we failed, fall back to starting our own
+        except Exception as e:
+            self._log.info("Failed to connect to bitmessage instance: {}".format(e))
+            # self._log.info("Spawning internal bitmessage instance")
+            # # Add bitmessage submodule path
+            # sys.path.insert(0, os.path.join(
+            #     os.path.dirname(__file__), '..', 'pybitmessage', 'src'))
+            # import bitmessagemain as bitmessage
+            # bitmessage.logger.setLevel(logging.WARNING)
+            # bitmessage_instance = bitmessage.Main()
+            # bitmessage_instance.start(daemon=True)
+            # bminfo = bitmessage_instance.getApiAddress()
+            # if bminfo is not None:
+            #     self._log.info("Started bitmessage daemon at %s:%s".format(
+            #         bminfo['address'], bminfo['port']))
+            #     bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@{}:{}/".format(
+            #         bm_user, bm_pass, bminfo['address'], bminfo['port']))
+            # else:
+            #     self._log.info("Failed to start bitmessage dameon")
+            #     self._bitmessage_api = None
+        
         self._market_id = market_id
         self.nick_mapping = {}
         self._uri = "tcp://%s:%s" % (my_ip, my_port)
@@ -154,6 +181,9 @@ class CryptoTransportLayer(TransportLayer):
 
     def getDHT(self):
         return self._dht
+
+    def getBitmessageAPI(self):
+        return self._bitmessage_api
 
     def getMarketID(self):
         return self._market_id
@@ -192,9 +222,12 @@ class CryptoTransportLayer(TransportLayer):
             self.secret = self.settings['secret']
             self.pubkey = self.settings['pubkey']
             self.guid = self.settings['guid']
+            self.bitmessage = self.settings['bitmessage']
         else:
             self.nickname = 'Default'
             self._generate_new_keypair()
+            if self._bitmessage_api is not None:
+                self._generate_new_bitmessage_address()
             self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
 
         self._log.debug('Retrieved Settings: %s', self.settings)
@@ -216,6 +249,12 @@ class CryptoTransportLayer(TransportLayer):
       self.guid = guid.digest().encode('hex')
 
       self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
+
+    def _generate_new_bitmessage_address(self):
+      # Use the guid generated previously as the key
+      self.bitmessage = self._bitmessage_api.createRandomAddress(self.guid.encode('base64'), 
+            False, 1.05, 1.1111)
+      self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"bitmessage":self.bitmessage}}, True)
 
 
     def join_network(self, seed_uri, callback=lambda msg: None):
