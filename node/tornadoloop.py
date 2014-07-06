@@ -93,7 +93,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--seed_uri")
     parser.add_argument("-l", "--log_file", default='production.log')
     parser.add_argument("-u", "--market_id", default=1)
-    parser.add_argument("--bmuser", default='bradley', help="Bitmessage instance user")
+    parser.add_argument("--bmuser", default='username', help="Bitmessage instance user")
     parser.add_argument("--bmpass", default='password', help="Bitmessage instance pass")
     parser.add_argument("--bmport", default='8442', help="Bitmessage instance RPC port")
     args = parser.parse_args()
