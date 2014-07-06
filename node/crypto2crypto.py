@@ -129,6 +129,7 @@ class CryptoTransportLayer(TransportLayer):
         # Get bitmessage going
         # First, try to find a local instance
         try:
+            self._log.info('Connecting to Bitmessage on Port %s' % bm_port)
             self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port))
             result = self._bitmessage_api.add(2,3)
             self._log.info("Bitmessage test result: {}, API is live".format(result))
