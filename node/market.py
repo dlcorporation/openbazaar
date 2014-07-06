@@ -6,7 +6,7 @@ import json
 import logging
 import hashlib
 import random
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from threading import Thread
 
 from protocol import proto_page, query_page, proto_listing
@@ -250,7 +250,9 @@ class Market(object):
     def get_messages(self):
         self._log.info("Listing messages for market: %s" % self._transport._market_id)
         try:
-            inboxmsgs = json.loads(self._transport._bitmessage_api.getAllInboxMessages())
+            # Request all messages for our address
+            inboxmsgs = json.loads(self._transport._bitmessage_api.getInboxMessagesByReceiver(
+                self.settings.bitmessage))
             # Base64 decode subject and content
             for m in inboxmsgs['inboxMessages']:
                 m['subject'] = b64decode(m['subject'])
@@ -258,6 +260,19 @@ class Market(object):
             return {"messages": inboxmsgs}
         except Exception as e:
             self._log.error("Failed to get inbox messages: %s" % e)
+            return {}
+
+    def send_message(self, msg):
+        self._log.info("Sending message for market: %s" % self._transport._market_id)
+        print msg
+        try:
+            # Base64 decode subject and content
+            msg['subject'] = b64encode(msg['subject'])
+            msg['body'] = b64encode(msg['message'])
+            self._transport._bitmessage_api.sendMessage(self.settings.bitmessage,
+                msg['to'], msg['subject'], msg['body'])
+        except Exception as e:
+            self._log.error("Failed to send message: %s" % e)
             return {}
 
     def get_products(self):

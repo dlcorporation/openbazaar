@@ -5,7 +5,7 @@
 <div class="modal-body"  style="text-align:left;">
 
 <div class="row">
-    <form class="form-horizontal" role="form">
+    <form class="form-horizontal" name="composeForm" role="form">
         <div class="form-group">
             <label for="fromAddress" class="col-sm-1 control-label">From</label>
             <div class="col-sm-6">
@@ -15,25 +15,30 @@
         <div class="form-group">
             <label for="toAddress" class="col-sm-1 control-label">To</label>
             <div class="col-sm-6">
-                <input type="text" class="form-control" id="toAddress" placeholder="" />
+                <input type="text" class="form-control" id="toAddress" ng-model="toAddress" placeholder="Recipient Address" />
              </div>
         </div>
         <div class="form-group">
             <div class="col-sm-12" style="padding:0 25px">
-                <input type="text" class="form-control" id="subject" placeholder="Enter a subject line" />
+                <input type="text" class="form-control" id="subject" ng-model="subject" placeholder="Enter a subject line" />
              </div>
         </div>
         <div class="form-group">
             <div class="col-sm-12" style="padding:0 25px">
-                <textarea rows="12" class="form-control" id="body" placeholder="Enter a message"></textarea>
+                <textarea rows="12" class="form-control" id="body" ng-model="body" placeholder="Enter a message"></textarea>
              </div>
         </div>
     </form>
+    <!-- SHOW DATA FROM INPUTS AS THEY ARE BEING TYPED -->
+    <pre>
+        {{ formData }}
+    </pre>
 
 </div>
 
 </div>
 
 <div class="modal-footer">
-    <a class="btn btn-default" ng-click="cancel()" type="cancel">Cancel</a> <a class="btn btn-primary" ng-click="sendMessage()" type="submit">Send</a>
+    <a class="btn btn-default" ng-click="cancel()" type="cancel">Cancel</a> 
+    <a class="btn btn-primary" ng-click="send()" type="submit">Send</a>
 </div>
