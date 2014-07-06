@@ -37,6 +37,10 @@ else
     PYTHON=python
 fi
 
+# Bitmessage User Info
+BM_USERNAME=username
+BM_PASSWORD=password
+BM_PORT=8442
 
 if [ ! -d "$LOGDIR" ]; then
   mkdir $LOGDIR
@@ -46,7 +50,7 @@ if [ $MODE == production ]; then
 
   # Identity server is coming soon
   #$PYTHON ident/identity.py &
-	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT -l $LOGDIR/production.log -u 1 &
+	$PYTHON node/tornadoloop.py $MY_MARKET_IP -s $SEED_URI -p $MY_MARKET_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
 
 else
 

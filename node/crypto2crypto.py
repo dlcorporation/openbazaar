@@ -126,11 +126,37 @@ class CryptoTransportLayer(TransportLayer):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
+        if not self._connect_to_bitmessage(bm_user, bm_pass, bm_port):
+            self._log.info('Bitmessage not available')
+
+        self._market_id = market_id
+        self.nick_mapping = {}
+        self._uri = "tcp://%s:%s" % (my_ip, my_port)
+
+        # Set up
+        self._setup_settings()
+
+        self._dht = DHT(self, market_id, self.settings)
+
+        self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
+
+        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid)
+
+        # Set up callbacks
+        self.add_callback('hello', self._ping)
+        self.add_callback('findNode', self._findNode)
+        self.add_callback('findNodeResponse', self._findNodeResponse)
+        self.add_callback('store', self._storeValue)
+
+        self.listen(self.pubkey)
+
+    def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
         # First, try to find a local instance
+        result = False
         try:
-            self._log.info('Connecting to Bitmessage on Port %s' % bm_port)
-            self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port))
+            self._log.info('Connecting to Bitmessage on Port %s %s %s' % (bm_port, bm_user, bm_pass))
+            self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=1)
             result = self._bitmessage_api.add(2,3)
             self._log.info("Bitmessage test result: {}, API is live".format(result))
         # If we failed, fall back to starting our own
@@ -153,28 +179,7 @@ class CryptoTransportLayer(TransportLayer):
             # else:
             #     self._log.info("Failed to start bitmessage dameon")
             #     self._bitmessage_api = None
-        
-        self._market_id = market_id
-        self.nick_mapping = {}
-        self._uri = "tcp://%s:%s" % (my_ip, my_port)
-
-        # Set up
-        self._setup_settings()
-
-        self._dht = DHT(self, market_id, self.settings)
-
-        self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
-
-        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid)
-
-        # Set up callbacks
-        self.add_callback('hello', self._ping)
-        self.add_callback('findNode', self._findNode)
-        self.add_callback('findNodeResponse', self._findNodeResponse)
-        self.add_callback('store', self._storeValue)
-
-        self.listen(self.pubkey)
-
+        return result
 
     def _checkok(self, msg):
         self._log.info('Check ok')
@@ -225,7 +230,7 @@ class CryptoTransportLayer(TransportLayer):
             self.secret = self.settings['secret']
             self.pubkey = self.settings['pubkey']
             self.guid = self.settings['guid']
-            self.bitmessage = self.settings['bitmessage']
+            self.bitmessage = self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ""
         else:
             self.nickname = 'Default'
             self._generate_new_keypair()
