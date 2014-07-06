@@ -117,7 +117,7 @@ class CryptoPeerConnection(PeerConnection):
 
 class CryptoTransportLayer(TransportLayer):
 
-    def __init__(self, my_ip, my_port, market_id, bm_user, bm_pass, bm_port):
+    def __init__(self, my_ip, my_port, market_id, bm_user=None, bm_pass=None, bm_port=None):
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
@@ -126,8 +126,11 @@ class CryptoTransportLayer(TransportLayer):
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
-        if not self._connect_to_bitmessage(bm_user, bm_pass, bm_port):
-            self._log.info('Bitmessage not available')
+        self._bitmessage_api = None
+        if (bm_user, bm_pass, bm_port) != (None, None, None):
+            print (bm_user, bm_pass, bm_port)
+            if not self._connect_to_bitmessage(bm_user, bm_pass, bm_port):
+                self._log.info('Bitmessage not available')
 
         self._market_id = market_id
         self.nick_mapping = {}
@@ -227,9 +230,9 @@ class CryptoTransportLayer(TransportLayer):
 
         if self.settings:
             self.nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
-            self.secret = self.settings['secret']
-            self.pubkey = self.settings['pubkey']
-            self.guid = self.settings['guid']
+            self.secret = self.settings['secret'] if self.settings.has_key("secret") else ""
+            self.pubkey = self.settings['pubkey'] if self.settings.has_key("pubkey") else ""
+            self.guid = self.settings['guid'] if self.settings.has_key("guid") else ""
             self.bitmessage = self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ""
         else:
             self.nickname = 'Default'
