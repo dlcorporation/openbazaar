@@ -1012,15 +1012,61 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
 
       $modalInstance.close();
 
-
-
-
-
     }
 
 
 
   };
+
+
+$scope.ComposeMessageCtrl = function ($scope, $modal, $log) {
+
+    $scope.open = function (size, myself, my_address) {
+
+
+      modalInstance = $modal.open({
+        templateUrl: 'composeMessage.html',
+        controller: $scope.ComposeMessageInstanceCtrl,
+        resolve: {
+            myself: function() { return myself },
+            my_address: function() { return my_address },
+        },
+        size: size
+      });
+
+      modalInstance.result.then(function () {
+
+        $scope.showDashboardPanel('messages');
+
+        //$('#pill-orders').addClass('active').siblings().removeClass('active').blur();
+        //$("#orderSuccessAlert").alert();
+        //window.setTimeout(function() { $("#orderSuccessAlert").alert('close') } , 5000);
+
+      }, function () {
+        $log.info('Modal dismissed at: ' + new Date());
+
+      });
+    };
+  };
+
+
+$scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_address) {
+
+    //console.log(productTitle, productPrice, productDescription, productImageData);
+    $scope.myself = myself;
+    $scope.my_address = my_address;
+
+    $scope.ok = function () {
+      $modalInstance.close();
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+
+  };
+
 
 
 

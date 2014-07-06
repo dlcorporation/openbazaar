@@ -680,11 +680,20 @@
 <!-- Messages -->
 <div ng-show="messagesPanel" class="animated fadeInLeft">
 
+    <div ng-controller="ComposeMessageCtrl">
+
     <h3>Messages</h3>
 
-    <p>This is your private messages inbox.</p>
-    <div>
-        {{settings.bitmessage}}
+    <div class="row">
+        <div class="col-sm-9">
+        <p>This is your private messages inbox.</p>
+        <div>
+            {{settings.bitmessage}}
+        </div>
+        </div>
+        <div class="col-sm-3" style="text-align:right">
+            <button class="btn btn-info" ng-click="open('lg', myself, settings.bitmessage)">Send Message</button>
+        </div>
     </div>
     
     <div ng-repeat="message in myself.messages">
@@ -695,15 +704,15 @@
         <table class="table table-striped table-bordered" style="margin-top:10px;">
             <tr>
                 <th></th>
-                <th>Date</th>
-                <th>From</th>
+                <th width="375">From</th>
                 <th>Subject</th>
+                <th width="200">Date</th>
             </tr>
             <tr ng-repeat="message in messages">
                 <td width=15><input type="checkbox"/></td>
-                <td  style="border-left:none;">{{message.receivedTime * 1000 | date:'medium'}}</td>
-                <td  style="border-left:none;">{{message.fromAddress}}</td>
-                <td  style="border-left:none;">{{message.subject}}</td>
+                <td style="border-left:none;"><identicon icon-size="32" hash="message.fromAddress" title="{{message.fromAddress}}"></identicon> {{message.fromAddress}}</td>
+                <td style="border-left:none;"><a href="#">{{message.subject}}</a></td>
+                <td style="border-left:none;">{{message.receivedTime * 1000 | date:'medium'}}</td>
             </tr>
         </table>
     </div>
@@ -712,7 +721,7 @@
         <p>There are no messages for your marketplace.</p>
     </div>
 
-
+    </div>
 
 </div>
 
