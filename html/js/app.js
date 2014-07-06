@@ -242,16 +242,17 @@ angular.module('app')
 
   $scope.message = {};
   $scope.parse_messages = function(msg) {
-      console.log(msg);
-      console.log(msg.messages);
-      console.log(msg.messages.messages);
-      console.log(msg.messages.messages.inboxMessages);
+      if(msg != null &&
+         msg.messages != null &&
+         msg.messages.messages != null &&
+         msg.messages.messages.inboxMessages != null) {
 
-      $scope.messages = msg.messages.messages.inboxMessages;
+          $scope.messages = msg.messages.messages.inboxMessages;
 
-      $scope.message = {};
-      if (!$scope.$$phase) {
-         $scope.$apply();
+          $scope.message = {};
+          if (!$scope.$$phase) {
+             $scope.$apply();
+          }
       }
   }
 
@@ -1056,7 +1057,21 @@ $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my
     $scope.myself = myself;
     $scope.my_address = my_address;
 
-    $scope.ok = function () {
+    $scope.send = function () {
+      // Trigger validation flag.
+      $scope.submitted = true;
+
+      // If form is invalid, return and let AngularJS show validation errors.
+      if (composeForm.$invalid) {
+        return;
+      }
+
+      var query = {'type': 'send_message', 'to': toAddress.value,
+                   'subject': subject.value, 
+                   'body': body.value}
+      console.log('sending message with subject ' + subject)
+      socket.send('send_message', query)
+
       $modalInstance.close();
     };
 
@@ -1066,9 +1081,5 @@ $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my
 
 
   };
-
-
-
-
 
 }])
