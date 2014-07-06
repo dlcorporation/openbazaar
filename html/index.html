@@ -56,7 +56,7 @@
 <div class="container">
 
     <!-- Header -->
-    <div class="row">
+    <div class="row" style="border-bottom:1px solid #bbb;">
     <div id="header">
 
         <!-- Logo -->
@@ -74,6 +74,8 @@
 
             <div id="header-navigation">
 
+                <identicon icon-size="45" hash="myself.guid" title="{{myself.guid}}" style="float:right;vertical-align:middle; margin-right:10px;margin-left:10px;"></identicon>
+
                 <ul class="nav nav-pills">
                     <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">Home</a></li>
                     <li id="pill-orders"><a href="#orders" ng-click="showDashboardPanel('orders')">Orders</a></li>
@@ -84,7 +86,7 @@
                     <li><a href="#settings" ng-click="showDashboardPanel('settings')">Settings</a></li>
                 </ul>
 
-                <identicon icon-size="45" hash="myself.guid" title="{{myself.guid}}" style="float:right;vertical-align:middle; margin-right:10px;"></identicon>
+
 
             </div>
         </div>
