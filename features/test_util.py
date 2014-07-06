@@ -53,7 +53,7 @@ def create_nodes(context, num_nodes):
                                   'test%s.log' % str(i),
                                   i)))
         proc[i].start()
-        time.sleep(1)
+        time.sleep(10)
         settings_set_page(i)
     context.proc = proc
 
