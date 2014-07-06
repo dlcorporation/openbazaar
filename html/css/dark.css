@@ -182,7 +182,7 @@ hr { border-top:#bbb; }
 #header-navigation  .nav-pills { text-align:right; float:right; }
 #header-navigation  .nav-pills > li { display:inline-block; }
 
-#header { border-bottom:1px solid #bbb; height:120px; }
+#header { height:120px; }
 #header-search { width:100%; text-align:right;}
 #header-navigation { width:100%; text-align:right; float:right; margin-top:10px; }
 
