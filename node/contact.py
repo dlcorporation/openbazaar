@@ -8,6 +8,7 @@ class Contact(object):
         self.uri = uri
         #self._peerConnection = PeerConnection(uri, guid)
         self.commTime = firstComm
+        self.failedRPCs = 0
 
     def __eq__(self, other):
         if isinstance(other, Contact):
