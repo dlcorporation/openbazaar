@@ -838,14 +838,11 @@ $scope.ProductModal = function ($scope, $modal, $log) {
       backdrop = backdrop ? backdrop : true;
 
       var modalInstance = $modal.open({
-        templateUrl: 'ProductModal.html',
+        templateUrl: 'addContract.html',
         controller: ProductModalInstance,
         size: size,
         backdrop: backdrop,
         resolve: {
-          product: function () {
-            return {"product":$scope.product};
-          },
           contract: function () {
             return {"contract":$scope.contract};
           }
@@ -863,23 +860,52 @@ $scope.ProductModal = function ($scope, $modal, $log) {
 
 };
 
-var ProductModalInstance = function ($scope, $modalInstance, product, contract) {
+var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
-  $scope.product = product.product;
   $scope.contract = contract;
 
 
+    $scope.createContract = function() {
 
-    $scope.importContract = function() {
+        console.log($scope.contract);
 
-        // Imported JSON format contract
-        jsonContract = $scope.contract.rawText;
-        console.log(jsonContract);
+        if(contract.contract) {
 
-        socket.send("import_raw_contract", {'contract':jsonContract});
+            // Imported JSON format contract
+            jsonContract = $scope.contract.rawText;
+            console.log(jsonContract);
+
+            socket.send("import_raw_contract", {'contract':jsonContract});
+
+        } else {
+            alert('Fixed Price Sale');
+
+            contract = { "OBCv":"0.1-alpha" };
+            contract.category = "physical_goods";
+            contract.contract_nonce = "";
+            contract.nym_id = "";
+            contract.node_id = "";
+            contract.contract_exp = "2014-01-01 00:00:00";
+            contract.keywords = "";
+            contract.currency = "XBT";
+            contract.seller_pubkey = "";
+            contract.seller_pgp = "";
+            contract.item_title = "";
+            contract.item_desc = "";
+            contract.unit_price = "";
+            contract.shipping_price = "";
+            contract.item_quantity_available = "";
+            contract.item_images = [];
+
+            console.log(contract);
+
+
+
+        }
+
         socket.send("query_products", {})
-
         $modalInstance.dismiss('cancel');
+
 
     }
 
