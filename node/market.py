@@ -86,6 +86,8 @@ class Market(object):
 
         self.load_page(welcome)
 
+        self._dht._refreshNode()
+
         # Periodically refresh buckets
         loop = tornado.ioloop.IOLoop.instance()
         refreshCB = tornado.ioloop.PeriodicCallback(self._dht._refreshNode,
