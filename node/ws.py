@@ -81,11 +81,19 @@ class ProtocolHandler:
         self._log.info("Peers command")
         self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
 
+    def refresh_peers(self):
+        self._log.info("Peers command")
+        self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+
     def client_query_page(self, socket_handler, msg):
         self._log.info("Message: %s" % msg)
         findGUID = msg['findGUID']
 
-        self._market.query_page(findGUID)
+        def cb(success):
+            if not success:
+                self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+
+        self._market.query_page(findGUID, cb)
         #self._market.reputation.query_reputation(guid)
 
 

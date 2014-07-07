@@ -15,6 +15,7 @@ from protocol import goodbye
 import network_util
 from urlparse import urlparse
 import sys, time, random
+from ws import ProtocolHandler
 
 
 class PeerConnection(object):
@@ -65,11 +66,11 @@ class PeerConnection(object):
             self._log.debug('Responses Received: %s' % self._responses_received)
             if self._responses_received.has_key(message_id):
                 self._log.info('Unreachable Peer. Check your firewall settings.')
-                #self._transport._dht.remove_active_peer(self._address)
-                return False
+                self._transport._dht.remove_active_peer(self._address)
+                callback(False)
 
         # Set timer for checking if peer alive
-        #ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
+        ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
@@ -159,16 +160,15 @@ class TransportLayer(object):
         #     self._log.info("Peer %s was already removed", uri)
 
 
-    def send(self, data, send_to=None):
+    def send(self, data, send_to=None, callback=lambda msg: None):
 
         self._log.info("Outgoing Data: %s %s" % (data, send_to))
 
         # Directed message
         if send_to is not None:
             peer = self._dht._routingTable.getContact(send_to)
-            self._log.debug('%s %s %s' % (peer._guid, peer._address, peer._pub))
-            #new_peer = self._dht._transport.get_crypto_peer(peer._guid, peer._address, peer._pub)
-            result = peer.send(data)
+            #self._log.debug('%s %s %s' % (peer._guid, peer._address, peer._pub))
+            peer.send(data, callback=callback)
             return
 
         else:
@@ -178,10 +178,10 @@ class TransportLayer(object):
                 try:
                     data['senderGUID'] = self._guid
                     if peer._pub:
-                        result = peer.send(data)
+                        peer.send(data, callback)
                     else:
                         serialized = json.dumps(data)
-                        result = peer.send_raw(serialized)
+                        peer.send_raw(serialized, callback)
                 except:
                     self._log.info("Error sending over peer!")
                     traceback.print_exc()
