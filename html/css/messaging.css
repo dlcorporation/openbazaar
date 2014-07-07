@@ -1,0 +1,6 @@
+p.messageBody {
+    white-space: pre-wrap;
+    margin: 0px 30px;
+    padding: 5px;
+    background-color: #FCFCFC;
+}
