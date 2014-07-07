@@ -44,3 +44,9 @@ blockchain
 .idea/inspectionProfiles/Project_Default.xml
 
 *.swp
+
+*.gpg
+
+gpg/random_seed
+
+*.gpg~
