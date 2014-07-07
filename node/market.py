@@ -25,6 +25,7 @@ from StringIO import StringIO
 import base64
 import datetime
 from contract import OBContract
+import traceback
 
 class Market(object):
 
@@ -249,30 +250,38 @@ class Market(object):
 
     def get_messages(self):
         self._log.info("Listing messages for market: %s" % self._transport._market_id)
+        settings = self.get_settings()
         try:
             # Request all messages for our address
             inboxmsgs = json.loads(self._transport._bitmessage_api.getInboxMessagesByReceiver(
-                self.settings.bitmessage))
-            # Base64 decode subject and content
+                settings['bitmessage']))
             for m in inboxmsgs['inboxMessages']:
+                # Base64 decode subject and content
                 m['subject'] = b64decode(m['subject'])
                 m['message'] = b64decode(m['message'])
+                # TODO: Augment with market, if available
+                
             return {"messages": inboxmsgs}
         except Exception as e:
-            self._log.error("Failed to get inbox messages: %s" % e)
+            self._log.error("Failed to get inbox messages: {}".format(e))
+            self._log.error(traceback.format_exc())
             return {}
 
     def send_message(self, msg):
         self._log.info("Sending message for market: %s" % self._transport._market_id)
-        print msg
+        settings = self.get_settings()
         try:
             # Base64 decode subject and content
-            msg['subject'] = b64encode(msg['subject'])
-            msg['body'] = b64encode(msg['message'])
-            self._transport._bitmessage_api.sendMessage(self.settings.bitmessage,
-                msg['to'], msg['subject'], msg['body'])
+            self._log.info("Encoding message: {}".format(msg))
+            subject = b64encode(msg['subject'])
+            body = b64encode(msg['body'])
+            result = self._transport._bitmessage_api.sendMessage(msg['to'], 
+                settings['bitmessage'], subject, body)
+            self._log.info("Send message result: {}".format(result))
+            return {}
         except Exception as e:
             self._log.error("Failed to send message: %s" % e)
+            self._log.error(traceback.format_exc())
             return {}
 
     def get_products(self):

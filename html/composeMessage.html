@@ -15,24 +15,26 @@
         <div class="form-group">
             <label for="toAddress" class="col-sm-1 control-label">To</label>
             <div class="col-sm-6">
-                <input type="text" class="form-control" id="toAddress" ng-model="toAddress" placeholder="Recipient Address" />
+                <input type="text" class="form-control" id="toAddress" ng-model="toAddress" placeholder="Recipient Address"/>
              </div>
         </div>
         <div class="form-group">
             <div class="col-sm-12" style="padding:0 25px">
                 <input type="text" class="form-control" id="subject" ng-model="subject" placeholder="Enter a subject line" />
+                <div ng-show="composeForm.subject.$dirty && composeForm.subject.$invalid">Invalid:
+                  <span ng-show="composeForm.subject.$error.required">A subject is required</span>
+                 </div>
              </div>
         </div>
         <div class="form-group">
             <div class="col-sm-12" style="padding:0 25px">
                 <textarea rows="12" class="form-control" id="body" ng-model="body" placeholder="Enter a message"></textarea>
+                <div ng-show="composeForm.body.$dirty && composeForm.body.$invalid">Invalid:
+                  <span ng-show="composeForm.body.$error.required">A body is required</span>
+                 </div>
              </div>
         </div>
     </form>
-    <!-- SHOW DATA FROM INPUTS AS THEY ARE BEING TYPED -->
-    <pre>
-        {{ formData }}
-    </pre>
 
 </div>
 
@@ -40,5 +42,7 @@
 
 <div class="modal-footer">
     <a class="btn btn-default" ng-click="cancel()" type="cancel">Cancel</a> 
-    <a class="btn btn-primary" ng-click="send()" type="submit">Send</a>
+    <a class="btn btn-primary" ng-click="send()" 
+        ng-disabled="composeForm.$invalid"
+        type="submit">Send</a>
 </div>
