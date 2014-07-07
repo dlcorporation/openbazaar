@@ -87,6 +87,9 @@ angular.module('app')
       case 'peer':
          $scope.add_peer(msg)
          break;
+      case 'peers':
+         $scope.update_peers(msg)
+         break;
       case 'peer_remove':
          $scope.remove_peer(msg)
          break;
@@ -349,6 +352,17 @@ angular.module('app')
     } else {
         $scope.peers[index] = msg;
     }
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+  }
+
+  $scope.update_peers = function(msg) {
+
+    console.log('Refresh peers: ', msg);
+
+    $scope.peers = msg.peers;
+
     if (!$scope.$$phase) {
        $scope.$apply();
     }

@@ -26,6 +26,7 @@ import base64
 import datetime
 from contract import OBContract
 import traceback
+from ws import ProtocolHandler
 
 class Market(object):
 
@@ -340,7 +341,7 @@ class Market(object):
 
     # PAGE QUERYING
 
-    def query_page(self, find_guid):
+    def query_page(self, find_guid, callback=lambda msg: None):
 
         self._log.info('Querying page: %s' % find_guid)
         msg = query_page(find_guid)
@@ -348,10 +349,11 @@ class Market(object):
         msg['senderGUID'] = self._transport.guid
         msg['pubkey'] = self._transport.pubkey
 
-        self._transport.send(msg, find_guid)
+        self._transport.send(msg, find_guid, callback)
 
 
     def on_page(self, page):
+
 
         self._log.info("Page received and being stored in Market")
 
