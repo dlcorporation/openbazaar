@@ -46,6 +46,7 @@ class ProtocolHandler:
             "generate_secret":	self.client_generate_secret,
             "republish_listing":	  self.client_republish_listing,
             "import_raw_contract":	  self.client_import_raw_contract,
+            "create_contract":	  self.client_create_contract,
         }
 
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
@@ -165,6 +166,12 @@ class ProtocolHandler:
 
         # Update settings in mongo
         self._market.save_product(msg)
+
+    def client_create_contract(self, socket_handler, contract):
+        self._log.info("New Contract: %s" % contract)
+
+        # Update settings in mongo
+        self._market.save_contract(contract)
 
     def client_remove_product(self, socket_handler, msg):
         self._log.info("Remove product: %s" % msg)

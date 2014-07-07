@@ -878,7 +878,6 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
             socket.send("import_raw_contract", {'contract':jsonContract});
 
         } else {
-            alert('Fixed Price Sale');
 
             contract = { "OBCv":"0.1-alpha" };
             contract.category = "physical_goods";
@@ -897,8 +896,38 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
             contract.item_quantity_available = "";
             contract.item_images = [];
 
-            console.log(contract);
+            var imgUpload = document.getElementById('inputProductImage').files[0];
 
+            if(imgUpload) {
+
+              if (imgUpload.type != '' && $.inArray(imgUpload.type, ['image/jpeg', 'image/gif', 'image/png']) != -1) {
+
+                var r = new FileReader();
+                r.onloadend = function(e){
+                  var data = e.target.result;
+
+                  contract.item_images.push(imgUpload.result);
+
+                  console.log(contract);
+                  socket.send("create_contract", contract);
+
+
+                }
+                r.readAsArrayBuffer(imgUpload);
+
+
+              } else {
+
+                console.log(contract);
+                socket.send("create_contract", contract);
+
+              }
+
+            } else {
+                console.log(contract);
+                socket.send("create_contract", contract);
+
+            }
 
 
         }

@@ -237,9 +237,6 @@ class CryptoTransportLayer(TransportLayer):
             self.guid = self.settings['guid'] if self.settings.has_key("guid") else ""
             self.bitmessage = self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ""
 
-
-
-
         else:
             self.nickname = 'Default'
 
@@ -256,7 +253,7 @@ class CryptoTransportLayer(TransportLayer):
             key = gpg.gen_key(input_data)
             pubkey_text = gpg.export_keys(key.fingerprint)
 
-            self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"PGPPubKey":pubkey_text}}, True)
+            self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"PGPPubKey":pubkey_text, "PGPPubkeyFingerprint":key.fingerprint}}, True)
 
             self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
 
