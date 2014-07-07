@@ -1021,41 +1021,66 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
 
 
 $scope.ComposeMessageCtrl = function ($scope, $modal, $log) {
-
-    $scope.open = function (size, myself, my_address) {
-
-
-      modalInstance = $modal.open({
+    $scope.compose = function (size, myself, my_address, msg) {
+      composeModal = $modal.open({
         templateUrl: 'composeMessage.html',
         controller: $scope.ComposeMessageInstanceCtrl,
         resolve: {
             myself: function() { return myself },
             my_address: function() { return my_address },
+            msg: function() { return msg; },
         },
         size: size
       });
-
-      modalInstance.result.then(function () {
-
+      afterFunc = function () {
         $scope.showDashboardPanel('messages');
-
-        //$('#pill-orders').addClass('active').siblings().removeClass('active').blur();
-        //$("#orderSuccessAlert").alert();
-        //window.setTimeout(function() { $("#orderSuccessAlert").alert('close') } , 5000);
-
-      }, function () {
-        $log.info('Modal dismissed at: ' + new Date());
-
+      };
+      composeModal.result.then(afterFunc,
+          function () {
+            $log.info('Modal dismissed at: ' + new Date());
+      });
+    };
+    $scope.view = function (size, myself, my_address, msg) {
+      viewModal = $modal.open({
+        templateUrl: 'viewMessage.html',
+        controller: $scope.ViewMessageInstanceCtrl,
+        resolve: {
+            myself: function() { return myself },
+            my_address: function() { return my_address },
+            msg: function() { return msg },
+        },
+        size: size
+      });
+      afterFunc = function () {
+        $scope.showDashboardPanel('messages');
+      };
+      viewModal.result.then(afterFunc,
+          function () {
+            $log.info('Modal dismissed at: ' + new Date());
       });
     };
   };
 
 
-$scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_address) {
-
-    //console.log(productTitle, productPrice, productDescription, productImageData);
+$scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_address, msg) {
     $scope.myself = myself;
     $scope.my_address = my_address;
+    $scope.msg = msg;
+
+    // Fill in form if msg is passed - reply mode
+    if(msg != null) {
+        $scope.toAddress = msg.fromAddress;
+        // Make sure subject start with RE: 
+        var sj = msg.subject;
+        if(sj.match(/^RE:/) == null) {
+            sj = "RE: " + sj;
+        }
+        $scope.subject = sj;
+        // Quote message
+        quote_re = /^(.*?)/mg;
+        var quote_msg = msg.message.replace(quote_re, "> $1");
+        $scope.body = "\n"+quote_msg;
+    }
 
     $scope.send = function () {
       // Trigger validation flag.
@@ -1078,8 +1103,17 @@ $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };
+};
 
+$scope.ViewMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_address, msg) {
 
-  };
+    $scope.myself = myself;
+    $scope.my_address = my_address;
+    $scope.msg = msg;
+
+    $scope.close = function () {
+      $modalInstance.dismiss('cancel');
+    };
+};
 
 }])
