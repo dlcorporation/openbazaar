@@ -37,7 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
-    apt-get install -y build-essential python-dev python-pip python-zmq mongodb libjpeg-dev tor privoxy
+    apt-get install -y build-essential python-dev python-pip python-zmq mongodb libjpeg-dev tor privoxy gnupg
     pip install tornado Twisted pycountry pillow python-gnupg
     easy_install pymongo websocket behave
     cp -R /vagrant/ecdsa /vagrant/obelisk /usr/local/lib/python2.7/dist-packages/

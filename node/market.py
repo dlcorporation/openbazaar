@@ -27,6 +27,7 @@ import datetime
 from contract import OBContract
 import traceback
 from ws import ProtocolHandler
+import gnupg
 
 class Market(object):
 
@@ -199,6 +200,62 @@ class Market(object):
 
         # If keywords store them in the keyword index
 
+    def save_contract(self, msg):
+
+        market_id = self._market_id
+
+        contract_id = random.randint(0, 1000000)
+
+        # Initialize default values if not set
+        if not msg.has_key("unit_price") or not msg['unit_price'] > 0:
+            msg['unit_price'] = 0
+        if not msg.has_key("shipping_price") or not msg['shipping_price'] > 0:
+            msg['shipping_price'] = 0
+        if not msg.has_key("item_quantity_available") or not msg['item_quantity_available'] > 0:
+            msg['item_quantity_available'] = 1
+
+        # Process and crop thumbs for images
+        if msg.has_key('item_images'):
+            if len(msg.get('item_images')) > 0:
+
+                img = msg['item_images'][0]
+
+                uri = DataURI(img)
+                imageData = uri.data
+                mime_type = uri.mimetype
+                charset = uri.charset
+
+                image = Image.open(StringIO(imageData))
+                croppedImage = ImageOps.fit(image, (100, 100), centering=(0.5, 0.5))
+                data = StringIO()
+                croppedImage.save(data, format='PNG')
+
+                new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
+                data.close()
+                msg['item_images'][0] = new_uri
+
+        # TODO: replace default passphrase
+        gpg = gnupg.GPG(gnupghome='gpg')
+        signed_data = gpg.sign(json.dumps(msg), passphrase='P@ssw0rd')
+
+        # Save contract to DHT
+        contract_key = hashlib.sha1(str(signed_data)).hexdigest()
+
+        hash_value = hashlib.new('ripemd160')
+        hash_value.update(contract_key)
+        contract_key = hash_value.hexdigest()
+
+        self._db.contracts.update({'id':contract_id}, {'$set':{'market_id':market_id, 'contract_body':str(signed_data), 'state':'seed', 'key':contract_key}}, True)
+
+        self._log.debug('New Contract Key: %s' % contract_key)
+
+        # Store listing
+        self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+
+        #self.update_listings_index()
+
+        # If keywords store them in the keyword index
+
     def republish_listing(self, msg):
 
         listing_id = msg.get('productID')
@@ -324,6 +381,7 @@ class Market(object):
             return {"bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
                     "email": settings['email'] if settings.has_key("email") else "",
                     "PGPPubKey": settings['PGPPubKey'] if settings.has_key("PGPPubKey") else "",
+                    "PGPPubKeyFingerprint": settings['PGPPubKeyFingerprint'] if settings.has_key("PGPPubKeyFingerprint") else "",
                     "pubkey": settings['pubkey'] if settings.has_key("pubkey") else "",
                     "nickname": settings['nickname'] if settings.has_key("nickname") else "",
                     "secret": settings['secret'] if settings.has_key("secret") else "",
