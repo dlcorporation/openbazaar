@@ -131,9 +131,6 @@ class TransportLayer(object):
 
         stream.on_recv(handle_recv)
 
-    def handle_raw_message(self, message):
-        self.on_raw_message(message)
-
     def closed(self, *args):
         self._log.info("client left")
 
