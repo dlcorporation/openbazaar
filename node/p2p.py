@@ -55,7 +55,7 @@ class PeerConnection(object):
         def cb(msg):
             if self._responses_received.has_key(message_id):
                 del self._responses_received[message_id]
-            self.on_message(msg)
+            self._on_message(msg)
             if callback is not None:
                 callback(msg)
 
@@ -194,7 +194,7 @@ class TransportLayer(object):
         msg = goodbye({'uri': self._uri})
         self.send(msg)
 
-    def on_message(self, msg):
+    def _on_message(self, msg):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
@@ -219,7 +219,7 @@ class TransportLayer(object):
         if msg_type == 'hello_request' and msg.get('uri'):
             self.init_peer(msg)
         else:
-            self.on_message(msg)
+            self._on_message(msg)
 
     def valid_peer_uri(self, uri):
         try:
