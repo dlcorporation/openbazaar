@@ -96,20 +96,6 @@ class CryptoPeerConnection(PeerConnection):
             msg = self.send_raw(self.encrypt(json.dumps(data)), callback)
             return msg
 
-    def on_message(self, msg, callback=None):
-
-        # Need to validate that the pubkey coming back is the one we sent out in
-        # case the node updated their keys
-        remote_pub = json.loads(msg[0]).get('pubkey')
-
-        if self._pub is not None and self._pub != remote_pub:
-            print 'Pubkey doesnt match the GUID, removing active peer'
-            activePeers = self._transport._dht._activePeers
-
-
-        if callback is not None:
-            callback(msg)
-
     def peer_to_tuple(self):
         return self._ip, self._port, self._guid
 
@@ -312,7 +298,7 @@ class CryptoTransportLayer(TransportLayer):
             self._dht.add_known_node((ip, port, peer._guid))
 
             # Turning off peers
-            #self.init_peer({'uri': seed_uri, 'guid':seed_guid})
+            #self._init_peer({'uri': seed_uri, 'guid':seed_guid})
 
             # Add to routing table
             self.addCryptoPeer(peer)
@@ -438,7 +424,7 @@ class CryptoTransportLayer(TransportLayer):
             self._peers[uri].send_raw(json.dumps(msg))
 
 
-    def init_peer(self, msg):
+    def _init_peer(self, msg):
 
         uri = msg['uri']
         pub = msg.get('pub')
@@ -482,7 +468,7 @@ class CryptoTransportLayer(TransportLayer):
 
 
 
-    def on_message(self, msg):
+    def _on_message(self, msg):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
@@ -502,7 +488,7 @@ class CryptoTransportLayer(TransportLayer):
         self.trigger_callbacks(msg['type'], msg)
 
 
-    def on_raw_message(self, serialized):
+    def _on_raw_message(self, serialized):
 
         try:
             # Try to deserialize cleartext message
@@ -535,6 +521,6 @@ class CryptoTransportLayer(TransportLayer):
 
           self._log.info('Type: %s' % msg.get('type'))
 
-          self.on_message(msg)
+          self._on_message(msg)
         else:
           self._log.error('Received a message with no type')
