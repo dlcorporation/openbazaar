@@ -34,7 +34,7 @@ class ProtocolHandler:
             "shout":          self.client_shout,
             "query_store_products":	  self.client_query_store_products,
             "query_orders":	  self.client_query_orders,
-            "query_products":	  self.client_query_products,
+            "query_contracts":	  self.client_query_contracts,
             "query_messages":	  self.client_query_messages,
             "send_message":	  self.client_send_message,
             "update_settings":	self.client_update_settings,
@@ -107,14 +107,14 @@ class ProtocolHandler:
 
         self.send_to_client(None, { "type": "myorders", "orders": orders } )
 
-    def client_query_products(self, socket_handler, msg):
+    def client_query_contracts(self, socket_handler, msg):
 
-        self._log.info("Querying for Products")
+        self._log.info("Querying for Contracts")
 
         # Query mongo for products
-        products = self._market.get_products()
+        contracts = self._market.get_contracts()
 
-        self.send_to_client(None, { "type": "products", "products": products } )
+        self.send_to_client(None, { "type": "contracts", "contracts": contracts } )
 
     def client_query_messages(self, socket_handler, msg):
 

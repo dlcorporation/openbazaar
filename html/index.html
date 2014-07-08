@@ -136,32 +136,26 @@
             <h3>Contracts</h3>
         </div>
 
-        <div class="col-sm-7" style="padding-top:5px;text-align:right;">
-            <ul class="pagination" ng-show="nothing">
-                <li><a href="#">&laquo;</a></li>
-                <li><a href="#">1</a></li>
-                <li><a href="#">2</a></li>
-                <li><a href="#">3</a></li>
-                <li><a href="#">4</a></li>
-                <li><a href="#">5</a></li>
-                <li><a href="#">&raquo;</a></li>
-            </ul>
-        </div>
-
-        <div class="col-sm-2" style="vertical-align:middle;text-align:right;padding-top:20px;padding-right:10px;">
-            <button class="btn btn-info" ng-click="open('lg')">Add Contract</button>
-        </div>
 
 
 
 
-
-    </div>
 
     <br clear="both"/>
 
-    <div ng-show="products">
-        <table class="table table-striped table-bordered" style="margin-top:10px;">
+    <div ng-show="contracts">
+
+        <ul class="nav nav-pills" style="float:right;padding:10px;">
+            <li class="active" ><a href="#all">All</a></li>
+            <li><a href="#fixedPrice">Fixed Price</a></li>
+            <li><a href="#auctions">Auctions</a></li>
+            <li><a href="#reviews">Lending</a></li>
+            <li style="padding-top:5px;padding-left:10px;"><button class="btn btn-info" ng-click="open('lg')">Add Contract</button></li>
+        </ul>
+
+
+
+        <table class="table table-striped table-bordered" style="margin-top:0px;">
             <tr>
                 <th></th>
                 <th colspan=2>Product</th>
@@ -169,12 +163,12 @@
                 <th width=75>Price</th>
                 <th></th>
             </tr>
-            <tr ng-repeat="product in products">
+            <tr ng-repeat="contract in contracts">
                 <td width=15><input type="checkbox"/></td>
-                <td width=100 style="border-right:none;"><img ng-show="product.productImageData" src="{{product.productImageData}}" alt="" class="img-thumbnail" width=100 height=100></td>
-                <td  style="border-left:none;"><a href="#">{{product.productTitle}}</a><BR><span style="font-size:12px">{{product.key}}</span></td>
-                <td width=50>{{product.productQuantity}}</td>
-                <td width=50>&#3647;{{product.productPrice}}</td>
+                <td width=100 style="border-right:none;"><img ng-show="contract.item_images[0]" src="{{contract.item_images[0]}}" alt="" class="img-thumbnail" width=100 height=100></td>
+                <td  style="border-left:none;"><a href="#">{{contract.item_title}}</a><BR><span style="font-size:12px">{{contract.item_desc}}<br/><pre style="white-space: normal;word-wrap: break-word;">{{contract.contract_body}}</pre></span></td>
+                <td width=50>{{contract.item_quantity_available}}</td>
+                <td width=50>&#3647;{{contract.unit_price}}</td>
                 <td width=100 align="center">
                     <div class="listing-button">
                         <button type="button" class="btn btn-primary btn-sm" ng-click="republishListing(product.id)">
@@ -191,7 +185,10 @@
         </table>
     </div>
 
-    <div class="col-sm-12" ng-show="!products">
+
+    </div>
+
+    <div class="col-sm-12" ng-show="!contracts">
         <p>There are no listings for your marketplace.</p>
     </div>
 

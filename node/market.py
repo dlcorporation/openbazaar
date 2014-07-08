@@ -202,7 +202,7 @@ class Market(object):
 
     def save_contract(self, msg):
 
-        market_id = self._market_id
+
 
         contract_id = random.randint(0, 1000000)
 
@@ -245,12 +245,12 @@ class Market(object):
         hash_value.update(contract_key)
         contract_key = hash_value.hexdigest()
 
-        self._db.contracts.update({'id':contract_id}, {'$set':{'market_id':market_id, 'contract_body':str(signed_data), 'state':'seed', 'key':contract_key}}, True)
+        self._db.contracts.update({'id':contract_id}, {'$set':{'market_id':self._transport._market_id, 'contract_body':json.dumps(msg), 'signed_contract_body':str(signed_data), 'state':'seed', 'key':contract_key}}, True)
 
         self._log.debug('New Contract Key: %s' % contract_key)
 
         # Store listing
-        self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+        #self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
 
         #self.update_listings_index()
 
@@ -344,24 +344,49 @@ class Market(object):
             self._log.error(traceback.format_exc())
             return {}
 
-    def get_products(self):
-        self._log.info('Getting products for market: %s' % self._transport._market_id)
-        products = self._db.products.find({'market_id':self._transport._market_id})
-        my_products = []
+    def get_contracts(self):
 
-        for product in products:
-            my_products.append({"productTitle":product['productTitle'] if product.has_key("productTitle") else "",
-                                "id":product['id'] if product.has_key("id") else "",
-                                "productDescription":product['productDescription'] if product.has_key("productDescription") else "",
-                                "productPrice":product['productPrice'] if product.has_key("productPrice") else "",
-                                "productShippingPrice":product['productShippingPrice'] if product.has_key("productShippingPrice") else "",
-                                "productTags":product['productTags'] if product.has_key("productTags") else "",
-                                "productImageData":product['productImageData'] if product.has_key("productImageData") else "",
-                                "productQuantity":product['productQuantity'] if product.has_key("productQuantity") else "",
-                                "key":product['key'] if product.has_key("key") else "",
-                               })
+        print self._transport._market_id
 
-        return {"products": my_products}
+        self._log.info('Getting contracts for market: %s' % self._transport._market_id)
+        contracts = self._db.contracts.find({'market_id':self._transport._market_id})
+        my_contracts = []
+
+        for contract in contracts:
+            contract_body = json.loads(u"%s" % contract['contract_body'])
+
+            print contract_body.get('category')
+
+            my_contracts.append({"key":contract['key'] if contract.has_key("key") else "",
+                            "id":contract['id'] if contract.has_key("id") else "",
+                            "item_images":contract_body.get('item_images'),
+                            "signed_contract_body": contract['signed_contract_body'] if contract.has_key("signed_contract_body") else "",
+                            "contract_body": contract_body,
+                            "unit_price":contract_body.get('unit_price'),
+                            "item_title":contract_body.get('item_title'),
+                            "item_desc":contract_body.get('item_desc'),
+                            "item_quantity_available":contract_body.get('item_quantity_available'),
+                           })
+
+        return {"contracts": my_contracts}
+
+        # self._log.info('Getting products for market: %s' % self._transport._market_id)
+        # products = self._db.products.find({'market_id':self._transport._market_id})
+        # my_products = []
+        #
+        # for product in products:
+        #     my_products.append({"productTitle":product['productTitle'] if product.has_key("productTitle") else "",
+        #                         "id":product['id'] if product.has_key("id") else "",
+        #                         "productDescription":product['productDescription'] if product.has_key("productDescription") else "",
+        #                         "productPrice":product['productPrice'] if product.has_key("productPrice") else "",
+        #                         "productShippingPrice":product['productShippingPrice'] if product.has_key("productShippingPrice") else "",
+        #                         "productTags":product['productTags'] if product.has_key("productTags") else "",
+        #                         "productImageData":product['productImageData'] if product.has_key("productImageData") else "",
+        #                         "productQuantity":product['productQuantity'] if product.has_key("productQuantity") else "",
+        #                         "key":product['key'] if product.has_key("key") else "",
+        #                        })
+        #
+        # return {"products": my_products}
 
 
 
