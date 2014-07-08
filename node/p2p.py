@@ -92,8 +92,12 @@ class TransportLayer(object):
         self._callbacks[section].append(callback)
 
     def trigger_callbacks(self, section, *data):
+        # Run all callbacks in specified section
         for cb in self._callbacks[section]:
             cb(*data)
+
+        # Run all callbacks registered under the 'all' section. Don't duplicate
+        # calls if the specified section was 'all'.
         if not section == 'all':
             for cb in self._callbacks['all']:
                 cb(*data)
