@@ -25,7 +25,7 @@
                 <h3>Fixed Price Contract</h3>
 
                     <div class="alert alert-info" ng-show="newContractForm.productTitle.$error.required || newContractForm.productPrice.$error.required">Please enter a product title and cost.</div>
-
+                    <div class="row">
                     <div class="col-sm-3">
                         <div class="fileinput fileinput-new" data-provides="fileinput">
                             <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="width: 200px; height: 150px;"></div>
@@ -51,33 +51,52 @@
 
                     </div>
 
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductPrice">Price (&#3647;)</label>
-                            <input required type="text" class="form-control" ng-model="contract.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0"/>
-                        </div>
                     </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductShippingPrice">Shipping (&#3647;)</label>
-                            <input type="text" class="form-control" ng-model="contract.productShippingPrice" id="inputProductShippingPrice" placeholder="0" value="0"/>
+
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label for="inputProductPrice">Price (&#3647;)</label>
+                                <input required type="text" class="form-control" ng-model="contract.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0"/>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="inputProductQuantity">Quantity</label>
-                            <input type="text" class="form-control" ng-model="contract.productQuantity" id="inputProductQuantity" placeholder="1" value="1"/>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label for="inputProductShippingPrice">Shipping (&#3647;)</label>
+                                <input type="text" class="form-control" ng-model="contract.productShippingPrice" id="inputProductShippingPrice" placeholder="0" value="0"/>
+                            </div>
                         </div>
-                    </div>
-                    <br clear="both"/>
-                    <div class="col-sm-12">
-                        <div class="form-group">
-                            <label for="inputProductTags">Tags</label>
-                            <input type="text" class="form-control" ng-model="contract.productTags" id="inputProductTags" placeholder="Comma separated tags that describe the item. Used for searching."/>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label for="inputProductQuantity">Quantity</label>
+                                <input type="text" class="form-control" ng-model="contract.productQuantity" id="inputProductQuantity" placeholder="1" value="1"/>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="inputProductCondition">Condition</label>
+                            <select class="form-control" id="inputProductCondition" ng-model="contract.productCondition">
+                              <option value="New" selected="selected">New</option>
+                              <option value="New with Defects">New with Defects</option>
+                              <option value="Refurbished">Refurbished</option>
+                              <option value="Used">Used</option>
+                              <option value="Very Good">Very Good</option>
+                              <option value="Good">Good</option>
+                              <option value="Acceptable">Acceptable</option>
+                              <option value="Does not Function">Does not Function</option>
+                            </select>
+
                         </div>
                     </div>
 
-                    <br clear="both"/>
+                    <div class="row"></div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="inputProductKeywords">Keywords</label>
+                            <input type="text" class="form-control" ng-model="contract.productKeywords" id="inputProductKeywords" placeholder="Comma separated keywords that describe the item. Used for searching."/>
+                        </div>
+                    </div>
+
+                    </div>
 
                     <div class="col-sm-12">
                         <a href="#" ng-click="toggleItemAdvanced()"><span class="caret"></span> Advanced Details</a>

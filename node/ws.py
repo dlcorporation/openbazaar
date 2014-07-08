@@ -42,7 +42,7 @@ class ProtocolHandler:
             "pay_order":	self.client_pay_order,
             "ship_order":	self.client_ship_order,
             "save_product":	self.client_save_product,
-            "remove_product":	self.client_remove_product,
+            "remove_contract":	self.client_remove_contract,
             "generate_secret":	self.client_generate_secret,
             "republish_listing":	  self.client_republish_listing,
             "import_raw_contract":	  self.client_import_raw_contract,
@@ -173,11 +173,11 @@ class ProtocolHandler:
         # Update settings in mongo
         self._market.save_contract(contract)
 
-    def client_remove_product(self, socket_handler, msg):
-        self._log.info("Remove product: %s" % msg)
+    def client_remove_contract(self, socket_handler, msg):
+        self._log.info("Remove contract: %s" % msg)
 
         # Update settings in mongo
-        self._market.remove_product(msg)
+        self._market.remove_contract(msg)
 
     def client_pay_order(self, socket_handler, msg):
 
@@ -231,19 +231,19 @@ class ProtocolHandler:
 
     def client_query_store_products(self, socket_handler, msg):
 
-        self._log.info("Querying for Store Products")
+        self._log.info("Querying for Store Contracts")
 
         # Query mongo for products
         self._transport._dht.find_listings(self._transport, msg['key'], callback=self.on_find_products)
 
     def on_find_products(self, results):
 
-      self._log.info('Found Products: %s' % type(results))
+      self._log.info('Found Contracts: %s' % type(results))
       self._log.info(results)
 
       if len(results):
           data = results['data']
-          listings = data['listings']
+          contracts = data['contracts']
           signature = results['signature']
           self._log.info('Signature: %s' % signature)
 
@@ -251,8 +251,8 @@ class ProtocolHandler:
           #self._transport._myself.
 
           # Go get listing metadata and then send it to the GUI
-          for listing in listings:
-              self._transport._dht.iterativeFindValue(listing, callback=self.on_node_search_value)
+          for contract in contracts:
+              self._transport._dht.iterativeFindValue(contract, callback=self.on_node_search_value)
 
       #self.send_to_client(None, { "type": "store_products", "products": listings } )
 

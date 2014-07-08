@@ -250,62 +250,63 @@ class Market(object):
         self._log.debug('New Contract Key: %s' % contract_key)
 
         # Store listing
-        #self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+        self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
 
-        #self.update_listings_index()
+        self.update_listings_index()
 
         # If keywords store them in the keyword index
 
     def republish_listing(self, msg):
 
-        listing_id = msg.get('productID')
-        listing = self._db.products.find_one({'id':listing_id})
-
-        listing_key = listing['key']
-
-        listing = proto_listing(listing['productTitle'],
-                                listing['productDescription'] if listing.has_key('productDescription') else "",
-                                listing['productPrice'] if listing.has_key('productPrice') else "",
-                                listing['productQuantity'] if listing.has_key('productQuantity') else "",
-                                listing['market_id'] if listing.has_key('market_id') else "",
-                                listing['productShippingPrice'] if listing.has_key('productShippingPrice') else "",
-                                listing['productImageName'] if listing.has_key('productImageName') else "",
-                                listing['productImageData'] if listing.has_key('productImageData') else "")
-        listing = json.dumps(listing)
-
-        self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
-        self.update_listings_index()
+        print 'republish'
+        # listing_id = msg.get('productID')
+        # listing = self._db.products.find_one({'id':listing_id})
+        #
+        # listing_key = listing['key']
+        #
+        # listing = proto_listing(listing['productTitle'],
+        #                         listing['productDescription'] if listing.has_key('productDescription') else "",
+        #                         listing['productPrice'] if listing.has_key('productPrice') else "",
+        #                         listing['productQuantity'] if listing.has_key('productQuantity') else "",
+        #                         listing['market_id'] if listing.has_key('market_id') else "",
+        #                         listing['productShippingPrice'] if listing.has_key('productShippingPrice') else "",
+        #                         listing['productImageName'] if listing.has_key('productImageName') else "",
+        #                         listing['productImageData'] if listing.has_key('productImageData') else "")
+        # listing = json.dumps(listing)
+        #
+        # self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
+        # self.update_listings_index()
 
 
     def update_listings_index(self):
 
         # Store to marketplace listing index
-        listing_index_key = hashlib.sha1('listings-%s' % self._transport._guid).hexdigest()
+        contract_index_key = hashlib.sha1('contracts-%s' % self._transport._guid).hexdigest()
         hashvalue = hashlib.new('ripemd160')
-        hashvalue.update(listing_index_key)
-        listing_index_key = hashvalue.hexdigest()
+        hashvalue.update(contract_index_key)
+        contract_index_key = hashvalue.hexdigest()
 
-        # Calculate index of listings
-        listing_ids = self._db.products.find({'market_id':self._transport._market_id}, {'key':1})
-        my_listings = []
-        for listing_id in listing_ids:
-            my_listings.append(listing_id['key'])
+        # Calculate index of contracts
+        contract_ids = self._db.contracts.find({'market_id':self._transport._market_id}, {'key':1})
+        my_contracts = []
+        for contract_id in contract_ids:
+            my_contracts.append(contract_id['key'])
 
-        self._log.debug('My Listings: %s' % my_listings)
+        self._log.debug('My Contracts: %s' % my_contracts)
 
         # Sign listing index for validation and tamper resistance
-        data_string = str({'guid':self._transport._guid, 'listings': my_listings})
+        data_string = str({'guid':self._transport._guid, 'contracts': my_contracts})
         signature = self._myself.sign(data_string).encode('hex')
 
-        value = {'signature': signature, 'data': {'guid':self._transport._guid, 'listings': my_listings}}
+        value = {'signature': signature, 'data': {'guid':self._transport._guid, 'contracts': my_contracts}}
 
         # Pass off to thread to keep GUI snappy
-        Thread(target=self._transport._dht.iterativeStore, args=(self._transport, listing_index_key, value, self._transport._guid,)).start()
+        Thread(target=self._transport._dht.iterativeStore, args=(self._transport, contract_index_key, value, self._transport._guid,)).start()
 
 
-    def remove_product(self, msg):
-        self._log.info("Removing product: %s" % msg)
-        self._db.products.remove({'id':msg['productID']})
+    def remove_contract(self, msg):
+        self._log.info("Removing contract: %s" % msg)
+        self._db.contracts.remove({'id':msg['contract_id']})
         self.update_listings_index()
 
     def get_messages(self):
@@ -346,8 +347,6 @@ class Market(object):
 
     def get_contracts(self):
 
-        print self._transport._market_id
-
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
         contracts = self._db.contracts.find({'market_id':self._transport._market_id})
         my_contracts = []
@@ -355,40 +354,18 @@ class Market(object):
         for contract in contracts:
             contract_body = json.loads(u"%s" % contract['contract_body'])
 
-            print contract_body.get('category')
-
             my_contracts.append({"key":contract['key'] if contract.has_key("key") else "",
                             "id":contract['id'] if contract.has_key("id") else "",
-                            "item_images":contract_body.get('item_images'),
+                            "item_images":contract_body.get('Contract').get('item_images'),
                             "signed_contract_body": contract['signed_contract_body'] if contract.has_key("signed_contract_body") else "",
                             "contract_body": contract_body,
-                            "unit_price":contract_body.get('unit_price'),
-                            "item_title":contract_body.get('item_title'),
-                            "item_desc":contract_body.get('item_desc'),
-                            "item_quantity_available":contract_body.get('item_quantity_available'),
+                            "unit_price":contract_body.get('Contract').get('item_price'),
+                            "item_title":contract_body.get('Contract').get('item_title'),
+                            "item_desc":contract_body.get('Contract').get('item_desc'),
+                            "item_quantity_available":contract_body.get('Contract').get('item_quantity'),
                            })
 
         return {"contracts": my_contracts}
-
-        # self._log.info('Getting products for market: %s' % self._transport._market_id)
-        # products = self._db.products.find({'market_id':self._transport._market_id})
-        # my_products = []
-        #
-        # for product in products:
-        #     my_products.append({"productTitle":product['productTitle'] if product.has_key("productTitle") else "",
-        #                         "id":product['id'] if product.has_key("id") else "",
-        #                         "productDescription":product['productDescription'] if product.has_key("productDescription") else "",
-        #                         "productPrice":product['productPrice'] if product.has_key("productPrice") else "",
-        #                         "productShippingPrice":product['productShippingPrice'] if product.has_key("productShippingPrice") else "",
-        #                         "productTags":product['productTags'] if product.has_key("productTags") else "",
-        #                         "productImageData":product['productImageData'] if product.has_key("productImageData") else "",
-        #                         "productQuantity":product['productQuantity'] if product.has_key("productQuantity") else "",
-        #                         "key":product['key'] if product.has_key("key") else "",
-        #                        })
-        #
-        # return {"products": my_products}
-
-
 
 
     # SETTINGS

@@ -518,8 +518,8 @@ angular.module('app')
   	socket.send('order', order)
   }
 
-  $scope.removeProduct = function(productID) {
-     socket.send("remove_product", {"productID":productID});
+  $scope.removeContract = function(contract_id) {
+     socket.send("remove_contract", {"contract_id":contract_id});
      socket.send("query_contracts", {})
   }
 
@@ -626,9 +626,9 @@ angular.module('app')
         break;
       case 'storeProducts':
             $('#listing-loader').show();
-  			$scope.storeProductsPanel = true;
-        $scope.store_listings = [];
-        $scope.queryStoreProducts($scope.awaitingShop);
+  	        $scope.storeProductsPanel = true;
+            $scope.store_listings = [];
+            $scope.queryStoreProducts($scope.awaitingShop);
   			break;
   		case 'storeOrders':
   			//$scope.storeOrdersPanel = true;
@@ -643,7 +643,7 @@ angular.module('app')
   // Query for product listings from this store
   $scope.queryStoreProducts = function(storeID) {
 
-    console.log('Querying for products in store: '+storeID);
+    console.log('Querying for contracts in store: '+storeID);
     var query = { 'type':'query_store_products', 'key': storeID }
     socket.send('query_store_products', query);
 
@@ -831,6 +831,7 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
 
 
 // Modal Code
+
 $scope.ProductModal = function ($scope, $modal, $log) {
 
   $scope.open = function (size, backdrop) {
@@ -863,7 +864,7 @@ $scope.ProductModal = function ($scope, $modal, $log) {
 var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
   $scope.contract = contract;
-
+  $scope.contract.productCondition = 'New';
 
     $scope.createContract = function() {
 
@@ -879,22 +880,41 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
         } else {
 
-            contract = { "OBCv":"0.1-alpha" };
-            contract.category = "physical_goods";
-            contract.contract_nonce = "01";
-            contract.nym_id = "";
-            contract.node_id = "";
-            contract.contract_exp = "2014-01-01 00:00:00";
-            contract.keywords = "";
-            contract.currency = "XBT";
-            contract.seller_uncompressed_pubkey = "";
-            contract.seller_pgp = "";
-            contract.item_title = $scope.contract.productTitle;
-            contract.item_desc = $scope.contract.productDescription;
-            contract.unit_price = $scope.contract.productPrice;
-            contract.shipping_price = $scope.contract.productShippingPrice;
-            contract.item_quantity_available = $scope.contract.productQuantity;
-            contract.item_images = [];
+            contract = {  };
+            contract.Contract_Metadata = {
+                "OBCv": "0.1-alpha",
+                "category": "physical_goods",
+                "subcategory": "fixed_price",
+                "contract_nonce": "01",
+                "expiration": "2014-01-01 00:00:00"
+            }
+            contract.Seller = {
+                "seller_GUID": "",
+                "seller_BTC_uncompressed_pubkey": "",
+                "seller_PGP": ""
+            }
+            contract.Contract = {
+                "item_title": $scope.contract.productTitle,
+                "item_keywords": [],
+                "currency": "XBT",
+                "item_price": $scope.contract.productPrice,
+                "item_condition": $scope.contract.productCondition,
+                "item_quantity": $scope.contract.productQuantity,
+                "item_desc": $scope.contract.productDescription,
+                "item_images": [
+                ],
+                "item_delivery": {
+                      "countries": "",
+                      "region": "",
+                      "est_delivery": "",
+                      "shipping_price": $scope.contract.productShippingPrice
+                }
+            }
+
+            keywords = ($scope.contract.productKeywords) ? $scope.contract.productKeywords.split(',') : []
+            $.each(keywords, function(i, el){
+                if($.inArray(el, contract.Contract.item_keywords) === -1) contract.Contract.item_keywords.push(el);
+            });
 
             var imgUpload = document.getElementById('inputProductImage').files[0];
 
@@ -906,10 +926,11 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
                 r.onloadend = function(e){
                   var data = e.target.result;
 
-                  contract.item_images.push(imgUpload.result);
+                  contract.Contract.item_images.push(imgUpload.result);
 
                   console.log(contract);
                   socket.send("create_contract", contract);
+                  socket.send("query_contracts", {})
 
 
                 }
@@ -921,18 +942,21 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
                 console.log(contract);
                 socket.send("create_contract", contract);
 
+                socket.send("query_contracts", {})
+
+
               }
 
             } else {
                 console.log(contract);
                 socket.send("create_contract", contract);
+                socket.send("query_contracts", {})
 
             }
 
 
         }
 
-        socket.send("query_contracts", {})
         $modalInstance.dismiss('cancel');
 
 
