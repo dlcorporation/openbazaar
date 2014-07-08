@@ -1,3 +1,4 @@
+import json
 import unittest
 
 import mock
@@ -61,10 +62,31 @@ class TestTransportLayerMessageHandling(unittest.TestCase):
     # Any non-ok message should cause trigger_callbacks to be called with
     # the type of message and the message object (dict)
     def test_on_message_not_ok(self):
-        data = {}
-        data = protocol.shout(data)
-
+        data = protocol.shout({})
         self.tl.trigger_callbacks = mock.MagicMock()
         self.tl._on_message(data)
         self.tl.trigger_callbacks.assert_called_with(data['type'], data)
+
+    # Invalid serialized messages should be dropped
+    def test_on_raw_message_invalid(self):
+        self.tl.init_peer = mock.MagicMock()
+        self.tl._on_message = mock.MagicMock()
+        self.tl.on_raw_message('invalid serialization')
+        self.assertFalse(self.tl.init_peer.called)
+        self.assertFalse(self.tl._on_message.called)
+
+    # A hello message with no uri should not add a peer
+    def test_on_raw_message_hello_no_uri(self):
+        self.tl.on_raw_message([json.dumps(protocol.hello_request({}))])
+        self.assertEqual(0, len(self.tl._peers))
+
+    # A hello message with a uri should result in a new peer
+    def test_on_raw_message_hello_with_uri(self):
+        request = protocol.hello_request({ 'uri': 'tcp://localhost:12345' })
+        self.tl.on_raw_message([json.dumps(request)])
+        self.assertEqual(1, len(self.tl._peers))
+
+
+
+
 

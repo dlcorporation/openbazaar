@@ -138,7 +138,7 @@ class TransportLayer(object):
         uri = msg['uri']
 
         if uri not in self._peers:
-            self._peers[uri] = CryptoPeerConnection(self, uri)
+            self._peers[uri] = PeerConnection(self, uri)
 
     def remove_peer(self, uri, guid):
         self._log.info("Removing peer %s", uri)
@@ -217,7 +217,7 @@ class TransportLayer(object):
 
         msg_type = msg.get('type')
         if msg_type == 'hello_request' and msg.get('uri'):
-            self.init_peer(msg)
+            self._init_peer(msg)
         else:
             self._on_message(msg)
 
