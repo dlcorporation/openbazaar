@@ -108,8 +108,8 @@ angular.module('app')
       case 'myorders':
       	 $scope.parse_myorders(msg)
       	 break;
-      case 'products':
-         $scope.parse_products(msg)
+      case 'contracts':
+         $scope.parse_contracts(msg)
          break;
       case 'messages':
          $scope.parse_messages(msg)
@@ -230,13 +230,13 @@ angular.module('app')
 
   }
 
-  $scope.product = {};
-  $scope.parse_products = function(msg) {
-      console.log(msg.products.products);
+  $scope.contract2 = {};
+  $scope.parse_contracts = function(msg) {
+      console.log(msg);
 
-      $scope.products = msg.products.products;
+      $scope.contracts = msg.contracts.contracts;
 
-      $scope.product = {};
+      $scope.contract2 = {};
       if (!$scope.$$phase) {
          $scope.$apply();
       }
@@ -520,12 +520,12 @@ angular.module('app')
 
   $scope.removeProduct = function(productID) {
      socket.send("remove_product", {"productID":productID});
-     socket.send("query_products", {})
+     socket.send("query_contracts", {})
   }
 
   $scope.republishListing = function(productID) {
      socket.send("republish_listing", {"productID":productID});
-     socket.send("query_products", {})
+     socket.send("query_contracts", {})
   }
 
 
@@ -660,9 +660,9 @@ angular.module('app')
 
   $scope.queryProducts = function() {
       // Query for products
-      var query = {'type': 'query_products', 'pubkey': ''}
+      var query = {'type': 'query_contracts', 'pubkey': ''}
       console.log('querying products')
-      socket.send('query_products', query)
+      socket.send('query_contracts', query)
 
   }
 
@@ -881,19 +881,19 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
             contract = { "OBCv":"0.1-alpha" };
             contract.category = "physical_goods";
-            contract.contract_nonce = "";
+            contract.contract_nonce = "01";
             contract.nym_id = "";
             contract.node_id = "";
             contract.contract_exp = "2014-01-01 00:00:00";
             contract.keywords = "";
             contract.currency = "XBT";
-            contract.seller_pubkey = "";
+            contract.seller_uncompressed_pubkey = "";
             contract.seller_pgp = "";
-            contract.item_title = "";
-            contract.item_desc = "";
-            contract.unit_price = "";
-            contract.shipping_price = "";
-            contract.item_quantity_available = "";
+            contract.item_title = $scope.contract.productTitle;
+            contract.item_desc = $scope.contract.productDescription;
+            contract.unit_price = $scope.contract.productPrice;
+            contract.shipping_price = $scope.contract.productShippingPrice;
+            contract.item_quantity_available = $scope.contract.productQuantity;
             contract.item_images = [];
 
             var imgUpload = document.getElementById('inputProductImage').files[0];
@@ -932,7 +932,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
         }
 
-        socket.send("query_products", {})
+        socket.send("query_contracts", {})
         $modalInstance.dismiss('cancel');
 
 
@@ -956,7 +956,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
           console.log('SAVED:',$scope.product);
           socket.send("save_product", $scope.product)
-          socket.send("query_products", {})
+          socket.send("query_contracts", {})
 
           $modalInstance.dismiss('cancel');
 
@@ -967,7 +967,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
       } else {
         console.log('SAVED:',$scope.product);
         socket.send("save_product", $scope.product)
-        socket.send("query_products", {})
+        socket.send("query_contracts", {})
 
         $modalInstance.dismiss('cancel');
       }
@@ -976,7 +976,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
       console.log('SAVED:',$scope.product);
       socket.send("save_product", $scope.product)
-      socket.send("query_products", {})
+      socket.send("query_contracts", {})
 
       $modalInstance.dismiss('cancel');
     }
@@ -986,7 +986,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
   };
 
   $scope.cancel = function () {
-    socket.send("query_products", {});
+    socket.send("query_contracts", {});
     $modalInstance.dismiss('cancel');
   };
 

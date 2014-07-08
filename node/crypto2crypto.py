@@ -167,6 +167,7 @@ class CryptoTransportLayer(TransportLayer):
         # If we failed, fall back to starting our own
         except Exception as e:
             self._log.info("Failed to connect to bitmessage instance: {}".format(e))
+            self._bitmessage_api = None
             # self._log.info("Spawning internal bitmessage instance")
             # # Add bitmessage submodule path
             # sys.path.insert(0, os.path.join(
