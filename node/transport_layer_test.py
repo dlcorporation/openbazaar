@@ -56,7 +56,7 @@ class TestTransportLayerMessageHandling(unittest.TestCase):
     # The ok message should not trigger any callbacks
     def test_on_message_ok(self):
         self.tl.trigger_callbacks = mock.MagicMock(side_effect=AssertionError())
-        self.tl.on_message(protocol.ok())
+        self.tl._on_message(protocol.ok())
 
     # Any non-ok message should cause trigger_callbacks to be called with
     # the type of message and the message object (dict)
@@ -65,6 +65,6 @@ class TestTransportLayerMessageHandling(unittest.TestCase):
         data = protocol.shout(data)
 
         self.tl.trigger_callbacks = mock.MagicMock()
-        self.tl.on_message(data)
+        self.tl._on_message(data)
         self.tl.trigger_callbacks.assert_called_with(data['type'], data)
 
