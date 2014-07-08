@@ -428,12 +428,12 @@ class DHT(object):
         TODO: Ideally we would want to send an array of listing IDs that we have locally and then the node would
         send back the missing or updated listings. This would save on queries for listings we already have.
         '''
-        listing_index_key = hashlib.sha1('listings-%s' % key).hexdigest()
+        listing_index_key = hashlib.sha1('contracts-%s' % key).hexdigest()
         hashvalue = hashlib.new('ripemd160')
         hashvalue.update(listing_index_key)
         listing_index_key = hashvalue.hexdigest()
 
-        self._log.info('Finding listings for store: %s' % listing_index_key)
+        self._log.info('Finding contracts for store: %s' % listing_index_key)
 
         self.iterativeFindValue(listing_index_key, callback)
 
