@@ -11,7 +11,7 @@ import zmq
 
 ioloop.install()
 import tornado
-from protocol import goodbye
+from protocol import goodbye, hello_request
 import network_util
 from urlparse import urlparse
 import sys, time, random
@@ -55,7 +55,9 @@ class PeerConnection(object):
         def cb(msg):
             if self._responses_received.has_key(message_id):
                 del self._responses_received[message_id]
-            self._on_message(msg)
+
+            #XXX: Might be a good idea to remove peer if pubkey changes. This
+            # should be handled in CrytpoPeerConnection.
             if callback is not None:
                 callback(msg)
 
@@ -103,12 +105,9 @@ class TransportLayer(object):
                 cb(*data)
 
     def get_profile(self):
-        return {'type': 'hello_request', 'uri': self._uri}
+        return hello_request({ 'uri': self._uri })
 
     def listen(self, pubkey):
-        self._listen(pubkey)
-
-    def _listen(self, pubkey):
         self._log.info("Listening at: %s:%s" % (self._ip, self._port))
         ctx = zmq.Context()
         socket = ctx.socket(zmq.REP)
@@ -124,7 +123,7 @@ class TransportLayer(object):
 
         def handle_recv(message):
             for msg in message:
-                self.on_raw_message(msg)
+                self._on_raw_message(msg)
 
             self._log.info('Sending back OK')
             stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}))
@@ -207,7 +206,7 @@ class TransportLayer(object):
             self.trigger_callbacks(msg['type'], msg)
 
 
-    def on_raw_message(self, serialized):
+    def _on_raw_message(self, serialized):
         self._log.info("connected " + str(len(serialized)))
         try:
             msg = json.loads(serialized[0])
