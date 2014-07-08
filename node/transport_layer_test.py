@@ -1,6 +1,9 @@
 import unittest
 
+import mock
+
 from p2p import TransportLayer
+import protocol
 
 # Test the callback features of the TransportLayer class
 class TestTransportLayerCallbacks(unittest.TestCase):
@@ -45,3 +48,23 @@ class TestTransportLayerCallbacks(unittest.TestCase):
     def test_explicit_all_section(self):
         self.tl.trigger_callbacks('all', None)
         self._assert_called(False, False, True)
+
+class TestTransportLayerMessageHandling(unittest.TestCase):
+    def setUp(self):
+        self.tl = TransportLayer(1, 'localhost', None, 1)
+
+    # The ok message should not trigger any callbacks
+    def test_on_message_ok(self):
+        self.tl.trigger_callbacks = mock.MagicMock(side_effect=AssertionError())
+        self.tl.on_message(protocol.ok())
+
+    # Any non-ok message should cause trigger_callbacks to be called with
+    # the type of message and the message object (dict)
+    def test_on_message_not_ok(self):
+        data = {}
+        data = protocol.shout(data)
+
+        self.tl.trigger_callbacks = mock.MagicMock()
+        self.tl.on_message(data)
+        self.tl.trigger_callbacks.assert_called_with(data['type'], data)
+
