@@ -272,23 +272,12 @@ class Market(object):
 
     def republish_listing(self, msg):
 
-        
         listing_id = msg.get('productID')
-        listing = self._db.products.find_one({'id':listing_id})
+        listing = self._db.contracts.find_one({'id':listing_id})
 
         listing_key = listing['key']
 
-        listing = proto_listing(listing['productTitle'],
-                                listing['productDescription'] if listing.has_key('productDescription') else "",
-                                listing['productPrice'] if listing.has_key('productPrice') else "",
-                                listing['productQuantity'] if listing.has_key('productQuantity') else "",
-                                listing['market_id'] if listing.has_key('market_id') else "",
-                                listing['productShippingPrice'] if listing.has_key('productShippingPrice') else "",
-                                listing['productImageName'] if listing.has_key('productImageName') else "",
-                                listing['productImageData'] if listing.has_key('productImageData') else "")
-        listing = json.dumps(listing)
-
-        self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
+        self._transport._dht.iterativeStore(self._transport, listing_key, listing.get('signed_contract_body'), self._transport._guid)
         self.update_listings_index()
 
 
@@ -315,7 +304,7 @@ class Market(object):
         value = {'signature': signature, 'data': {'guid':self._transport._guid, 'contracts': my_contracts}}
 
         # Pass off to thread to keep GUI snappy
-        Thread(target=self._transport._dht.iterativeStore, args=(self._transport, contract_index_key, value, self._transport._guid,)).start()
+        self._transport._dht.iterativeStore(self._transport, contract_index_key, value, self._transport._guid)
 
 
     def remove_contract(self, msg):
