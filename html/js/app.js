@@ -433,6 +433,7 @@ angular.module('app')
   // A listing has shown up from the network
   $scope.store_listings = [];
   $scope.parse_new_listing = function(msg) {
+    console.log(msg);
     listingJSON = jQuery.parseJSON(msg['data']);
     $scope.store_listings.push(listingJSON)
     $scope.store_listings = jQuery.unique($scope.store_listings);
