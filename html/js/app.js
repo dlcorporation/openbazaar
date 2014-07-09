@@ -611,9 +611,8 @@ angular.module('app')
     $scope.storeInfoPanel = false;
   	$scope.storeProductsPanel = false;
   	$scope.storeReviewsPanel = false;
-  	$scope.storeOrdersPanel = false;
   	$scope.storeOrderHistoryPanel = false;
-
+    $scope.storeArbiterPanel = false;
   }
 
   $scope.showStorePanel = function(panelName) {
@@ -636,6 +635,9 @@ angular.module('app')
   			break;
   		case 'storeReviews':
   			$scope.storeReviewsPanel = true;
+  			break;
+  	  case 'storeArbiter':
+  			$scope.storeArbiterPanel = true;
   			break;
 
   	}

@@ -454,7 +454,7 @@ class Market(object):
                                         settings['email'] if settings.has_key('email') else '',
                                         settings['bitmessage'] if settings.has_key('bitmessage') else '',
                                         settings['arbiter'] if settings.has_key('arbiter') else '',
-                                        settings['arbiter_description'] if settings.has_key('arbiter_description') else ''),
+                                        settings['arbiterDescription'] if settings.has_key('arbiterDescription') else ''),
                                         peer['senderGUID']
                                         )
 

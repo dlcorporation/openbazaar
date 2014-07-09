@@ -632,8 +632,8 @@
         <ul id="store-tabs" class="nav nav-pills" style="background-color:#ccc;border-bottom:1px solid #aaa;padding:5px;">
             <li class="active" ng-click="showStorePanel('storeInfo')"><a href="#storeInfo">Info</a></li>
             <li ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
-            <!--<li id="pill-storeorders"><a href="#storeOrderHistory" ng-click="showStorePanel('storeOrderHistory')">Orders</a></li>-->
             <li><a href="#storeReviews" ng-click="showStorePanel('storeReviews')">Reviews</a></li>
+            <li ng-show="page.arbiter"><a href="#storeArbiter" ng-click="showStorePanel('storeArbiter')">Arbitration</a></li>
         </ul>
     </div>
 
@@ -672,6 +672,19 @@
 
         </div>
 
+        <div ng-show="storeArbiterPanel" class="animated fadeIn">
+
+            <h4>Services Provided</h4>
+
+            <div ng-show="page.arbiter_description">
+                <p>{{page.arbiter_description}}</p>
+            </div>
+
+            <div ng-show="!page.arbiter_description">
+                <p>This arbiter has not described their services.</p>
+            </div>
+
+        </div>
 
         <!-- Store Products -->
         <div ng-show="storeProductsPanel"  class="animated fadeIn">
