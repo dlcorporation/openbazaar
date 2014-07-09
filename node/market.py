@@ -237,7 +237,7 @@ class Market(object):
 
         # TODO: replace default passphrase
         gpg = gnupg.GPG(gnupghome='gpg')
-        signed_data = gpg.sign(json.dumps(msg), passphrase='P@ssw0rd', keyid=self.settings['PGPPubKeyFingerprint'])
+        signed_data = gpg.sign(json.dumps(msg), passphrase='P@ssw0rd', keyid=self.settings.get('PGPPubkeyFingerprint'))
 
         # Save contract to DHT
         contract_key = hashlib.sha1(str(signed_data)).hexdigest()
@@ -352,15 +352,19 @@ class Market(object):
         contracts = self._db.contracts.find({'market_id':self._transport._market_id})
         my_contracts = []
 
+
+
         for contract in contracts:
             contract_body = json.loads(u"%s" % contract['contract_body'])
+
+            item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
 
             my_contracts.append({"key":contract['key'] if contract.has_key("key") else "",
                             "id":contract['id'] if contract.has_key("id") else "",
                             "item_images":contract_body.get('Contract').get('item_images'),
                             "signed_contract_body": contract['signed_contract_body'] if contract.has_key("signed_contract_body") else "",
                             "contract_body": contract_body,
-                            "unit_price":contract_body.get('Contract').get('item_price'),
+                            "unit_price":item_price,
                             "item_title":contract_body.get('Contract').get('item_title'),
                             "item_desc":contract_body.get('Contract').get('item_desc'),
                             "item_quantity_available":contract_body.get('Contract').get('item_quantity'),
@@ -384,7 +388,7 @@ class Market(object):
             return {"bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
                     "email": settings['email'] if settings.has_key("email") else "",
                     "PGPPubKey": settings['PGPPubKey'] if settings.has_key("PGPPubKey") else "",
-                    "PGPPubKeyFingerprint": settings['PGPPubKeyFingerprint'] if settings.has_key("PGPPubKeyFingerprint") else "",
+                    "PGPPubKeyFingerprint": settings['PGPPubkeyFingerprint'] if settings.has_key("PGPPubKeyFingerprint") else "",
                     "pubkey": settings['pubkey'] if settings.has_key("pubkey") else "",
                     "nickname": settings['nickname'] if settings.has_key("nickname") else "",
                     "secret": settings['secret'] if settings.has_key("secret") else "",
