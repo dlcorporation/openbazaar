@@ -217,7 +217,10 @@ class Market(object):
         gpg = gnupg.GPG(gnupghome='gpg')
 
         # Insert PGP Key
-        msg['Seller']['seller_PGP'] = gpg.export_keys(self.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
+        self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
+
+        self._log.debug('Settings %s' % self._transport.settings)
+        msg['Seller']['seller_PGP'] = gpg.export_keys(self._transport.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
 
         # Process and crop thumbs for images
         self._log.debug('Msg: %s' % msg)
@@ -439,17 +442,17 @@ class Market(object):
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
-        self.settings = self.get_settings()
+        settings = self.get_settings()
         #self._log.info(base64.b64encode(self.settings['storeDescription']))
         self._transport.send(proto_page(self._transport._uri,
                                         self._transport.pubkey,
                                         self._transport.guid,
-                                        self.settings['storeDescription'],
+                                        settings['storeDescription'],
                                         self.signature,
-                                        self.settings['nickname'],
-                                        self.settings['PGPPubKey'] if self.settings.has_key('PGPPubKey') else '',
-                                        self.settings['email'] if self.settings.has_key('email') else '',
-                                        self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ''),
+                                        settings['nickname'],
+                                        settings['PGPPubKey'] if settings.has_key('PGPPubKey') else '',
+                                        settings['email'] if settings.has_key('email') else '',
+                                        settings['bitmessage'] if settings.has_key('bitmessage') else ''),
                                         peer['senderGUID']
                                         )
 
