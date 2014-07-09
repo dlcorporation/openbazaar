@@ -433,13 +433,13 @@ angular.module('app')
   // A listing has shown up from the network
   $scope.store_listings = [];
   $scope.parse_new_listing = function(msg) {
-    console.log(msg);
-    listingJSON = jQuery.parseJSON(msg['data']);
-    $scope.store_listings.push(listingJSON)
+    console.log(msg.data);
+    contract_data = msg.data;
+    $scope.store_listings.push(contract_data)
     $scope.store_listings = jQuery.unique($scope.store_listings);
-    $.each( $scope.store_listings, function(index, value){
-        console.log(value);
-        if (!value.productImageData) {
+    $.each( $scope.store_listings, function(index, contract){
+        console.log('TEST',contract);
+        if (contract.Contract.item_images.length < 1) {
             $scope.store_listings[index].productImageData = "img/no-photo.png";
         }
     });

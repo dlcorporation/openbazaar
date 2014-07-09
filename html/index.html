@@ -684,12 +684,12 @@
 
 
             <div class="div-listing" ng-repeat="listing in store_listings">
-{{listing}}
+
                 <table class="table-listing" width="100%">
                     <tr>
-                        <td width="100"><img src="{{listing['Contract']}}" width=100/></td>
-                        <td><span class="product-title">{{listing['productTitle']}}</span><br/>{{listing['productDescription']}}</td>
-                        <td width="80"><span class="product-price">&#3647;{{listing['productPrice']}}</span><br/><button class="btn btn-success btn-xl navbar-btn" ng-click="open('lg', myself, page.pubkey, listing['productTitle'], listing['productPrice'], listing['productDescription'], listing['productImageData'])">Purchase</button></td>
+                        <td width="100"><img src="{{listing.productImageData}}" width=100/></td>
+                        <td><span class="product-title">{{listing.Contract.item_title}}</span><br/>{{listing.Contract.item_description}}</td>
+                        <td width="80"><span class="product-price">&#3647;{{listing.Contract.item_price}}</span><br/><button class="btn btn-success btn-xl navbar-btn" ng-click="open('lg', myself, page.pubkey, listing.Contract.item_title, listing.Contract.item_price, listing.Contract.item_description, listing.productImageData)">Purchase</button></td>
                     </tr></table>
             </div>
 
