@@ -162,7 +162,7 @@ class DHT(object):
             if msg['findValue'] is True:
                 if key in self._dataStore and self._dataStore[key] is not None:
 
-                    self._log.debug('Found key: %s' % self._dataStore[key])
+                    self._log.debug('Found key: %s' % key)
 
                     # Found key in local data store
                     new_peer.send(
@@ -332,7 +332,7 @@ class DHT(object):
         searchForNextNodeID()
 
     def _republishData(self, *args):
-        Thread(target=self._threadedRepublishData, args=()).start()
+        self._threadedRepublishData()
 
     def _threadedRepublishData(self, *args):
         """ Republishes and expires any stored data (i.e. stored
@@ -342,8 +342,6 @@ class DHT(object):
         """
         self._log.debug('Republishing Data')
         expiredKeys = []
-
-        # self._dataStore.setItem('23e192e685d3ca73d5d56d2f1c85acb1346ba177', 'Brian', int(time.time()), int(time.time()), '23e192e685d3ca73d5d56d2f1c85acb1346ba176' )
 
         for key in self._dataStore.keys():
 
@@ -356,16 +354,13 @@ class DHT(object):
             originalPublisherID = self._dataStore.originalPublisherID(key)
             age = now - self._dataStore.originalPublishTime(key) + 500000
 
-            #self._log.debug('oPubID: %s, age: %s' % (originalPublisherID, age))
-
             if originalPublisherID == self._settings['guid']:
                 # This node is the original publisher; it has to republish
                 # the data before it expires (24 hours in basic Kademlia)
                 if age >= constants.dataExpireTimeout:
                     self._log.debug('Republishing key: %s' % key)
-                    Thread(target=self.iterativeStore, args=(self._transport, key, self._dataStore[key],)).start()
-                    # self.iterativeStore(key, self._dataStore[key])
-                    # twisted.internet.reactor.callFromThread(self.iterativeStore, key, self._dataStore[key])
+                    self.iterativeStore(self._transport, key, self._dataStore[key])
+
             else:
                 # This node needs to replicate the data at set intervals,
                 # until it expires, without changing the metadata associated with it
@@ -375,9 +370,7 @@ class DHT(object):
                     # - remove it
                     expiredKeys.append(key)
                 elif now - self._dataStore.lastPublished(key) >= constants.replicateInterval:
-                    # ...data has not yet expired, and we need to replicate it
-                    Thread(target=self.iterativeStore,
-                           args=(self._transport, key, self._dataStore[key], originalPublisherID, age,)).start()
+                    self.iterativeStore(self._transport, key, self._dataStore[key], originalPublisherID, age)
 
         for key in expiredKeys:
             del self._dataStore[key]
