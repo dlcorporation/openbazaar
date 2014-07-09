@@ -213,8 +213,11 @@ class Market(object):
         # if not msg.has_key("item_quantity_available") or not msg['item_quantity_available'] > 0:
         #     msg['item_quantity_available'] = 1
 
+        # Load gpg
+        gpg = gnupg.GPG(gnupghome='gpg')
+
         # Insert PGP Key
-        msg['Seller']['seller_PGP'] = self.settings['PGPPubKey']
+        msg['Seller']['seller_PGP'] = gpg.export_keys(self.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
 
         # Process and crop thumbs for images
         self._log.debug('Msg: %s' % msg)
@@ -245,7 +248,6 @@ class Market(object):
                 msg['Contract']['item_images'] = new_uri
 
         # TODO: replace default passphrase
-        gpg = gnupg.GPG(gnupghome='gpg')
         json_string = json.dumps(msg, indent=0)
         seg_len = 52
         out_text = string.join(map(lambda x : json_string[x:x+seg_len],
