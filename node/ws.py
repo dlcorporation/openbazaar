@@ -9,6 +9,8 @@ import tornado.ioloop
 
 import protocol
 import pycountry
+import gnupg
+import pprint
 
 
 class ProtocolHandler:
@@ -263,8 +265,22 @@ class ProtocolHandler:
         self._transport.send(protocol.shout(msg))
 
     def on_node_search_value(self, results):
-        #self._log.info('Listing Data: %s' % results)
-        self.send_to_client(None, { "type": "new_listing", "data": results})
+        self._log.info('Listing Data: %s' % results)
+
+        # Fix newline issue
+        results_data = results.replace('\\n', '\n\r')
+        self._log.info(results_data)
+
+        # Import gpg pubkey
+
+
+        gpg = gnupg.GPG(gnupghome="gpg")
+        v = gpg.verify(results)
+        if v:
+            results = results.split('\n')
+            self._log.debug('DATA: %s' % results[3])
+
+        self.send_to_client(None, { "type": "new_listing", "data": json.loads(results[3]) })
 
     def on_node_search_results(self, results):
         if len(results) > 1:

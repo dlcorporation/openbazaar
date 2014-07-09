@@ -202,17 +202,18 @@ class Market(object):
 
     def save_contract(self, msg):
 
-
-
         contract_id = random.randint(0, 1000000)
 
         # Initialize default values if not set
-        if not msg.has_key("unit_price") or not msg['unit_price'] > 0:
-            msg['unit_price'] = 0
-        if not msg.has_key("shipping_price") or not msg['shipping_price'] > 0:
-            msg['shipping_price'] = 0
-        if not msg.has_key("item_quantity_available") or not msg['item_quantity_available'] > 0:
-            msg['item_quantity_available'] = 1
+        # if not msg.has_key("unit_price") or not msg['unit_price'] > 0:
+        #     msg['unit_price'] = 0
+        # if not msg.has_key("shipping_price") or not msg['shipping_price'] > 0:
+        #     msg['shipping_price'] = 0
+        # if not msg.has_key("item_quantity_available") or not msg['item_quantity_available'] > 0:
+        #     msg['item_quantity_available'] = 1
+
+        # Insert PGP Key
+        msg['Seller']['seller_PGP'] = self.settings['PGPPubKey']
 
         # Process and crop thumbs for images
         if msg.has_key('item_images'):
@@ -236,7 +237,7 @@ class Market(object):
 
         # TODO: replace default passphrase
         gpg = gnupg.GPG(gnupghome='gpg')
-        signed_data = gpg.sign(json.dumps(msg), passphrase='P@ssw0rd')
+        signed_data = gpg.sign(json.dumps(msg), passphrase='P@ssw0rd', keyid=self.settings['PGPPubKeyFingerprint'])
 
         # Save contract to DHT
         contract_key = hashlib.sha1(str(signed_data)).hexdigest()
