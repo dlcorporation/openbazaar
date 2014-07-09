@@ -625,6 +625,10 @@
     <div>
         <h2><identicon icon-size="64" hash="page.senderGUID" title="{{page.senderGUID}}"></identicon>  {{page.nickname}}</h2>
 
+        <div ng-show="page.arbiter" class="alert alert-warning" role="alert">
+                <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <strong>Good News</strong> This store provides arbitration services. <a href="#" class="alert-link">Click here to add them to your trusted arbiters list</a></div>
+
         <ul id="store-tabs" class="nav nav-pills" style="background-color:#ccc;border-bottom:1px solid #aaa;padding:5px;">
             <li class="active" ng-click="showStorePanel('storeInfo')"><a href="#storeInfo">Info</a></li>
             <li ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
@@ -638,7 +642,8 @@
 
         <div ng-show="storeInfoPanel" class="animated fadeIn">
 
-            <p id="page-content" style="margin:10px 0 20px 0"></p>
+            <p ng-show="page.text" id="page-content" class="lead"></p>
+
 
             <table class="table table-bordered table-striped" style="font-size:14px;width:100%;table-layout:fixed">
                 <tr ng-show="page.email">
