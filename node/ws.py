@@ -269,14 +269,18 @@ class ProtocolHandler:
 
         # Fix newline issue
         results_data = results.replace('\\n', '\n\r')
-        self._log.info(results_data)
+        #self._log.info(results_data)
 
         # Import gpg pubkey
         gpg = gnupg.GPG(gnupghome="gpg")
 
-        contract_data = results.split('\n')[3]
-        self._log.info('cdata %s' % contract_data)
-        contract_data_json = json.loads(contract_data)
+        # Retrieve JSON from the contract
+        # 1) Remove PGP Header
+        contract_data = ''.join(results.split('\n')[3:])
+        index_of_signature = contract_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
+        contract_data_json = contract_data[0:index_of_signature]
+
+        contract_data_json = json.loads(contract_data_json)
         seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
 
         gpg.import_keys(seller_pubkey)
@@ -286,7 +290,7 @@ class ProtocolHandler:
 
         v = gpg.verify(results)
         if v:
-            self.send_to_client(None, { "type": "new_listing", "data": json.loads(split_results[3]) })
+            self.send_to_client(None, { "type": "new_listing", "data": contract_data_json })
         else:
             self._log.error('Could not verify signature of contract.')
 
