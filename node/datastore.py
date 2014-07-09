@@ -126,7 +126,7 @@ class MongoDataStore(DataStore):
                 keys.append(row['key'].decode('hex'))
 
         finally:
-            self._log.info('Keys: %s' % keys)
+            #self._log.info('Keys: %s' % keys)
             return keys
 
     def lastPublished(self, key):

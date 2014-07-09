@@ -356,7 +356,7 @@ class DHT(object):
             originalPublisherID = self._dataStore.originalPublisherID(key)
             age = now - self._dataStore.originalPublishTime(key) + 500000
 
-            self._log.debug('oPubID: %s, age: %s' % (originalPublisherID, age))
+            #self._log.debug('oPubID: %s, age: %s' % (originalPublisherID, age))
 
             if originalPublisherID == self._settings['guid']:
                 # This node is the original publisher; it has to republish
