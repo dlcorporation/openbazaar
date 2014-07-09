@@ -84,15 +84,12 @@ class CryptoPeerConnection(PeerConnection):
         data['uri'] = self._transport._uri
         data['pubkey'] = self._transport.pubkey
 
-
-
-        self._log.debug('Sending to peer: %s %s' % (self._ip, data))
-
+        #self._log.debug('Sending to peer: %s %s' % (self._ip, data))
 
         if self._pub == '':
             self._log.info('There is no public key for encryption')
         else:
-            self._log.debug('DATA: %s' % data)
+            #self._log.debug('DATA: %s' % data)
             msg = self.send_raw(self.encrypt(json.dumps(data)), callback)
             return msg
 

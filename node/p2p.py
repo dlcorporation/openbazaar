@@ -74,7 +74,7 @@ class PeerConnection(object):
                 callback(False)
 
         # Set timer for checking if peer alive
-        ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
+        ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
