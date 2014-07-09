@@ -452,7 +452,9 @@ class Market(object):
                                         settings['nickname'],
                                         settings['PGPPubKey'] if settings.has_key('PGPPubKey') else '',
                                         settings['email'] if settings.has_key('email') else '',
-                                        settings['bitmessage'] if settings.has_key('bitmessage') else ''),
+                                        settings['bitmessage'] if settings.has_key('bitmessage') else '',
+                                        settings['arbiter'] if settings.has_key('arbiter') else '',
+                                        settings['arbiter_description'] if settings.has_key('arbiter_description') else ''),
                                         peer['senderGUID']
                                         )
 
