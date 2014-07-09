@@ -285,8 +285,11 @@ class ProtocolHandler:
         if v:
             results = results.split('\n')
             self._log.debug('DATA: %s' % results[3])
+            self.send_to_client(None, { "type": "new_listing", "data": json.loads(results[3]) })
+        else:
+            self._log.error('Could not verify signature of contract.')
 
-        self.send_to_client(None, { "type": "new_listing", "data": json.loads(results[3]) })
+
 
     def on_node_search_results(self, results):
         if len(results) > 1:
