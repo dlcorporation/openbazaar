@@ -272,24 +272,24 @@ class Market(object):
 
     def republish_listing(self, msg):
 
-        print 'republish'
-        # listing_id = msg.get('productID')
-        # listing = self._db.products.find_one({'id':listing_id})
-        #
-        # listing_key = listing['key']
-        #
-        # listing = proto_listing(listing['productTitle'],
-        #                         listing['productDescription'] if listing.has_key('productDescription') else "",
-        #                         listing['productPrice'] if listing.has_key('productPrice') else "",
-        #                         listing['productQuantity'] if listing.has_key('productQuantity') else "",
-        #                         listing['market_id'] if listing.has_key('market_id') else "",
-        #                         listing['productShippingPrice'] if listing.has_key('productShippingPrice') else "",
-        #                         listing['productImageName'] if listing.has_key('productImageName') else "",
-        #                         listing['productImageData'] if listing.has_key('productImageData') else "")
-        # listing = json.dumps(listing)
-        #
-        # self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
-        # self.update_listings_index()
+        
+        listing_id = msg.get('productID')
+        listing = self._db.products.find_one({'id':listing_id})
+
+        listing_key = listing['key']
+
+        listing = proto_listing(listing['productTitle'],
+                                listing['productDescription'] if listing.has_key('productDescription') else "",
+                                listing['productPrice'] if listing.has_key('productPrice') else "",
+                                listing['productQuantity'] if listing.has_key('productQuantity') else "",
+                                listing['market_id'] if listing.has_key('market_id') else "",
+                                listing['productShippingPrice'] if listing.has_key('productShippingPrice') else "",
+                                listing['productImageName'] if listing.has_key('productImageName') else "",
+                                listing['productImageData'] if listing.has_key('productImageData') else "")
+        listing = json.dumps(listing)
+
+        self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
+        self.update_listings_index()
 
 
     def update_listings_index(self):
