@@ -281,11 +281,12 @@ class ProtocolHandler:
 
         gpg.import_keys(seller_pubkey)
 
+        split_results = results.split('\n')
+        self._log.debug('DATA: %s' % split_results[3])
+
         v = gpg.verify(results)
         if v:
-            results = results.split('\n')
-            self._log.debug('DATA: %s' % results[3])
-            self.send_to_client(None, { "type": "new_listing", "data": json.loads(results[3]) })
+            self.send_to_client(None, { "type": "new_listing", "data": json.loads(split_results[3]) })
         else:
             self._log.error('Could not verify signature of contract.')
 

@@ -28,6 +28,7 @@ from contract import OBContract
 import traceback
 from ws import ProtocolHandler
 import gnupg
+import string
 
 class Market(object):
 
@@ -216,10 +217,12 @@ class Market(object):
         msg['Seller']['seller_PGP'] = self.settings['PGPPubKey']
 
         # Process and crop thumbs for images
-        if msg.has_key('item_images'):
-            if len(msg.get('item_images')) > 0:
+        self._log.debug('Msg: %s' % msg)
+        if msg['Contract'].has_key('item_images'):
+            if msg['Contract']['item_images'].has_key('image1'):
+                print 'multiple images'
 
-                img = msg['item_images'][0]
+                img = msg['Contract']['item_images']['image1']
 
                 uri = DataURI(img)
                 imageData = uri.data
@@ -233,11 +236,21 @@ class Market(object):
 
                 new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
                 data.close()
-                msg['item_images'][0] = new_uri
+
+                # Break up line for signing with gnupg
+
+
+
+
+                msg['Contract']['item_images'] = new_uri
 
         # TODO: replace default passphrase
         gpg = gnupg.GPG(gnupghome='gpg')
-        signed_data = gpg.sign(json.dumps(msg), passphrase='P@ssw0rd', keyid=self.settings.get('PGPPubkeyFingerprint'))
+        json_string = json.dumps(msg, indent=0)
+        seg_len = 52
+        out_text = string.join(map(lambda x : json_string[x:x+seg_len],
+           range(0, len(json_string), seg_len)), "\n")
+        signed_data = gpg.sign(out_text, passphrase='P@ssw0rd', keyid=self.settings.get('PGPPubkeyFingerprint'))
 
         # Save contract to DHT
         contract_key = hashlib.sha1(str(signed_data)).hexdigest()

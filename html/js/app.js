@@ -902,8 +902,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
                 "item_condition": $scope.contract.productCondition,
                 "item_quantity": $scope.contract.productQuantity,
                 "item_desc": $scope.contract.productDescription,
-                "item_images": [
-                ],
+                "item_images": {},
                 "item_delivery": {
                       "countries": "",
                       "region": "",
@@ -927,7 +926,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
                 r.onloadend = function(e){
                   var data = e.target.result;
 
-                  contract.Contract.item_images.push({"image": imgUpload.result});
+                  contract.Contract.item_images.image1 = imgUpload.result;
 
                   console.log(contract);
                   socket.send("create_contract", contract);
