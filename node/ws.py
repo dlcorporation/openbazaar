@@ -272,9 +272,14 @@ class ProtocolHandler:
         self._log.info(results_data)
 
         # Import gpg pubkey
-
-
         gpg = gnupg.GPG(gnupghome="gpg")
+
+        contract_data = results.split('\n')[3]
+        contract_data_json = json.loads(contract_data)
+        seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
+
+        gpg.import_keys(seller_pubkey)
+
         v = gpg.verify(results)
         if v:
             results = results.split('\n')
