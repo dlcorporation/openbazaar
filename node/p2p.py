@@ -53,6 +53,7 @@ class PeerConnection(object):
         self._responses_received[message_id] = False
 
         def cb(msg):
+            self._log.debug('callback received: %s ' % message_id)
             if self._responses_received.has_key(message_id):
                 del self._responses_received[message_id]
 
@@ -63,13 +64,12 @@ class PeerConnection(object):
 
         self._stream.on_recv(cb)
 
-
         def remove_dead_peer():
             self._log.debug('Responses Received: %s' % self._responses_received)
 
             if self._responses_received.has_key(message_id):
                 #del self._responses_received[message_id]
-                self._log.info('Unreachable Peer. Check your firewall settings.')
+                self._log.info('Unreachable Peer. Check your firewall settings. %s' % message_id)
                 self._transport._dht.remove_active_peer(self._address)
                 callback(False)
 
