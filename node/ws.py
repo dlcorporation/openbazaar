@@ -275,6 +275,7 @@ class ProtocolHandler:
         gpg = gnupg.GPG(gnupghome="gpg")
 
         contract_data = results.split('\n')[3]
+        self._log.info('cdata %s' % contract_data)
         contract_data_json = json.loads(contract_data)
         seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
 
@@ -402,7 +403,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
 
-        self._log.info('[On Message]: %s' % message)
+        #self._log.info('[On Message]: %s' % message)
 
         try:
             request = json.loads(message)

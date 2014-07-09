@@ -927,7 +927,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
                 r.onloadend = function(e){
                   var data = e.target.result;
 
-                  contract.Contract.item_images.push(imgUpload.result);
+                  contract.Contract.item_images.push({"image": imgUpload.result});
 
                   console.log(contract);
                   socket.send("create_contract", contract);
