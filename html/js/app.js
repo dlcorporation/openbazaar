@@ -469,7 +469,8 @@ angular.module('app')
                       escrowAddresses:''}
   $scope.saveSettings = function() {
       var query = {'type': 'update_settings', settings: $scope.settings }
-      socket.send('update_settings', query)
+      socket.send('update_settings', query);
+      Notifier.success('Success', 'Settings saved successfully.');
   }
 
 
@@ -932,6 +933,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
                   console.log(contract);
                   socket.send("create_contract", contract);
+                  Notifier.success('Success', 'Contract saved successfully.');
                   socket.send("query_contracts", {})
 
 
@@ -943,7 +945,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
                 console.log(contract);
                 socket.send("create_contract", contract);
-
+                Notifier.success('Success', 'Contract saved successfully.');
                 socket.send("query_contracts", {})
 
 
@@ -952,6 +954,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
             } else {
                 console.log(contract);
                 socket.send("create_contract", contract);
+                Notifier.success('Success', 'Contract saved successfully.');
                 socket.send("query_contracts", {})
 
             }
