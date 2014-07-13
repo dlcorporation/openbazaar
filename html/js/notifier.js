@@ -1,15 +1,16 @@
 (function($){
 
   var config = window.NotifierjsConfig = {
-    defaultTimeOut: 5000,
+    defaultTimeOut: 2000,
     position: ["top", "right"],
     notificationStyles: {
       padding: "12px 18px",
       margin: "0 0 6px 0",
       backgroundColor: "#000",
-      opacity: 0.8,
+      opacity: 0.5,
       color: "#fff",
-      font: "normal 13px 'Droid Sans', sans-serif",
+      fontFamily: "'Helvetica Neue',Helvetica,Arial,sans-serif",
+      fontSize: "13px",
       borderRadius: "3px",
       boxShadow: "#999 0 0 12px",
       width: "300px"

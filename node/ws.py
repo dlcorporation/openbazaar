@@ -272,7 +272,7 @@ class ProtocolHandler:
         #self._log.info(results_data)
 
         # Import gpg pubkey
-        gpg = gnupg.GPG(gnupghome="gpg")
+        gpg = gnupg.GPG()
 
         # Retrieve JSON from the contract
         # 1) Remove PGP Header
