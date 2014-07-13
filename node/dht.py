@@ -103,7 +103,7 @@ class DHT(object):
                                                  peer_tuple[0])
             self._activePeers.append(new_peer)
             self._log.debug('Removing old contacts for this guid')
-            self._routingTable.removeContact(new_peer._guid)
+            
             self._routingTable.addContact(new_peer)
 
 
