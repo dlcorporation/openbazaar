@@ -113,7 +113,7 @@ class KBucket(object):
         """
         self._log.debug('Contacts %s %s' % (contact, self._contacts))
 
-        self._contacts[:] = [x for x in self._contacts if x._guid == contact]
+        self._contacts[:] = [x for x in self._contacts if x._guid != contact]
 
 
     def keyInRange(self, key):
