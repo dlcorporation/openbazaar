@@ -38,15 +38,16 @@ class CryptoPeerConnection(PeerConnection):
             callback(None)
         else:
             def cb(msg):
-                self._peer_alive = True
-                msg = msg[0]
-                msg = json.loads(msg)
-                self._guid = msg['senderGUID']
-                self._pub = msg['pubkey']
+                if msg:
+                    self._peer_alive = True
+                    msg = msg[0]
+                    msg = json.loads(msg)
+                    self._guid = msg['senderGUID']
+                    self._pub = msg['pubkey']
 
-                self._log.debug('New Crypt Peer: %s %s %s' % (self._address, self._pub, self._guid))
+                    self._log.debug('New Crypt Peer: %s %s %s' % (self._address, self._pub, self._guid))
 
-                callback(msg)
+                    callback(msg)
             try:
                 self.send_raw(json.dumps({'type':'hello', 'pubkey':transport.pubkey,
                                       'uri':transport._uri,
