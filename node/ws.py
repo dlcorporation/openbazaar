@@ -265,34 +265,43 @@ class ProtocolHandler:
         self._transport.send(protocol.shout(msg))
 
     def on_node_search_value(self, results):
-        self._log.info('Listing Data: %s' % results)
 
-        # Fix newline issue
-        results_data = results.replace('\\n', '\n\r')
-        #self._log.info(results_data)
+        if results:
 
-        # Import gpg pubkey
-        gpg = gnupg.GPG()
+            self._log.info('Listing Data: %s' % results)
 
-        # Retrieve JSON from the contract
-        # 1) Remove PGP Header
-        contract_data = ''.join(results.split('\n')[3:])
-        index_of_signature = contract_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
-        contract_data_json = contract_data[0:index_of_signature]
+            # Fix newline issue
+            results_data = results.replace('\\n', '\n\r')
+            #self._log.info(results_data)
 
-        contract_data_json = json.loads(contract_data_json)
-        seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
+            # Import gpg pubkey
+            gpg = gnupg.GPG()
 
-        gpg.import_keys(seller_pubkey)
+            # Retrieve JSON from the contract
+            # 1) Remove PGP Header
+            contract_data = ''.join(results.split('\n')[3:])
+            index_of_signature = contract_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
+            contract_data_json = contract_data[0:index_of_signature]
+            print 'contract data %s' % contract_data_json
 
-        split_results = results.split('\n')
-        self._log.debug('DATA: %s' % split_results[3])
+            try:
+                contract_data_json = json.loads(contract_data_json)
+                seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
 
-        v = gpg.verify(results)
-        if v:
-            self.send_to_client(None, { "type": "new_listing", "data": contract_data_json })
+                gpg.import_keys(seller_pubkey)
+
+                split_results = results.split('\n')
+                self._log.debug('DATA: %s' % split_results[3])
+
+                v = gpg.verify(results)
+                if v:
+                    self.send_to_client(None, { "type": "new_listing", "data": contract_data_json })
+                else:
+                    self._log.error('Could not verify signature of contract.')
+            except:
+                self._log.debug('Error getting JSON contract')
         else:
-            self._log.error('Could not verify signature of contract.')
+            self._log.info('No results')
 
 
 

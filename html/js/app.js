@@ -438,9 +438,10 @@ angular.module('app')
     $scope.store_listings.push(contract_data)
     $scope.store_listings = jQuery.unique($scope.store_listings);
     $.each( $scope.store_listings, function(index, contract){
-        console.log('TEST',contract);
-        if (contract.Contract.item_images.length < 1) {
-            $scope.store_listings[index].productImageData = "img/no-photo.png";
+        console.log('TEST',contract.Contract.item_images);
+        if (jQuery.isEmptyObject(contract.Contract.item_images)) {
+            console.log('empty object');
+            contract.Contract.item_images = "img/no-photo.png";
         }
     });
     $('#listing-loader').hide();
@@ -954,7 +955,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
             } else {
                 console.log(contract);
                 socket.send("create_contract", contract);
-                Notifier.success('Success', 'Contract saved successfully.');
+
                 socket.send("query_contracts", {})
 
             }
