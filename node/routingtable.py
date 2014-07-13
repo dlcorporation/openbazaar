@@ -454,12 +454,11 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
             return
 
         if contact:
-            contact.failedRPCs += 1
-            if contact.failedRPCs >= 5:
-                self._buckets[bucketIndex].removeContact(contactID)
+
+            self._buckets[bucketIndex].removeContact(contactID)
                 # Replace this stale contact with one from our replacemnent cache, if we have any
-                if self._replacementCache.has_key(bucketIndex):
-                    if len(self._replacementCache[bucketIndex]) > 0:
-                        self._buckets[bucketIndex].addContact(self._replacementCache[bucketIndex].pop())
+                # if self._replacementCache.has_key(bucketIndex):
+                #     if len(self._replacementCache[bucketIndex]) > 0:
+                #         self._buckets[bucketIndex].addContact(self._replacementCache[bucketIndex].pop())
 
             self._log.debug('Contacts: %s' % self._buckets[bucketIndex]._contacts)
