@@ -459,8 +459,11 @@ class DHT(object):
             originalPublisherID = self._transport._guid
 
         # Find appropriate storage nodes and save key value
-        self.iterativeFindNode(key, lambda msg, findKey=key, value=value, originalPublisherID=originalPublisherID,
+        if value:
+            self.iterativeFindNode(key, lambda msg, findKey=key, value=value, originalPublisherID=originalPublisherID,
                                            age=age: self.storeKeyValue(msg, findKey, value, originalPublisherID, age))
+        else:
+            self._log.info('No value to store')
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
@@ -503,7 +506,10 @@ class DHT(object):
         now = int(time.time())
         originallyPublished = now - age
 
-        self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self._market_id)
+        if value:
+            self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self._market_id)
+        else:
+            self._log.info('No value to store')
 
     def store(self, key, value, originalPublisherID=None, age=0, **kwargs):
         """ Store the received data in this node's local hash table
