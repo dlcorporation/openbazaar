@@ -97,7 +97,7 @@ class DHT(object):
                 del self._activePeers[idx]
                 self._routingTable.removeContact(peer_tuple[2])
 
-        
+
         new_peer = transport.get_crypto_peer(peer_tuple[2],
                                              peer_tuple[1],
                                              peer_tuple[0])
