@@ -97,14 +97,14 @@ class DHT(object):
                 del self._activePeers[idx]
                 self._routingTable.removeContact(peer_tuple[2])
 
-        if not foundMatchingPeer:
-            new_peer = transport.get_crypto_peer(peer_tuple[2],
-                                                 peer_tuple[1],
-                                                 peer_tuple[0])
-            self._activePeers.append(new_peer)
-            self._log.debug('Removing old contacts for this guid')
-            
-            self._routingTable.addContact(new_peer)
+        
+        new_peer = transport.get_crypto_peer(peer_tuple[2],
+                                             peer_tuple[1],
+                                             peer_tuple[0])
+        self._activePeers.append(new_peer)
+        self._log.debug('Removing old contacts for this guid')
+        self._routingTable.removeContact(new_peer._guid)
+        self._routingTable.addContact(new_peer)
 
 
 
