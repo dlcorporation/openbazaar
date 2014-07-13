@@ -282,7 +282,6 @@ class ProtocolHandler:
             contract_data = ''.join(results.split('\n')[3:])
             index_of_signature = contract_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
             contract_data_json = contract_data[0:index_of_signature]
-            print 'contract data %s' % contract_data_json
 
             try:
                 contract_data_json = json.loads(contract_data_json)
