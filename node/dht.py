@@ -80,14 +80,16 @@ class DHT(object):
                            'active peers')
             return
 
+        foundMatchingPeer = False
+
         # Update peer's pubkey or uri if necessary
         for idx, peer in enumerate(self._activePeers):
-            print peer
+
             active_peer_tuple = (peer._pub, peer._address, peer._guid)
 
             if active_peer_tuple == peer_tuple:
                 self._log.info('Found matching peer, not adding.')
-                return
+                foundMatchingPeer = True
 
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
@@ -95,12 +97,14 @@ class DHT(object):
                 del self._activePeers[idx]
                 self._routingTable.removeContact(peer_tuple[2])
 
-
-        new_peer = transport.get_crypto_peer(peer_tuple[2],
-                                             peer_tuple[1],
-                                             peer_tuple[0])
-        self._activePeers.append(new_peer)
-        self._routingTable.addContact(new_peer)
+        if not foundMatchingPeer:
+            new_peer = transport.get_crypto_peer(peer_tuple[2],
+                                                 peer_tuple[1],
+                                                 peer_tuple[0])
+            self._activePeers.append(new_peer)
+            self._log.debug('Removing old contacts for this guid')
+            self._routingTable.removeContact(new_peer._guid)
+            self._routingTable.addContact(new_peer)
 
 
 

@@ -214,7 +214,7 @@ class Market(object):
         #     msg['item_quantity_available'] = 1
 
         # Load gpg
-        gpg = gnupg.GPG(gnupghome='gpg')
+        gpg = gnupg.GPG()
 
         # Insert PGP Key
         self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
