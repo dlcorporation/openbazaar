@@ -451,7 +451,7 @@
                     <table class="table table-striped">
                         <tr>
                             <td width=200><strong>Order Date:</strong></td>
-                            <td>{{Market.modalOrder.created*1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
+                            <td>{{Market.modalOrder.updated*1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
                         </tr>
                         <tr>
                             <td width=200><strong>Status:</strong></td>
@@ -474,8 +474,8 @@
                             <td style="word-break:break-all"><a href="https://blockchain.info/address/{{Market.modalOrder.address}}" target="_blank">{{Market.modalOrder.address}}</a></td>
                         </tr>
                         <tr>
-                            <td><strong>Order Description:</strong></td>
-                            <td>{{Market.modalOrder.text}}</td>
+                            <td><strong>Raw Contract:</strong></td>
+                            <td><pre style="word-wrap:break-word;font-size:12px;height:250px;">{{Market.modalOrder.signed_contract_body}}</pre></td>
                         </tr>
                     </table>
 
@@ -519,7 +519,7 @@
                     <tr ng-repeat="order in orders">
                         <td width=20><input type="checkbox"/></td>
                         <td width=70><a href="" ng-click="open('lg', order.id)">{{order.id}}</a></td>
-                        <td width=150>{{order.created * 1000 | date: 'medium'}}</td>
+                        <td width=175>{{order.updated * 1000 | date: 'medium'}}</td>
                         <td style="word-break:break-all">{{order.buyer}}</td>
                         <td width=100><span class="label label-info">{{order.state}}</span></td>
                         <td width=100>{{order.total}}</td>
@@ -710,7 +710,7 @@
                         <td><span class="product-title">{{listing.Contract.item_title}}</span><br/>{{listing.Contract.item_description}}
                         <br/>Key: {{listing.key}}
                         </td>
-                        <td width="80"><span class="product-price">&#3647;{{listing.Contract.item_price}}</span><br/><button class="btn btn-success btn-xl navbar-btn" ng-click="open('lg', myself, page.pubkey, listing.Contract.item_title, listing.Contract.item_price, listing.Contract.item_description, listing.Contract.item_images, listing.key)">Purchase</button></td>
+                        <td width="80"><span class="product-price">&#3647;{{listing.Contract.item_price}}</span><br/><button class="btn btn-success btn-xl navbar-btn" ng-click="open('lg', myself, page.pubkey, listing.Contract.item_title, listing.Contract.item_price, listing.Contract.item_description, listing.Contract.item_images, listing.key, listing.rawContract)">Purchase</button></td>
                     </tr></table>
             </div>
 

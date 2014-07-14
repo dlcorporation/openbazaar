@@ -222,11 +222,12 @@ class Market(object):
         self._log.debug('Settings %s' % self._transport.settings)
         msg['Seller']['seller_PGP'] = gpg.export_keys(self._transport.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
 
+        msg['Seller']['seller_GUID'] = self._transport._guid
+
         # Process and crop thumbs for images
         self._log.debug('Msg: %s' % msg)
         if msg['Contract'].has_key('item_images'):
             if msg['Contract']['item_images'].has_key('image1'):
-                print 'multiple images'
 
                 img = msg['Contract']['item_images']['image1']
 
@@ -242,11 +243,6 @@ class Market(object):
 
                 new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
                 data.close()
-
-                # Break up line for signing with gnupg
-
-
-
 
                 msg['Contract']['item_images'] = new_uri
 
