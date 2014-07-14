@@ -1116,7 +1116,7 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
           'orderTotal': $('#totalPrice').html()
       }
       console.log(newOrder);
-      //socket.send('order', newOrder);
+      socket.send('order', newOrder);
       $scope.sentOrder = true;
 
       $modalInstance.close();

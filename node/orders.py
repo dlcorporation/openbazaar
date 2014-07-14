@@ -9,9 +9,13 @@ from multisig import Multisig
 
 
 class Orders(object):
-    def __init__(self, order_transport):
-        self._transport = order_transport
-        self._priv = order_transport._myself
+    def __init__(self, transport, market_id):
+
+        self._transport = transport
+        self._priv = transport._myself
+        self._market_id = market_id
+
+
 
         # TODO: Make user configurable escrow addresses
         self._escrows = [
@@ -24,8 +28,9 @@ class Orders(object):
         self._orders = self.get_orders()
         self.orders = self._db.orders
 
-        order_transport.add_callback('order', self.on_order)
-        self._log = logging.getLogger(self.__class__.__name__)
+        self._transport.add_callback('order', self.on_order)
+
+        self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
 
     def get_order(self, orderId):
 
@@ -119,6 +124,15 @@ class Orders(object):
     def on_order(self, msg):
 
         self._log.debug(msg)
+
+        buyer = {}
+        buyer['buyer_GUID'] = self._transport._guid
+        buyer['buyer_BTC_uncompressed_pubkey'] = ""
+        buyer['buyer_pgp'] = self._transport.settings['PGPPubKey']
+        buyer['buyer_deliveryaddr'] = ""
+        buyer['note_for_seller'] = msg['message']
+
+        self._log.debug(buyer)
 
         #
         #
