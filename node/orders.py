@@ -6,6 +6,11 @@ from protocol import order
 from pyelliptic import ECC
 from pymongo import MongoClient
 from multisig import Multisig
+import gnupg
+import hashlib
+import string
+import json
+import datetime
 
 
 class Orders(object):
@@ -15,7 +20,7 @@ class Orders(object):
         self._priv = transport._myself
         self._market_id = market_id
 
-
+        self._gpg = gnupg.GPG()
 
         # TODO: Make user configurable escrow addresses
         self._escrows = [
@@ -34,7 +39,7 @@ class Orders(object):
 
     def get_order(self, orderId):
 
-        _order = self._db.orders.find_one({"id": orderId})
+        _order = self._db.orders.find_one({"id": orderId, "market_id":self._market_id})
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -43,16 +48,15 @@ class Orders(object):
                  "buyer": _order['buyer'] if _order.has_key("buyer") else "",
                  "seller": _order['seller'] if _order.has_key("seller") else "",
                  "escrows": _order['escrows'] if _order.has_key("escrows") else "",
-                 "text": _order['text'] if _order.has_key("text") else "",
-                 "created": _order['created'] if _order.has_key("created") else ""}
+                 "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
+                 "updated": _order['updated'] if _order.has_key("updated") else ""}
         # orders.append(_order)
-
 
         return order
 
     def get_orders(self):
         orders = []
-        for _order in self._db.orders.find().sort([("created", -1)]):
+        for _order in self._db.orders.find({'market_id':self._market_id}).sort([("updated", -1)]):
             # Get order prototype object before storing
             orders.append({"id": _order['id'],
                            "state": _order['state'],
@@ -61,7 +65,7 @@ class Orders(object):
                            "seller": _order['seller'] if _order.has_key("seller") else "",
                            "escrows": _order['escrows'] if _order.has_key("escrows") else "",
                            "text": _order['text'] if _order.has_key("text") else "",
-                           "created": _order['created'] if _order.has_key("created") else ""})
+                           "updated": _order['updated'] if _order.has_key("updated") else ""})
             # orders.append(_order)
 
         return orders
@@ -108,23 +112,44 @@ class Orders(object):
         new_order['type'] = 'order'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
-    def send_order(self, new_order):  # action
-        new_order['state'] = 'sent'
-        self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
-        new_order['type'] = 'order'
-        self._transport.send(new_order, new_order['buyer'].decode('hex'))
+    def send_order(self, order_id, contract):  # action
+        self._log.info('Contract: %s' % contract)
+
+        contract_data = ''.join(contract.split('\n')[6:])
+        index_of_signature = contract_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
+        contract_data_json = contract_data[0:index_of_signature]
+        self._log.info('data %s' % contract_data_json)
+
+        try:
+            contract_data_json = json.loads(contract_data_json)
+            seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
+
+            self._gpg.import_keys(seller_pubkey)
+
+            split_results = contract.split('\n')
+            self._log.debug('DATA: %s' % split_results[3])
+
+            v = self._gpg.verify(contract)
+            if v:
+                self._log.info('Verified Contract')
+                self._db.orders.update({"id":order_id}, { "$set": { "state": "sent", "updated": time.time() }}, True)
+
+            else:
+                self._log.error('Could not verify signature of contract.')
+        except:
+            self._log.debug('Error getting JSON contract')
+
+        # new_order['state'] = 'sent'
+        # self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
+        # new_order['type'] = 'order'
+        # self._transport.send(new_order, new_order['buyer'].decode('hex'))
 
     def receive_order(self, new_order):  # action
         new_order['state'] = 'received'
         self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
-
-    # Order callbacks
-    def on_order(self, msg):
-
-        self._log.debug(msg)
-
+    def new_order(self, msg):
         buyer = {}
         buyer['buyer_GUID'] = self._transport._guid
         buyer['buyer_BTC_uncompressed_pubkey'] = ""
@@ -133,6 +158,56 @@ class Orders(object):
         buyer['note_for_seller'] = msg['message']
 
         self._log.debug(buyer)
+
+        # Add to contract and sign
+        seed_contract = msg.get('rawContract')
+
+        gpg = self._gpg
+
+        # Prepare contract body
+        json_string = json.dumps(buyer, indent=0)
+        seg_len = 52
+        out_text = string.join(map(lambda x : json_string[x:x+seg_len],
+           range(0, len(json_string), seg_len)), "\n")
+
+        # Append new data to contract
+        out_text = "%s\n%s" % (seed_contract, out_text)
+
+        signed_data = gpg.sign(out_text, passphrase='P@ssw0rd', keyid=self._transport.settings.get('PGPPubkeyFingerprint'))
+
+        self._log.debug('Double-signed Contract: %s' % signed_data)
+
+        # Hash the contract for storage
+        contract_key = hashlib.sha1(str(signed_data)).hexdigest()
+        hash_value = hashlib.new('ripemd160')
+        hash_value.update(contract_key)
+        contract_key = hash_value.hexdigest()
+
+        # Save order locally in database
+        order_id = random.randint(0, 1000000)
+        while self._db.contracts.find({'id':order_id}).count() > 0:
+            order_id = random.randint(0, 1000000)
+
+        self._db.orders.update({'id':order_id}, {'$set':{'market_id':self._transport._market_id, 'contract_key':contract_key, 'signed_contract_body':str(signed_data), 'state':'new'}}, True)
+
+        # Push buy order to DHT and node if available
+        #self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+        #self.update_listings_index()
+
+        # Send order to seller
+        self.send_order(order_id, str(signed_data))
+
+
+    # Order callbacks
+    def on_order(self, msg):
+
+        self._log.debug(msg)
+
+        state = msg.get('state')
+
+        if state == 'new':
+            self.new_order(msg)
+
 
         #
         #

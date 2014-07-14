@@ -294,7 +294,7 @@ class ProtocolHandler:
 
                 v = gpg.verify(results)
                 if v:
-                    self.send_to_client(None, { "type": "new_listing", "data": contract_data_json, "key": key })
+                    self.send_to_client(None, { "type": "new_listing", "data": contract_data_json, "key": key, "rawContract":results })
                 else:
                     self._log.error('Could not verify signature of contract.')
             except:

@@ -220,9 +220,7 @@ angular.module('app')
 
   $scope.parse_myorders = function(msg) {
 
-
   	  $scope.orders = msg['orders'];
-
 
       if (!$scope.$$phase) {
 	       $scope.$apply();
@@ -235,6 +233,17 @@ angular.module('app')
       console.log(msg);
 
       $scope.contracts = msg.contracts.contracts;
+      for(var key in msg.contracts.contracts) {
+
+        var obj = msg.contracts.contracts[key];
+        for (var prop in obj) {
+            if (prop == 'item_images' && jQuery.isEmptyObject(msg.contracts.contracts[key].item_images)) {
+                msg.contracts.contracts[key].item_images = "img/no-photo.png";
+            }
+
+        }
+
+      }
 
       $scope.contract2 = {};
       if (!$scope.$$phase) {
@@ -436,6 +445,7 @@ angular.module('app')
     console.log(msg.data);
     contract_data = msg.data;
     contract_data.key = msg.key;
+    contract_data.rawContract = msg.rawContract;
     $scope.store_listings.push(contract_data)
     $scope.store_listings = jQuery.unique($scope.store_listings);
     $.each( $scope.store_listings, function(index, contract){
@@ -1033,8 +1043,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
 $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
-    $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key) {
-
+    $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract) {
 
 
       // Send socket a request for order info
@@ -1050,7 +1059,8 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
             productPrice: function() { return productPrice},
             productDescription: function() { return productDescription},
             productImageData: function() { return productImageData},
-            key: function() { return key }
+            key: function() { return key },
+            rawContract: function() { return rawContract }
         },
         size: size
       });
@@ -1071,9 +1081,9 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
   };
 
 
-$scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key) {
+$scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract) {
 
-    console.log(productTitle, productPrice, productDescription, productImageData);
+    console.log(productTitle, productPrice, productDescription, productImageData, rawContract);
     $scope.myself = myself;
     $scope.merchantPubkey = merchantPubkey;
     $scope.productTitle = productTitle;
@@ -1082,6 +1092,7 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
     $scope.productImageData = productImageData;
     $scope.totalPrice = productPrice;
     $scope.productQuantity = 1;
+    $scope.rawContract = rawContract;
     $scope.key = key;
 
     console.log($scope);
@@ -1100,10 +1111,8 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
         $('#totalPrice').html(newPrice);
     }
 
-    $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1}
+    $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1, rawContract:rawContract}
     $scope.submitOrder = function() {
-
-
 
       $scope.creatingOrder = false;
 
@@ -1113,7 +1122,8 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
           'buyer': $scope.myself.pubkey,
           'seller': $scope.merchantPubkey,
           'listingKey': $scope.key,
-          'orderTotal': $('#totalPrice').html()
+          'orderTotal': $('#totalPrice').html(),
+          'rawContract': rawContract
       }
       console.log(newOrder);
       socket.send('order', newOrder);
