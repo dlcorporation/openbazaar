@@ -477,7 +477,8 @@ angular.module('app')
                       secret:'',
                       nickname:'',
                       welcome:'',
-                      escrowAddresses:''}
+                      trustedArbiters:{},
+                      trustedNotaries:{}}
   $scope.saveSettings = function() {
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query);
@@ -542,24 +543,43 @@ angular.module('app')
   }
 
 
-  $scope.addEscrow = function() {
-    escrowAddress = $('#inputEscrowAddress').val();
-    $('#inputEscrowAddress').val('');
+  $scope.addArbiter = function() {
+    arbiterGUID = $('#inputArbiterGUID').val();
+    $('#inputArbiterGUID').val('');
 
-    // TODO: Check for valid escrow address
-
-    if(!$scope.settings.escrowAddresses) {
-      $scope.settings.escrowAddresses = [];
+    // TODO: Check for valid arbiter GUID
+    if(arbiterGUID.length != 40 || !arbiterGUID.match(/^[0-9a-z]+$/)) {
+        alert('Incorrect format for GUID');
+        return;
     }
-    $scope.settings.escrowAddresses.push(escrowAddress);
 
-    // Dedupe escrow addresses
-    var uniqueEscrows = [];
-    $.each($scope.settings.escrowAddresses, function(i, el){
-        if($.inArray(el, uniqueEscrows) === -1) uniqueEscrows.push(el);
+    if(!$scope.settings.trustedArbiters) {
+      $scope.settings.trustedArbiters = [];
+    }
+    $scope.settings.trustedArbiters.push(arbiterGUID);
+
+    // Dedupe arbiter GUIDs
+    var uniqueArbiters = [];
+    $.each($scope.settings.trustedArbiters, function(i, el){
+        if($.inArray(el, uniqueArbiters) === -1) uniqueArbiters.push(el);
     });
 
-    $scope.settings.escrowAddresses = uniqueEscrows;
+    $scope.settings.trustedArbiters = uniqueArbiters;
+
+    $scope.saveSettings();
+  }
+
+  $scope.removeArbiter = function(arbiterGUID) {
+
+    //$('#arbiter_'+arbiterGUID).remove();
+
+    // Dedupe arbiter GUIDs
+    var uniqueArbiters = $scope.settings.trustedArbiters;
+    $.each($scope.settings.trustedArbiters, function(i, el){
+        if(el == arbiterGUID) uniqueArbiters.splice(i, 1);
+    });
+
+    $scope.settings.trustedArbiters = uniqueArbiters;
 
     $scope.saveSettings();
   }
@@ -1109,6 +1129,13 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
         var newPrice = $('#itemQuantity').val()*$scope.productPrice;
         newPrice = Math.round(newPrice * 100000) / 100000
         $('#totalPrice').html(newPrice);
+    }
+
+    $scope.gotoArbiter = function() {
+        $scope.order.step2 = 1;
+        if (!$scope.$$phase) {
+           $scope.$apply();
+        }
     }
 
     $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1, rawContract:rawContract}

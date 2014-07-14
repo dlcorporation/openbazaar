@@ -360,19 +360,19 @@
 
         <div class="form-group">
 
-            <input type="hidden" ng-model="settings.escrowAddresses" />
+            <input type="hidden" ng-model="settings.trustedArbiters" />
             <div class="col-sm-12">
                 <div class="input-group">
-                    <input type="text" class="form-control" id="inputEscrowAddress" placeholder="Enter an arbiter's address">
+                    <input type="text" class="form-control" id="inputArbiterGUID" placeholder="Enter an arbiter's OB guid">
                         <span class="input-group-btn">
-                          <button class="btn btn-default" type="button" ng-click="addEscrow()">Add</button>
+                          <button class="btn btn-default" type="button" ng-click="addArbiter()">Add</button>
                         </span>
                 </div>
-                <table class="table " style="margin-top:5px;padding:0">
-                    <tr ng-repeat="escrow in settings.escrowAddresses" style="word-break:break-all"><td width=20>
-                        <button type="button" class="btn btn-default btn-sm">
+                <table class="table table-striped" style="margin-top:10px;padding:0">
+                    <tr ng-repeat="arbiter in settings.trustedArbiters" id="arbiter_{{arbiter}}" style="word-break:break-all"><td width=20>
+                        <button type="button" class="btn btn-default btn-sm" ng-click="removeArbiter(arbiter)">
                             <span class="glyphicon glyphicon-trash" style="color:black"></span>
-                        </button></td><td>{{escrow}}</td></tr>
+                        </button></td><td>{{arbiter}}</td></tr>
                 </table>
             </div>
         </div>
