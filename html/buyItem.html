@@ -1,44 +1,52 @@
 <div class="modal-header">
-    <h3 class="modal-title">Purchase a Product</h3>
+    <h3 class="modal-title">Purchase this Contract</h3>
 </div>
 
 <div class="modal-body"  style="text-align:left;">
 
-    <div class="alert alert-info">Wow you're almost ready to purchase an item from an Open Bazaar merchant!</div>
+    <!--<div class="alert alert-info">Wow you're almost ready to purchase an item from an Open Bazaar merchant!</div>-->
+    <form id="form-item-purchase" role="form">
 
 
-    <table>
+    <table class="table table-striped">
         <tr>
-            <td style="background-color:#efefef; width:100px; height:100px; background-image:url('{{productImageData}}');background-size: 100px 100px;padding:0 20px;"></td>
-            <td style="text-align:center;width:100px; height:100px; padding:0 20px;"><span style="font-size:30px;color:#efefef;text-shadow: 1px 1px #bbb;">&#3647;{{productPrice}}</span></td>
-            <td style="">
-                <h3>{{productTitle}}</h3>
+            <td style="background-color:#efefef; width:60px; height:60px; background-image:url('{{productImageData}}');background-size: 60px 60px;padding:20px;"></td>
+            <td style="vertical-align:top;font-size:24px;">
+                <strong>{{productTitle}}</strong>
                 <p>{{productDescription}}</p>
             </td>
+            <td width="75"><input type="text" ng-model="order.productQuantity" id="itemQuantity" ng-change="updateTotal()" class="form-control"></td>
+            <td width="100" style="font-size:24px;"><strong>&#3647;{{productPrice}}</strong></td>
+        </tr>
+        <tr>
+            <td colspan="100%" style="font-size:24px;padding:20px;text-align:right;font-weight:bold;">Total: &#3647;<span id="totalPrice" ng-model="order.orderTotal">{{totalPrice}}</span></td>
         </tr>
     </table>
 
 
 
     <div style="margin-top:20px;">
-    <form id="form-item-purchase" role="form">
+
 
         <!-- Hidden form fields for item -->
-        <input type="hidden" id="inputMerchantGUID" ng-model="newOrder.merchantGUID" value=""/>
-        <input type="hidden" id="inputProductKey" ng-model="newOrder.listingKey" value=""/>
-        <input type="hidden" id="inputProductPrice" ng-model="newOrder.listingTotal" value="{{productPrice}}"/>
+        <input type="hidden" id="inputMerchantGUID" ng-model="order.merchantGUID" value=""/>
+        <input type="hidden" id="inputProductKey" ng-model="order.listingKey" value=""/>
+        <input type="hidden" id="inputProductPrice" ng-model="order.listingTotal" value="{{productPrice}}"/>
 
         <div class="form-group">
-        <label for="inputMerchantMessage">Special Instructions:</label>
-        <input type="text" ng-model="newOrder.message" class="form-control" id="inputMerchantMessage" placeholder="Enter message for the merchant (optional)">
-        </div>
+        <label for="inputMerchantMessage">Note for seller:</label>
+        <input type="text" ng-model="order.message" class="form-control" id="inputMerchantMessage" placeholder="Enter message for the merchant (optional)">
 
-    </form>
     </div>
 
+
+
+    </div>
+
+     </form>
 
 </div>
 
 <div class="modal-footer">
-    <a class="btn btn-warning" ng-click="cancel()" type="cancel">Cancel</a> <a class="btn btn-primary" ng-click="createOrder()" type="submit">Submit Order</a>
+    <a class="btn btn-default" ng-click="cancel()" type="cancel">Cancel</a> <a class="btn btn-success" ng-click="submitOrder()" type="submit">Submit Order</a>
 </div>

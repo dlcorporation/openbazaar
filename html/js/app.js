@@ -435,10 +435,10 @@ angular.module('app')
   $scope.parse_new_listing = function(msg) {
     console.log(msg.data);
     contract_data = msg.data;
+    contract_data.key = msg.key;
     $scope.store_listings.push(contract_data)
     $scope.store_listings = jQuery.unique($scope.store_listings);
     $.each( $scope.store_listings, function(index, contract){
-        console.log('TEST',contract.Contract.item_images);
         if (jQuery.isEmptyObject(contract.Contract.item_images)) {
             console.log('empty object');
             contract.Contract.item_images = "img/no-photo.png";
@@ -1033,7 +1033,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
 $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
-    $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData) {
+    $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key) {
 
 
 
@@ -1049,7 +1049,8 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
             productTitle: function() { return productTitle},
             productPrice: function() { return productPrice},
             productDescription: function() { return productDescription},
-            productImageData: function() { return productImageData}
+            productImageData: function() { return productImageData},
+            key: function() { return key }
         },
         size: size
       });
@@ -1070,7 +1071,7 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
   };
 
 
-$scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData) {
+$scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key) {
 
     console.log(productTitle, productPrice, productDescription, productImageData);
     $scope.myself = myself;
@@ -1079,6 +1080,11 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
     $scope.productPrice = productPrice;
     $scope.productDescription = productDescription;
     $scope.productImageData = productImageData;
+    $scope.totalPrice = productPrice;
+    $scope.productQuantity = 1;
+    $scope.key = key;
+
+    console.log($scope);
 
     $scope.ok = function () {
       $modalInstance.close();
@@ -1088,27 +1094,30 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
       $modalInstance.dismiss('cancel');
     };
 
+    $scope.updateTotal = function() {
+        var newPrice = $('#itemQuantity').val()*$scope.productPrice;
+        newPrice = Math.round(newPrice * 100000) / 100000
+        $('#totalPrice').html(newPrice);
+    }
 
-    $scope.newOrder = {message:'', tx: '', listingKey:'', listingTotal:'', productTotal:''}
-    $scope.createOrder = function() {
+    $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1}
+    $scope.submitOrder = function() {
+
+
 
       $scope.creatingOrder = false;
 
       var newOrder = {
-          'message': $scope.newOrder.message,
+          'message': $scope.order.message,
           'state': 'new',
           'buyer': $scope.myself.pubkey,
           'seller': $scope.merchantPubkey,
-          'listingKey': $scope.newOrder.listingKey,
-          'listingTotal': $scope.newOrder.listingTotal
+          'listingKey': $scope.key,
+          'orderTotal': $('#totalPrice').html()
       }
-      //console.log(newOrder);
-      //$scope.newOrder.text = '';
-      //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
-      socket.send('order', newOrder);
+      console.log(newOrder);
+      //socket.send('order', newOrder);
       $scope.sentOrder = true;
-
-      console.log($scope);
 
       $modalInstance.close();
 
