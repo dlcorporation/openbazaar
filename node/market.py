@@ -53,7 +53,7 @@ class Market(object):
         # Legacy for now
         self.query_ident = None
         self.reputation = Reputation(self._transport)
-        self.orders = Orders(self._transport)
+        self.orders = Orders(self._transport, self._market_id)
         self.order_entries = self.orders._orders
         self.nicks = {}
         self.pages = {}
