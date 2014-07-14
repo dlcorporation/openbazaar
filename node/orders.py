@@ -118,76 +118,80 @@ class Orders(object):
     # Order callbacks
     def on_order(self, msg):
 
-        state = msg.get('state')
+        self._log.debug(msg)
 
-        buyer = msg.get('buyer').decode('hex')
-        seller = msg.get('seller').decode('hex')
-        myself = self._transport._myself.get_pubkey()
-
-        if not buyer or not seller or not state:
-            self._log.info("Malformed order")
-            return
-
-        if not state == 'new' and not msg.get('id'):
-            self._log.info("Order with no id")
-            return
-
-        # Check order state
-        if state == 'new':
-            if myself == buyer:
-                self.create_order(seller, msg.get('text', 'no comments'))
-            elif myself == seller:
-                self._log.info(msg)
-                self.accept_order(msg)
-            else:
-                self._log.info("Not a party to this order")
-
-        elif state == 'cancelled':
-            if myself == seller or myself == buyer:
-                self._log.info('Order cancelled')
-            else:
-                self._log.info("Order not for us")
-
-        elif state == 'accepted':
-            if myself == seller:
-                self._log.info("Bad subjects [%s]" % state)
-            elif myself == buyer:
-                # wait for confirmation
-                self._db.orders.update({"id": msg['id']}, {"$set": msg}, True)
-                pass
-            else:
-                self._log.info("Order not for us")
-        elif state == 'paid':
-            if myself == seller:
-                # wait for  confirmation
-                pass
-            elif myself == buyer:
-                self.pay_order(msg)
-            else:
-                self._log.info("Order not for us")
-        elif state == 'sent':
-            if myself == seller:
-                self.send_order(msg)
-            elif myself == buyer:
-                # wait for confirmation
-                pass
-            else:
-                self._log.info("Order not for us")
-        elif state == 'received':
-            if myself == seller:
-                pass
-                # ok
-            elif myself == buyer:
-                self.receive_order(msg)
-            else:
-                self._log.info("Order not for us")
-
-        # Store order
-        if msg.get('id'):
-            if self.orders.find({id: msg['id']}):
-                self.orders.update({'id': msg['id']}, {"$set": {'state': msg['state']}}, True)
-            else:
-                self.orders.update({'id': msg['id']}, {"$set": {msg}}, True)
+        #
+        #
+        # state = msg.get('state')
+        #
+        # buyer = msg.get('buyer').decode('hex')
+        # seller = msg.get('seller').decode('hex')
+        # myself = self._transport._myself.get_pubkey()
+        #
+        # if not buyer or not seller or not state:
+        #     self._log.info("Malformed order")
+        #     return
+        #
+        # if not state == 'new' and not msg.get('id'):
+        #     self._log.info("Order with no id")
+        #     return
+        #
+        # # Check order state
+        # if state == 'new':
+        #     if myself == buyer:
+        #         self.create_order(seller, msg.get('text', 'no comments'))
+        #     elif myself == seller:
+        #         self._log.info(msg)
+        #         self.accept_order(msg)
+        #     else:
+        #         self._log.info("Not a party to this order")
+        #
+        # elif state == 'cancelled':
+        #     if myself == seller or myself == buyer:
+        #         self._log.info('Order cancelled')
+        #     else:
+        #         self._log.info("Order not for us")
+        #
+        # elif state == 'accepted':
+        #     if myself == seller:
+        #         self._log.info("Bad subjects [%s]" % state)
+        #     elif myself == buyer:
+        #         # wait for confirmation
+        #         self._db.orders.update({"id": msg['id']}, {"$set": msg}, True)
+        #         pass
+        #     else:
+        #         self._log.info("Order not for us")
+        # elif state == 'paid':
+        #     if myself == seller:
+        #         # wait for  confirmation
+        #         pass
+        #     elif myself == buyer:
+        #         self.pay_order(msg)
+        #     else:
+        #         self._log.info("Order not for us")
+        # elif state == 'sent':
+        #     if myself == seller:
+        #         self.send_order(msg)
+        #     elif myself == buyer:
+        #         # wait for confirmation
+        #         pass
+        #     else:
+        #         self._log.info("Order not for us")
+        # elif state == 'received':
+        #     if myself == seller:
+        #         pass
+        #         # ok
+        #     elif myself == buyer:
+        #         self.receive_order(msg)
+        #     else:
+        #         self._log.info("Order not for us")
+        #
+        # # Store order
+        # if msg.get('id'):
+        #     if self.orders.find({id: msg['id']}):
+        #         self.orders.update({'id': msg['id']}, {"$set": {'state': msg['state']}}, True)
+        #     else:
+        #         self.orders.update({'id': msg['id']}, {"$set": {msg}}, True)
 
 
 if __name__ == '__main__':

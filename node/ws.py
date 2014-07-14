@@ -254,7 +254,7 @@ class ProtocolHandler:
 
           # Go get listing metadata and then send it to the GUI
           for contract in contracts:
-              self._transport._dht.iterativeFindValue(contract, callback=self.on_node_search_value)
+              self._transport._dht.iterativeFindValue(contract, callback=lambda msg, key=contract: self.on_node_search_value(msg, key))
 
       #self.send_to_client(None, { "type": "store_products", "products": listings } )
 
@@ -264,11 +264,11 @@ class ProtocolHandler:
         msg['senderGUID'] = self._transport.guid
         self._transport.send(protocol.shout(msg))
 
-    def on_node_search_value(self, results):
+    def on_node_search_value(self, results, key):
 
         if results:
 
-            self._log.info('Listing Data: %s' % results)
+            self._log.info('Listing Data: %s %s' % (results, key))
 
             # Fix newline issue
             results_data = results.replace('\\n', '\n\r')
@@ -294,7 +294,7 @@ class ProtocolHandler:
 
                 v = gpg.verify(results)
                 if v:
-                    self.send_to_client(None, { "type": "new_listing", "data": contract_data_json })
+                    self.send_to_client(None, { "type": "new_listing", "data": contract_data_json, "key": key })
                 else:
                     self._log.error('Could not verify signature of contract.')
             except:
