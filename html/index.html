@@ -272,8 +272,8 @@
 
         <div class="form-group">
             <label for="inputCountry" class="col-sm-3 control-label">Country</label>
-            <div class="col-sm-2">
-                <select ng-model="settings.countryCode" ng-options="country.code as country.name for country in myself.countryCodes">
+            <div class="col-sm-7">
+                <select class="form-control" ng-model="settings.countryCode" ng-options="country.code as country.name for country in myself.countryCodes">
 
                 </select>
             </div>
