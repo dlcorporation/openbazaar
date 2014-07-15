@@ -571,8 +571,6 @@ angular.module('app')
 
   $scope.removeArbiter = function(arbiterGUID) {
 
-    //$('#arbiter_'+arbiterGUID).remove();
-
     // Dedupe arbiter GUIDs
     var uniqueArbiters = $scope.settings.trustedArbiters;
     $.each($scope.settings.trustedArbiters, function(i, el){
@@ -1131,12 +1129,20 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
         $('#totalPrice').html(newPrice);
     }
 
-    $scope.gotoArbiter = function() {
+    $scope.gotoStep2 = function() {
         $scope.order.step2 = 1;
         if (!$scope.$$phase) {
            $scope.$apply();
         }
     }
+
+    $scope.gotoStep1 = function() {
+        $scope.order.step2 = '';
+        if (!$scope.$$phase) {
+           $scope.$apply();
+        }
+    }
+
 
     $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1, rawContract:rawContract}
     $scope.submitOrder = function() {

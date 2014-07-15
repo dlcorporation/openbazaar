@@ -51,7 +51,16 @@
     </div>
 
         <div id="purchase_step2" ng-show="order.step2" >
-            <p>TEST TEST TEST</p>
+
+            <div class="well">Use the form below to select an arbiter and notary. By doing this you are protecting yourself in the
+            case that something goes wrong with your transaction and ensures things go smoothly.</div>
+
+            <h4>Notary</h4>
+            <p>A notary is ...</p>
+
+            <h4>Arbiter</h4>
+            <p>An arbiter serves as ...</p>
+
         </div>
 
 
@@ -61,7 +70,7 @@
 
 <div class="modal-footer">
     <a class="btn btn-default" ng-show="!order.step2" ng-click="cancel()" type="cancel">Cancel</a>
-    <a class="btn btn-success" ng-show="!order.step2" ng-click="gotoArbiter()" type="submit">Next</a>
+    <a class="btn btn-success" ng-show="!order.step2" ng-click="gotoStep2()" type="submit">Next</a>
     <a class="btn btn-default" ng-show="order.step2" ng-click="gotoStep1()" type="submit">Back</a>
     <a class="btn btn-success" ng-show="order.step2" ng-click="submitOrder()" type="submit">Submit Order</a>
 
