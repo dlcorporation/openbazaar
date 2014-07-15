@@ -5,18 +5,22 @@
 <div class="modal-body"  style="text-align:left;">
 
     <!--<div class="alert alert-info">Wow you're almost ready to purchase an item from an Open Bazaar merchant!</div>-->
-    <form id="form-item-purchase" role="form">
+    <form id="form-item-purchase" role="form" novalidate="novalidate" name="buyItem">
 
     <div id="purchase_step1" ng-show="!order.step2">
 
     <table class="table table-striped">
         <tr>
-            <td style="background-color:#efefef; width:60px; height:60px; background-image:url('{{productImageData}}');background-size: 60px 60px;padding:20px;"></td>
+            <td style="background-color:#efefef; width:100px; height:100px; background-image:url('{{productImageData}}');background-size: 80px 80px; background-repeat:no-repeat;background-position:center;padding:20px;"></td>
             <td style="vertical-align:top;font-size:24px;">
                 <strong>{{productTitle}}</strong>
                 <p>{{productDescription}}</p>
             </td>
-            <td width="75"><input type="text" ng-model="order.productQuantity" id="itemQuantity" ng-change="updateTotal()" class="form-control"></td>
+            <td width="75">
+                <div class="form-group" ng-class="{'has-error': buyItem.itemQuantity.$invalid}">
+                    <input type="number" min="1" name="itemQuantity" ng-model="order.productQuantity" id="itemQuantity" ng-change="updateTotal()" class="form-control" required />
+                </div>
+            </td>
             <td width="100" style="font-size:24px;"><strong>&#3647;{{productPrice}}</strong></td>
         </tr>
         <tr>
@@ -53,13 +57,25 @@
         <div id="purchase_step2" ng-show="order.step2" >
 
             <div class="well">Use the form below to select an arbiter and notary. By doing this you are protecting yourself in the
-            case that something goes wrong with your transaction and ensures things go smoothly.</div>
+            case that something goes wrong with your transaction and ensures things go smoothly.<br/><br/>You can add a notary or
+            arbiter on the <strong>Settings Page</strong> or <a href="https://github.com/OpenBazaar/OpenBazaar/wiki/Contracts-and-Listings" target="_blank">find out more here</a>.</div>
 
-            <h4>Notary</h4>
-            <p>A notary is ...</p>
 
-            <h4>Arbiter</h4>
-            <p>An arbiter serves as ...</p>
+            <div class="form-group row">
+                <div class="col-sm-6">
+                <label for="notary">Notary</label>
+
+                <select id="notary" ng-model="order.notary" ng-options="notary for notary in notaries" class="form-control col-sm-4"></select>
+                </div>
+            </div>
+
+
+            <div class="form-group row">
+                <div class="col-sm-6">
+                    <label for="arbiter">Arbiter</label>
+                    <select id="arbiter" ng-model="order.arbiter" ng-options="arbiter for arbiter in arbiters" class="form-control col-sm-4"></select>
+                </div>
+            </div>
 
         </div>
 

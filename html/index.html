@@ -377,6 +377,28 @@
             </div>
         </div>
 
+        <h4>Notaries</h4>
+        <p>The addresses below are notaries used during transactions.<br/><br/></p>
+
+        <div class="form-group">
+
+            <input type="hidden" ng-model="settings.notaries" />
+            <div class="col-sm-12">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="inputNotaryGUID" placeholder="Enter an notary's OB guid">
+                        <span class="input-group-btn">
+                          <button class="btn btn-default" type="button" ng-click="addNotary()">Add</button>
+                        </span>
+                </div>
+                <table class="table table-striped" style="margin-top:10px;padding:0">
+                    <tr ng-repeat="notary in settings.notaries" id="notary_{{notary}}" style="word-break:break-all"><td width=20>
+                        <button type="button" class="btn btn-default btn-sm" ng-click="removeNotary(notary)">
+                            <span class="glyphicon glyphicon-trash" style="color:black"></span>
+                        </button></td><td>{{notary}}</td></tr>
+                </table>
+            </div>
+        </div>
+
         <h4>Acting as an Arbiter</h4>
         <p>If you are interested in acting as a trusted arbiter on the network you can set it up here.</p>
 
@@ -710,7 +732,7 @@
                         <td><span class="product-title">{{listing.Contract.item_title}}</span><br/>{{listing.Contract.item_description}}
                         <br/>Key: {{listing.key}}
                         </td>
-                        <td width="80"><span class="product-price">&#3647;{{listing.Contract.item_price}}</span><br/><button class="btn btn-success btn-xl navbar-btn" ng-click="open('lg', myself, page.pubkey, listing.Contract.item_title, listing.Contract.item_price, listing.Contract.item_description, listing.Contract.item_images, listing.key, listing.rawContract)">Purchase</button></td>
+                        <td width="80"><span class="product-price">&#3647;{{listing.Contract.item_price}}</span><br/><button class="btn btn-success btn-xl navbar-btn" ng-click="open('lg', myself, page.pubkey, listing.Contract.item_title, listing.Contract.item_price, listing.Contract.item_description, listing.Contract.item_images, listing.key, listing.rawContract, settings.notaries, settings.trustedArbiters)">Purchase</button></td>
                     </tr></table>
             </div>
 

@@ -397,6 +397,7 @@ class Market(object):
                     "secret": settings['secret'] if settings.has_key("secret") else "",
                     "welcome": settings['welcome'] if settings.has_key("welcome") else "",
                     "trustedArbiters": settings['trustedArbiters'] if settings.has_key("trustedArbiters") else "",
+                    "notaries": settings['notaries'] if settings.has_key("notaries") else "",
                     "storeDescription": settings['storeDescription'] if settings.has_key("storeDescription") else "",
                     "city": settings['city'] if settings.has_key("city") else "",
                     "stateRegion": settings['stateRegion'] if settings.has_key("stateRegion") else "",
