@@ -582,6 +582,44 @@ angular.module('app')
     $scope.saveSettings();
   }
 
+  $scope.addNotary = function() {
+    notaryGUID = $('#inputNotaryGUID').val();
+    $('#inputNotaryGUID').val('');
+
+    if(notaryGUID.length != 40 || !notaryGUID.match(/^[0-9a-z]+$/)) {
+        alert('Incorrect format for GUID');
+        return;
+    }
+
+    if(!$scope.settings.notaries) {
+      $scope.settings.notaries = [];
+    }
+    $scope.settings.notaries.push(notaryGUID);
+
+    // Dedupe notary GUIDs
+    var uniqueNotaries = [];
+    $.each($scope.settings.notaries, function(i, el){
+        if($.inArray(el, uniqueNotaries) === -1) uniqueNotaries.push(el);
+    });
+
+    $scope.settings.notaries = uniqueNotaries;
+
+    $scope.saveSettings();
+  }
+
+  $scope.removeNotary = function(notaryGUID) {
+
+    // Dedupe notary GUIDs
+    var uniqueNotaries = $scope.settings.notaries;
+    $.each($scope.settings.notaries, function(i, el){
+        if(el == notaryGUID) uniqueNotaries.splice(i, 1);
+    });
+
+    $scope.settings.notaries = uniqueNotaries;
+
+    $scope.saveSettings();
+  }
+
   function resetPanels() {
   	$scope.messagesPanel = false;
   	$scope.reviewsPanel = false;
@@ -897,6 +935,7 @@ $scope.ProductModal = function ($scope, $modal, $log) {
 var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
   $scope.contract = contract;
+  $scope.contract.productQuantity = 1;
   $scope.contract.productCondition = 'New';
 
     $scope.createContract = function() {
@@ -1061,7 +1100,8 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
 $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
-    $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract) {
+    $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
+        notaries, arbiters) {
 
 
       // Send socket a request for order info
@@ -1078,7 +1118,9 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
             productDescription: function() { return productDescription},
             productImageData: function() { return productImageData},
             key: function() { return key },
-            rawContract: function() { return rawContract }
+            rawContract: function() { return rawContract },
+            notaries: function() { return notaries },
+            arbiters: function() { return arbiters }
         },
         size: size
       });
@@ -1099,9 +1141,12 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
   };
 
 
-$scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract) {
+$scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key,
+    rawContract,
+    notaries,
+    arbiters) {
 
-    console.log(productTitle, productPrice, productDescription, productImageData, rawContract);
+    console.log(productTitle, productPrice, productDescription, productImageData, rawContract, notaries, arbiters);
     $scope.myself = myself;
     $scope.merchantPubkey = merchantPubkey;
     $scope.productTitle = productTitle;
@@ -1111,9 +1156,15 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
     $scope.totalPrice = productPrice;
     $scope.productQuantity = 1;
     $scope.rawContract = rawContract;
+    $scope.notaries = notaries;
+    $scope.arbiters = arbiters;
+
     $scope.key = key;
 
-    console.log($scope);
+    $scope.update = function(user) {
+        console.log('Updated');
+    };
+
 
     $scope.ok = function () {
       $modalInstance.close();
@@ -1145,6 +1196,9 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
 
 
     $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1, rawContract:rawContract}
+    $scope.order.notary = $scope.notaries[0];
+    $scope.order.arbiter = $scope.arbiters[0];
+
     $scope.submitOrder = function() {
 
       $scope.creatingOrder = false;
@@ -1156,7 +1210,9 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
           'seller': $scope.merchantPubkey,
           'listingKey': $scope.key,
           'orderTotal': $('#totalPrice').html(),
-          'rawContract': rawContract
+          'rawContract': rawContract,
+          'notary': $scope.order.notary,
+          'arbiter': $scope.order.arbiter
       }
       console.log(newOrder);
       socket.send('order', newOrder);

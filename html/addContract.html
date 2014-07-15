@@ -22,13 +22,13 @@
 
             <div id="add-product-fixed" class="col-sm-12">
 
-                <h3>Fixed Price Contract</h3>
 
-                    <div class="alert alert-info" ng-show="newContractForm.productTitle.$error.required || newContractForm.productPrice.$error.required">Please enter a product title and cost.</div>
+
+                    <div class="alert alert-warning" ng-show="newContractForm.inputProductTitle.$invalid || newContractForm.inputProductPrice.$invalid">Please enter a <strong>product name</strong> and <strong>price</strong>.</div>
                     <div class="row">
                     <div class="col-sm-3">
                         <div class="fileinput fileinput-new" data-provides="fileinput">
-                            <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="width: 200px; height: 150px;"></div>
+                            <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="border:none;background-image:url('img/no-photo.png');background-size:150px 150px; background-repeat: no-repeat;background-position:center;width: 200px; height: 150px;"></div>
                             <div>
                                 <span class="btn btn-default btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="contract.productImage" name="..."></span>
                                 <a href="#" class="btn btn-info fileinput-exists" data-dismiss="fileinput">Remove</a>
@@ -41,12 +41,12 @@
 
 
                         <div class="form-group">
-                            <label for="inputProductTitle">Product Title</label>
+                            <label for="inputProductTitle">Product Name</label>
                             <input type="text" required ng-model="contract.productTitle" class="form-control" id="inputProductTitle" name="inputProductTitle" placeholder="Product title"/>
                         </div>
 
                         <div class="form-group">
-                            <textarea class="form-control" ng-model="contract.productDescription" id="inputProductDescription" placeholder="Enter a description" rows="5"></textarea>
+                            <textarea class="form-control" ng-model="contract.productDescription" id="inputProductDescription" name="inputProductDescription" placeholder="Enter a description" rows="5"></textarea>
                         </div>
 
                     </div>
@@ -57,7 +57,7 @@
                         <div class="col-sm-2">
                             <div class="form-group">
                                 <label for="inputProductPrice">Price (&#3647;)</label>
-                                <input required type="text" class="form-control" ng-model="contract.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0"/>
+                                <input required type="text" min="0" class="form-control" ng-model="contract.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0.01"/>
                             </div>
                         </div>
                         <div class="col-sm-2">
@@ -69,7 +69,7 @@
                         <div class="col-sm-2">
                             <div class="form-group">
                                 <label for="inputProductQuantity">Quantity</label>
-                                <input type="text" class="form-control" ng-model="contract.productQuantity" id="inputProductQuantity" placeholder="1" value="1"/>
+                                <input type="number" class="form-control" ng-model="contract.productQuantity" name="inputProductQuantity" id="inputProductQuantity" min="1" value="1"/>
                             </div>
                         </div>
                         <div class="col-sm-6">
