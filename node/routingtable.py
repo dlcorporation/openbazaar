@@ -12,6 +12,7 @@ import logging
 import constants
 import kbucket
 import p2p
+import obelisk
 # from protocol import TimeoutError
 
 class RoutingTable(object):
@@ -142,7 +143,7 @@ class TreeRoutingTable(RoutingTable):
             """
         super(TreeRoutingTable, self).__init__(parentNodeID)
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
-        self._buckets = [kbucket.KBucket(rangeMin=0, rangeMax=2 ** 160, market_id=market_id)]
+        self._buckets = [kbucket.KBucket(rangeMin=0, rangeMax=2 ** 200, market_id=market_id)]
         self._parentNodeID = parentNodeID
 
     def addContact(self, contact):
@@ -230,7 +231,6 @@ class TreeRoutingTable(RoutingTable):
                  node is returning all of the contacts that it knows of.
         @rtype: list
         """
-
         bucketIndex = self._kbucketIndex(key)
         closestNodes = self._buckets[bucketIndex].getContacts(constants.k, nodeID)
 
@@ -335,11 +335,13 @@ class TreeRoutingTable(RoutingTable):
         @return: The index of the k-bucket responsible for the specified key
         @rtype: int
         """
-
+        #print key
+        #print obelisk.DecodeBase58Check(key)
         valKey = long(key, 16)
 
         i = 0
         for bucket in self._buckets:
+            print valKey, bucket.rangeMax
             if bucket.keyInRange(valKey):
                 return i
             else:

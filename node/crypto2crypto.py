@@ -33,6 +33,7 @@ class CryptoPeerConnection(PeerConnection):
 
         if guid is not None:
             self._guid = guid
+            self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
             callback(None)
         else:
             def cb(msg):
@@ -41,6 +42,8 @@ class CryptoPeerConnection(PeerConnection):
                     msg = msg[0]
                     msg = json.loads(msg)
                     self._guid = msg['senderGUID']
+
+                    self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
                     self._pub = msg['pubkey']
 
                     self._log.debug('New Crypt Peer: %s %s %s' % (self._address, self._pub, self._guid))
@@ -218,6 +221,7 @@ class CryptoTransportLayer(TransportLayer):
             self.secret = self.settings['secret'] if self.settings.has_key("secret") else ""
             self.pubkey = self.settings['pubkey'] if self.settings.has_key("pubkey") else ""
             self.guid = self.settings['guid'] if self.settings.has_key("guid") else ""
+            self.sin = self.settings['sin'] if self.settings.has_key("sin") else ""
             self.bitmessage = self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ""
 
         else:
@@ -259,9 +263,10 @@ class CryptoTransportLayer(TransportLayer):
         ripe_hash = hashlib.new('ripemd160')
         ripe_hash.update(sha_hash.digest())
 
-        self.guid = obelisk.b58encode('0F02%s' % ripehash.digest())
+        self.guid = ripe_hash.digest().encode('hex')
+        self.sin = obelisk.EncodeBase58Check('\x0F\x02%s' + ripe_hash.digest())
 
-        self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
+        self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid, "sin":self.sin}}, True)
 
     def _generate_new_bitmessage_address(self):
       # Use the guid generated previously as the key

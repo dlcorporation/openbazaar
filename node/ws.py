@@ -67,6 +67,7 @@ class ProtocolHandler:
             'peers': peers,
             'settings': settings,
             'guid': self._transport.guid,
+            'sin': self._transport.sin,
             'countryCodes': countryCodes,
             'reputation': []  # self._transport.reputation.get_my_reputation()
         }
@@ -371,6 +372,7 @@ class ProtocolHandler:
             else:
                 peer_item['pubkey'] = 'unknown'
             peer_item['guid'] = peer._guid
+            peer_item['sin'] = peer._sin
             peers.append(peer_item)
 
         return peers
