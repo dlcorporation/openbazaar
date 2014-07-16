@@ -47,7 +47,7 @@ class DataURI(str):
         return cls.make(mimetype, charset, base64, data)
 
     def __new__(cls, *args, **kwargs):
-        uri = super(DataURI, cls).__new__(cls, *args, **kwargs)
+        uri = super(DataURI, cls).__new__(cls, *args)
         uri._parse  # Trigger any ValueErrors on instantiation.
         return uri
 

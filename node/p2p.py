@@ -32,7 +32,7 @@ class PeerConnection(object):
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REQ)
         self._socket.setsockopt(zmq.LINGER, 0)
-        #self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
+        # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
         self._socket.connect(self._address)
         self._stream = zmqstream.ZMQStream(self._socket, io_loop=ioloop.IOLoop.current())
 
@@ -57,7 +57,7 @@ class PeerConnection(object):
             if self._responses_received.has_key(message_id):
                 del self._responses_received[message_id]
 
-            #XXX: Might be a good idea to remove peer if pubkey changes. This
+            # XXX: Might be a good idea to remove peer if pubkey changes. This
             # should be handled in CrytpoPeerConnection.
             if callback is not None:
                 callback(msg)
@@ -74,6 +74,7 @@ class PeerConnection(object):
 
         # Set timer for checking if peer alive
         ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
+
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
@@ -104,7 +105,7 @@ class TransportLayer(object):
                 cb(*data)
 
     def get_profile(self):
-        return hello_request({ 'uri': self._uri })
+        return hello_request({'uri': self._uri})
 
     def listen(self, pubkey):
         self._log.info("Listening at: %s:%s" % (self._ip, self._port))
@@ -151,9 +152,9 @@ class TransportLayer(object):
 
         # try:
         # del self._peers[uri]
-        #     msg = {
-        #         'type': 'peer_remove',
-        #         'uri': uri
+        # msg = {
+        # 'type': 'peer_remove',
+        # 'uri': uri
         #     }
         #     self.trigger_callbacks(msg['type'], msg)
         #
@@ -168,7 +169,7 @@ class TransportLayer(object):
         # Directed message
         if send_to is not None:
             peer = self._dht._routingTable.getContact(send_to)
-            #self._log.debug('%s %s %s' % (peer._guid, peer._address, peer._pub))
+            # self._log.debug('%s %s %s' % (peer._guid, peer._address, peer._pub))
             peer.send(data, callback=callback)
             return
 
@@ -200,7 +201,7 @@ class TransportLayer(object):
 
         # if not self._routingTable.getContact(msg['senderGUID']):
         # Add to contacts if doesn't exist yet
-        #self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
+        # self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
         if msg['type'] != 'ok':
             self.trigger_callbacks(msg['type'], msg)
 

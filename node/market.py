@@ -139,67 +139,7 @@ class Market(object):
         self._log.debug('New Contract ID: %s' % contract_id)
 
 
-    def save_product(self, msg):
-        #self._log.debug("Saving product: %s" % msg)
 
-        msg['market_id'] = self._market_id
-
-
-        product_id = msg['id'] if msg.has_key("id") else ""
-
-        if product_id == "":
-            product_id = random.randint(0, 1000000)
-
-        if not msg.has_key("productPrice") or not msg['productPrice'] > 0:
-            msg['productPrice'] = 0
-
-        if not msg.has_key("productQuantity") or not msg['productQuantity'] > 0:
-            msg['productQuantity'] = 1
-
-
-        if msg.has_key('productImageData'):
-
-            uri = DataURI(msg['productImageData'])
-            imageData = uri.data
-            mime_type = uri.mimetype
-            charset = uri.charset
-
-            image = Image.open(StringIO(imageData))
-            croppedImage = ImageOps.fit(image, (100, 100), centering=(0.5, 0.5))
-            data = StringIO()
-            croppedImage.save(data, format='PNG')
-
-
-            new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
-            data.close()
-            msg['productImageData'] = new_uri
-
-
-        ''' Create product contract here and send to the network
-
-        '''
-
-
-        # Save product listing to DHT
-        listing = json.dumps(msg)
-        listing_key = hashlib.sha1(listing).hexdigest()
-
-        hash_value = hashlib.new('ripemd160')
-        hash_value.update(listing_key)
-        listing_key = hash_value.hexdigest()
-
-        msg['key'] = listing_key
-
-        self._db.products.update({'id':product_id}, {'$set':msg}, True)
-
-        self._log.debug('New Listing Key: %s' % listing_key)
-
-        # Store listing
-        self._transport._dht.iterativeStore(self._transport, listing_key, listing, self._transport._guid)
-
-        self.update_listings_index()
-
-        # If keywords store them in the keyword index
 
     def save_contract(self, msg):
 

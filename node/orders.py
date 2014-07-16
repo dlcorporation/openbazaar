@@ -39,7 +39,7 @@ class Orders(object):
 
     def get_order(self, orderId):
 
-        _order = self._db.orders.find_one({"id": orderId, "market_id":self._market_id})
+        _order = self._db.orders.find_one({"id": orderId, "market_id": self._market_id})
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -48,7 +48,8 @@ class Orders(object):
                  "buyer": _order['buyer'] if _order.has_key("buyer") else "",
                  "seller": _order['seller'] if _order.has_key("seller") else "",
                  "escrows": _order['escrows'] if _order.has_key("escrows") else "",
-                 "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
+                 "signed_contract_body": _order['signed_contract_body'] if _order.has_key(
+                     "signed_contract_body") else "",
                  "updated": _order['updated'] if _order.has_key("updated") else ""}
         # orders.append(_order)
 
@@ -56,7 +57,7 @@ class Orders(object):
 
     def get_orders(self):
         orders = []
-        for _order in self._db.orders.find({'market_id':self._market_id}).sort([("updated", -1)]):
+        for _order in self._db.orders.find({'market_id': self._market_id}).sort([("updated", -1)]):
             # Get order prototype object before storing
             orders.append({"id": _order['id'],
                            "state": _order['state'],
@@ -132,17 +133,17 @@ class Orders(object):
             v = self._gpg.verify(contract)
             if v:
                 self._log.info('Verified Contract')
-                self._db.orders.update({"id":order_id}, { "$set": { "state": "sent", "updated": time.time() }}, True)
+                self._db.orders.update({"id": order_id}, {"$set": {"state": "sent", "updated": time.time()}}, True)
 
             else:
                 self._log.error('Could not verify signature of contract.')
         except:
             self._log.debug('Error getting JSON contract')
 
-        # new_order['state'] = 'sent'
-        # self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
-        # new_order['type'] = 'order'
-        # self._transport.send(new_order, new_order['buyer'].decode('hex'))
+            # new_order['state'] = 'sent'
+            # self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
+            # new_order['type'] = 'order'
+            # self._transport.send(new_order, new_order['buyer'].decode('hex'))
 
     def receive_order(self, new_order):  # action
         new_order['state'] = 'received'
@@ -167,13 +168,14 @@ class Orders(object):
         # Prepare contract body
         json_string = json.dumps(buyer, indent=0)
         seg_len = 52
-        out_text = string.join(map(lambda x : json_string[x:x+seg_len],
-           range(0, len(json_string), seg_len)), "\n")
+        out_text = string.join(map(lambda x: json_string[x:x + seg_len],
+                                   range(0, len(json_string), seg_len)), "\n")
 
         # Append new data to contract
         out_text = "%s\n%s" % (seed_contract, out_text)
 
-        signed_data = gpg.sign(out_text, passphrase='P@ssw0rd', keyid=self._transport.settings.get('PGPPubkeyFingerprint'))
+        signed_data = gpg.sign(out_text, passphrase='P@ssw0rd',
+                               keyid=self._transport.settings.get('PGPPubkeyFingerprint'))
 
         self._log.debug('Double-signed Contract: %s' % signed_data)
 
@@ -185,13 +187,15 @@ class Orders(object):
 
         # Save order locally in database
         order_id = random.randint(0, 1000000)
-        while self._db.contracts.find({'id':order_id}).count() > 0:
+        while self._db.contracts.find({'id': order_id}).count() > 0:
             order_id = random.randint(0, 1000000)
 
-        self._db.orders.update({'id':order_id}, {'$set':{'market_id':self._transport._market_id, 'contract_key':contract_key, 'signed_contract_body':str(signed_data), 'state':'new'}}, True)
+        self._db.orders.update({'id': order_id}, {
+            '$set': {'market_id': self._transport._market_id, 'contract_key': contract_key,
+                     'signed_contract_body': str(signed_data), 'state': 'new'}}, True)
 
         # Push buy order to DHT and node if available
-        #self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+        # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
         #self.update_listings_index()
 
         # Send order to seller
@@ -209,97 +213,75 @@ class Orders(object):
             self.new_order(msg)
 
 
-        #
-        #
-        # state = msg.get('state')
-        #
-        # buyer = msg.get('buyer').decode('hex')
-        # seller = msg.get('seller').decode('hex')
-        # myself = self._transport._myself.get_pubkey()
-        #
-        # if not buyer or not seller or not state:
-        #     self._log.info("Malformed order")
-        #     return
-        #
-        # if not state == 'new' and not msg.get('id'):
-        #     self._log.info("Order with no id")
-        #     return
-        #
-        # # Check order state
-        # if state == 'new':
-        #     if myself == buyer:
-        #         self.create_order(seller, msg.get('text', 'no comments'))
-        #     elif myself == seller:
-        #         self._log.info(msg)
-        #         self.accept_order(msg)
-        #     else:
-        #         self._log.info("Not a party to this order")
-        #
-        # elif state == 'cancelled':
-        #     if myself == seller or myself == buyer:
-        #         self._log.info('Order cancelled')
-        #     else:
-        #         self._log.info("Order not for us")
-        #
-        # elif state == 'accepted':
-        #     if myself == seller:
-        #         self._log.info("Bad subjects [%s]" % state)
-        #     elif myself == buyer:
-        #         # wait for confirmation
-        #         self._db.orders.update({"id": msg['id']}, {"$set": msg}, True)
-        #         pass
-        #     else:
-        #         self._log.info("Order not for us")
-        # elif state == 'paid':
-        #     if myself == seller:
-        #         # wait for  confirmation
-        #         pass
-        #     elif myself == buyer:
-        #         self.pay_order(msg)
-        #     else:
-        #         self._log.info("Order not for us")
-        # elif state == 'sent':
-        #     if myself == seller:
-        #         self.send_order(msg)
-        #     elif myself == buyer:
-        #         # wait for confirmation
-        #         pass
-        #     else:
-        #         self._log.info("Order not for us")
-        # elif state == 'received':
-        #     if myself == seller:
-        #         pass
-        #         # ok
-        #     elif myself == buyer:
-        #         self.receive_order(msg)
-        #     else:
-        #         self._log.info("Order not for us")
-        #
-        # # Store order
-        # if msg.get('id'):
-        #     if self.orders.find({id: msg['id']}):
-        #         self.orders.update({'id': msg['id']}, {"$set": {'state': msg['state']}}, True)
-        #     else:
-        #         self.orders.update({'id': msg['id']}, {"$set": {msg}}, True)
-
-
-if __name__ == '__main__':
-    seller = ECC(curve='secp256k1')
-
-    class FakeTransport():
-        _myself = ECC(curve='secp256k1')
-
-        def add_callback(self, section, cb):
-            pass
-
-        @staticmethod
-        def send(msg, to=None):
-            print 'sending', msg
-
-        @staticmethod
-        def log(msg):
-            print msg
-
-    transport = FakeTransport()
-    rep = Orders(transport)
-    rep.on_order(order(None, transport._myself.get_pubkey(), seller.get_pubkey(), 'new', 'One!', ["dsasd", "deadbeef"]))
+            #
+            #
+            # state = msg.get('state')
+            #
+            # buyer = msg.get('buyer').decode('hex')
+            # seller = msg.get('seller').decode('hex')
+            # myself = self._transport._myself.get_pubkey()
+            #
+            # if not buyer or not seller or not state:
+            # self._log.info("Malformed order")
+            #     return
+            #
+            # if not state == 'new' and not msg.get('id'):
+            #     self._log.info("Order with no id")
+            #     return
+            #
+            # # Check order state
+            # if state == 'new':
+            #     if myself == buyer:
+            #         self.create_order(seller, msg.get('text', 'no comments'))
+            #     elif myself == seller:
+            #         self._log.info(msg)
+            #         self.accept_order(msg)
+            #     else:
+            #         self._log.info("Not a party to this order")
+            #
+            # elif state == 'cancelled':
+            #     if myself == seller or myself == buyer:
+            #         self._log.info('Order cancelled')
+            #     else:
+            #         self._log.info("Order not for us")
+            #
+            # elif state == 'accepted':
+            #     if myself == seller:
+            #         self._log.info("Bad subjects [%s]" % state)
+            #     elif myself == buyer:
+            #         # wait for confirmation
+            #         self._db.orders.update({"id": msg['id']}, {"$set": msg}, True)
+            #         pass
+            #     else:
+            #         self._log.info("Order not for us")
+            # elif state == 'paid':
+            #     if myself == seller:
+            #         # wait for  confirmation
+            #         pass
+            #     elif myself == buyer:
+            #         self.pay_order(msg)
+            #     else:
+            #         self._log.info("Order not for us")
+            # elif state == 'sent':
+            #     if myself == seller:
+            #         self.send_order(msg)
+            #     elif myself == buyer:
+            #         # wait for confirmation
+            #         pass
+            #     else:
+            #         self._log.info("Order not for us")
+            # elif state == 'received':
+            #     if myself == seller:
+            #         pass
+            #         # ok
+            #     elif myself == buyer:
+            #         self.receive_order(msg)
+            #     else:
+            #         self._log.info("Order not for us")
+            #
+            # # Store order
+            # if msg.get('id'):
+            #     if self.orders.find({id: msg['id']}):
+            #         self.orders.update({'id': msg['id']}, {"$set": {'state': msg['state']}}, True)
+            #     else:
+            #         self.orders.update({'id': msg['id']}, {"$set": {msg}}, True)

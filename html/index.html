@@ -416,6 +416,16 @@
             </div>
         </div>
 
+        <h4>Acting as an Notary</h4>
+        <p>If you want to act as a notary check the box below.</p>
+
+        <div class="form-group">
+
+            <label for="inputNotary" class="col-sm-3 control-label">Make me a notary</label>
+            <input type="checkbox" id="inputNotary" class="col-sm-9" ng-model="settings.notary" value="1" />
+
+        </div>
+
         <div class="form-group">
             <div class="col-sm-3"></div>
             <div class="col-sm-9" style="text-align:right">
@@ -605,7 +615,7 @@
             <button class="btn btn-info" ng-click="compose('lg', myself, settings.bitmessage, null)">Send Message</button>
         </div>
     </div>
-    
+
     <div ng-repeat="message in myself.messages">
         {{message.text}}
     </div>
@@ -623,9 +633,9 @@
                 <td width=15><input type="checkbox"/></td>
                 <td style="border-left:none;">{{message.receivedTime * 1000 | date:'medium'}}</td>
                 <td style="border-left:none;"><identicon icon-size="32" hash="message.fromAddress" title="{{message.fromAddress}}"></identicon> {{message.fromAddress}}</td>
-                <td style="border-left:none;"><a href="#" 
+                <td style="border-left:none;"><a href="#"
                     ng-click="view('lg', myself, settings.bitmessage, message)">{{message.subject}}</a></td>
-                <td style="border-left:none;"><a href="#" 
+                <td style="border-left:none;"><a href="#"
                     ng-click="compose('lg', myself, settings.bitmessage, message)">Reply</a></td>
             </tr>
         </table>
