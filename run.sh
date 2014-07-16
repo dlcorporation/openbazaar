@@ -52,7 +52,7 @@ TOR_PROXY_PORT=7000
 
 while getopts "hs:p:l:dn:a:b:c:u:" OPTION
 do
-     case $OPTION in
+     case ${OPTION} in
          h)
              usage
              exit 1

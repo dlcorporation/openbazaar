@@ -1026,61 +1026,9 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
                 socket.send("query_contracts", {})
 
             }
-
-
         }
-
         $modalInstance.dismiss('cancel');
-
-
     }
-
-  $scope.saveProduct = function () {
-
-    var imgUpload = document.getElementById('inputProductImage').files[0];
-
-    if(imgUpload) {
-
-      if (imgUpload.type != '' && $.inArray(imgUpload.type, ['image/jpeg', 'image/gif', 'image/png']) != -1) {
-
-        var r = new FileReader();
-        r.onloadend = function(e){
-          var data = e.target.result;
-
-          $scope.product.productImageName = imgUpload.name;
-          $scope.product.productImageData = imgUpload.result;
-          console.log(imgUpload);
-
-          console.log('SAVED:',$scope.product);
-          socket.send("save_product", $scope.product)
-          socket.send("query_contracts", {})
-
-          $modalInstance.dismiss('cancel');
-
-
-        }
-        r.readAsArrayBuffer(imgUpload);
-
-      } else {
-        console.log('SAVED:',$scope.product);
-        socket.send("save_product", $scope.product)
-        socket.send("query_contracts", {})
-
-        $modalInstance.dismiss('cancel');
-      }
-
-    } else {
-
-      console.log('SAVED:',$scope.product);
-      socket.send("save_product", $scope.product)
-      socket.send("query_contracts", {})
-
-      $modalInstance.dismiss('cancel');
-    }
-
-
-
-  };
 
   $scope.cancel = function () {
     socket.send("query_contracts", {});
@@ -1088,13 +1036,8 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
   };
 
   $scope.toggleItemAdvanced = function() {
-
     $scope.itemAdvancedDetails = ($scope.itemAdvancedDetails) ? 0 : 1;
   }
-
-
-
-
 };
 
 
@@ -1277,7 +1220,7 @@ $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my
     // Fill in form if msg is passed - reply mode
     if(msg != null) {
         $scope.toAddress = msg.fromAddress;
-        // Make sure subject start with RE: 
+        // Make sure subject start with RE:
         var sj = msg.subject;
         if(sj.match(/^RE:/) == null) {
             sj = "RE: " + sj;
@@ -1299,7 +1242,7 @@ $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my
       }
 
       var query = {'type': 'send_message', 'to': toAddress.value,
-                   'subject': subject.value, 
+                   'subject': subject.value,
                    'body': body.value}
       console.log('sending message with subject ' + subject)
       socket.send('send_message', query)

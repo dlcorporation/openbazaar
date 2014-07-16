@@ -17,8 +17,6 @@ from pprint import pprint
 ioloop.install()
 import time
 
-import tornado
-
 
 class CryptoPeerConnection(PeerConnection):
 
@@ -247,20 +245,23 @@ class CryptoTransportLayer(TransportLayer):
 
     def _generate_new_keypair(self):
 
-      # Generate new keypair
-      key = ec.ECC(curve='secp256k1')
-      self.secret = key.get_privkey().encode('hex')
-      pubkey = key.get_pubkey()
-      signedPubkey = key.sign(pubkey)
-      self.pubkey = pubkey.encode('hex')
-      self._myself = key
+        # Generate new keypair
+        key = ec.ECC(curve='secp256k1')
+        self.secret = key.get_privkey().encode('hex')
+        pubkey = key.get_pubkey()
+        signedPubkey = key.sign(pubkey)
+        self.pubkey = pubkey.encode('hex')
+        self._myself = key
 
-      # Generate a node ID by ripemd160 hashing the signed pubkey
-      guid = hashlib.new('ripemd160')
-      guid.update(signedPubkey)
-      self.guid = guid.digest().encode('hex')
+        # Generate SIN
+        sha_hash = hashlib.sha256()
+        sha_hash.update(pubkey)
+        ripe_hash = hashlib.new('ripemd160')
+        ripe_hash.update(sha_hash.digest())
 
-      self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
+        self.guid = obelisk.b58encode('0F02%s' % ripehash.digest())
+
+        self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid}}, True)
 
     def _generate_new_bitmessage_address(self):
       # Use the guid generated previously as the key
