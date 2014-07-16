@@ -117,7 +117,7 @@ class KBucket(object):
 
     def keyInRange(self, key):
         """ Tests whether the specified key (i.e. node ID) is in the range
-        of the 160-bit ID space covered by this k-bucket (in otherwords, it
+        of the 160-bit ID space covered by this k-bucket (in other words, it
         returns whether or not the specified key should be placed in this
         k-bucket)
 
@@ -129,7 +129,7 @@ class KBucket(object):
         @rtype: bool
         """
         if isinstance(key, str):
-            key = long(key.encode('hex'), 16)
+            key = long(key.encode('hex'), 32)
         return self.rangeMin <= key < self.rangeMax
 
     def __len__(self):

@@ -358,6 +358,7 @@ class Market(object):
         msg = query_page(find_guid)
         msg['uri'] = self._transport._uri
         msg['senderGUID'] = self._transport.guid
+        msg['sin'] = self._transport.sin
         msg['pubkey'] = self._transport.pubkey
 
         self._transport.send(msg, find_guid, callback)
@@ -370,10 +371,11 @@ class Market(object):
 
         #pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
+        sin = page.get('sin')
         page = page.get('text')
 
-        if guid and page:
-            self.pages[guid] = page
+        if sin and page:
+            self.pages[sin] = page
 
 
     # Return your page info if someone requests it on the network
@@ -391,7 +393,8 @@ class Market(object):
                                         settings['email'] if settings.has_key('email') else '',
                                         settings['bitmessage'] if settings.has_key('bitmessage') else '',
                                         settings['arbiter'] if settings.has_key('arbiter') else '',
-                                        settings['arbiterDescription'] if settings.has_key('arbiterDescription') else ''),
+                                        settings['arbiterDescription'] if settings.has_key('arbiterDescription') else '',
+                                        self._transport.sin),
                                         peer['senderGUID']
                                         )
 
