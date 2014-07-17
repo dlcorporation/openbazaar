@@ -1023,7 +1023,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
             keywords = ($scope.contract.productKeywords) ? $scope.contract.productKeywords.split(',') : []
             $.each(keywords, function(i, el){
-                if($.inArray(el, contract.Contract.item_keywords) === -1 && el != '') contract.Contract.item_keywords.push(el);
+                if($.inArray(el.trim(), contract.Contract.item_keywords) === -1 && el.trim() != '') contract.Contract.item_keywords.push(el.trim());
             });
 
             var imgUpload = document.getElementById('inputProductImage').files[0];
