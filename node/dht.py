@@ -168,8 +168,6 @@ class DHT(object):
             if msg['findValue'] is True:
                 if key in self._dataStore and self._dataStore[key] is not None:
 
-                    self._log.debug('Found key: %s' % key)
-
                     # Found key in local data store
                     new_peer.send(
                         {"type": "findNodeResponse",
@@ -357,8 +355,6 @@ class DHT(object):
             if key == 'nodeState':
                 continue
 
-            self._log.debug('Key: %s' % key)
-
             now = int(time.time())
             key = key.encode('hex')
             originalPublisherID = self._dataStore.originalPublisherID(key)
@@ -474,6 +470,30 @@ class DHT(object):
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
         self._log.debug('Places to store the key-value: (%s, %s)' % (nodes, key))
+
+        # Check for keyword index modification
+        try:
+            value_json = json.loads(value)
+            if value_json['keyword_index_add']:
+
+                existing_index = self._dataStore[key]
+
+                if existing_index is not None:
+
+                    if not value_json['keyword_index_add'] in existing_index['listings']:
+                        existing_index['listings'].append(value_json['keyword_index_add'])
+
+                    value = existing_index
+
+                else:
+
+                    value = {'listings':[value_json['keyword_index_add']]}
+
+                self._log.info('keyword %s' % existing_index)
+
+        except:
+            self._log.debug('Could not load JSON from value to store')
+
 
         now = int(time.time())
         originallyPublished = now - age
