@@ -219,9 +219,10 @@
             <td width=100 style="border-right:none;"><img ng-show="contract.Contract.item_images" src="{{contract.Contract.item_images}}" alt="" class="img-thumbnail" width=100 height=100></td>
             <td  style="border-left:none;"><a href="#"><span style="font-size:24px;">{{contract.Contract.item_title}}</span></a>
                 <br/>
-                {{contract.Contract.item_description}}
+                <p>{{contract.Contract.item_desc}}</p>
+                <strong>Condition:</strong> {{contract.Contract.item_condition}}
             </td>
-            <td>{{contract.Seller.seller_GUID}}</td>
+            <td><a href="#">{{contract.Seller.seller_GUID}}</a></td>
             <td width=50><span style="font-size:24px;">{{contract.Contract.item_quantity}}</span></td>
             <td width=50><span style="font-size:24px;">&#3647;{{contract.Contract.item_price}}</span></td>
             <td width=100 align="center">
