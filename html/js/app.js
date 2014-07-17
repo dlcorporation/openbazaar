@@ -494,6 +494,7 @@ angular.module('app')
   $scope.searchNetwork = function() {
      var query = {'type': 'search', 'key': $scope.search };
      $scope.searching = $scope.search;
+     $scope.search_results = [];
      $scope.awaitingShop = $scope.search;
      socket.send('search', query)
      $scope.search = ""
@@ -665,7 +666,7 @@ angular.module('app')
 
     resetPanels();
 
-    if(panelName != 'myInfo' && panelName != 'search') {
+    if(panelName != 'myInfo') {
       $scope.hideSidebar();
       $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
     } else {
