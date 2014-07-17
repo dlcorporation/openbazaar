@@ -32,7 +32,7 @@ class ProtocolHandler:
             "query_page": self.client_query_page,
             "review": self.client_review,
             "order": self.client_order,
-            "search": self.client_query_store_products,
+            "search": self.client_query_network_for_products,
             "shout": self.client_shout,
             "query_store_products": self.client_query_store_products,
             "query_orders": self.client_query_orders,
@@ -223,6 +223,13 @@ class ProtocolHandler:
         #if response:
         #    self._log.info(response)
         #self.send_to_client(*response)
+
+    def client_query_network_for_products(self, socket_handler, msg):
+
+        self._log.info("Querying for Contracts %s" % msg)
+
+        # Query mongo for products
+        self._transport._dht.find_listings_by_keyword(self._transport, msg['key'], callback=self.on_find_products)
 
 
     def client_query_store_products(self, socket_handler, msg):
