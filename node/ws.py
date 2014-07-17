@@ -227,10 +227,11 @@ class ProtocolHandler:
 
     def client_query_store_products(self, socket_handler, msg):
 
-        self._log.info("Querying for Store Contracts")
+        self._log.info("Querying for Store Contracts %s" % msg)
 
         # Query mongo for products
-        self._transport._dht.find_listings(self._transport, msg['key'], callback=self.on_find_products)
+        self._transport._dht.find_listings_by_keyword(self._transport, msg['key'], callback=self.on_find_products)
+
 
     def on_find_products(self, results):
 
@@ -238,18 +239,21 @@ class ProtocolHandler:
         self._log.info(results)
 
         if len(results):
-            data = results['data']
-            contracts = data['contracts']
-            signature = results['signature']
-            self._log.info('Signature: %s' % signature)
+
+
+
+            # data = results['data']
+            # contracts = data['contracts']
+            # signature = results['signature']
+            # self._log.info('Signature: %s' % signature)
 
             # TODO: Validate signature of listings matches data
             # self._transport._myself.
 
             # Go get listing metadata and then send it to the GUI
-            for contract in contracts:
+            for contract in results['listings']:
                 self._transport._dht.iterativeFindValue(contract,
-                                                        callback=lambda msg, key=contract: self.on_node_search_value(
+                                                        callback=lambda msg, key=contract: self.on_global_search_value(
                                                             msg, key))
 
                 #self.send_to_client(None, { "type": "store_products", "products": listings } )
@@ -291,6 +295,44 @@ class ProtocolHandler:
                 v = gpg.verify(results)
                 if v:
                     self.send_to_client(None, {"type": "new_listing", "data": contract_data_json, "key": key,
+                                               "rawContract": results})
+                else:
+                    self._log.error('Could not verify signature of contract.')
+            except:
+                self._log.debug('Error getting JSON contract')
+        else:
+            self._log.info('No results')
+
+    def on_global_search_value(self, results, key):
+
+        if results:
+
+            self._log.info('Listing Data: %s %s' % (results, key))
+
+            # Fix newline issue
+            results_data = results.replace('\\n', '\n\r')
+            # self._log.info(results_data)
+
+            # Import gpg pubkey
+            gpg = gnupg.GPG()
+
+            # Retrieve JSON from the contract
+            # 1) Remove PGP Header
+            contract_data = ''.join(results.split('\n')[3:])
+            index_of_signature = contract_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
+            contract_data_json = contract_data[0:index_of_signature]
+
+            try:
+                contract_data_json = json.loads(contract_data_json)
+                seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
+
+                gpg.import_keys(seller_pubkey)
+
+                split_results = results.split('\n')
+
+                v = gpg.verify(results)
+                if v:
+                    self.send_to_client(None, {"type": "global_search_result", "data": contract_data_json, "key": key,
                                                "rawContract": results})
                 else:
                     self._log.error('Could not verify signature of contract.')

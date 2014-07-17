@@ -79,6 +79,8 @@ angular.module('app')
   }
 
 
+
+
  // Open the websocket connection and handle messages
   var socket = new Connection(function(msg) {
 
@@ -119,6 +121,9 @@ angular.module('app')
          break;
       case 'new_listing':
          $scope.parse_new_listing(msg)
+         break;
+      case 'global_search_result':
+         $scope.parse_search_result(msg)
          break;
       case 'orderinfo':
          $scope.parse_orderinfo(msg)
@@ -461,6 +466,30 @@ angular.module('app')
     }
   }
 
+  $scope.search_results = [];
+  $scope.parse_search_result = function(msg) {
+    console.log(msg.data);
+    contract_data = msg.data;
+    contract_data.key = msg.key;
+    contract_data.rawContract = msg.rawContract;
+    $scope.search_results.push(contract_data)
+    $scope.search_results = jQuery.unique($scope.search_results);
+    $.each( $scope.search_results, function(index, contract){
+        if (jQuery.isEmptyObject(contract.Contract.item_images)) {
+            console.log('empty object');
+            contract.Contract.item_images = "img/no-photo.png";
+        }
+    });
+
+    console.log('Search Results',$scope.search_results)
+    $scope.showDashboardPanel('search');
+
+
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+  }
+
   $scope.search = ""
   $scope.searchNetwork = function() {
      var query = {'type': 'search', 'key': $scope.search };
@@ -629,13 +658,14 @@ angular.module('app')
     $scope.arbitrationPanel = false;
   	$scope.ordersPanel = false;
   	$scope.myInfoPanel = false;
+  	$scope.searchPanel = false;
   }
 
   $scope.showDashboardPanel = function(panelName) {
 
     resetPanels();
 
-    if(panelName != 'myInfo') {
+    if(panelName != 'myInfo' && panelName != 'search') {
       $scope.hideSidebar();
       $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
     } else {
@@ -670,6 +700,9 @@ angular.module('app')
   			break;
   		case 'myInfo':
   			$scope.myInfoPanel = true;
+  			break;
+  		case 'search':
+  			$scope.searchPanel = true;
   			break;
 
   	}
