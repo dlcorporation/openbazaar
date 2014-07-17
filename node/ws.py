@@ -230,8 +230,30 @@ class ProtocolHandler:
         self._log.info("Querying for Store Contracts %s" % msg)
 
         # Query mongo for products
-        self._transport._dht.find_listings_by_keyword(self._transport, msg['key'], callback=self.on_find_products)
+        self._transport._dht.find_listings(self._transport, msg['key'], callback=self.on_find_products_by_store)
 
+    def on_find_products_by_store(self, results):
+
+        self._log.info('Found Contracts: %s' % type(results))
+        self._log.info(results)
+
+        if len(results):
+
+            data = results['data']
+            contracts = data['contracts']
+            signature = results['signature']
+            self._log.info('Signature: %s' % signature)
+
+            # TODO: Validate signature of listings matches data
+            # self._transport._myself.
+
+            # Go get listing metadata and then send it to the GUI
+            for contract in contracts:
+                self._transport._dht.iterativeFindValue(contract,
+                                                        callback=lambda msg, key=contract: self.on_node_search_value(
+                                                            msg, key))
+
+                #self.send_to_client(None, { "type": "store_products", "products": listings } )
 
     def on_find_products(self, results):
 
