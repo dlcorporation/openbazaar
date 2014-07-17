@@ -193,7 +193,7 @@ ul.pagination { margin: 10px 0 }
 
 #settings-container { margin: 30px 0 20px 0; }
 
-#arbitration-form, #communication-form, #keys-form { display:none; }
+#arbitration-form, #communication-form, #keys-form, #notary-form { display:none; }
 
 .jumbotron { background-color:white; margin-top:20px; }
 #jumboh1 { font-weight:120; }

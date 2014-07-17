@@ -21,6 +21,8 @@ blockchain
 
 *.log
 
+.idea/
+
 .idea/.name
 
 .idea/dictionaries/brianhoffman.xml

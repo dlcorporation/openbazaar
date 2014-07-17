@@ -349,11 +349,15 @@ class DHT(object):
         self._log.debug('Republishing Data')
         expiredKeys = []
 
+        self._log.debug('Key: %s' % self._dataStore.keys())
+
         for key in self._dataStore.keys():
 
             # Filter internal variables stored in the datastore
             if key == 'nodeState':
                 continue
+
+            self._log.debug('Key: %s' % key)
 
             now = int(time.time())
             key = key.encode('hex')
