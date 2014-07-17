@@ -474,7 +474,9 @@ class DHT(object):
         # Check for keyword index modification
         try:
             value_json = json.loads(value)
-            if value_json['keyword_index_add']:
+
+            # Add to index
+            if value_json.has_key('keyword_index_add'):
 
                 existing_index = self._dataStore[key]
 
@@ -490,6 +492,23 @@ class DHT(object):
                     value = {'listings':[value_json['keyword_index_add']]}
 
                 self._log.info('keyword %s' % existing_index)
+
+            if value_json.has_key('keyword_index_remove'):
+
+                existing_index = self._dataStore[key]
+
+                if existing_index is not None:
+
+                    if value_json['keyword_index_remove'] in existing_index['listings']:
+                        existing_index['listings'].remove(value_json['keyword_index_remove'])
+                        value = existing_index
+                    else:
+                        return
+
+                else:
+                    # Not in keyword index anyways
+                    return
+
 
         except:
             self._log.debug('Could not load JSON from value to store')

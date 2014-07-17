@@ -260,8 +260,30 @@ class Market(object):
 
     def remove_contract(self, msg):
         self._log.info("Removing contract: %s" % msg)
+
+        # Remove from DHT keyword indices
+        self.remove_from_keyword_indexes(msg['contract_id'])
+
         self._db.contracts.remove({'id':msg['contract_id']})
         self.update_listings_index()
+
+    def remove_from_keyword_indexes(self, contract_id):
+
+        contract = self._db.contracts.find_one({'id':contract_id})
+        contract_key = contract['key']
+
+        contract = json.loads(contract['contract_body'])
+        contract_keywords = contract['Contract']['item_keywords']
+
+        for keyword in contract_keywords:
+
+            # Remove keyword from index
+
+            hash_value = hashlib.new('ripemd160')
+            hash_value.update('keyword-%s' % keyword)
+            keyword_key = hash_value.hexdigest()
+
+            self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_remove':contract_key}), self._transport._guid)
 
     def get_messages(self):
         self._log.info("Listing messages for market: %s" % self._transport._market_id)
