@@ -922,6 +922,7 @@ $scope.ProductModal = function ($scope, $modal, $log) {
         }
       });
 
+
       modalInstance.result.then(function (selectedItem) {
         $scope.selected = selectedItem;
       }, function () {
@@ -938,6 +939,9 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
   $scope.contract = contract;
   $scope.contract.productQuantity = 1;
   $scope.contract.productCondition = 'New';
+
+
+
 
     $scope.createContract = function() {
 
@@ -985,7 +989,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 
             keywords = ($scope.contract.productKeywords) ? $scope.contract.productKeywords.split(',') : []
             $.each(keywords, function(i, el){
-                if($.inArray(el, contract.Contract.item_keywords) === -1) contract.Contract.item_keywords.push(el);
+                if($.inArray(el, contract.Contract.item_keywords) === -1 && el != '') contract.Contract.item_keywords.push(el);
             });
 
             var imgUpload = document.getElementById('inputProductImage').files[0];
@@ -1046,6 +1050,10 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
     $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
         notaries, arbiters) {
+
+
+
+
 
 
       // Send socket a request for order info
@@ -1266,5 +1274,7 @@ $scope.ViewMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_ad
       $modalInstance.dismiss('cancel');
     };
 };
+
+
 
 }])

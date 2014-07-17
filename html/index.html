@@ -76,7 +76,7 @@
 
             <div id="header-navigation">
 
-                <identicon icon-size="45" hash="myself.sin" title="{{myself.sin}}" style="float:right;vertical-align:middle; margin-right:10px;margin-left:10px;"></identicon>
+                <identicon icon-size="45" hash="myself.guid" title="{{myself.guid}}" style="float:right;vertical-align:middle; margin-right:10px;margin-left:10px;"></identicon>
 
                 <ul class="nav nav-pills">
                     <li class="active" ng-click="showDashboardPanel('myInfo')"><a href="#myInfo">Home</a></li>
@@ -679,7 +679,7 @@
 <div ng-show="page" class="" style="margin-top:40px;">
 
     <div>
-        <h2><identicon icon-size="64" hash="page.sin" title="{{page.sin}}"></identicon>  {{page.nickname}}</h2>
+        <h2><identicon icon-size="64" hash="page.guid" title="{{page.guid}}"></identicon>  {{page.nickname}}</h2>
 
         <div ng-show="page.arbiter" class="alert alert-warning" role="alert">
                 <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
@@ -881,7 +881,7 @@
     <table class="peers-table no-hover" style="margin-top:20px;">
         <tbody>
         <tr>
-            <td width="40"><identicon icon-size="38" hash="myself.sin" title="{{myself.sin}}"></identicon></td>
+            <td width="40"><identicon icon-size="38" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
             <td style="font-size:13px;"><span title="{{myself.pubkey}}"><strong>Your Market</strong><br>
               <span style="font-style:italic;">{{myself.nickname ? myself.nickname : myself.sin}}</span></span></td>
 
@@ -896,7 +896,7 @@
         <table id="favorite-peers" class="peers-table table-hover">
             <tbody>
             <tr ng-repeat="peer in peers | limitTo:10" ng-click="queryShop(peer)">
-                <td width="40"><identicon icon-size="38" hash="peer.sin" title="{{peer.sin}}"></identicon></td>
+                <td width="40"><identicon icon-size="38" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
                 <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}</strong><br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.sin}}</span></span></td>
             </tr>
