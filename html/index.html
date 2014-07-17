@@ -198,11 +198,45 @@
 
 </div>
 
+<!-- Search -->
+<div ng-show="searchPanel" class="animated fadeInLeft">
+
+    <h4>Search Results</h4>
+
+    <div class="alert alert-warning" role="alert">The following results were found on the network.</div>
+
+    <table class="table table-striped table-bordered" style="margin-top:0px;">
+        <tr>
+            <th colspan=2>Product</th>
+            <th width=50>Quantity</th>
+            <th width=75>Price</th>
+            <th></th>
+        </tr>
+        <tr ng-repeat="contract in search_results">
+            <td width=100 style="border-right:none;"><img ng-show="contract.Contract.item_images" src="{{contract.Contract.item_images}}" alt="" class="img-thumbnail" width=100 height=100></td>
+            <td  style="border-left:none;"><a href="#">{{contract.Contract.item_title}}</a>
+                <br/>
+                {{contract.Contract.item_description}}
+            </td>
+            <td width=50>{{contract.Contract.item_quantity}}</td>
+            <td width=50>&#3647;{{contract.Contract.item_price}}</td>
+            <td width=100 align="center">
+                <div class="listing-button">
+                    <button type="button" class="btn btn-success btn-sm" ng-click="republishListing(contract.id)">
+                        <span class="glyphicon glyphicon-shopping-cart"></span> Buy
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+
+</div>
+
 <!-- Settings -->
 <div ng-show="settingsPanel" class="animated fadeInLeft">
 
 <h3>Settings</h3>
-
 
 
 <div id="settings-container">

@@ -439,6 +439,20 @@ class DHT(object):
         # Find appropriate storage nodes and save key value
         # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
 
+    def find_listings_by_keyword(self, transport, keyword, listingFilter=None, callback=None):
+
+        hashvalue = hashlib.new('ripemd160')
+        hashvalue.update('keyword-%s' % keyword)
+        listing_index_key = hashvalue.hexdigest()
+
+        self._log.info('Finding contracts for keyword: %s' % keyword)
+
+        self.iterativeFindValue(listing_index_key, callback)
+
+        # Find appropriate storage nodes and save key value
+        # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
+
+
     def iterativeStore(self, transport, key, value, originalPublisherID=None, age=0):
         """ The Kademlia store operation
 
