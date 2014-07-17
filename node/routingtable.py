@@ -341,7 +341,6 @@ class TreeRoutingTable(RoutingTable):
 
         i = 0
         for bucket in self._buckets:
-            print valKey, bucket.rangeMax
             if bucket.keyInRange(valKey):
                 return i
             else:

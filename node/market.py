@@ -210,6 +210,16 @@ class Market(object):
         self.update_listings_index()
 
         # If keywords store them in the keyword index
+        keywords = msg['Contract']['item_keywords']
+        self._log.info('Keywords: %s' % keywords)
+        for keyword in keywords:
+
+            hash_value = hashlib.new('ripemd160')
+            hash_value.update('keyword-%s' % keyword)
+            keyword_key = hash_value.hexdigest()
+
+            self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':contract_key}), self._transport._guid)
+
 
     def republish_listing(self, msg):
 
