@@ -207,19 +207,23 @@
 
     <table class="table table-striped table-bordered" style="margin-top:0px;">
         <tr>
+
             <th colspan=2>Product</th>
+            <th width="200">Seller</th>
             <th width=50>Quantity</th>
             <th width=75>Price</th>
             <th></th>
         </tr>
         <tr ng-repeat="contract in search_results">
+
             <td width=100 style="border-right:none;"><img ng-show="contract.Contract.item_images" src="{{contract.Contract.item_images}}" alt="" class="img-thumbnail" width=100 height=100></td>
-            <td  style="border-left:none;"><a href="#">{{contract.Contract.item_title}}</a>
+            <td  style="border-left:none;"><a href="#"><span style="font-size:24px;">{{contract.Contract.item_title}}</span></a>
                 <br/>
                 {{contract.Contract.item_description}}
             </td>
-            <td width=50>{{contract.Contract.item_quantity}}</td>
-            <td width=50>&#3647;{{contract.Contract.item_price}}</td>
+            <td>{{contract.Seller.seller_GUID}}</td>
+            <td width=50><span style="font-size:24px;">{{contract.Contract.item_quantity}}</span></td>
+            <td width=50><span style="font-size:24px;">&#3647;{{contract.Contract.item_price}}</span></td>
             <td width=100 align="center">
                 <div class="listing-button">
                     <button type="button" class="btn btn-success btn-sm" ng-click="republishListing(contract.id)">
