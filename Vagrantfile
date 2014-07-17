@@ -37,12 +37,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
-    apt-get install -y build-essential python-dev python-pip python-zmq mongodb libjpeg-dev tor privoxy gnupg
+    apt-get install -y build-essential python-dev python-pip python-zmq mongodb libjpeg-dev tor privoxy gnupg rng-tools
     pip install tornado Twisted pycountry pillow python-gnupg mock
     easy_install pymongo websocket behave
     cp -R /vagrant/ecdsa /vagrant/obelisk /usr/local/lib/python2.7/dist-packages/
     mongo --eval "db = db.getSiblingDB('openbazaar')"
     pip install pyelliptic
+    sudo rngd -r /dev/urandom
     /etc/init.d/tor restart
   SCRIPT
 

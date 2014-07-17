@@ -91,11 +91,11 @@ class Market(object):
         self._dht._refreshNode()
 
         # Periodically refresh buckets
-        #loop = tornado.ioloop.IOLoop.instance()
-        # refreshCB = tornado.ioloop.PeriodicCallback(self._dht._refreshNode,
-        #                                             constants.refreshTimeout,
-        #                                             io_loop=loop)
-        # refreshCB.start()
+        loop = tornado.ioloop.IOLoop.instance()
+        refreshCB = tornado.ioloop.PeriodicCallback(self._dht._refreshNode,
+                                                    constants.refreshTimeout,
+                                                    io_loop=loop)
+        refreshCB.start()
 
 
     def load_page(self, welcome):
@@ -331,7 +331,7 @@ class Market(object):
             return {"bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
                     "email": settings['email'] if settings.has_key("email") else "",
                     "PGPPubKey": settings['PGPPubKey'] if settings.has_key("PGPPubKey") else "",
-                    "PGPPubKeyFingerprint": settings['PGPPubKeyFingerprint'] if settings.has_key("PGPPubKeyFingerprint") else "",
+                    "PGPPubkeyFingerprint": settings['PGPPubkeyFingerprint'] if settings.has_key("PGPPubkeyFingerprint") else "",
                     "pubkey": settings['pubkey'] if settings.has_key("pubkey") else "",
                     "nickname": settings['nickname'] if settings.has_key("nickname") else "",
                     "secret": settings['secret'] if settings.has_key("secret") else "",
@@ -347,6 +347,7 @@ class Market(object):
                     "zip": settings['zip'] if settings.has_key("zip") else "",
                     "arbiterDescription": settings['arbiterDescription'] if settings.has_key("arbiterDescription") else "",
                     "arbiter": settings['arbiter'] if settings.has_key("arbiter") else "",
+                    "notary": settings['notary'] if settings.has_key("notary") else "",
                    }
 
 

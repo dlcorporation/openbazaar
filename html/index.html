@@ -207,7 +207,8 @@
         <li class="active" onclick="$('#profile-form').show();$('#profile-form').siblings().hide();"><a href="#">Store Info</a></li>
         <li><a href="#" onclick="$('#keys-form').show();$('#keys-form').siblings().hide();">Keys</a></li>
         <li><a href="#" onclick="$('#communication-form').show();$('#communication-form').siblings().hide();">Communication</a></li>
-        <li><a href="#" onclick="$('#arbitration-form').show();$('#arbitration-form').siblings().hide();">Arbitration</a></li>
+        <li><a href="#" onclick="$('#arbitration-form').show();$('#arbitration-form').siblings().hide();">Arbiter</a></li>
+        <li><a href="#" onclick="$('#notary-form').show();$('#notary-form').siblings().hide();">Notary</a></li>
     </ul>
 
 </div>
@@ -377,7 +378,41 @@
             </div>
         </div>
 
-        <h4>Notaries</h4>
+        <div class="alert alert-warning" role="alert">Offering arbitration services is an important service to the OpenBazaar community. It ensures
+        that disputes get resolved in a responsible and informed way. If you want to act as an arbiter fill out the form below and you will be
+        available to the community at large to serve in that capacity.</div>
+
+        <h4>Acting as an Arbiter</h4>
+        <p>If you are interested in acting as a trusted arbiter on the network you can set it up here.</p>
+
+        <div class="form-group">
+
+            <label for="inputArbiter" class="col-sm-3 control-label">Make me an arbiter</label>
+            <input type="checkbox" id="inputArbiter" class="col-sm-9" ng-model="settings.arbiter" value="1" />
+
+        </div>
+
+        <div class="form-group">
+            <label for="inputArbiterDescription" class="col-sm-3 control-label">Experience & Services</label>
+            <div class="col-sm-9">
+                <textarea rows='6' type="text" class="form-control" ng-model="settings.arbiterDescription" id="inputArbiterDescription" placeholder="Enter a short description of your services and experience"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-9" style="text-align:right">
+                <button type="submit" class="btn btn-default" ng-click="saveSettings()">Save</button>
+            </div>
+        </div>
+
+    </form>
+
+    <!-- Notary Form -->
+    <form id="notary-form" role="form" class="form-horizontal">
+
+
+        <h4>Trusted Notaries</h4>
         <p>The addresses below are notaries used during transactions.<br/><br/></p>
 
         <div class="form-group">
@@ -396,23 +431,6 @@
                             <span class="glyphicon glyphicon-trash" style="color:black"></span>
                         </button></td><td>{{notary}}</td></tr>
                 </table>
-            </div>
-        </div>
-
-        <h4>Acting as an Arbiter</h4>
-        <p>If you are interested in acting as a trusted arbiter on the network you can set it up here.</p>
-
-        <div class="form-group">
-
-            <label for="inputArbiter" class="col-sm-3 control-label">Make me an arbiter</label>
-            <input type="checkbox" id="inputArbiter" class="col-sm-9" ng-model="settings.arbiter" value="1" />
-
-        </div>
-
-        <div class="form-group">
-            <label for="inputArbiterDescription" class="col-sm-3 control-label">Experience & Services</label>
-            <div class="col-sm-9">
-                <textarea rows='6' type="text" class="form-control" ng-model="settings.arbiterDescription" id="inputArbiterDescription" placeholder="Enter a short description of your services and experience"></textarea>
             </div>
         </div>
 

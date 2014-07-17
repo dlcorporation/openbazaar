@@ -478,7 +478,8 @@ angular.module('app')
                       nickname:'',
                       welcome:'',
                       trustedArbiters:{},
-                      trustedNotaries:{}}
+                      trustedNotaries:{}
+                    }
   $scope.saveSettings = function() {
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query);
@@ -548,7 +549,7 @@ angular.module('app')
     $('#inputArbiterGUID').val('');
 
     // TODO: Check for valid arbiter GUID
-    if(arbiterGUID.length != 40 || !arbiterGUID.match(/^[0-9a-z]+$/)) {
+    if(arbiterGUID.length != 38 || !arbiterGUID.match(/^[0-9a-zA-Z]+$/)) {
         alert('Incorrect format for GUID');
         return;
     }
