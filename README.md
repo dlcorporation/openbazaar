@@ -1,8 +1,13 @@
+# OpenBazaar
+
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the GPL.
 
 * Official Site: http://openbazaar.org
 * Forums: http://forum.openbazaar.org
 * IRC Chat: #OpenBazaar on Freenode
+
+_Zero_ Fees
+_Zero_ Censorship
 
 <strong>Online Test Drive:</strong> http://seed.openbazaar.org:8888
 
@@ -51,14 +56,19 @@ contributed by Dean Masley
 7. [Distributed Currency Exchange](https://gist.github.com/drwasho/aa6ab79e92f2a876073e) by Dr Washington Sanchez
 8. [OpenBazaar Genesis Contract](https://gist.github.com/drwasho/76e1161db1e5b860598a) by Dr Washington Sanchez (arbiter), Brian Hoffman (buyer), and Samuel Patterson (seller)
 9. [A pseudonymous trust system for a decentralized anonymous marketplace](https://gist.github.com/dionyziz/e3b296861175e0ebea4b) by Dionysis Zindros
+10. [Dispute Resolution in OpenBazaar - Arbitration Market](https://gist.github.com/drwasho/405d51bd1b1a32e38145) by Dr Washington Sanchez
 
-## Screenshot
+## Screenshots
 
-Here are some screenshots of the alpha UI so far as well as the HTML contract generation tool being built.
+Here are some screenshots of the alpha UI so far:
 
-![Screen 1](http://i.imgur.com/qwByrqk.png)
-![Screen 2](http://i.imgur.com/v3gRVgi.png)
-![Screen 3](http://i.imgur.com/65eSjjz.png)
-![Contract Templates](https://raw.githubusercontent.com/DelainM/OpenBazaar/html-contracts/html-contract-tools/resources/OB-HTML-Contract-tools.png)
-![Contract Tool](http://s29.postimg.org/aog95fcrr/Open_Bazaar_Contract_Maker.png)
+![Screen 1](http://s30.postimg.org/6kmmyhs01/Screen_1.png)
+![Screen 2](http://s30.postimg.org/mf1j8dgqp/Screen_2.png)
+![Screen 3](http://s30.postimg.org/k2tjas45d/Screen_3.png)
+![Screen 4](http://s30.postimg.org/94i9slfk1/Screen_4.png)
+![Screen 5](http://s30.postimg.org/fr4xlrx8h/Screen_5.png)
+![Screen 6](http://s30.postimg.org/40r04e4g1/Screen_6.png)
+![Screen 7](http://s30.postimg.org/fkr8ioo3l/Screen_7.png)
+![Screen 8](http://s30.postimg.org/fw8ovg4jl/Screen_8.png)
+
 =======
