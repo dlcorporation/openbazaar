@@ -65,15 +65,15 @@ class PeerConnection(object):
         self._stream.on_recv(cb)
 
         def remove_dead_peer():
-            self._log.debug('Responses Received: %s' % self._responses_received)
+            #self._log.debug('Responses Received: %s' % self._responses_received)
 
             if self._responses_received.has_key(message_id):
                 del self._responses_received[message_id]
-                self._log.info('Peer\'s zeromq not listening it seems. %s' % message_id)
+                self._log.info('Peer\'s zeromq not listening it seems. %s %s' % (message_id, self._address))
                 callback(False)
 
         # Set timer for checking if peer alive
-        ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
+        #ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
 
 
 # Transport layer manages a list of peers
