@@ -1,13 +1,17 @@
 # OpenBazaar
+<img src="http://s29.postimg.org/82z3qgz87/Open_Bazaar_Banner.png" width="800px"/>
+
+**Zero** Fees. **Zero** Censorship.
 
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the GPL.
+
+
 
 * Official Site: http://openbazaar.org
 * Forums: http://forum.openbazaar.org
 * IRC Chat: #OpenBazaar on Freenode
 
-_Zero_ Fees
-_Zero_ Censorship
+
 
 <strong>Online Test Drive:</strong> http://seed.openbazaar.org:8888
 
