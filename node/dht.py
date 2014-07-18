@@ -485,11 +485,32 @@ class DHT(object):
 
         self._log.debug('Places to store the key-value: (%s, %s)' % (nodes, key))
 
-        # Check for keyword index modification
         try:
             value_json = json.loads(value)
 
-            # Add to index
+            # Add Notary GUID to index
+            if value_json.has_key('notary_index_add'):
+                existing_index = self._dataStore[key]
+                if existing_index is not None:
+                    if not value_json['notary_index_add'] in existing_index['notaries']:
+                        existing_index['notaries'].append(value_json['notary_index_add'])
+                    value = existing_index
+                else:
+                    value = {'notaries':[value_json['notary_index_add']]}
+                self._log.info('Notaries: %s' % existing_index)
+
+            if value_json.has_key('notary_index_remove'):
+                existing_index = self._dataStore[key]
+                if existing_index is not None:
+                    if value_json['notary_index_remove'] in existing_index['notaries']:
+                        existing_index['notaries'].remove(value_json['notary_index_remove'])
+                        value = existing_index
+                    else:
+                        return
+                else:
+                    return
+
+            # Add listing to keyword index
             if value_json.has_key('keyword_index_add'):
 
                 existing_index = self._dataStore[key]
@@ -629,13 +650,13 @@ class DHT(object):
 
     def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
 
-        '''
+        """
         - Create a new DHTSearch object and add the key and call back to it
         - Add the search to our search queue (self._searches)
         - Find out if we're looking for a value or for a node
         -
 
-        '''
+        """
 
         # Create a new search object
         new_search = DHTSearch(self._market_id, key, call, callback=callback)

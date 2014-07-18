@@ -119,7 +119,7 @@ class Orders(object):
         contract_data = ''.join(contract.split('\n')[6:])
         index_of_signature = contract_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
         contract_data_json = contract_data[0:index_of_signature]
-        self._log.info('data %s' % contract_data_json)
+        #self._log.info('data %s' % contract_data_json)
 
         try:
             contract_data_json = json.loads(contract_data_json)
@@ -128,7 +128,7 @@ class Orders(object):
             self._gpg.import_keys(seller_pubkey)
 
             split_results = contract.split('\n')
-            self._log.debug('DATA: %s' % split_results[3])
+            #self._log.debug('DATA: %s' % split_results[3])
 
             v = self._gpg.verify(contract)
             if v:

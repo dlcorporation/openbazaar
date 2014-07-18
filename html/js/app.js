@@ -510,6 +510,7 @@ angular.module('app')
                       trustedArbiters:{},
                       trustedNotaries:{}
                     }
+
   $scope.saveSettings = function() {
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query);

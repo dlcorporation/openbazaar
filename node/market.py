@@ -342,6 +342,7 @@ class Market(object):
                             "unit_price":item_price,
                             "item_title":contract_body.get('Contract').get('item_title'),
                             "item_desc":contract_body.get('Contract').get('item_desc'),
+                            "item_condition":contract_body.get('Contract').get('item_condition'),
                             "item_quantity_available":contract_body.get('Contract').get('item_quantity'),
                            })
 
@@ -351,8 +352,26 @@ class Market(object):
     # SETTINGS
 
     def save_settings(self, msg):
-        self._log.info("Settings to save %s" % msg)
-        self._log.info(self._transport)
+        self._log.debug("Settings to save %s" % msg)
+
+        # Check for any updates to arbiter or notary status to push to the DHT
+        if msg.has_key('notary'):
+
+            # Generate notary index key
+            hash_value = hashlib.new('ripemd160')
+            hash_value.update('notary-index')
+            key = hash_value.hexdigest()
+
+            if msg['notary'] is True:
+                self._log.info('Letting the network know you are now a notary')
+                data = json.dumps({'notary_index_add': self._transport._guid})
+                self._transport._dht.iterativeStore(self._transport, key, data, self._transport._guid)
+            else:
+                self._log.info('Letting the network know you are not a notary')
+                data = json.dumps({'notary_index_remove': self._transport._guid})
+                self._transport._dht.iterativeStore(self._transport, key, data, self._transport._guid)
+
+        # Update local settings
         self._db.settings.update({'id':'%s'%self._transport._market_id}, {'$set':msg}, True)
 
     def get_settings(self):

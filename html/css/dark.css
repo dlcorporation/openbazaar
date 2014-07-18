@@ -211,6 +211,15 @@ div#listing-loader { padding:0 0px; }
 div.listing-button { margin-bottom: 5px; }
 div.listing-button button { width: 100%; }
 
+table.contract-table {
+
+}
+table.contract-table td {
+    font-size:20px;
+}
+
+div.contract-description { margin: 10px 0; font-size:16px;  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+
 
 # Bootstrap Pills Dropdown
 .sidebar-nav {
