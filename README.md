@@ -1,56 +1,51 @@
-# OpenBazaar
-<img src="http://s29.postimg.org/82z3qgz87/Open_Bazaar_Banner.png" width="800px"/>
+<img src="http://s27.postimg.org/5i0igk0v7/Open_Bazaar_Logo.png" width="800px"/>
+======
 
 **Zero** Fees. **Zero** Censorship.
 
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the GPL.
 
+- **Official Site:** http://openbazaar.org
+- **Forums:** http://forum.openbazaar.org
+- **IRC Chat:** #OpenBazaar on [Freenode](http://webchat.freenode.net/)
+- **Original Presentation at Toronto Hackathon:** https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
+- **Slides from 'Bitcoin in the Beltway' by Brian Hoffman:** http://www.slideshare.net/openbazaar/open-bazaar
 
+**Online Test Drive:** http://seed.openbazaar.org:8888
 
-* Official Site: http://openbazaar.org
-* Forums: http://forum.openbazaar.org
-* IRC Chat: #OpenBazaar on Freenode
+## Support
+You can financially support the project by either:
 
-
-
-<strong>Online Test Drive:</strong> http://seed.openbazaar.org:8888
-
-<strong>Original Presentation at Toronto Hackathon:</strong> https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
-
-<strong>Donate to the Project</strong> BTC: 16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt
-
-
-### IRC Chat
-We are continually on IRC chat at #OpenBazaar on Freenode
-
+1. A direct donation: [16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt](https://blockchain.info/address/16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt)
+2. Tip4Commit: https://tip4commit.com/projects/728
+  - Code committed to the project is rewarded with bitcoin
 
 ## Features (Notional)
 - Full market editor for management of items catalog
 - Order management system
 - Ricardian-style contracts  
-- Escrow-based transactions
-- Arbiter management
+- Multisignature escrow-based transactions
+- Arbiter management and marketplace
 - Private messaging
 - Identity/Reputation system
 
 ## Project Status
-
-All features are currently in alpha stage. Current functionality includes starting a connection to the distributed marketplace and viewing content in a browser. Transactions are not possible.
+- All features are currently in *alpha* stage. 
+- Current functionality includes:
+  1. Starting a connection to the distributed marketplace
+  2. Viewing content in a browser
+- Transactions are **not possible** for the moment.
 
 ## Build Instructions
-
 Read the [build instructions wiki](https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions).
 
-
 ## Artwork Contributions
-
-![](https://github.com/OpenBazaar/OpenBazaar/blob/gh-pages/img/logo_alt1-b-h.png?raw=true)
+![](https://github.com/OpenBazaar/OpenBazaar/blob/gh-pages/img/logo_alt1-b-h.png?raw=true)  
 contributed by Jacob Payne
-![](http://i.imgur.com/WwPUXGS.png)
+![](http://i.imgur.com/WwPUXGS.png)  
 contributed by Dean Masley
 
 ## Theory Work
-
 1. [Ricardian Contracts](https://gist.github.com/drwasho/a5380544c170bdbbbad8) by Dr Washington Sanchez
 2. [P2P Lending on OpenBazaar](https://gist.github.com/drwasho/2c40b91e169f55988618) by Dr Washington Sanchez
 3. [Auctions on OpenBazaar](https://gist.github.com/drwasho/d923d2d37f544ea22e6f) by Dr Washington Sanchez
@@ -63,8 +58,7 @@ contributed by Dean Masley
 10. [Dispute Resolution in OpenBazaar - Arbitration Market](https://gist.github.com/drwasho/405d51bd1b1a32e38145) by Dr Washington Sanchez
 
 ## Screenshots
-
-Here are some screenshots of the alpha UI so far:
+Here are some screenshots of the *alpha* UI so far:
 
 ![Screen 1](http://s30.postimg.org/6kmmyhs01/Screen_1.png)
 ![Screen 2](http://s30.postimg.org/mf1j8dgqp/Screen_2.png)
@@ -74,5 +68,13 @@ Here are some screenshots of the alpha UI so far:
 ![Screen 6](http://s30.postimg.org/40r04e4g1/Screen_6.png)
 ![Screen 7](http://s30.postimg.org/fkr8ioo3l/Screen_7.png)
 ![Screen 8](http://s30.postimg.org/fw8ovg4jl/Screen_8.png)
+
+## Press
+
+- [Wired](https://www.wired.co.uk/news/archive/2014-04/25/darkmarket-prototype)
+- [CoinTelegraph](https://cointelegraph.com/news/111332/what_s_in_a_word_darkmarket_becomes_openbazaar#.U2IWgfl_tqU)
+- [Coindesk](https://www.coindesk.com/openbazaar-bitcoin-build-decentralised-ebay/)
+- [IBTimes](https://www.ibtimes.co.uk/silk-road-successor-darkmarket-untouchable-by-feds-claim-creators-1446241)
+- [DeepDotWeb](https://www.deepdotweb.com/2014/06/23/openbazaar-a-decentralized-alternative/)
 
 =======
