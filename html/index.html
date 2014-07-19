@@ -459,44 +459,49 @@
     <!-- Notary Form -->
     <form id="notary-form" role="form" class="form-horizontal">
 
+        <div >
 
-        <h4>Trusted Notaries</h4>
-        <p>The addresses below are notaries used during transactions.<br/><br/></p>
+            <h4>Trusted Notaries</h4>
+            <p>The addresses below are notaries used during transactions. <button type="button" class="btn btn-primary btn-sm" ng-click="">
+                            <span class="glyphicon glyphicon-search"></span> Find Notary
+                        </button></p>
 
-        <div class="form-group">
+            <div class="form-group">
 
-            <input type="hidden" ng-model="settings.notaries" />
-            <div class="col-sm-12">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="inputNotaryGUID" placeholder="Enter an notary's OB guid">
-                        <span class="input-group-btn">
-                          <button class="btn btn-default" type="button" ng-click="addNotary()">Add</button>
-                        </span>
+                <input type="hidden" ng-model="settings.notaries" />
+                <div class="col-sm-12">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="inputNotaryGUID" placeholder="Enter an notary's OB guid">
+                            <span class="input-group-btn">
+                              <button class="btn btn-default" type="button" ng-click="addNotary()">Add</button>
+                            </span>
+                    </div>
+                    <table class="table table-striped" style="margin-top:10px;padding:0">
+                        <tr ng-repeat="notary in settings.notaries" id="notary_{{notary}}" style="word-break:break-all"><td width=20>
+                            <button type="button" class="btn btn-default btn-sm" ng-click="removeNotary(notary)">
+                                <span class="glyphicon glyphicon-trash" style="color:black"></span>
+                            </button></td><td>{{notary}}</td></tr>
+                    </table>
                 </div>
-                <table class="table table-striped" style="margin-top:10px;padding:0">
-                    <tr ng-repeat="notary in settings.notaries" id="notary_{{notary}}" style="word-break:break-all"><td width=20>
-                        <button type="button" class="btn btn-default btn-sm" ng-click="removeNotary(notary)">
-                            <span class="glyphicon glyphicon-trash" style="color:black"></span>
-                        </button></td><td>{{notary}}</td></tr>
-                </table>
             </div>
-        </div>
 
-        <h4>Acting as an Notary</h4>
-        <p>If you want to act as a notary check the box below.</p>
+            <h4>Acting as an Notary</h4>
+            <p>If you want to act as a notary check the box below.</p>
 
-        <div class="form-group">
+            <div class="form-group">
 
-            <label for="inputNotary" class="col-sm-3 control-label">Make me a notary</label>
-            <input type="checkbox" id="inputNotary" class="col-sm-9" ng-model="settings.notary" value="1" />
+                <label for="inputNotary" class="col-sm-3 control-label">Make me a notary</label>
+                <input type="checkbox" id="inputNotary" class="col-sm-9" ng-model="settings.notary" value="1" />
 
-        </div>
-
-        <div class="form-group">
-            <div class="col-sm-3"></div>
-            <div class="col-sm-9" style="text-align:right">
-                <button type="submit" class="btn btn-default" ng-click="saveSettings()">Save</button>
             </div>
+
+            <div class="form-group">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-9" style="text-align:right">
+                    <button type="submit" class="btn btn-default" ng-click="saveSettings()">Save</button>
+                </div>
+            </div>
+
         </div>
 
     </form>

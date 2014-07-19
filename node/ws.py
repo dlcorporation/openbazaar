@@ -5,12 +5,17 @@ import random
 import logging
 
 import tornado.websocket
-import tornado.ioloop
+from zmq.eventloop import ioloop
 
 import protocol
 import pycountry
 import gnupg
 import pprint
+
+import time
+
+ioloop.install()
+
 
 
 class ProtocolHandler:
@@ -49,6 +54,8 @@ class ProtocolHandler:
             "import_raw_contract": self.client_import_raw_contract,
             "create_contract": self.client_create_contract,
         }
+
+        self._timeouts = []
 
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
 
@@ -89,15 +96,37 @@ class ProtocolHandler:
         self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
 
     def client_query_page(self, socket_handler, msg):
-        self._log.info("Message: %s" % msg)
         findGUID = msg['findGUID']
+        success = False
 
-        def cb(success):
-            if not success:
-                self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+        query_id = random.randint(0, 1000000)
+        self._timeouts.append(query_id)
 
-        self._market.query_page(findGUID, cb)
-        # self._market.reputation.query_reputation(guid)
+        def cb(msg, query_id):
+            self._log.info('Success %s' % query_id)
+            self._timeouts.remove(query_id)
+            # if not success:
+            #     self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+
+        self._market.query_page(findGUID, lambda msg, query_id=query_id: cb(msg, query_id))
+
+        loop = ioloop.IOLoop.instance()
+
+        def unreachable_market(query_id):
+            self._log.info('test')
+            if query_id in self._timeouts:
+                self._log.info('Unreachable Market: %s' % msg)
+                peers = self.get_peers()
+
+                for peer in self._transport._dht._activePeers:
+                    if peer._guid == findGUID:
+                        self._transport._dht._activePeers.remove(peer)
+
+                self.refresh_peers()
+
+
+
+        loop.add_timeout(time.time() + 3, lambda query_id=query_id: unreachable_market(query_id))
 
 
     def client_query_orders(self, socket_handler, msg):
@@ -233,10 +262,7 @@ class ProtocolHandler:
 
 
     def client_query_store_products(self, socket_handler, msg):
-
-        self._log.info("Querying for Store Contracts %s" % msg)
-
-        # Query mongo for products
+        self._log.info("Searching network for contracts")
         self._transport._dht.find_listings(self._transport, msg['key'], callback=self.on_find_products_by_store)
 
     def on_find_products_by_store(self, results):
@@ -297,7 +323,7 @@ class ProtocolHandler:
 
         if results:
 
-            self._log.info('Listing Data: %s %s' % (results, key))
+            self._log.debug('Listing Data: %s %s' % (results, key))
 
             # Fix newline issue
             results_data = results.replace('\\n', '\n\r')
@@ -319,7 +345,6 @@ class ProtocolHandler:
                 gpg.import_keys(seller_pubkey)
 
                 split_results = results.split('\n')
-                self._log.debug('DATA: %s' % split_results[3])
 
                 v = gpg.verify(results)
                 if v:
@@ -336,7 +361,7 @@ class ProtocolHandler:
 
         if results:
 
-            self._log.info('Listing Data: %s %s' % (results, key))
+            self._log.debug('Listing Data: %s %s' % (results, key))
 
             # Fix newline issue
             results_data = results.replace('\\n', '\n\r')

@@ -17,7 +17,6 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.redirect("/html/index.html")
 
-
 class MarketApplication(tornado.web.Application):
 
     def __init__(self, market_ip, market_port, seed_uri, market_id, 
@@ -49,9 +48,9 @@ class MarketApplication(tornado.web.Application):
     def get_transport(self):
         return self.dht._transport
 
-
 def start_node(my_market_ip, my_market_port, seed_uri, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None):
-    logging.basicConfig(level=logging.DEBUG,
+
+    logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(name)s -  \
                                 %(levelname)s - %(message)s',
                         filename=log_file)
@@ -74,7 +73,7 @@ def start_node(my_market_ip, my_market_port, seed_uri, log_file, market_id, bm_u
         except:
             port += 1
 
-    locallogger.info("Started user app at http://%s:%s" % (my_market_ip, port))
+    locallogger.info("Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, port))
 
     # handle shutdown
     def shutdown(x, y):

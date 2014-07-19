@@ -81,20 +81,18 @@ class DHT(object):
                            'active peers')
             return
 
-        foundMatchingPeer = False
-
-        # Update peer's pubkey or uri if necessary
+        # Refresh peer's data in case anything changed
         for idx, peer in enumerate(self._activePeers):
 
             active_peer_tuple = (peer._pub, peer._address, peer._guid)
 
             if active_peer_tuple == peer_tuple:
-                self._log.info('Found matching peer, not adding.')
-                foundMatchingPeer = True
+                self._log.info('Already connected to this node')
+                return
 
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
-                self._log.info('Found partial match')
+                self._log.info('Found stale data about this node, refreshing')
                 del self._activePeers[idx]
                 self._routingTable.removeContact(peer_tuple[2])
 
@@ -103,8 +101,7 @@ class DHT(object):
                                              peer_tuple[1],
                                              peer_tuple[0])
         self._activePeers.append(new_peer)
-        self._log.debug('Removing old contacts for this guid')
-        print long(new_peer._guid, 16)
+        self._log.debug('Removing old information about this node')
         self._routingTable.removeContact(new_peer._guid)
         self._routingTable.addContact(new_peer)
 
@@ -205,14 +202,13 @@ class DHT(object):
                     self._log.debug('Contact Triples: %s' % contactTriples)
                     self._log.info('Sending found nodes to: %s' % guid)
 
-                    msg = new_peer.send(
+                    new_peer.send(
                         {"type": "findNodeResponse",
                          "senderGUID": self._transport.guid,
                          "uri": self._transport._uri,
                          "pubkey": self._transport.pubkey,
                          "foundNodes": contactTriples,
                          "findID": findID})
-                    self._log.info('GOT: %s' % msg)
 
             if not self._routingTable.getContact(new_peer._guid):
                 self._routingTable.addContact(new_peer)
@@ -314,17 +310,19 @@ class DHT(object):
     def _refreshNode(self):
         """ Periodically called to perform k-bucket refreshes and data
         replication/republishing as necessary """
-        self._log.info('Refreshing Data')
+        self._log.info('Refreshing DHT Data')
         self._refreshRoutingTable()
         self._republishData()
 
     def _refreshRoutingTable(self):
-        self._log.debug('Started Refreshing Routing Table')
+        self._log.info('Started Refreshing Routing Table')
+
+        # Get Random ID from every k-bucket
         nodeIDs = self._routingTable.getRefreshList(0, False)
 
         def searchForNextNodeID():
             if len(nodeIDs) > 0:
-                self._log.info('Refreshing Routing Table')
+                self._log.info('Refreshing K-Buckets by searching for random key')
                 searchID = nodeIDs.pop()
                 self.iterativeFindNode(searchID)
                 searchForNextNodeID()
@@ -645,7 +643,7 @@ class DHT(object):
                  finished.
         @rtype: twisted.internet.defer.Deferred
         """
-        self._log.debug('[Iterative Find Node]')
+        self._log.info('Looking for node at: %s' % key)
         self._iterativeFind(key, callback=callback)
 
     def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
@@ -671,6 +669,7 @@ class DHT(object):
 
         # If looking for a node check in your active peers list first to prevent unnecessary searching
         if not findValue:
+            self._log.info('Looking for node in your active connections list')
             for node in self._activePeers:
                 if node._guid == key:
                     return [node]
@@ -690,7 +689,7 @@ class DHT(object):
 
             # Abandon the search if the shortlist has no nodes
             if len(new_search._shortlist) == 0:
-                self._log.info('Shortlist for this search is empty')
+                self._log.info('Out of nodes to search, stopping search')
                 if callback is not None:
                     callback([])
                 else:
@@ -739,11 +738,11 @@ class DHT(object):
             closestPeer_ip = urlparse(closestPeer._address).hostname
             closestPeer_port = urlparse(closestPeer._address).port
             new_search._previous_closest_node = (closestPeer_ip, closestPeer_port, closestPeer._guid)
-            self._log.info('Previous Closest Node %s' % (new_search._previous_closest_node,))
+            self._log.debug('Previous Closest Node %s' % (new_search._previous_closest_node,))
 
         # Sort short list again
         if len(new_search._shortlist) > 1:
-          self._log.info(new_search._shortlist)
+          self._log.info('Short List: %s' % new_search._shortlist)
           new_search._shortlist.sort(lambda firstNode, secondNode, targetKey=new_search._key: cmp(
               self._routingTable.distance(firstNode[2], targetKey),
               self._routingTable.distance(secondNode[2], targetKey)))
@@ -770,9 +769,7 @@ class DHT(object):
                                "key": new_search._key, "findValue": findValue, "findID": new_search._findID,
                                "pubkey": contact._transport.pubkey}
                         self._log.debug('Sending findNode to: %s %s' % (contact._address, msg))
-                        msg = contact.send(msg)
-                        self._log.info('MSG: %s' % msg)
-
+                        contact.send(msg)
                         new_search._contactedNow += 1
 
                     else:

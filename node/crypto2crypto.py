@@ -146,7 +146,7 @@ class CryptoTransportLayer(TransportLayer):
         result = False
         try:
             self._log.info('Connecting to Bitmessage on Port %s %s %s' % (bm_port, bm_user, bm_pass))
-            self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=1)
+            self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
             result = self._bitmessage_api.add(2,3)
             self._log.info("Bitmessage test result: {}, API is live".format(result))
         # If we failed, fall back to starting our own
@@ -278,7 +278,7 @@ class CryptoTransportLayer(TransportLayer):
     def join_network(self, seed_uri, callback=lambda msg: None):
 
         if seed_uri:
-            self._log.info('Initializing Seed Peer(s): [%s]' % (seed_uri))
+            self._log.info('Initializing Seed Peer(s): [%s]' % seed_uri)
 
             def cb(msg):
                 self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
@@ -414,7 +414,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def send(self, data, send_to=None, callback=lambda msg: None):
 
-        self._log.info("Outgoing Data2: %s %s" % (data, send_to))
+        self._log.debug("Outgoing Data: %s %s" % (data, send_to))
 
         # Directed message
         if send_to is not None:
@@ -551,8 +551,6 @@ class CryptoTransportLayer(TransportLayer):
           msg_type = msg.get('type')
           msg_uri = msg.get('uri')
           msg_guid = msg.get('guid')
-
-          self._log.info('Type: %s' % msg.get('type'))
 
           self._on_message(msg)
         else:

@@ -40,8 +40,7 @@ class PeerConnection(object):
         self._socket.close()
 
     def send(self, data, callback):
-        msg = self.send_raw(json.dumps(data), callback)
-        return msg
+        self.send_raw(json.dumps(data), callback)
 
     def send_raw(self, serialized, callback=lambda msg: None):
 
@@ -125,7 +124,7 @@ class TransportLayer(object):
             for msg in message:
                 self._on_raw_message(msg)
 
-            self._log.info('Sending back OK')
+            self._log.debug('Sending back OK')
             stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}))
 
         stream.on_recv(handle_recv)

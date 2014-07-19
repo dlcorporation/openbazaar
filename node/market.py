@@ -7,26 +7,23 @@ import logging
 import hashlib
 import random
 from base64 import b64decode, b64encode
-from threading import Thread
 
-from protocol import proto_page, query_page, proto_listing
+from protocol import proto_page, query_page
 from reputation import Reputation
 from orders import Orders
 import protocol
 import lookup
 from pymongo import MongoClient
 from data_uri import DataURI
-from zmq.eventloop import ioloop, zmqstream
+from zmq.eventloop import ioloop
 import tornado
 import constants
 ioloop.install()
 from PIL import Image, ImageOps
 from StringIO import StringIO
-import base64
 import datetime
 from contract import OBContract
 import traceback
-from ws import ProtocolHandler
 import gnupg
 import string
 
@@ -63,10 +60,7 @@ class Market(object):
         self.nickname = None
 
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
-        self._log.info("Loading Market %s" % self._market_id)
 
-
-        #MONGODB_URI = 'mongodb://localhost:27017'
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
 
@@ -115,7 +109,8 @@ class Market(object):
 
 
     def import_contract(self, contract):
-        self._log.debug(contract)
+
+        self._log.debug('Importing Contract: %s' % contract)
 
         # Validate contract code
         ob_contract = OBContract(self._transport)
@@ -230,6 +225,18 @@ class Market(object):
 
         self._transport._dht.iterativeStore(self._transport, listing_key, listing.get('signed_contract_body'), self._transport._guid)
         self.update_listings_index()
+
+        # If keywords store them in the keyword index
+        # keywords = msg['Contract']['item_keywords']
+        # self._log.info('Keywords: %s' % keywords)
+        # for keyword in keywords:
+        #
+        #     hash_value = hashlib.new('ripemd160')
+        #     hash_value.update('keyword-%s' % keyword)
+        #     keyword_key = hash_value.hexdigest()
+        #
+        #     self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':contract_key}), self._transport._guid)
+
 
 
     def update_listings_index(self):
@@ -375,11 +382,10 @@ class Market(object):
         self._db.settings.update({'id':'%s'%self._transport._market_id}, {'$set':msg}, True)
 
     def get_settings(self):
-        self._log.info(self._transport._market_id)
-        settings = self._db.settings.find_one({'id':'%s'%self._transport._market_id})
 
-        if settings:
-            return {"bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
+        self._log.info('Getting settings info for Market %s' % self._transport._market_id)
+        settings = self._db.settings.find_one({'id':'%s'%self._transport._market_id})
+        settings_dict = {"bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
                     "email": settings['email'] if settings.has_key("email") else "",
                     "PGPPubKey": settings['PGPPubKey'] if settings.has_key("PGPPubKey") else "",
                     "PGPPubkeyFingerprint": settings['PGPPubkeyFingerprint'] if settings.has_key("PGPPubkeyFingerprint") else "",
@@ -401,12 +407,16 @@ class Market(object):
                     "notary": settings['notary'] if settings.has_key("notary") else "",
                    }
 
+        if settings:
+            return settings_dict
+        else:
+            return {}
+
 
     # PAGE QUERYING
-
     def query_page(self, find_guid, callback=lambda msg: None):
 
-        self._log.info('Querying page: %s' % find_guid)
+        self._log.info('Searching network for node: %s' % find_guid)
         msg = query_page(find_guid)
         msg['uri'] = self._transport._uri
         msg['senderGUID'] = self._transport.guid
@@ -418,13 +428,12 @@ class Market(object):
 
     def on_page(self, page):
 
-
-        self._log.info("Page received and being stored in Market")
-
         #pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
         sin = page.get('sin')
         page = page.get('text')
+
+        self._log.info("Received store info from node: %s" % sin)
 
         if sin and page:
             self.pages[sin] = page
