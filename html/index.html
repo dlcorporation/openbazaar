@@ -930,7 +930,7 @@
         <tbody>
         <tr>
             <td width="40"><identicon icon-size="38" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
-            <td style="font-size:13px;"><span title="{{myself.pubkey}}"><strong>Your Market</strong><br>
+            <td style="font-size:13px;"><span title="{{myself.pubkey}}"><strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong><br>
               <span style="font-style:italic;">{{myself.nickname ? myself.nickname : myself.sin}}</span></span></td>
 
 
@@ -938,7 +938,9 @@
         </tbody>
     </table>
 
-    <h3>Online Markets</h3>
+    <h3>Connected Markets</h3>
+
+    <div ng-show="peers.length < 1">There are no stores connected to you.</div>
 
     <div class="peers-area" >
         <table id="favorite-peers" class="peers-table table-hover">
