@@ -1299,17 +1299,5 @@ $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my
     };
 };
 
-$scope.ViewMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_address, msg) {
-
-    $scope.myself = myself;
-    $scope.my_address = my_address;
-    $scope.msg = msg;
-
-    $scope.close = function () {
-      $modalInstance.dismiss('cancel');
-    };
-};
-
-
 
 }])

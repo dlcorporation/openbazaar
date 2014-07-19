@@ -408,7 +408,7 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
         """
 
         if contact._guid == self._parentNodeID:
-            print 'guid same as parent guid'
+            self._log.info('Trying to add yourself. Leaving.')
             return
 
         # Initialize/reset the "successively failed RPC" counter

@@ -27,7 +27,6 @@ class Orders(object):
             "02ca0020a9de236b47ca19e147cf2cd5b98b6600f168481da8ec0ca9ec92b59b76db1c3d0020f9038a585b93160632f1edec8278ddaeacc38a381c105860d702d7e81ffaa14d",
             "02ca0020c0d9cd9bdd70c8565374ed8986ac58d24f076e9bcc401fc836352da4fc21f8490020b59dec0aff5e93184d022423893568df13ec1b8352e5f1141dbc669456af510c"]
 
-        MONGODB_URI = 'mongodb://localhost:27017'
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
         self._orders = self.get_orders()
@@ -114,7 +113,9 @@ class Orders(object):
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
     def send_order(self, order_id, contract):  # action
-        self._log.info('Contract: %s' % contract)
+
+        self._log.info('Verify Contract and Store in Orders Table')
+        self._log.debug('Contract: %s' % contract)
 
         contract_data = ''.join(contract.split('\n')[6:])
         index_of_signature = contract_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
