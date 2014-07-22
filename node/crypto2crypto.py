@@ -75,6 +75,10 @@ class CryptoPeerConnection(PeerConnection):
             print 'heartbeat'
         self.send_raw(json.dumps({'type':'heartbeat','guid':self._guid, 'pubkey':self._transport.pubkey, 'senderGUID':self._transport.guid, 'uri':self._transport._uri, 'checkPubkey':self._pub}), cb)
 
+    def sign(self, data):
+        print data
+        return self._priv.sign(data)
+
     def encrypt(self, data):
         return self._priv.encrypt(data, self._pub.decode('hex'))
 
@@ -91,8 +95,10 @@ class CryptoPeerConnection(PeerConnection):
         if self._pub == '':
             self._log.info('There is no public key for encryption')
         else:
-            #self._log.debug('DATA: %s' % data)
-            msg = self.send_raw(self.encrypt(json.dumps(data)), callback)
+            signature = self.sign(json.dumps(data))
+            self._log.info('signature %s' % signature.encode('hex'))
+            data = self.encrypt(json.dumps(data))
+            msg = self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':data.encode('hex')}), callback)
             return msg
 
     def peer_to_tuple(self):
@@ -524,9 +530,33 @@ class CryptoTransportLayer(TransportLayer):
     def _on_raw_message(self, serialized):
 
         try:
-            # Try to deserialize cleartext message
+            # Try to de-serialize clear text message
             msg = json.loads(serialized)
             self._log.info("Message Received [%s]" % msg.get('type', 'unknown'))
+
+            if msg.get('type') is None:
+
+                data = msg.get('data').decode('hex')
+                sig = msg.get('sig').decode('hex')
+                data = self._myself.decrypt(data)
+
+                print sig.encode('hex')
+                print data
+
+                guid =  json.loads(data).get('guid')
+                peer = self._dht._routingTable.getContact(guid)
+                print 'pubkey %s' % json.loads(data).get('pubkey')
+
+                ecc = ec.ECC(curve='secp256k1',pubkey=json.loads(data).get('pubkey').decode('hex'))
+
+                # Check signature
+                if ecc.verify(sig, data):
+                    self._log.info('Verified')
+                else:
+                    self._log.error('Message signature could not be verified')
+                    return
+
+                msg = json.loads(data)
 
         except ValueError:
             try:
