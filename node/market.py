@@ -329,12 +329,9 @@ class Market(object):
             return {}
 
     def get_contracts(self):
-
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
         contracts = self._db.contracts.find({'market_id':self._transport._market_id})
         my_contracts = []
-
-
 
         for contract in contracts:
             contract_body = json.loads(u"%s" % contract['contract_body'])
@@ -354,7 +351,6 @@ class Market(object):
                            })
 
         return {"contracts": my_contracts}
-
 
     # SETTINGS
 
