@@ -334,21 +334,25 @@ class Market(object):
         my_contracts = []
 
         for contract in contracts:
-            contract_body = json.loads(u"%s" % contract['contract_body'])
 
-            item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
+            try:
+                contract_body = json.loads(u"%s" % contract['contract_body'])
 
-            my_contracts.append({"key":contract['key'] if contract.has_key("key") else "",
-                            "id":contract['id'] if contract.has_key("id") else "",
-                            "item_images":contract_body.get('Contract').get('item_images'),
-                            "signed_contract_body": contract['signed_contract_body'] if contract.has_key("signed_contract_body") else "",
-                            "contract_body": contract_body,
-                            "unit_price":item_price,
-                            "item_title":contract_body.get('Contract').get('item_title'),
-                            "item_desc":contract_body.get('Contract').get('item_desc'),
-                            "item_condition":contract_body.get('Contract').get('item_condition'),
-                            "item_quantity_available":contract_body.get('Contract').get('item_quantity'),
-                           })
+                item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
+
+                my_contracts.append({"key":contract['key'] if contract.has_key("key") else "",
+                                "id":contract['id'] if contract.has_key("id") else "",
+                                "item_images":contract_body.get('Contract').get('item_images'),
+                                "signed_contract_body": contract['signed_contract_body'] if contract.has_key("signed_contract_body") else "",
+                                "contract_body": contract_body,
+                                "unit_price":item_price,
+                                "item_title":contract_body.get('Contract').get('item_title'),
+                                "item_desc":contract_body.get('Contract').get('item_desc'),
+                                "item_condition":contract_body.get('Contract').get('item_condition'),
+                                "item_quantity_available":contract_body.get('Contract').get('item_quantity'),
+                               })
+            except:
+                self._log.error('Problem loading the contract body JSON')
 
         return {"contracts": my_contracts}
 
