@@ -13,9 +13,9 @@ from p2p import PeerConnection, TransportLayer
 from dht import DHT
 from zmq.eventloop import ioloop
 from pprint import pprint
+import time
 
 ioloop.install()
-import time
 
 
 class CryptoPeerConnection(PeerConnection):
@@ -76,7 +76,6 @@ class CryptoPeerConnection(PeerConnection):
         self.send_raw(json.dumps({'type':'heartbeat','guid':self._guid, 'pubkey':self._transport.pubkey, 'senderGUID':self._transport.guid, 'uri':self._transport._uri, 'checkPubkey':self._pub}), cb)
 
     def sign(self, data):
-        print data
         return self._priv.sign(data)
 
     def encrypt(self, data):
@@ -84,7 +83,7 @@ class CryptoPeerConnection(PeerConnection):
 
     def send(self, data, callback=lambda msg: None):
 
-        # Include guid        
+        # Include guid
         data['guid'] = self._guid
         data['senderGUID'] = self._transport.guid
         data['uri'] = self._transport._uri
@@ -276,7 +275,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _generate_new_bitmessage_address(self):
       # Use the guid generated previously as the key
-      self.bitmessage = self._bitmessage_api.createRandomAddress(self.guid.encode('base64'), 
+      self.bitmessage = self._bitmessage_api.createRandomAddress(self.guid.encode('base64'),
             False, 1.05, 1.1111)
       self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"bitmessage":self.bitmessage}}, True)
 
@@ -538,25 +537,28 @@ class CryptoTransportLayer(TransportLayer):
 
                 data = msg.get('data').decode('hex')
                 sig = msg.get('sig').decode('hex')
-                data = self._myself.decrypt(data)
 
-                print sig.encode('hex')
-                print data
+                try:
+                    data = self._myself.decrypt(data)
 
-                guid =  json.loads(data).get('guid')
-                peer = self._dht._routingTable.getContact(guid)
-                print 'pubkey %s' % json.loads(data).get('pubkey')
+                    self._log.debug('Signature: %s' % sig.encode('hex'))
+                    self._log.debug('Signed Data: %s' % data)
 
-                ecc = ec.ECC(curve='secp256k1',pubkey=json.loads(data).get('pubkey').decode('hex'))
+                    guid =  json.loads(data).get('guid')
+                    peer = self._dht._routingTable.getContact(guid)
 
-                # Check signature
-                if ecc.verify(sig, data):
-                    self._log.info('Verified')
-                else:
-                    self._log.error('Message signature could not be verified')
-                    return
+                    ecc = ec.ECC(curve='secp256k1',pubkey=json.loads(data).get('pubkey').decode('hex'))
 
-                msg = json.loads(data)
+                    # Check signature
+                    if ecc.verify(sig, data):
+                        self._log.info('Verified')
+                    else:
+                        self._log.error('Message signature could not be verified')
+                        return
+
+                    msg = json.loads(data)
+                except:
+                    self._log.error('Could not decrypt message properly')
 
         except ValueError:
             try:
