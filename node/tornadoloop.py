@@ -50,7 +50,7 @@ class MarketApplication(tornado.web.Application):
 
 def start_node(my_market_ip, my_market_port, seed_uri, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None):
 
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s - %(name)s -  \
                                 %(levelname)s - %(message)s',
                         filename=log_file)
