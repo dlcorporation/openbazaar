@@ -104,7 +104,11 @@ class ProtocolHandler:
 
         def cb(msg, query_id):
             self._log.info('Success %s' % query_id)
-            self._timeouts.remove(query_id)
+
+            try:
+                self._timeouts.remove(query_id)
+            except ValueError:
+                self._log.error('Cannot find that query id')
             # if not success:
             #     self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
 
