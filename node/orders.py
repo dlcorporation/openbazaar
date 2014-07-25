@@ -144,7 +144,7 @@ class Orders(object):
             # new_order['state'] = 'sent'
             # self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
             # new_order['type'] = 'order'
-            # self._transport.send(new_order, new_order['buyer'].decode('hex'))
+        self._log.info('Contract Data JSON: %s' % contract_data_json)
 
     def receive_order(self, new_order):  # action
         new_order['state'] = 'received'
@@ -152,11 +152,12 @@ class Orders(object):
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
     def new_order(self, msg):
+
         buyer = {}
         buyer['buyer_GUID'] = self._transport._guid
-        buyer['buyer_BTC_uncompressed_pubkey'] = ""
+        buyer['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
         buyer['buyer_pgp'] = self._transport.settings['PGPPubKey']
-        buyer['buyer_deliveryaddr'] = ""
+        buyer['buyer_deliveryaddr'] = "123 Sesame Street"
         buyer['note_for_seller'] = msg['message']
 
         self._log.debug(buyer)
@@ -206,7 +207,7 @@ class Orders(object):
     # Order callbacks
     def on_order(self, msg):
 
-        self._log.debug(msg)
+        self._log.debug('ORDER %s' % msg)
 
         state = msg.get('state')
 
