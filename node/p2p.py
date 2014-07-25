@@ -58,7 +58,9 @@ class PeerConnection(object):
 
             # XXX: Might be a good idea to remove peer if pubkey changes. This
             # should be handled in CrytpoPeerConnection.
+            self._log.info('callback %s' % callback)
             if callback is not None:
+                self._log.info('calling back')
                 callback(msg)
 
         self._stream.on_recv(cb)

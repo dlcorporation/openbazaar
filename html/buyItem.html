@@ -9,7 +9,7 @@
 
     <div id="purchase_step1" ng-show="!order.step2">
 
-    <table class="table table-striped">
+    <table class="table table-striped" style="margin-bottom:0">
         <tr>
             <td style="background-color:#efefef; width:100px; height:100px; background-image:url('{{productImageData}}');background-size: 80px 80px; background-repeat:no-repeat;background-position:center;padding:20px;"></td>
             <td style="vertical-align:top;font-size:24px;">
@@ -24,13 +24,23 @@
             <td width="100" style="font-size:24px;"><strong>&#3647;{{productPrice}}</strong></td>
         </tr>
         <tr>
-            <td colspan="100%" style="font-size:24px;padding:20px;text-align:right;font-weight:bold;">Total: &#3647;<span id="totalPrice" ng-model="order.orderTotal">{{totalPrice}}</span></td>
+            <td colspan="100%" style="font-size:24px;padding:20px 20px 0 20px;text-align:right;font-weight:bold;">Total: &#3647;<span id="totalPrice" ng-model="order.orderTotal">{{totalPrice}}</span></td>
         </tr>
     </table>
 
+
+    <div class="row">
+        <div class="form-group col-sm-12">
+            <label for="inputBitcoinPubkey">Bitcoin Public Key:</label>
+            <p>This public key will be used for refunds in multisignature transactions. <a href="http://www.reddit.com/r/Bitcoin/comments/1wvph2/what_is_the_difference_between_an_address_and_a/" target="_blank">What's a public key?</a></p>
+            <textarea rows="2" ng-model="order.btc_pubkey" class="form-control" id="inputBitcoinPubkey" placeholder="Enter a valid public key; not an address"></textarea>
+        </div>
+    </div>
+
+
       <div class="row">
-          <div class="form-group col-sm-8">
-        <label for="inputMerchantMessage">Note for seller:</label>
+          <div class="form-group col-sm-12">
+        <label for="inputMerchantMessage">Note for Merchant:</label>
         <textarea ng-model="order.message" class="form-control" rows="5" id="inputMerchantMessage" placeholder="Enter message for the merchant (optional)"></textarea>
 
       </div>
