@@ -575,8 +575,8 @@ angular.module('app')
   }
 
 
-  $scope.addArbiter = function() {
-    arbiterGUID = $('#inputArbiterGUID').val();
+  $scope.addArbiter = function(arbiter) {
+    arbiterGUID = (arbiter != '') ? arbiter : $('#inputArbiterGUID').val();
     $('#inputArbiterGUID').val('');
 
     // TODO: Check for valid arbiter GUID
@@ -614,14 +614,16 @@ angular.module('app')
     $scope.saveSettings();
   }
 
-  $scope.addNotary = function() {
-    notaryGUID = $('#inputNotaryGUID').val();
+
+
+  $scope.addNotary = function(notary) {
+    notaryGUID = (notary != '') ? notary : $('#inputNotaryGUID').val();
     $('#inputNotaryGUID').val('');
 
-    if(notaryGUID.length != 40 || !notaryGUID.match(/^[0-9a-z]+$/)) {
-        alert('Incorrect format for GUID');
-        return;
-    }
+    //if(notaryGUID.length != 40 || !notaryGUID.match(/^[0-9a-z]+$/)) {
+    //    alert('Incorrect format for GUID');
+    //    return;
+    //}
 
     if(!$scope.settings.notaries) {
       $scope.settings.notaries = [];
@@ -1084,12 +1086,7 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
     $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
-        notaries, arbiters) {
-
-
-
-
-
+        notaries, arbiters, btc_pubkey) {
 
       // Send socket a request for order info
       //socket.send('query_order', { orderId: orderId } )
@@ -1105,6 +1102,7 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
             productDescription: function() { return productDescription},
             productImageData: function() { return productImageData},
             key: function() { return key },
+            btc_pubkey: function() { return btc_pubkey },
             rawContract: function() { return rawContract },
             notaries: function() { return notaries },
             arbiters: function() { return arbiters }
@@ -1131,9 +1129,10 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key,
     rawContract,
     notaries,
-    arbiters) {
+    arbiters,
+    btc_pubkey) {
 
-    console.log(productTitle, productPrice, productDescription, productImageData, rawContract, notaries, arbiters);
+    console.log(productTitle, productPrice, productDescription, productImageData, rawContract, notaries, arbiters, btc_pubkey);
     $scope.myself = myself;
     $scope.merchantPubkey = merchantPubkey;
     $scope.productTitle = productTitle;
@@ -1145,6 +1144,7 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
     $scope.rawContract = rawContract;
     $scope.notaries = notaries;
     $scope.arbiters = arbiters;
+
 
     $scope.key = key;
 
@@ -1182,7 +1182,7 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
     }
 
 
-    $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1, rawContract:rawContract}
+    $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1, rawContract:rawContract, btc_pubkey: btc_pubkey}
     $scope.order.notary = $scope.notaries[0];
     $scope.order.arbiter = $scope.arbiters[0];
 
@@ -1199,6 +1199,7 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
           'orderTotal': $('#totalPrice').html(),
           'rawContract': rawContract,
           'notary': $scope.order.notary,
+          'btc_pubkey': $scope.order.btc_pubkey,
           'arbiter': $scope.order.arbiter
       }
       console.log(newOrder);

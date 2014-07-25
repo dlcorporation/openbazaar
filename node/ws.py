@@ -117,7 +117,7 @@ class ProtocolHandler:
         loop = ioloop.IOLoop.instance()
 
         def unreachable_market(query_id):
-            self._log.info('test')
+            self._log.info('Cannot reach market, try port forwarding')
             if query_id in self._timeouts:
                 self._log.info('Unreachable Market: %s' % msg)
                 peers = self.get_peers()

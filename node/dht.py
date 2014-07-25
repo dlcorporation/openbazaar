@@ -88,7 +88,7 @@ class DHT(object):
 
             if active_peer_tuple == peer_tuple:
                 self._log.info('Already connected to this node')
-                return
+                #return
 
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
@@ -100,6 +100,7 @@ class DHT(object):
         new_peer = transport.get_crypto_peer(peer_tuple[2],
                                              peer_tuple[1],
                                              peer_tuple[0])
+        print 'test',(peer_tuple[2], peer_tuple[1],                               peer_tuple[0])
         self._activePeers.append(new_peer)
         self._log.debug('Removing old information about this node')
         self._routingTable.removeContact(new_peer._guid)
@@ -710,6 +711,7 @@ class DHT(object):
         # Sort shortlist from closest to farthest
         # self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
         # new_search._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
+
         self._activePeers.sort(lambda firstNode, secondNode, targetKey=new_search._key: cmp(
             self._routingTable.distance(firstNode._guid, targetKey),
             self._routingTable.distance(secondNode._guid, targetKey)))
@@ -769,7 +771,12 @@ class DHT(object):
                                "key": new_search._key, "findValue": findValue, "findID": new_search._findID,
                                "pubkey": contact._transport.pubkey}
                         self._log.debug('Sending findNode to: %s %s' % (contact._address, msg))
-                        contact.send(msg)
+
+                        def fb(a):
+                            print 'awesome',a
+
+
+                        contact.send(msg, fb)
                         new_search._contactedNow += 1
 
                     else:
