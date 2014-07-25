@@ -978,8 +978,6 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
   $scope.contract.productCondition = 'New';
 
 
-
-
     $scope.createContract = function() {
 
         console.log($scope.contract);

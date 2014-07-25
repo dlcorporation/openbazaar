@@ -830,8 +830,9 @@
                 <table class="table-listing" width="100%">
                     <tr>
                         <td width="100"><img src="{{listing.Contract.item_images}}" width=100/></td>
-                        <td><span class="product-title">{{listing.Contract.item_title}}</span><br/>{{listing.Contract.item_description}}
-                        <br/>Key: {{listing.key}}
+                        <td><span class="product-title">{{listing.Contract.item_title}}</span>
+                            <div ng-show="listing.Contract.item_description">{{listing.Contract.item_description}}</div>
+                        <div>Key: {{listing.key}}</div>
                         </td>
                         <td width="80"><span class="product-price">&#3647;{{listing.Contract.item_price}}</span><br/><button class="btn btn-success btn-xl navbar-btn" ng-click="open('lg', myself, page.pubkey, listing.Contract.item_title, listing.Contract.item_price, listing.Contract.item_description, listing.Contract.item_images, listing.key, listing.rawContract, settings.notaries, settings.trustedArbiters, settings.pubkey)">Purchase</button></td>
                     </tr></table>

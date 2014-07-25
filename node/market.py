@@ -156,8 +156,10 @@ class Market(object):
 
         self._log.debug('Settings %s' % self._transport.settings)
         msg['Seller']['seller_PGP'] = gpg.export_keys(self._transport.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
-
+        msg['Seller']['seller_BTC_uncompressed_pubkey'] = self._transport.settings['pubkey']
         msg['Seller']['seller_GUID'] = self._transport._guid
+
+        self._log.info('seller stuff %s' % msg)
 
         # Process and crop thumbs for images
         self._log.debug('Msg: %s' % msg)
