@@ -72,9 +72,10 @@ class PeerConnection(object):
                 del self._responses_received[message_id]
                 self._log.info('Peer\'s zeromq not listening it seems. %s %s' % (message_id, self._address))
                 callback(False)
+                self._stream.close()
 
         # Set timer for checking if peer alive
-        #ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
+        ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
 
 
 # Transport layer manages a list of peers
