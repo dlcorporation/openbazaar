@@ -772,11 +772,7 @@ class DHT(object):
                                "pubkey": contact._transport.pubkey}
                         self._log.debug('Sending findNode to: %s %s' % (contact._address, msg))
 
-                        def fb(a):
-                            print 'awesome',a
-
-
-                        contact.send(msg, fb)
+                        contact.send(msg)
                         new_search._contactedNow += 1
 
                     else:
