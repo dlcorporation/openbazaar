@@ -88,7 +88,7 @@ class DHT(object):
 
             if active_peer_tuple == peer_tuple:
                 self._log.info('Already connected to this node')
-                #return
+                return
 
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
@@ -153,6 +153,7 @@ class DHT(object):
 
         new_peer = self.find_active_peer((guid, uri, pubkey))
         if not new_peer:
+            self._log.info('Creating new crypto peer connection')
             new_peer = self._transport.get_crypto_peer(guid, uri, pubkey)
 
         if guid == self._transport.guid:
@@ -568,6 +569,7 @@ class DHT(object):
                 break
 
             if not peer:
+                self._log.info('Could not find existing peer')
                 peer = self._transport.get_crypto_peer(guid, uri)
 
             peer.send(proto_store(key, value, originalPublisherID, age))
