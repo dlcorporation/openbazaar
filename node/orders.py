@@ -136,6 +136,9 @@ class Orders(object):
                 self._log.info('Verified Contract')
                 self._db.orders.update({"id": order_id}, {"$set": {"state": "sent", "updated": time.time()}}, True)
 
+                # Send order to merchant
+
+
             else:
                 self._log.error('Could not verify signature of contract.')
         except:

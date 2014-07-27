@@ -52,25 +52,16 @@ class CryptoPeerConnection(PeerConnection):
 
                     callback(msg)
             try:
-                self.send_raw(json.dumps({'type':'hello', 'pubkey':transport.pubkey,
-                                      'uri':transport._uri,
-                                      'senderGUID':transport.guid }), cb)
+                self.send_raw(json.dumps({'type':'hello',
+                                          'pubkey':transport.pubkey,
+                                          'uri':transport._uri,
+                                          'senderGUID':transport.guid }), cb)
             except:
-                print 'error'
-
-            def remove_dead_peer():
-                if not self._peer_alive:
-                    return False
-
-            # Set timer for checking if peer alive
-            #ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
+                print 'Sending raw message failed'
 
 
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
-
-    def setPub(self, msg):
-        print 'setpub',msg
 
     def heartbeat(self):
         def cb(msg):
