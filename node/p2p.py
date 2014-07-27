@@ -52,15 +52,14 @@ class PeerConnection(object):
         self._responses_received[message_id] = False
 
         def cb(msg):
-            self._log.debug('callback received: %s ' % message_id)
+            self._log.debug('Message %s received from remote peer' % message_id)
             if self._responses_received.has_key(message_id):
                 del self._responses_received[message_id]
 
             # XXX: Might be a good idea to remove peer if pubkey changes. This
             # should be handled in CrytpoPeerConnection.
-            self._log.info('callback %s' % callback)
             if callback is not None:
-                self._log.info('calling back')
+                self._log.info('Executing callback')
                 callback(msg)
 
         self._stream.on_recv(cb)
@@ -72,7 +71,8 @@ class PeerConnection(object):
                 del self._responses_received[message_id]
                 self._log.info('Peer\'s zeromq not listening it seems. %s %s' % (message_id, self._address))
                 callback(False)
-                self._stream.close()
+                self.cleanup_socket()
+
 
         # Set timer for checking if peer alive
         #ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)

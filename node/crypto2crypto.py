@@ -26,7 +26,9 @@ class CryptoPeerConnection(PeerConnection):
         self._pub = pub
         self._ip = urlparse(address).hostname
         self._port = urlparse(address).port
+
         PeerConnection.__init__(self, transport, address)
+
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
         self._peer_alive = False
@@ -61,7 +63,7 @@ class CryptoPeerConnection(PeerConnection):
                     return False
 
             # Set timer for checking if peer alive
-            ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
+            #ioloop.IOLoop.instance().add_timeout(time.time() + 3, remove_dead_peer)
 
 
     def __repr__(self):
@@ -97,8 +99,7 @@ class CryptoPeerConnection(PeerConnection):
             signature = self.sign(json.dumps(data))
             self._log.info('signature %s' % signature.encode('hex'))
             data = self.encrypt(json.dumps(data))
-            msg = self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':data.encode('hex')}), callback)
-            return msg
+            self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':data.encode('hex')}), callback)
 
     def peer_to_tuple(self):
         return self._ip, self._port, self._guid
@@ -429,7 +430,6 @@ class CryptoTransportLayer(TransportLayer):
             self._log.debug('%s' % data)
             self._log.debug('%s %s %s' % (peer._guid, peer._address, peer._pub))
             peer.send(data, callback=callback)
-            return
 
         else:
             # FindKey and then send

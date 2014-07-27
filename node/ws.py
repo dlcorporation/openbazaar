@@ -57,6 +57,8 @@ class ProtocolHandler:
 
         self._timeouts = []
 
+        self.loop = ioloop.IOLoop.instance()
+
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
 
     def send_opening(self):
@@ -114,8 +116,6 @@ class ProtocolHandler:
 
         self._market.query_page(findGUID, lambda msg, query_id=query_id: cb(msg, query_id))
 
-        loop = ioloop.IOLoop.instance()
-
         def unreachable_market(query_id):
             self._log.info('Cannot reach market, try port forwarding')
             if query_id in self._timeouts:
@@ -128,9 +128,7 @@ class ProtocolHandler:
 
                 self.refresh_peers()
 
-
-
-        loop.add_timeout(time.time() + 3, lambda query_id=query_id: unreachable_market(query_id))
+        self.loop.add_timeout(time.time() + .5, lambda query_id=query_id: unreachable_market(query_id))
 
 
     def client_query_orders(self, socket_handler, msg):
