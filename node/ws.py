@@ -128,7 +128,7 @@ class ProtocolHandler:
 
                 self.refresh_peers()
 
-        self.loop.add_timeout(time.time() + .5, lambda query_id=query_id: unreachable_market(query_id))
+        #self.loop.add_timeout(time.time() + .5, lambda query_id=query_id: unreachable_market(query_id))
 
 
     def client_query_orders(self, socket_handler, msg):
