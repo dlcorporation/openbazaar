@@ -49,11 +49,12 @@ class PeerConnection(object):
         # Generate message ID
         message_id = random.randint(0, 1000000)
 
-        self._responses_received[message_id] = False
+        #self._responses_received[message_id] = False
 
         def cb(msg):
             self._log.debug('Message %s received from remote peer' % message_id)
             if self._responses_received.has_key(message_id):
+                ioloop.IOLoop.remove_timeout(ioloop.IOLoop.current(), self._responses_received[message_id])
                 del self._responses_received[message_id]
 
             # XXX: Might be a good idea to remove peer if pubkey changes. This
@@ -68,14 +69,15 @@ class PeerConnection(object):
             #self._log.debug('Responses Received: %s' % self._responses_received)
 
             if self._responses_received.has_key(message_id):
+
+                ioloop.IOLoop.remove_timeout(ioloop.IOLoop.current(), self._responses_received[message_id])
                 del self._responses_received[message_id]
+
                 self._log.info('Peer\'s zeromq not listening it seems. %s %s' % (message_id, self._address))
                 callback(False)
-                self.cleanup_socket()
-
 
         # Set timer for checking if peer alive
-        #ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
+        self._responses_received[message_id] = ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
 
 
 # Transport layer manages a list of peers
