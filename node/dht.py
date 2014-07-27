@@ -65,6 +65,7 @@ class DHT(object):
     def remove_active_peer(self, uri):
         for idx, peer in enumerate(self._activePeers):
             if uri == peer._address:
+                self._activePeers[idx].cleanup_socket()
                 del self._activePeers[idx]
 
     def add_active_peer(self, transport, peer_tuple):
@@ -93,6 +94,7 @@ class DHT(object):
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
                 self._log.info('Found stale data about this node, refreshing')
+                self._activePeers[idx].cleanup_socket()
                 del self._activePeers[idx]
                 self._routingTable.removeContact(peer_tuple[2])
 
@@ -100,7 +102,7 @@ class DHT(object):
         new_peer = transport.get_crypto_peer(peer_tuple[2],
                                              peer_tuple[1],
                                              peer_tuple[0])
-        print 'test',(peer_tuple[2], peer_tuple[1],                               peer_tuple[0])
+
         self._activePeers.append(new_peer)
         self._log.debug('Removing old information about this node')
         self._routingTable.removeContact(new_peer._guid)
