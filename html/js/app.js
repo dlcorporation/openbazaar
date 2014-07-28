@@ -580,10 +580,10 @@ angular.module('app')
     $('#inputArbiterGUID').val('');
 
     // TODO: Check for valid arbiter GUID
-    if(arbiterGUID.length != 38 || !arbiterGUID.match(/^[0-9a-zA-Z]+$/)) {
-        alert('Incorrect format for GUID');
-        return;
-    }
+    //if(arbiterGUID.length != 38 || !arbiterGUID.match(/^[0-9a-zA-Z]+$/)) {
+    //    alert('Incorrect format for GUID');
+    //    return;
+    //}
 
     if(!$scope.settings.trustedArbiters) {
       $scope.settings.trustedArbiters = [];
@@ -617,6 +617,7 @@ angular.module('app')
 
 
   $scope.addNotary = function(notary) {
+
     notaryGUID = (notary != '') ? notary : $('#inputNotaryGUID').val();
     $('#inputNotaryGUID').val('');
 

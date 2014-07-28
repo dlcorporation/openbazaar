@@ -46,39 +46,14 @@ class PeerConnection(object):
 
         self._stream.send(serialized)
 
-        # Generate message ID
-        message_id = random.randint(0, 1000000)
-
-        #self._responses_received[message_id] = False
-
         def cb(msg):
-            self._log.debug('Message %s received from remote peer' % message_id)
-            if self._responses_received.has_key(message_id):
-                ioloop.IOLoop.remove_timeout(ioloop.IOLoop.current(), self._responses_received[message_id])
-                del self._responses_received[message_id]
+            self._log.debug('Message %s received from remote peer')
 
-            # XXX: Might be a good idea to remove peer if pubkey changes. This
-            # should be handled in CrytpoPeerConnection.
             if callback is not None:
                 self._log.info('Executing callback')
                 callback(msg)
 
         self._stream.on_recv(cb)
-
-        def remove_dead_peer():
-            #self._log.debug('Responses Received: %s' % self._responses_received)
-
-            if self._responses_received.has_key(message_id):
-
-                ioloop.IOLoop.remove_timeout(ioloop.IOLoop.current(), self._responses_received[message_id])
-                del self._responses_received[message_id]
-
-                self._log.info('Peer\'s zeromq not listening it seems. %s %s' % (message_id, self._address))
-                callback(False)
-
-        # Set timer for checking if peer alive
-        self._responses_received[message_id] = ioloop.IOLoop.instance().add_timeout(time.time() + 10, remove_dead_peer)
-
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
@@ -86,6 +61,7 @@ class TransportLayer(object):
 
         self._peers = {}
         self._callbacks = defaultdict(list)
+        self._timeouts = []
         self._port = my_port
         self._ip = my_ip
         self._guid = my_guid
