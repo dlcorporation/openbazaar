@@ -112,7 +112,7 @@ class Orders(object):
         new_order['type'] = 'order'
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
-    def send_order(self, order_id, contract):  # action
+    def send_order(self, order_id, contract, notary):  # action
 
         self._log.info('Verify Contract and Store in Orders Table')
         self._log.debug('Contract: %s' % contract)
@@ -120,29 +120,38 @@ class Orders(object):
         contract_data = ''.join(contract.split('\n')[6:])
         index_of_signature = contract_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
         contract_data_json = contract_data[0:index_of_signature]
-        #self._log.info('data %s' % contract_data_json)
 
         try:
             contract_data_json = json.loads(contract_data_json)
             seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
 
             self._gpg.import_keys(seller_pubkey)
-
-            split_results = contract.split('\n')
-            #self._log.debug('DATA: %s' % split_results[3])
-
             v = self._gpg.verify(contract)
+
             if v:
                 self._log.info('Verified Contract')
-                self._db.orders.update({"id": order_id}, {"$set": {"state": "sent", "updated": time.time()}}, True)
 
-                # Send order to merchant
+                try:
+                    self._db.orders.update({"id": order_id}, {"$set": {"state": "sent", "updated": time.time()}}, True)
+                except:
+                    self._log.error('Cannot update DB')
 
+                order_to_notary = {}
+                order_to_notary['type'] = 'order'
+                order_to_notary['rawContract'] = contract
+                order_to_notary['state'] = 'bid'
+
+
+                # Send order to notary for approval
+                self._transport.send(order_to_notary, notary)
 
             else:
                 self._log.error('Could not verify signature of contract.')
-        except:
-            self._log.debug('Error getting JSON contract')
+
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print message
 
             # new_order['state'] = 'sent'
             # self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
@@ -156,6 +165,8 @@ class Orders(object):
 
     def new_order(self, msg):
 
+        self._log.debug('New Order: %s' % msg)
+
         buyer = {}
         buyer['buyer_GUID'] = self._transport._guid
         buyer['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
@@ -163,7 +174,7 @@ class Orders(object):
         buyer['buyer_deliveryaddr'] = "123 Sesame Street"
         buyer['note_for_seller'] = msg['message']
 
-        self._log.debug(buyer)
+        self._log.debug('Buyer: %s' % buyer)
 
         # Add to contract and sign
         seed_contract = msg.get('rawContract')
@@ -204,7 +215,64 @@ class Orders(object):
         #self.update_listings_index()
 
         # Send order to seller
-        self.send_order(order_id, str(signed_data))
+        self.send_order(order_id, str(signed_data), msg['notary'])
+
+    def handle_bid_order(self, bid):
+
+        self._log.info('Bid Order: %s' % bid)
+
+        notary = {}
+        # buyer['buyer_GUID'] = self._transport._guid
+        # buyer['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
+        # buyer['buyer_pgp'] = self._transport.settings['PGPPubKey']
+        # buyer['buyer_deliveryaddr'] = "123 Sesame Street"
+        # buyer['note_for_seller'] = msg['message']
+        
+
+        self._log.debug('Notary: %s' % notary)
+
+        # Add to contract and sign
+        contract = bid.get('rawContract')
+
+        gpg = self._gpg
+
+        # Prepare contract body
+        json_string = json.dumps(notary, indent=0)
+        seg_len = 52
+        out_text = string.join(map(lambda x: json_string[x:x + seg_len],
+                                   range(0, len(json_string), seg_len)), "\n")
+
+        # Append new data to contract
+        out_text = "%s\n%s" % (contract, out_text)
+
+        signed_data = gpg.sign(out_text, passphrase='P@ssw0rd',
+                               keyid=self._transport.settings.get('PGPPubkeyFingerprint'))
+
+        self._log.debug('Double-signed Contract: %s' % signed_data)
+
+        # Hash the contract for storage
+        contract_key = hashlib.sha1(str(signed_data)).hexdigest()
+        hash_value = hashlib.new('ripemd160')
+        hash_value.update(contract_key)
+        contract_key = hash_value.hexdigest()
+
+        # Save order locally in database
+        order_id = 1
+        self._log.info('Order ID: %s' % order_id)
+
+        self._db.orders.update({'id': order_id}, {
+            '$set': {'market_id': self._transport._market_id,
+                     'contract_key': contract_key,
+                     'signed_contract_body': str(signed_data),
+                     'state': 'notarized'}}, True)
+
+        # Push buy order to DHT and node if available
+        # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+        #self.update_listings_index()
+
+        # Send order to seller and buyer
+        self._log.info('Sending notarized contract to buyer and seller %s' % bid)
+        #self.send_order(order_id, str(signed_data), bid['notary'])
 
 
     # Order callbacks
@@ -217,6 +285,8 @@ class Orders(object):
         if state == 'new':
             self.new_order(msg)
 
+        if state == 'bid':
+            self.handle_bid_order(msg)
 
             #
             #
