@@ -418,12 +418,15 @@ class CryptoTransportLayer(TransportLayer):
 
             peer = self._dht._routingTable.getContact(send_to)
             #peer = CryptoPeerConnection(msg['uri'])
-            self._log.debug('Directed Data (%s): %s' % (send_to, data))
-            print 'Peer Info: %s %s %s' % (peer._guid, peer._address, peer._pub)
-            try:
-                peer.send(data, callback=callback)
-            except:
-                self._log.error('Not sending messing directly to peer')
+            if peer:
+                self._log.debug('Directed Data (%s): %s' % (send_to, data))
+
+                try:
+                    peer.send(data, callback=callback)
+                except:
+                    self._log.error('Not sending messing directly to peer')
+            else:
+                self._log.error('No peer found')
 
         else:
             # FindKey and then send
