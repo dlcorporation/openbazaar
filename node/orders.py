@@ -168,11 +168,12 @@ class Orders(object):
         self._log.debug('New Order: %s' % msg)
 
         buyer = {}
-        buyer['buyer_GUID'] = self._transport._guid
-        buyer['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
-        buyer['buyer_pgp'] = self._transport.settings['PGPPubKey']
-        buyer['buyer_deliveryaddr'] = "123 Sesame Street"
-        buyer['note_for_seller'] = msg['message']
+        buyer['Buyer'] = {}
+        buyer['Buyer']['buyer_GUID'] = self._transport._guid
+        buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
+        buyer['Buyer']['buyer_pgp'] = self._transport.settings['PGPPubKey']
+        buyer['Buyer']['buyer_deliveryaddr'] = "123 Sesame Street"
+        buyer['Buyer']['note_for_seller'] = msg['message']
 
         self._log.debug('Buyer: %s' % buyer)
 
@@ -227,7 +228,11 @@ class Orders(object):
         # buyer['buyer_pgp'] = self._transport.settings['PGPPubKey']
         # buyer['buyer_deliveryaddr'] = "123 Sesame Street"
         # buyer['note_for_seller'] = msg['message']
-        
+        notary['Notary'] = {'notary_GUID': self._transport._guid,
+                            'notary_BTC_uncompressed_pubkey': self._transport.settings['pubkey'],
+                            'notary_pgp': self._transport.settings['PGPPubKey'],
+                            'notary_fee': "1%"
+                            }
 
         self._log.debug('Notary: %s' % notary)
 
@@ -257,7 +262,10 @@ class Orders(object):
         contract_key = hash_value.hexdigest()
 
         # Save order locally in database
-        order_id = 1
+        order_id = random.randint(0, 1000000)
+        while self._db.contracts.find({'id': order_id}).count() > 0:
+            order_id = random.randint(0, 1000000)
+            
         self._log.info('Order ID: %s' % order_id)
 
         self._db.orders.update({'id': order_id}, {
