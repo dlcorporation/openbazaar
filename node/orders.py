@@ -209,7 +209,8 @@ class Orders(object):
 
         self._db.orders.update({'id': order_id}, {
             '$set': {'market_id': self._transport._market_id, 'contract_key': contract_key,
-                     'signed_contract_body': str(signed_data), 'state': 'new'}}, True)
+                     'signed_contract_body': str(signed_data), 'state': 'new',
+                     'updated': time.time()}}, True)
 
         # Push buy order to DHT and node if available
         # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
@@ -265,14 +266,15 @@ class Orders(object):
         order_id = random.randint(0, 1000000)
         while self._db.contracts.find({'id': order_id}).count() > 0:
             order_id = random.randint(0, 1000000)
-            
+
         self._log.info('Order ID: %s' % order_id)
 
         self._db.orders.update({'id': order_id}, {
             '$set': {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
-                     'state': 'notarized'}}, True)
+                     'state': 'notarized',
+                     "updated": time.time()}}, True)
 
         # Push buy order to DHT and node if available
         # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
