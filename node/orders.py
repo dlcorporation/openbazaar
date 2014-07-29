@@ -22,11 +22,6 @@ class Orders(object):
 
         self._gpg = gnupg.GPG()
 
-        # TODO: Make user configurable escrow addresses
-        self._escrows = [
-            "02ca0020a9de236b47ca19e147cf2cd5b98b6600f168481da8ec0ca9ec92b59b76db1c3d0020f9038a585b93160632f1edec8278ddaeacc38a381c105860d702d7e81ffaa14d",
-            "02ca0020c0d9cd9bdd70c8565374ed8986ac58d24f076e9bcc401fc836352da4fc21f8490020b59dec0aff5e93184d022423893568df13ec1b8352e5f1141dbc669456af510c"]
-
         _dbclient = MongoClient()
         self._db = _dbclient.openbazaar
         self._orders = self.get_orders()
@@ -40,10 +35,21 @@ class Orders(object):
 
         _order = self._db.orders.find_one({"id": orderId, "market_id": self._market_id})
 
-        offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
-        index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
-        offer_data_json = offer_data[0:index_of_seller_signature-4]
-        offer_data_json = json.loads(str(offer_data_json))
+        if _order['state'] in ('Need to Pay', 'notarized'):
+            offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
+            index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+            offer_data_json = offer_data[0:index_of_seller_signature-4]
+            offer_data_json = json.loads(str(offer_data_json))
+            total_price = float(_order['shipping_price']) + float(_order['item_price']) if _order.has_key("shipping_price") and _order.has_key("item_price") else _order['item_price']
+
+        else:
+            offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
+            index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+            offer_data_json = '{"Seller": {'+offer_data[0:index_of_seller_signature-2]
+            self._log.info(offer_data_json)
+            total_price = ""
+            offer_data_json = json.loads(str(offer_data_json))
+
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -53,9 +59,9 @@ class Orders(object):
                  "merchant": _order['merchant'] if _order.has_key("merchant") else "",
                  "item_price": _order['item_price'] if _order.has_key("item_price") else "",
                  "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
-                 "total_price": (float(_order['shipping_price']) + float(_order['item_price'])) if _order.has_key("shipping_price") else _order['item_price'],
+                 "total_price": total_price,
                  "notary": _order['notary'] if _order.has_key("notary") else "",
-                 "item_image": offer_data_json['Contract']['item_images'],
+                 "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
                  "item_title": offer_data_json['Contract']['item_title'],
                  "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
                  "note_for_merchant":  _order['note_for_merchant'] if _order.has_key("note_for_merchant") else "",
@@ -145,7 +151,7 @@ class Orders(object):
                 self._log.info('Verified Contract')
 
                 try:
-                    self._db.orders.update({"id": order_id}, {"$set": {"state": "sent",
+                    self._db.orders.update({"id": order_id}, {"$set": {"state": "Sent",
                                                                        "updated": time.time(),
                                                                        "merchant": contract_data_json['Seller']['seller_GUID'],
                                                                        "buyer": self._transport._guid}}, True)
@@ -186,6 +192,13 @@ class Orders(object):
         buyer['Buyer']['buyer_deliveryaddr'] = "123 Sesame Street"
         buyer['Buyer']['note_for_seller'] = msg['message']
 
+        # Save order locally in database
+        order_id = random.randint(0, 1000000)
+        while self._db.contracts.find({'id': order_id}).count() > 0:
+            order_id = random.randint(0, 1000000)
+
+        buyer['Buyer']['buyer_order_id'] = order_id
+
         self._log.debug('Buyer: %s' % buyer)
 
         # Add to contract and sign
@@ -213,11 +226,6 @@ class Orders(object):
         hash_value.update(contract_key)
         contract_key = hash_value.hexdigest()
 
-        # Save order locally in database
-        order_id = random.randint(0, 1000000)
-        while self._db.contracts.find({'id': order_id}).count() > 0:
-            order_id = random.randint(0, 1000000)
-
         self._db.orders.update({'id': order_id}, {
             '$set': {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
@@ -225,10 +233,6 @@ class Orders(object):
                      'state': 'new',
                      'updated': time.time(),
                      'note_for_merchant': msg['message']}}, True)
-
-        # Push buy order to DHT and node if available
-        # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
-        #self.update_listings_index()
 
         # Send order to seller
         self.send_order(order_id, str(signed_data), msg['notary'])
@@ -400,7 +404,7 @@ class Orders(object):
 
         seller_GUID = offer_data_json['Seller']['seller_GUID']
 
-        order_id = self.generate_order_id()
+        order_id = bid_data_json['Buyer']['buyer_order_id']
 
         contract_key = hashlib.sha1(str(contract)).hexdigest()
         hash_value = hashlib.new('ripemd160')

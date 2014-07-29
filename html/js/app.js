@@ -27,6 +27,16 @@ angular.module('app').directive('identicon', function () {
   });
 
 angular.module('app')
+.config( [
+    '$compileProvider',
+    function( $compileProvider )
+    {
+        $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension|bitcoin):/);
+        // Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
+    }
+]);
+
+angular.module('app')
   .controller('Market', ['$scope', function($scope) {
 
   $scope.newuser = true
@@ -200,7 +210,6 @@ angular.module('app')
       console.log(msg.order);
 
       $scope.modalOrder = msg.order;
-
 
       if(msg.order.state == 'accepted') {
         $scope.modalOrder.waitingForPayment = true;
@@ -561,7 +570,7 @@ angular.module('app')
       socket.send('order', order);
   }
   $scope.sendOrder = function(order) {
-      order.state = 'sent'
+      order.state = 'Sent'
       socket.send('order', order);
   }
 
