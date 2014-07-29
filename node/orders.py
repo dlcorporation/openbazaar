@@ -35,7 +35,7 @@ class Orders(object):
 
         _order = self._db.orders.find_one({"id": orderId, "market_id": self._market_id})
 
-        if _order['state'] in ('Need to Pay', 'notarized'):
+        if _order['state'] in ('Need to Pay', 'notarized', 'Waiting for Payment'):
             offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
             index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
             offer_data_json = offer_data[0:index_of_seller_signature-4]
