@@ -551,6 +551,10 @@
                 </div>
                 <div class="modal-body" style="text-align:left;">
 
+                    <div ng-show="Market.modalOrder.state == 'Need to Pay'" class="alert alert-warning" role="alert">
+                        You need to send <strong>&#3647;{{Market.modalOrder.item_price+Market.modalOrder.shipping_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.
+                    </div>
+
                     <table class="table table-striped">
                         <tr>
                             <td width=200><strong>Order Date:</strong></td>
@@ -559,6 +563,14 @@
                         <tr>
                             <td width=200><strong>Status:</strong></td>
                             <td style="vertical-align:middle;"><span class="label label-info">{{Market.modalOrder.state}}</span> <span ng-show="Market.modalOrder.waitingForSellerToShip" style="font-weight:bold;">Waiting for Shipment</span></td>
+                        </tr>
+                        <tr ng-show="Market.modalOrder.item_price">
+                            <td><strong>Contract Price:</strong></td>
+                            <td style="word-break:break-all">&#3647;{{Market.modalOrder.item_price}}</td>
+                        </tr>
+                        <tr ng-show="Market.modalOrder.shipping_price">
+                            <td><strong>Shipping Price:</strong></td>
+                            <td style="word-break:break-all">&#3647;{{Market.modalOrder.shipping_price}}</td>
                         </tr>
                         <tr>
                             <td><strong>Buyer:</strong></td>
