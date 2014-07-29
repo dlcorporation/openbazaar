@@ -354,6 +354,28 @@ class Orders(object):
         self._log.info('Offer Data: %s' % offer_data_json)
         offer_data_json = json.loads(str(offer_data_json))
 
+        # Find Buyer Data in Contract
+        bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
+        end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+        bid_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = json.loads(bid_data_json)
+        self._log.info('Bid Data: %s' % bid_data_json)
+
+         # Find Notary Data in Contract
+        # notary_data_index = offer_data.find('"Notary"', end_of_bid_index, len(offer_data))
+        # end_of_notary_index = offer_data.find('- -----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data))
+        # notary_data_json = "{" + offer_data[notary_data_index:end_of_notary_index]
+        # notary_data_json = json.loads(notary_data_json)
+        # self._log.info('Notary Data: %s' % notary_data_json)
+
+        # Generate multi-sig address
+        # multisig = Multisig(None, 2, [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
+        #                               bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
+        #                               notary_data_json['Notary']['notary_BTC_uncompressed_pubkey']])
+        # multisig_address = multisig.address
+        #
+        # self._log.info(multisig_address)
+
         seller_GUID = offer_data_json['Seller']['seller_GUID']
 
         order_id = self.generate_order_id()
@@ -368,7 +390,10 @@ class Orders(object):
                      'contract_key': contract_key,
                      'signed_contract_body': str(contract),
                      'state': 'notarized',
+                     'address': '',
                      "updated": time.time()}}, True)
+
+
 
         if seller_GUID == self._transport._guid:
             self._log.info('I am the seller!')
