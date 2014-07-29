@@ -175,8 +175,10 @@ angular.module('app')
           console.log("Updating order!")
           $scope.myOrders[msg.id].state = msg.state
           $scope.myOrders[msg.id].tx = msg.tx
-          $scope.myOrders[msg.id].escrows = msg.escrows
+          $scope.myOrders[msg.id].notary = msg.notary
           $scope.myOrders[msg.id].address = msg.address
+          $scope.myOrders[msg.id].buyer = msg.buyer
+          $scope.myOrders[msg.id].merchant = msg.merchant
           return;
       } else {
           console.log(msg);
