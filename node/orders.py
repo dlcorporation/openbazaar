@@ -336,6 +336,46 @@ class Orders(object):
         self._transport.send(notarized_order, offer_data_json['Seller']['seller_GUID'])
         self._transport.send(notarized_order, bid_data_json['Buyer']['buyer_GUID'])
 
+    def generate_order_id(self):
+        order_id = random.randint(0, 1000000)
+        while self._db.contracts.find({'id': order_id}).count() > 0:
+            order_id = random.randint(0, 1000000)
+        return order_id
+
+    def handle_notarized_order(self, msg):
+        self._log.info(msg['rawContract'])
+
+        contract = msg['rawContract']
+
+        # Find Seller Data in Contract
+        offer_data = ''.join(contract.split('\n')[8:])
+        index_of_seller_signature = offer_data.find('- - -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        offer_data_json = offer_data[0:index_of_seller_signature]
+        self._log.info('Offer Data: %s' % offer_data_json)
+        offer_data_json = json.loads(str(offer_data_json))
+
+        seller_GUID = offer_data_json['Seller']['seller_GUID']
+
+        order_id = self.generate_order_id()
+
+        contract_key = hashlib.sha1(str(contract)).hexdigest()
+        hash_value = hashlib.new('ripemd160')
+        hash_value.update(contract_key)
+        contract_key = hash_value.hexdigest()
+
+        self._db.orders.update({'id': order_id}, {
+            '$set': {'market_id': self._transport._market_id,
+                     'contract_key': contract_key,
+                     'signed_contract_body': str(contract),
+                     'state': 'notarized',
+                     "updated": time.time()}}, True)
+
+        if seller_GUID == self._transport._guid:
+            self._log.info('I am the seller!')
+
+        else:
+            self._log.info('I am the buyer')
+
     # Order callbacks
     def on_order(self, msg):
 
@@ -350,7 +390,8 @@ class Orders(object):
             self.handle_bid_order(msg)
 
         if state == 'notarized':
-            self._log.info('You recevied a notarized contract')
+            self._log.info('You received a notarized contract')
+            self.handle_notarized_order(msg)
 
             #
             #
