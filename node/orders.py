@@ -47,8 +47,8 @@ class Orders(object):
                  "buyer": _order['buyer'] if _order.has_key("buyer") else "",
                  "merchant": _order['merchant'] if _order.has_key("merchant") else "",
                  "notary": _order['notary'] if _order.has_key("notary") else "",
-                 "signed_contract_body": _order['signed_contract_body'] if _order.has_key(
-                     "signed_contract_body") else "",
+                 "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
+                 "note_for_merchant":  _order['note_for_merchant'] if _order.has_key("note_for_merchant") else "",
                  "updated": _order['updated'] if _order.has_key("updated") else ""}
         # orders.append(_order)
 
@@ -135,7 +135,10 @@ class Orders(object):
                 self._log.info('Verified Contract')
 
                 try:
-                    self._db.orders.update({"id": order_id}, {"$set": {"state": "sent", "updated": time.time()}}, True)
+                    self._db.orders.update({"id": order_id}, {"$set": {"state": "sent",
+                                                                       "updated": time.time(),
+                                                                       "merchant": contract_data_json['Seller']['seller_GUID'],
+                                                                       "buyer": self._transport._guid}}, True)
                 except:
                     self._log.error('Cannot update DB')
 
@@ -208,7 +211,7 @@ class Orders(object):
         self._db.orders.update({'id': order_id}, {
             '$set': {'market_id': self._transport._market_id, 'contract_key': contract_key,
                      'signed_contract_body': str(signed_data), 'state': 'new',
-                     'updated': time.time()}}, True)
+                     'updated': time.time(), 'note_for_merchant': msg['message']}}, True)
 
         # Push buy order to DHT and node if available
         # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
@@ -324,7 +327,10 @@ class Orders(object):
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
                      'state': 'notarized',
+                     'merchant': offer_data_json['Seller']['seller_GUID'],
+                     'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'address': multisig_address,
+                     'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()}}, True)
 
         # Send order to seller and buyer
@@ -403,6 +409,7 @@ class Orders(object):
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'notary': notary_data_json['Notary']['notary_GUID'],
                      'address': multisig_address,
+                     'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()}}, True)
 
     # Order callbacks
