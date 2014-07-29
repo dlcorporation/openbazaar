@@ -107,10 +107,10 @@ class Orders(object):
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
 
     def pay_order(self, new_order):  # action
-        new_order['state'] = 'paid'
+        new_order['state'] = 'Paid'
         self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
         new_order['type'] = 'order'
-        self._transport.send(new_order, new_order['seller'].decode('hex'))
+        self._transport.send(new_order, new_order['merchant'])
 
 
     def offer_json_from_seed_contract(self, seed_contract):

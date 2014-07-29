@@ -904,8 +904,7 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
 
     socket.send("pay_order", { orderId: orderId} )
 
-    scope.modalOrder.state = 'paid';
-    scope.modalOrder.waitingForPayment = false;
+    scope.modalOrder.state = 'Paid';
 
     // Refresh orders in background
     scope.queryMyOrder();

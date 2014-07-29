@@ -554,7 +554,7 @@
                     <table class="table table-striped">
                         <tr>
                             <td width=200><strong>Order Date:</strong></td>
-                            <td>{{Market.modalOrder.updated*1000 | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
+                            <td>{{Market.modalOrder.updated*1000 | date:'medium'}}</td>
                         </tr>
                         <tr>
                             <td width=200><strong>Status:</strong></td>
@@ -586,9 +586,10 @@
                         </tr>
                     </table>
 
-                    <div ng-show="Market.modalOrder.waitingForPayment" id="payment_buttons2">
-                        <button ng-click="markOrderPaid(orderId)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
-                        <button ng-click="" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
+                    <div ng-show="Market.modalOrder.state == 'Need to Pay'" id="payment_buttons2">
+
+                        <button ng-click="markOrderPaid(orderId)" class="btn btn-sm btn-info"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
+                        <button ng-click="" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
                     </div>
 
                     <button ng-show="Market.modalOrder.waitingForShipment" id="send-order-button" ng-click="markOrderShipped(orderId)" class="btn btn-sm btn-success"><span class="glyphicon glyphicon-ok"></span> Mark as Shipped</button>
@@ -626,7 +627,7 @@
                     <tr ng-repeat="order in orders">
                         <td width=20><input type="checkbox"/></td>
                         <td width=70><a href="" ng-click="open('lg', order.id)">{{order.id}}</a></td>
-                        <td width=175>{{order.updated * 1000 | date: 'medium'}}</td>
+                        <td width=160>{{order.updated * 1000 | date: 'short'}}</td>
                         <td style="word-break:break-all"><identicon icon-size="32" hash="order.buyer" title="{{order.buyer}}"></identicon> {{order.buyer}}</td>
                         <td style="word-break:break-all"><identicon icon-size="32" hash="order.merchant" title="{{order.merchant}}"></identicon> {{order.merchant}}</td>
                         <td width=100><span class="label label-info">{{order.state}}</span></td>
