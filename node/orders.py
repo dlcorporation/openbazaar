@@ -45,8 +45,8 @@ class Orders(object):
                  "state": _order['state'],
                  "address": _order['address'] if _order.has_key("address") else "",
                  "buyer": _order['buyer'] if _order.has_key("buyer") else "",
-                 "seller": _order['seller'] if _order.has_key("seller") else "",
-                 "escrows": _order['escrows'] if _order.has_key("escrows") else "",
+                 "merchant": _order['merchant'] if _order.has_key("merchant") else "",
+                 "notary": _order['notary'] if _order.has_key("notary") else "",
                  "signed_contract_body": _order['signed_contract_body'] if _order.has_key(
                      "signed_contract_body") else "",
                  "updated": _order['updated'] if _order.has_key("updated") else ""}
@@ -62,8 +62,8 @@ class Orders(object):
                            "state": _order['state'],
                            "address": _order['address'] if _order.has_key("address") else "",
                            "buyer": _order['buyer'] if _order.has_key("buyer") else "",
-                           "seller": _order['seller'] if _order.has_key("seller") else "",
-                           "escrows": _order['escrows'] if _order.has_key("escrows") else "",
+                           "merchant": _order['merchant'] if _order.has_key("merchant") else "",
+                           "notary": _order['notary'] if _order.has_key("notary") else "",
                            "text": _order['text'] if _order.has_key("text") else "",
                            "updated": _order['updated'] if _order.has_key("updated") else ""})
             # orders.append(_order)
@@ -386,21 +386,24 @@ class Orders(object):
         hash_value.update(contract_key)
         contract_key = hash_value.hexdigest()
 
+        if seller_GUID == self._transport._guid:
+            self._log.info('I am the seller!')
+            state = 'Waiting for Payment'
+
+        else:
+            self._log.info('I am the buyer')
+            state = 'Need to Pay'
+
         self._db.orders.update({'id': order_id}, {
             '$set': {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(contract),
-                     'state': 'notarized',
+                     'state': state,
+                     'merchant': offer_data_json['Seller']['seller_GUID'],
+                     'buyer': bid_data_json['Buyer']['buyer_GUID'],
+                     'notary': notary_data_json['Notary']['notary_GUID'],
                      'address': multisig_address,
                      "updated": time.time()}}, True)
-
-
-
-        if seller_GUID == self._transport._guid:
-            self._log.info('I am the seller!')
-
-        else:
-            self._log.info('I am the buyer')
 
     # Order callbacks
     def on_order(self, msg):
