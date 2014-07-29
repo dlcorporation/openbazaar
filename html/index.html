@@ -552,17 +552,30 @@
                 <div class="modal-body" style="text-align:left;">
 
                     <div ng-show="Market.modalOrder.state == 'Need to Pay'" class="alert alert-warning" role="alert">
-                        You need to send <strong>&#3647;{{Market.modalOrder.total_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.
+                        You need to send <strong>&#3647;{{Market.modalOrder.total_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.<br/><a href="bitcoin:{{Market.modalOrder.address}}?amount={{Market.modalOrder.total_price}}&message={{Market.modalOrder.item_title}}"><button type="button" class="btn btn-warning">Pay Now</button></a>
                     </div>
 
-                    <table class="table table-striped">
-                        <tr>
-                            <td colspan="100%"><img src="{{Market.modalOrder.item_image}}" width="100" height="100"/></td>
-                        </tr>
-                        <tr>
-                            <td width=200><strong>Contract Title:</strong></td>
-                            <td>{{Market.modalOrder.item_title}}</td>
-                        </tr>
+                    <!-- Nav tabs -->
+<ul class="nav nav-tabs" role="tablist">
+  <li class="active"><a href="#order" role="tab" data-toggle="tab">Order</a></li>
+  <li><a href="#contract-details" role="tab" data-toggle="tab">Contract Details</a></li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+  <div class="tab-pane active" id="order">
+
+      <div class="media" style="margin:10px;">
+          <a class="pull-left" href="#">
+            <img class="media-object" src="{{Market.modalOrder.item_image}}" alt="{{Market.modalOrder.item_title}">
+          </a>
+          <div class="media-body">
+            <h4 class="media-heading">{{Market.modalOrder.item_title}}</h4>
+            {{Market.modalOrder.item_description}}
+          </div>
+        </div>
+
+      <table class="table table-striped">
                         <tr>
                             <td width=200><strong>Order Date:</strong></td>
                             <td>{{Market.modalOrder.updated*1000 | date:'medium'}}</td>
@@ -580,28 +593,12 @@
                             <td style="word-break:break-all">&#3647;{{Market.modalOrder.shipping_price}}</td>
                         </tr>
                         <tr>
-                            <td><strong>Buyer:</strong></td>
-                            <td style="word-break:break-all">{{Market.modalOrder.buyer}}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Merchant:</strong></td>
-                            <td style="word-break:break-all">{{Market.modalOrder.merchant}}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Notary:</strong></td>
-                            <td style="word-break:break-all">{{Market.modalOrder.notary}}</td>
-                        </tr>
-                        <tr>
                             <td><strong>Payment Address:</strong></td>
                             <td style="word-break:break-all"><a href="https://blockchain.info/address/{{Market.modalOrder.address}}" target="_blank">{{Market.modalOrder.address}}</a></td>
                         </tr>
                         <tr>
                             <td><strong>Note to Merchant:</strong></td>
                             <td style="word-break:break-all">{{Market.modalOrder.note_for_merchant}}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Raw Contract:</strong></td>
-                            <td><pre style="word-wrap:break-word;font-size:12px;height:250px;">{{Market.modalOrder.signed_contract_body}}</pre></td>
                         </tr>
                     </table>
 
@@ -615,7 +612,42 @@
 
                     <button ng-show="Market.modalOrder.flagForArbitration" id="send-order-button" ng-click="flagOrderForArbitration(orderId)" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-flag"></span> Flag for Arbiter</button>
 
-                </div>
+
+
+
+  </div>
+  <div class="tab-pane" id="contract-details">
+
+      <table class="table table-striped" style="margin-top:10px;">
+            <tr>
+                <td><strong>Buyer:</strong></td>
+                <td style="word-break:break-all">{{Market.modalOrder.buyer}}</td>
+            </tr>
+            <tr>
+                <td><strong>Merchant:</strong></td>
+                <td style="word-break:break-all">{{Market.modalOrder.merchant}}</td>
+            </tr>
+            <tr>
+                <td><strong>Notary:</strong></td>
+                <td style="word-break:break-all">{{Market.modalOrder.notary}}</td>
+            </tr>
+            <tr>
+                <td><strong>Payment Address:</strong></td>
+                <td style="word-break:break-all"><a href="https://blockchain.info/address/{{Market.modalOrder.address}}" target="_blank">{{Market.modalOrder.address}}</a></td>
+            </tr>
+            <tr>
+                <td><strong>Raw Contract:</strong></td>
+                <td><pre style="word-wrap:break-word;font-size:12px;height:250px;">{{Market.modalOrder.signed_contract_body}}</pre></td>
+            </tr>
+        </table>
+
+
+  </div>
+</div>
+
+
+</div>
+
                 <div class="modal-footer">
                     <button class="btn btn-info" ng-click="cancel()">Close</button>
                 </div>
