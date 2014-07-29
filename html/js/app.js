@@ -179,6 +179,7 @@ angular.module('app')
           $scope.myOrders[msg.id].address = msg.address
           $scope.myOrders[msg.id].buyer = msg.buyer
           $scope.myOrders[msg.id].merchant = msg.merchant
+          $scope.myOrders[msg.id].note_for_merchant = msg.note_for_merchant
           return;
       } else {
           console.log(msg);
