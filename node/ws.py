@@ -50,7 +50,7 @@ class ProtocolHandler:
             "ship_order": self.client_ship_order,
             "remove_contract": self.client_remove_contract,
             "generate_secret": self.client_generate_secret,
-            "republish_listing": self.client_republish_listing,
+            "republish_contracts": self.client_republish_contracts,
             "import_raw_contract": self.client_import_raw_contract,
             "create_contract": self.client_create_contract,
         }
@@ -165,12 +165,12 @@ class ProtocolHandler:
         # Send message with market's bitmessage
         self._market.send_message(msg)
 
-    def client_republish_listing(self, socket_handler, msg):
+    def client_republish_contracts(self, socket_handler, msg):
 
-        self._log.info("Republishing product listing")
+        self._log.info("Republishing contracts")
 
         # Query mongo for products
-        products = self._market.republish_listing(msg)
+        products = self._market.republish_contracts()
 
     def client_import_raw_contract(self, socket_handler, contract):
 
