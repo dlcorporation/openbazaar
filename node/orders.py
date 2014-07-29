@@ -46,6 +46,8 @@ class Orders(object):
                  "address": _order['address'] if _order.has_key("address") else "",
                  "buyer": _order['buyer'] if _order.has_key("buyer") else "",
                  "merchant": _order['merchant'] if _order.has_key("merchant") else "",
+                 "item_price": _order['item_price'] if _order.has_key("item_price") else "",
+                 "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
                  "notary": _order['notary'] if _order.has_key("notary") else "",
                  "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
                  "note_for_merchant":  _order['note_for_merchant'] if _order.has_key("note_for_merchant") else "",
@@ -209,9 +211,12 @@ class Orders(object):
             order_id = random.randint(0, 1000000)
 
         self._db.orders.update({'id': order_id}, {
-            '$set': {'market_id': self._transport._market_id, 'contract_key': contract_key,
-                     'signed_contract_body': str(signed_data), 'state': 'new',
-                     'updated': time.time(), 'note_for_merchant': msg['message']}}, True)
+            '$set': {'market_id': self._transport._market_id,
+                     'contract_key': contract_key,
+                     'signed_contract_body': str(signed_data),
+                     'state': 'new',
+                     'updated': time.time(),
+                     'note_for_merchant': msg['message']}}, True)
 
         # Push buy order to DHT and node if available
         # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
@@ -330,6 +335,8 @@ class Orders(object):
                      'merchant': offer_data_json['Seller']['seller_GUID'],
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'address': multisig_address,
+                     'item_price': offer_data_json['Contract']['item_price'],
+                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()}}, True)
 
@@ -409,6 +416,8 @@ class Orders(object):
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'notary': notary_data_json['Notary']['notary_GUID'],
                      'address': multisig_address,
+                     'item_price': offer_data_json['Contract']['item_price'],
+                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()}}, True)
 
