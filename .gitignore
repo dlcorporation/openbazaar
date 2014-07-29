@@ -52,3 +52,5 @@ blockchain
 gpg/random_seed
 
 *.gpg~
+
+*.log.*
