@@ -178,6 +178,7 @@ angular.module('app')
           $scope.myOrders[msg.id].notary = msg.notary
           $scope.myOrders[msg.id].item_price = msg.item_price
           $scope.myOrders[msg.id].shipping_price = msg.shipping_price
+          //$scope.myOrders[msg.id].total_price = parseFloat(msg.item_price) + parseFloat(msg.shipping_price)
           $scope.myOrders[msg.id].address = msg.address
           $scope.myOrders[msg.id].buyer = msg.buyer
           $scope.myOrders[msg.id].merchant = msg.merchant
