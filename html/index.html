@@ -149,6 +149,7 @@
             <li><a href="#auctions">Auctions</a></li>
             <li><a href="#reviews">Lending</a></li>
             <li style="padding-top:5px;padding-left:10px;"><button class="btn btn-info" ng-click="open('lg')">Add Contract</button></li>
+            <li style="padding-top:5px;padding-left:10px;"><button type="button" class="btn btn-info" ng-click="republishContracts()"><span class="glyphicon glyphicon-upload"></span> Republish</button></li>
         </ul>
     </div>
 
@@ -180,11 +181,6 @@
                 <td width=50>{{contract.item_quantity_available}}</td>
                 <td width=50>&#3647;{{contract.unit_price}}</td>
                 <td width=100 align="center">
-                    <div class="listing-button">
-                        <button type="button" class="btn btn-primary btn-sm" ng-click="republishListing(contract.id)">
-                            <span class="glyphicon glyphicon-upload"></span> Republish
-                        </button>
-                    </div>
                     <div class="listing-button">
                         <button type="button" class="btn btn-default btn-sm" ng-click="removeContract(contract.id)">
                             <span class="glyphicon glyphicon-trash"></span> Remove

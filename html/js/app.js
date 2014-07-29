@@ -584,8 +584,8 @@ angular.module('app')
      socket.send("query_contracts", {})
   }
 
-  $scope.republishListing = function(productID) {
-     socket.send("republish_listing", {"productID":productID});
+  $scope.republishContracts = function() {
+     socket.send("republish_contracts", {});
      socket.send("query_contracts", {})
   }
 

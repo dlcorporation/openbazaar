@@ -112,7 +112,6 @@ class CryptoTransportLayer(TransportLayer):
 
         self._bitmessage_api = None
         if (bm_user, bm_pass, bm_port) != (None, None, None):
-            print (bm_user, bm_pass, bm_port)
             if not self._connect_to_bitmessage(bm_user, bm_pass, bm_port):
                 self._log.info('Bitmessage not available')
 

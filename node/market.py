@@ -84,6 +84,8 @@ class Market(object):
 
         self._dht._refreshNode()
 
+        self.republish_contracts()
+
         # Periodically refresh buckets
         loop = tornado.ioloop.IOLoop.instance()
         refreshCB = tornado.ioloop.PeriodicCallback(self._dht._refreshNode,
@@ -216,6 +218,12 @@ class Market(object):
             keyword_key = hash_value.hexdigest()
 
             self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':contract_key}), self._transport._guid)
+
+    def republish_contracts(self):
+        listings = self._db.contracts.find()
+        for listing in listings:
+            self._transport._dht.iterativeStore(self._transport, listing['key'], listing.get('signed_contract_body'), self._transport._guid)
+        self.update_listings_index()
 
 
     def republish_listing(self, msg):
