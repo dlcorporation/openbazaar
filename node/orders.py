@@ -40,6 +40,11 @@ class Orders(object):
 
         _order = self._db.orders.find_one({"id": orderId, "market_id": self._market_id})
 
+        offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
+        index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        offer_data_json = offer_data[0:index_of_seller_signature-4]
+        offer_data_json = json.loads(str(offer_data_json))
+
         # Get order prototype object before storing
         order = {"id": _order['id'],
                  "state": _order['state'],
@@ -48,7 +53,10 @@ class Orders(object):
                  "merchant": _order['merchant'] if _order.has_key("merchant") else "",
                  "item_price": _order['item_price'] if _order.has_key("item_price") else "",
                  "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
+                 "total_price": (float(_order['shipping_price']) + float(_order['item_price'])) if _order.has_key("shipping_price") else _order['item_price'],
                  "notary": _order['notary'] if _order.has_key("notary") else "",
+                 "item_image": offer_data_json['Contract']['item_images'],
+                 "item_title": offer_data_json['Contract']['item_title'],
                  "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
                  "note_for_merchant":  _order['note_for_merchant'] if _order.has_key("note_for_merchant") else "",
                  "updated": _order['updated'] if _order.has_key("updated") else ""}
