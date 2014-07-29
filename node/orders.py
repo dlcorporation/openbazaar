@@ -40,7 +40,11 @@ class Orders(object):
             index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
             offer_data_json = offer_data[0:index_of_seller_signature-4]
             offer_data_json = json.loads(str(offer_data_json))
-            total_price = float(_order['shipping_price']) + float(_order['item_price']) if _order.has_key("shipping_price") and _order.has_key("item_price") else _order['item_price']
+            if _order.has_key("shipping_price"):
+                shipping_price = _order['shipping_price'] if _order['shipping_price'] != '' else 0
+            else:
+                shipping_price = 0
+            total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
 
         else:
             offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
