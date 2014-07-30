@@ -48,7 +48,8 @@ class DHT(object):
 
         self.add_active_peer(self._transport, (seed_peer._pub,
                                                seed_peer._address,
-                                               seed_peer._guid))
+                                               seed_peer._guid,
+                                               seed_peer._nickname))
 
         self._iterativeFind(self._settings['guid'], self._knownNodes,
                             'findNode')
@@ -58,7 +59,7 @@ class DHT(object):
     def find_active_peer(self, peer_tuple):
         found_peer = False
         for idx, peer in enumerate(self._activePeers):
-            if peer_tuple == (peer._guid, peer._address, peer._pub):
+            if peer_tuple == (peer._guid, peer._address, peer._pub, peer._nickname):
                 found_peer = peer
         return found_peer
 
@@ -84,7 +85,7 @@ class DHT(object):
         # Refresh peer's data in case anything changed
         for idx, peer in enumerate(self._activePeers):
 
-            active_peer_tuple = (peer._pub, peer._address, peer._guid)
+            active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
 
             if active_peer_tuple == peer_tuple:
                 self._log.info('Already connected to this node')
@@ -99,7 +100,8 @@ class DHT(object):
 
         new_peer = transport.get_crypto_peer(peer_tuple[2],
                                              peer_tuple[1],
-                                             peer_tuple[0])
+                                             peer_tuple[0],
+                                             peer_tuple[3])
 
         self._activePeers.append(new_peer)
         self._log.debug('Removing old information about this node')
@@ -144,6 +146,7 @@ class DHT(object):
         findID = msg['findID']
         uri = msg['uri']
         pubkey = msg['pubkey']
+        nick = msg['senderNick']
 
         assert guid is not None and guid != self._transport.guid
         assert key is not None
@@ -151,7 +154,7 @@ class DHT(object):
         assert uri is not None
         assert pubkey is not None
 
-        new_peer = self.find_active_peer((guid, uri, pubkey))
+        new_peer = self.find_active_peer((guid, uri, pubkey, nick))
         if not new_peer:
             self._log.info('Creating new crypto peer connection')
             new_peer = self._transport.get_crypto_peer(guid, uri, pubkey)
@@ -248,14 +251,14 @@ class DHT(object):
                 self._log.debug('Found the node you were looking for: %s' % foundNode)
 
                 # Add foundNode to active peers list and routing table
-                self.add_active_peer(self._transport, (foundNode[2], foundNode[1], foundNode[0]))
+                self.add_active_peer(self._transport, (foundNode[2], foundNode[1], foundNode[0], foundNode[3]))
 
                 for idx, search in enumerate(self._searches):
                     if search._findID == msg['findID']:
 
                         # Execute callback
                         if search._callback is not None:
-                            search._callback((foundNode[2], foundNode[1], foundNode[0]))
+                            search._callback((foundNode[2], foundNode[1], foundNode[0], foundNode[3]))
 
                         # Clear search
                         del self._searches[idx]
@@ -399,7 +402,7 @@ class DHT(object):
 
         for node in foundNodes:
 
-            node_guid, node_uri, node_pubkey = node
+            node_guid, node_uri, node_pubkey, node_nick = node
             node_ip = urlparse(node_uri).hostname
             node_port = urlparse(node_uri).port
 
@@ -418,7 +421,7 @@ class DHT(object):
 
             if node_guid != self._settings['guid']:
                 self._log.debug('Adding new peer to active peers list: %s' % node)
-                self.add_active_peer(self._transport, (node_pubkey, node_uri, node_guid))
+                self.add_active_peer(self._transport, (node_pubkey, node_uri, node_guid, node_nick))
 
         self._log.debug('Short list after: %s' % search._shortlist)
 
