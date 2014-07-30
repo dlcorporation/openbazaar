@@ -14,8 +14,12 @@ from dht import DHT
 from zmq.eventloop import ioloop
 from pprint import pprint
 import time
+import requests
+from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
 
 ioloop.install()
+
+
 
 
 class CryptoPeerConnection(PeerConnection):
@@ -30,6 +34,8 @@ class CryptoPeerConnection(PeerConnection):
         PeerConnection.__init__(self, transport, address)
 
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
+        requests_log = logging.getLogger("requests")
+        requests_log.setLevel(logging.WARNING)
 
         self._peer_alive = False
 
@@ -118,6 +124,7 @@ class CryptoTransportLayer(TransportLayer):
         self._market_id = market_id
         self.nick_mapping = {}
         self._uri = "tcp://%s:%s" % (my_ip, my_port)
+        self._ip = my_ip
 
         # Set up
         self._setup_settings()
@@ -135,6 +142,22 @@ class CryptoTransportLayer(TransportLayer):
         self.add_callback('store', self._storeValue)
 
         self.listen(self.pubkey)
+
+        def cb():
+            self._log.info('Checking IP')
+            r = requests.get(r'http://icanhazip.com')
+            ip = r.text
+            if ip != self._ip:
+                self._ip = ip
+                self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+                print 'Updated IP'
+
+                self.stream.close()
+                self.listen(self.pubkey)
+
+        # Check IP periodically for changes
+        self.caller = PeriodicCallback(cb, 5000, ioloop.IOLoop.instance())
+        self.caller.start()
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
