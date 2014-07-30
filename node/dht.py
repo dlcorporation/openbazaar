@@ -177,6 +177,7 @@ class DHT(object):
                          "uri": self._transport._uri,
                          "pubkey": self._transport.pubkey,
                          "foundKey": self._dataStore[key],
+                         "senderNick": self._transport._nickname,
                          "findID": findID})
                 else:
                     self._log.info('Did not find a key: %s' % key)
@@ -193,6 +194,7 @@ class DHT(object):
                     new_peer.send(
                         {"type": "findNodeResponse",
                          "senderGUID": self._transport.guid,
+                         "senderNick": self._transport._nickname,
                          "uri": self._transport._uri,
                          "pubkey": self._transport.pubkey,
                          "foundNode": foundNode,
@@ -210,6 +212,7 @@ class DHT(object):
                     new_peer.send(
                         {"type": "findNodeResponse",
                          "senderGUID": self._transport.guid,
+                         "senderNick": self._transport._nickname,
                          "uri": self._transport._uri,
                          "pubkey": self._transport.pubkey,
                          "foundNodes": contactTriples,
