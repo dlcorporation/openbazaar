@@ -146,8 +146,9 @@ class CryptoTransportLayer(TransportLayer):
         def cb():
             r = requests.get(r'http://icanhazip.com')
             ip = r.text
+            ip = ip.strip(' \t\n\r')
             if ip != self._ip:
-                self._ip = ip.strip(' \t\n\r')
+                self._ip = ip
                 self._uri = 'tcp://%s:%s' % (self._ip, self._port)
                 self.stream.close()
                 self.listen(self.pubkey)
