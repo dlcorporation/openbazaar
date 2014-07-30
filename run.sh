@@ -104,7 +104,7 @@ fi
 
 if [ "$SEED_MODE" == 1 ]; then
     echo "Seed Mode $SERVER_IP"
-    $PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
+    $PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
 
 elif [ "$DEVELOPMENT" == 0 ]; then
     echo "Production Mode"
