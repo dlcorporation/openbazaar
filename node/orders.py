@@ -11,6 +11,8 @@ import hashlib
 import string
 import json
 import datetime
+import qrcode
+import StringIO
 
 
 class Orders(object):
@@ -54,6 +56,12 @@ class Orders(object):
             total_price = ""
             offer_data_json = json.loads(str(offer_data_json))
 
+        qr = qrcode.make("bitcoin:"+_order['address']+"?amount"+str(total_price)+"&message="+offer_data_json['Contract']['item_title'])
+        output = StringIO.StringIO()
+        qr.save(output, "PNG")
+        qr = output.getvalue().encode("base64")
+        output.close()
+
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -66,6 +74,7 @@ class Orders(object):
                  "total_price": total_price,
                  "notary": _order['notary'] if _order.has_key("notary") else "",
                  "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
+                 "qrcode": 'data:image/png;base64,'+qr,
                  "item_title": offer_data_json['Contract']['item_title'],
                  "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
                  "note_for_merchant":  _order['note_for_merchant'] if _order.has_key("note_for_merchant") else "",

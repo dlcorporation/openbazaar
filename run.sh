@@ -107,7 +107,7 @@ else
     while [[ $i -le $NODES ]]
     do
         sleep 2
-	    $PYTHON node/tornadoloop.py 127.0.0.$i -s tcp://127.0.0.1:$SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u $i &
+	    $PYTHON node/tornadoloop.py 127.0.0.$i -s epgm://127.0.0.1:$SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u $i &
 	    ((i=i+1))
     done
 

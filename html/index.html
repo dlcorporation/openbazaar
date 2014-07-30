@@ -548,7 +548,11 @@
                 <div class="modal-body" style="text-align:left;">
 
                     <div ng-show="Market.modalOrder.state == 'Need to Pay'" class="alert alert-warning" role="alert">
-                        You need to send <strong>&#3647;{{Market.modalOrder.total_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.<br/><a href="bitcoin:{{Market.modalOrder.address}}?amount={{Market.modalOrder.total_price}}&message={{Market.modalOrder.item_title}}"><button type="button" class="btn btn-warning">Pay Now</button></a>
+                        <div class="row">
+
+                        <div style="float:left;margin:10px;"><img src="{{Market.modalOrder.qrcode}}" width="150" height="150"/></div>
+                        <div style="margin:10px;">You need to send <strong>&#3647;{{Market.modalOrder.total_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.<br/><a href="bitcoin:{{Market.modalOrder.address}}?amount={{Market.modalOrder.total_price}}&message={{Market.modalOrder.item_title}}"><button type="button" class="btn btn-warning">Pay Now</button></a></div>
+                            </div>
                     </div>
 
                     <!-- Nav tabs -->
