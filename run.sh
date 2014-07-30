@@ -9,7 +9,6 @@ This script starts up the OpenBazaar client and server.
 
 OPTIONS:
   -h    Help information
-  -s    Seed URI
   -o    Seed Mode
   -i    Server IP
   -p    Server Port
@@ -33,7 +32,7 @@ fi
 SERVER_PORT=12345
 LOGDIR=logs
 DEVELOPMENT=0
-SEED_URI=tcp://seed.openbazaar.org:12345
+SEED_URI=tcp://seed2.openbazaar.org:12345
 LOG_FILE=production.log
 NODES=3
 BM_USERNAME=username
@@ -51,15 +50,12 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hs:p:l:dn:a:b:c:u:oi:" OPTION
+while getopts "hp:l:dn:a:b:c:u:oi:" OPTION
 do
      case ${OPTION} in
          h)
              usage
              exit 1
-             ;;
-         s)
-             SEED_URI=$OPTARG
              ;;
          p)
              SERVER_PORT=$OPTARG
@@ -112,7 +108,7 @@ if [ "$SEED_MODE" == 1 ]; then
 
 elif [ "$DEVELOPMENT" == 0 ]; then
     echo "Production Mode"
-	$PYTHON node/tornadoloop.py $SERVER_IP -s $SEED_URI -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
+	$PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
 
 else
 	# Primary Market - No SEED_URI specified
@@ -122,7 +118,7 @@ else
     while [[ $i -le $NODES ]]
     do
         sleep 2
-	    $PYTHON node/tornadoloop.py 127.0.0.$i -s epgm://127.0.0.1:$SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u $i &
+	    $PYTHON node/tornadoloop.py 127.0.0.$i --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u $i &
 	    ((i=i+1))
     done
 
