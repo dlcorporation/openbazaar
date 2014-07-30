@@ -34,8 +34,6 @@ class CryptoPeerConnection(PeerConnection):
         PeerConnection.__init__(self, transport, address)
 
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
-        requests_log = logging.getLogger("requests")
-        requests_log.setLevel(logging.WARNING)
 
         self._peer_alive = False
 
@@ -107,9 +105,11 @@ class CryptoPeerConnection(PeerConnection):
 
 class CryptoTransportLayer(TransportLayer):
 
-    def __init__(self, my_ip, my_port, market_id, bm_user=None, bm_pass=None, bm_port=None):
+    def __init__(self, my_ip, my_port, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_mode=False):
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
+        requests_log = logging.getLogger("requests")
+        requests_log.setLevel(logging.WARNING)
 
         # Connect to database
         MONGODB_URI = 'mongodb://localhost:27017'
@@ -152,9 +152,10 @@ class CryptoTransportLayer(TransportLayer):
                 self.stream.close()
                 self.listen(self.pubkey)
 
-        # Check IP periodically for changes
-        self.caller = PeriodicCallback(cb, 5000, ioloop.IOLoop.instance())
-        self.caller.start()
+        if seed_mode:
+            # Check IP periodically for changes
+            self.caller = PeriodicCallback(cb, 5000, ioloop.IOLoop.instance())
+            self.caller.start()
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
