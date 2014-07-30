@@ -388,6 +388,9 @@ class Market(object):
                 data = json.dumps({'notary_index_remove': self._transport._guid})
                 self._transport._dht.iterativeStore(self._transport, key, data, self._transport._guid)
 
+        # Update nickname
+        self._transport._nickname = msg['nickname']
+
         # Update local settings
         self._db.settings.update({'id':'%s'%self._transport._market_id}, {'$set':msg}, True)
 

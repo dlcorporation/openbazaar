@@ -1006,7 +1006,7 @@
     <table class="peers-table no-hover" style="margin-top:20px;">
         <tbody>
         <tr>
-            <td width="40"><identicon icon-size="38" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
+            <td width="40"><identicon icon-size="50" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
             <td style="font-size:13px;"><span title="{{myself.pubkey}}"><strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong><br>
               <span style="font-style:italic;">{{myself.nickname ? myself.nickname : myself.sin}}</span></span></td>
 
@@ -1023,9 +1023,11 @@
         <table id="favorite-peers" class="peers-table table-hover">
             <tbody>
             <tr ng-repeat="peer in peers | limitTo:10" ng-click="queryShop(peer)">
-                <td width="40"><identicon icon-size="38" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
-                <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.uri.slice(0,30)}}</strong><br>
-                  <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.sin}}</span></span></td>
+                <td width="40"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
+                <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
+                  <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.sin}}
+                    <div ng-show="{{peer.uri}}">{{peer.uri}}</div>
+                    </span></span></td>
             </tr>
             </tbody>
         </table>
