@@ -10,6 +10,8 @@ This script starts up the OpenBazaar client and server.
 OPTIONS:
   -h    Help information
   -s    Seed URI
+  -o    Seed Mode
+  -i    Server IP
   -p    Server Port
   -l    Log file
   -d    Development mode
@@ -28,7 +30,6 @@ else
 fi
 
 # Default values
-SERVER_IP=$(wget -qO- icanhazip.com)
 SERVER_PORT=12345
 LOGDIR=logs
 DEVELOPMENT=0
@@ -50,7 +51,7 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hs:p:l:dn:a:b:c:u:" OPTION
+while getopts "hs:p:l:dn:a:b:c:u:oi:" OPTION
 do
      case ${OPTION} in
          h)
@@ -84,6 +85,12 @@ do
          u)
              MARKET_ID=$OPTARG
              ;;
+         o)
+             SEED_MODE=1
+             ;;
+         i)
+             SERVER_IP=$OPTARG
+             ;;
          ?)
              usage
              exit
@@ -91,17 +98,23 @@ do
      esac
 done
 
+if [ -z "$SERVER_IP" ]; then
+    SERVER_IP=$(wget -qO- icanhazip.com)
+fi
+
 if [ ! -d "$LOGDIR" ]; then
   mkdir $LOGDIR
 fi
 
+if [ "$SEED_MODE" == 1 ]; then
+    $PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
 
-if [ $DEVELOPMENT == 0 ]; then
+elif [ "$DEVELOPMENT" == 0 ]; then
 	$PYTHON node/tornadoloop.py $SERVER_IP -s $SEED_URI -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
-else
 
+else
 	# Primary Market - No SEED_URI specified
-	$PYTHON node/tornadoloop.py 127.0.0.1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 &
+	$PYTHON node/tornadoloop.py 127.0.0.1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD -o 1 --bmport $BM_PORT -l $LOGDIR/development.log -u 1 &
     ((NODES=NODES+1))
     i=2
     while [[ $i -le $NODES ]]

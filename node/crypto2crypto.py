@@ -144,14 +144,11 @@ class CryptoTransportLayer(TransportLayer):
         self.listen(self.pubkey)
 
         def cb():
-            self._log.info('Checking IP')
             r = requests.get(r'http://icanhazip.com')
             ip = r.text
             if ip != self._ip:
                 self._ip = ip
                 self._uri = 'tcp://%s:%s' % (self._ip, self._port)
-                print 'Updated IP'
-
                 self.stream.close()
                 self.listen(self.pubkey)
 
