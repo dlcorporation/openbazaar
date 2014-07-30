@@ -19,17 +19,21 @@ class MainHandler(tornado.web.RequestHandler):
 
 class MarketApplication(tornado.web.Application):
 
-    def __init__(self, market_ip, market_port, seed_uri, market_id, 
+    def __init__(self, market_ip, market_port, seed_uri=None, market_id=1,
                     bm_user=None, bm_pass=None, bm_port=None):
+
+        seed_mode = True if seed_uri is not None else False
 
         self.transport = CryptoTransportLayer(market_ip,
                                                market_port,
                                                market_id,
                                                bm_user,
                                                bm_pass,
-                                               bm_port)
+                                               bm_port,
+                                               seed_mode)
 
-        self.transport.join_network(seed_uri)
+        if not seed_mode:
+            self.transport.join_network(seed_uri)
 
         self.market = Market(self.transport)
 
