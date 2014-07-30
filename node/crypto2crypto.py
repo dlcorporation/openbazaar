@@ -152,7 +152,7 @@ class CryptoTransportLayer(TransportLayer):
                 self.stream.close()
                 self.listen(self.pubkey)
 
-        if seed_mode:
+        if not seed_mode:
             # Check IP periodically for changes
             self.caller = PeriodicCallback(cb, 5000, ioloop.IOLoop.instance())
             self.caller.start()

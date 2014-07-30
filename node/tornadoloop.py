@@ -22,7 +22,7 @@ class MarketApplication(tornado.web.Application):
     def __init__(self, market_ip, market_port, seed_uri=None, market_id=1,
                     bm_user=None, bm_pass=None, bm_port=None):
 
-        seed_mode = True if seed_uri is not None else False
+        seed_mode = True if seed_uri is None else False
 
         self.transport = CryptoTransportLayer(market_ip,
                                                market_port,
