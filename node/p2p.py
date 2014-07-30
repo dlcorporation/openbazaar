@@ -66,6 +66,7 @@ class TransportLayer(object):
         self._ip = my_ip
         self._guid = my_guid
         self._market_id = market_id
+        self._nickname = None
         self._uri = 'tcp://%s:%s' % (self._ip, self._port)
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
@@ -105,8 +106,8 @@ class TransportLayer(object):
             for msg in message:
                 self._on_raw_message(msg)
 
-            self._log.debug('Sending back OK')
-            self.stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}))
+            self._log.debug('Sending back OK %s' % self._nickname)
+            self.stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey, 'nick':self._nickname}))
 
         self.stream.on_recv(handle_recv)
 
