@@ -89,26 +89,26 @@ class TransportLayer(object):
 
     def listen(self, pubkey):
         self._log.info("Listening at: %s:%s" % (self._ip, self._port))
-        ctx = zmq.Context()
-        socket = ctx.socket(zmq.REP)
+        self.ctx = zmq.Context()
+        self.socket = self.ctx.socket(zmq.REP)
 
         if network_util.is_loopback_addr(self._ip):
             # we are in local test mode so bind that socket on the
             # specified IP
-            socket.bind(self._uri)
+            self.socket.bind(self._uri)
         else:
-            socket.bind('tcp://*:%s' % self._port)
+            self.socket.bind('tcp://*:%s' % self._port)
 
-        stream = zmqstream.ZMQStream(socket, io_loop=ioloop.IOLoop.current())
+        self.stream = zmqstream.ZMQStream(self.socket, io_loop=ioloop.IOLoop.current())
 
         def handle_recv(message):
             for msg in message:
                 self._on_raw_message(msg)
 
             self._log.debug('Sending back OK')
-            stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}))
+            self.stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey}))
 
-        stream.on_recv(handle_recv)
+        self.stream.on_recv(handle_recv)
 
     def closed(self, *args):
         self._log.info("client left")
