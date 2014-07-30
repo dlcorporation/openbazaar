@@ -107,14 +107,16 @@ if [ ! -d "$LOGDIR" ]; then
 fi
 
 if [ "$SEED_MODE" == 1 ]; then
+    echo "Seed Mode $SERVER_IP"
     $PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
 
 elif [ "$DEVELOPMENT" == 0 ]; then
+    echo "Production Mode"
 	$PYTHON node/tornadoloop.py $SERVER_IP -s $SEED_URI -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 &
 
 else
 	# Primary Market - No SEED_URI specified
-	$PYTHON node/tornadoloop.py 127.0.0.1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD -o 1 --bmport $BM_PORT -l $LOGDIR/development.log -u 1 &
+	$PYTHON node/tornadoloop.py 127.0.0.1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 &
     ((NODES=NODES+1))
     i=2
     while [[ $i -le $NODES ]]
