@@ -30,6 +30,7 @@ class CryptoPeerConnection(PeerConnection):
         self._pub = pub
         self._ip = urlparse(address).hostname
         self._port = urlparse(address).port
+        self._nickname = ""
 
         PeerConnection.__init__(self, transport, address)
 
@@ -133,7 +134,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
 
-        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid)
+        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid, self.nickname)
 
         # Set up callbacks
         self.add_callback('hello', self._ping)

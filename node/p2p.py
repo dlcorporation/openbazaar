@@ -48,6 +48,10 @@ class PeerConnection(object):
 
         def cb(msg):
             self._log.debug('Message %s received from remote peer')
+            response = json.loads(msg[0])
+            if response.has_key('nick') and response['nick'] != self._nickname:
+                self._nickname = response['nick']
+                self._log.info('Nickname %s' % response)
 
             if callback is not None:
                 self._log.info('Executing callback')
@@ -57,7 +61,7 @@ class PeerConnection(object):
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
-    def __init__(self, market_id, my_ip, my_port, my_guid):
+    def __init__(self, market_id, my_ip, my_port, my_guid, nickname=None):
 
         self._peers = {}
         self._callbacks = defaultdict(list)
@@ -66,7 +70,7 @@ class TransportLayer(object):
         self._ip = my_ip
         self._guid = my_guid
         self._market_id = market_id
-        self._nickname = None
+        self._nickname = nickname
         self._uri = 'tcp://%s:%s' % (self._ip, self._port)
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
