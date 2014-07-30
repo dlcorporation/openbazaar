@@ -112,7 +112,8 @@ elif [ "$DEVELOPMENT" == 0 ]; then
 
 else
 	# Primary Market - No SEED_URI specified
-	$PYTHON node/tornadoloop.py 127.0.0.1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 &
+	echo "Development Mode"
+	$PYTHON node/tornadoloop.py 127.0.0.1 -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 &
     ((NODES=NODES+1))
     i=2
     while [[ $i -le $NODES ]]
