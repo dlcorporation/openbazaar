@@ -319,6 +319,7 @@ class ProtocolHandler:
         msg['uri'] = self._transport._uri
         msg['pubkey'] = self._transport.pubkey
         msg['senderGUID'] = self._transport.guid
+        msg['senderNick'] = self._transport._nickname
         self._transport.send(protocol.shout(msg))
 
     def on_node_search_value(self, results, key):
@@ -471,6 +472,8 @@ class ProtocolHandler:
                 peer_item['pubkey'] = 'unknown'
             peer_item['guid'] = peer._guid
             peer_item['sin'] = peer._sin
+            peer_item['nick'] = peer._nickname
+            self._log.info('Peer Nick %s '  % peer)
             peers.append(peer_item)
 
         return peers

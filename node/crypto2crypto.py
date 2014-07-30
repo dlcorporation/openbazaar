@@ -24,13 +24,13 @@ ioloop.install()
 
 class CryptoPeerConnection(PeerConnection):
 
-    def __init__(self, transport, address, pub=None, guid=None, callback=lambda msg: None):
+    def __init__(self, transport, address, pub=None, guid=None, nickname=None, callback=lambda msg: None):
 
         self._priv = transport._myself
         self._pub = pub
         self._ip = urlparse(address).hostname
         self._port = urlparse(address).port
-        self._nickname = ""
+        self._nickname = nickname
 
         PeerConnection.__init__(self, transport, address)
 
@@ -60,7 +60,8 @@ class CryptoPeerConnection(PeerConnection):
                 self.send_raw(json.dumps({'type':'hello',
                                           'pubkey':transport.pubkey,
                                           'uri':transport._uri,
-                                          'senderGUID':transport.guid }), cb)
+                                          'senderGUID':transport.guid,
+                                          'senderNick':transport._nickname}), cb)
             except:
                 print 'Sending raw message failed'
 
@@ -86,8 +87,9 @@ class CryptoPeerConnection(PeerConnection):
         data['senderGUID'] = self._transport.guid
         data['uri'] = self._transport._uri
         data['pubkey'] = self._transport.pubkey
+        data['senderNick'] = self._transport._nickname
 
-        #self._log.debug('Sending to peer: %s %s' % (self._ip, data))
+        self._log.debug('Sending to peer: %s %s' % (self._ip, data))
 
         if self._pub == '':
             self._log.info('There is no public key for encryption')
@@ -126,6 +128,7 @@ class CryptoTransportLayer(TransportLayer):
         self.nick_mapping = {}
         self._uri = "tcp://%s:%s" % (my_ip, my_port)
         self._ip = my_ip
+        self._nickname = ""
 
         # Set up
         self._setup_settings()
@@ -335,13 +338,13 @@ class CryptoTransportLayer(TransportLayer):
         return peer
 
 
-    def get_crypto_peer(self, guid, uri, pubkey=None):
+    def get_crypto_peer(self, guid, uri, pubkey=None, nickname=None):
 
       if guid == self.guid:
         self._log.info('Trying to get cryptopeer for yourself')
         return
 
-      peer = CryptoPeerConnection(self, uri, pubkey, guid=guid)
+      peer = CryptoPeerConnection(self, uri, pubkey, guid=guid, nickname=nickname)
       return peer
 
     def addCryptoPeer(self, peer_to_add):
@@ -363,7 +366,7 @@ class CryptoTransportLayer(TransportLayer):
 
         if not foundOutdatedPeer and peer_to_add._guid != self._guid:
             self._log.info('Adding crypto peer at %s' % peer_to_add._address)
-            self._dht.add_active_peer(self, (peer_to_add._pub, peer_to_add._address, peer_to_add._guid))
+            self._dht.add_active_peer(self, (peer_to_add._pub, peer_to_add._address, peer_to_add._guid, peer_to_add._nickname))
 
 
 
@@ -539,10 +542,11 @@ class CryptoTransportLayer(TransportLayer):
         ip = urlparse(uri).hostname
         port = urlparse(uri).port
         guid = msg.get('senderGUID')
+        nickname = msg.get('senderNick')
 
-        self._dht.add_known_node((ip, port, guid))
+        self._dht.add_known_node((ip, port, guid, nickname))
 
-        self._dht.add_active_peer(self, (pubkey, uri, guid))
+        self._dht.add_active_peer(self, (pubkey, uri, guid, nickname))
 
 
         self.trigger_callbacks(msg['type'], msg)
