@@ -203,7 +203,7 @@ class DHT(object):
                     contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
                     contactTriples = []
                     for contact in contacts:
-                        contactTriples.append((contact._guid, contact._address, contact._pub))
+                        contactTriples.append((contact._guid, contact._address, contact._pub, contact._nickname))
 
                     contactTriples = self.dedupe(contactTriples)
                     self._log.debug('Contact Triples: %s' % contactTriples)
