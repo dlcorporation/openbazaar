@@ -77,6 +77,7 @@ class ProtocolHandler:
             'settings': settings,
             'guid': self._transport.guid,
             'sin': self._transport.sin,
+            'uri': self._transport._uri,
             'countryCodes': countryCodes,
             'reputation': []  # self._transport.reputation.get_my_reputation()
         }

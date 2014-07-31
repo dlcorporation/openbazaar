@@ -108,7 +108,7 @@ class CryptoPeerConnection(PeerConnection):
 
 class CryptoTransportLayer(TransportLayer):
 
-    def __init__(self, my_ip, my_port, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0):
+    def __init__(self, my_ip, my_port, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False):
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
         requests_log = logging.getLogger("requests")
@@ -157,7 +157,7 @@ class CryptoTransportLayer(TransportLayer):
                 self.stream.close()
                 self.listen(self.pubkey)
 
-        if seed_mode == 0:
+        if seed_mode == 0 and not dev_mode:
             # Check IP periodically for changes
             self.caller = PeriodicCallback(cb, 5000, ioloop.IOLoop.instance())
             self.caller.start()
@@ -297,10 +297,14 @@ class CryptoTransportLayer(TransportLayer):
       self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"bitmessage":self.bitmessage}}, True)
 
 
-    def join_network(self, callback=lambda msg: None):
+    def join_network(self, dev_mode=0, callback=lambda msg: None):
 
-        seed_peers = ('seed.openbazaar.org',
-                      'seed2.openbazaar.org')
+        if dev_mode:
+            self._log.info('DEV MODE')
+            seed_peers = {'127.0.0.1'}
+        else:
+            seed_peers = ('seed.openbazaar.org',
+                          'seed2.openbazaar.org')
 
         for seed in seed_peers:
             self._log.info('Initializing Seed Peer(s): [%s]' % seed)
