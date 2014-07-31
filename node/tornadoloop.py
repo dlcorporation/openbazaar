@@ -20,7 +20,7 @@ class MainHandler(tornado.web.RequestHandler):
 class MarketApplication(tornado.web.Application):
 
     def __init__(self, market_ip, market_port, market_id=1,
-                    bm_user=None, bm_pass=None, bm_port=None, seed_mode=0):
+                    bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False):
 
         self.transport = CryptoTransportLayer(market_ip,
                                                market_port,
@@ -28,10 +28,11 @@ class MarketApplication(tornado.web.Application):
                                                bm_user,
                                                bm_pass,
                                                bm_port,
-                                               seed_mode)
+                                               seed_mode,
+                                               dev_mode)
 
         if seed_mode == 0:
-            self.transport.join_network()
+            self.transport.join_network(dev_mode=dev_mode)
 
         self.market = Market(self.transport)
 
@@ -50,7 +51,7 @@ class MarketApplication(tornado.web.Application):
     def get_transport(self):
         return self.dht._transport
 
-def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0):
+def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False):
 
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s - %(name)s -  \
@@ -69,7 +70,8 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
                                     bm_user,
                                     bm_pass,
                                     bm_port,
-                                    seed_mode)
+                                    seed_mode,
+                                    dev_mode)
 
 
     error = True
@@ -105,10 +107,11 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--log_file", default='production.log')
     parser.add_argument("-u", "--market_id", default=1)
     parser.add_argument("-s", "--seed_mode", default=0)
+    parser.add_argument("-d", "--dev_mode", action='store_true')
     parser.add_argument("--bmuser", default='username', help="Bitmessage instance user")
     parser.add_argument("--bmpass", default='password', help="Bitmessage instance pass")
     parser.add_argument("--bmport", default='8442', help="Bitmessage instance RPC port")
     args = parser.parse_args()
     start_node(args.my_market_ip,
                args.my_market_port, args.log_file, args.market_id,
-               args.bmuser, args.bmpass, args.bmport, args.seed_mode)
+               args.bmuser, args.bmpass, args.bmport, args.seed_mode, args.dev_mode)
