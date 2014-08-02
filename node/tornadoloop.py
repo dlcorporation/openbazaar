@@ -52,9 +52,9 @@ class MarketApplication(tornado.web.Application):
     def get_transport(self):
         return self.transport
 
-def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False):
+def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False, log_level=None):
 
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=int(log_level),
                         format='%(asctime)s - %(name)s -  \
                                 %(levelname)s - %(message)s',
                         filename=log_file)
@@ -112,7 +112,8 @@ if __name__ == "__main__":
     parser.add_argument("--bmuser", default='username', help="Bitmessage instance user")
     parser.add_argument("--bmpass", default='password', help="Bitmessage instance pass")
     parser.add_argument("--bmport", default='8442', help="Bitmessage instance RPC port")
+    parser.add_argument("--log_level", default=10, help="Numeric value for logging level")
     args = parser.parse_args()
     start_node(args.my_market_ip,
                args.my_market_port, args.log_file, args.market_id,
-               args.bmuser, args.bmpass, args.bmport, args.seed_mode, args.dev_mode)
+               args.bmuser, args.bmpass, args.bmport, args.seed_mode, args.dev_mode, args.log_level)
