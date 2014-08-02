@@ -99,11 +99,11 @@ class DHT(object):
                 del self._activePeers[idx]
                 self._routingTable.removeContact(peer_tuple[2])
 
-
         new_peer = transport.get_crypto_peer(peer_tuple[2],
                                              peer_tuple[1],
                                              peer_tuple[0],
                                              peer_tuple[3])
+        new_peer._nickname = peer_tuple[3]
         self._log.debug('New Peer: %s: %s' % (new_peer._nickname, peer_tuple[3]))
         self._activePeers.append(new_peer)
         self._log.debug('Removing old information about this node')
