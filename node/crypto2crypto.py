@@ -347,8 +347,10 @@ class CryptoTransportLayer(TransportLayer):
     def get_crypto_peer(self, guid, uri, pubkey=None, nickname=None):
 
       if guid == self.guid:
-        self._log.info('Trying to get cryptopeer for yourself')
+        self._log.info('Trying to get crypto peer for yourself')
         return
+
+      self._log.info('%s %s %s %s' % (guid, uri, pubkey, nickname))
 
       peer = CryptoPeerConnection(self, uri, pubkey, guid=guid, nickname=nickname)
       return peer
@@ -558,7 +560,7 @@ class CryptoTransportLayer(TransportLayer):
         guid = msg.get('senderGUID')
         nickname = msg.get('senderNick')
 
-        self._log.info('on message %s' % msg)
+        self._log.info('on message %s' % nickname)
 
         self._dht.add_known_node((ip, port, guid, nickname))
         self._dht.add_active_peer(self, (pubkey, uri, guid, nickname))
