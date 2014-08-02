@@ -466,16 +466,18 @@ class ProtocolHandler:
         peers = []
 
         for peer in self._transport._dht._activePeers:
-            peer_item = {'uri': peer._address}
-            if peer._pub:
-                peer_item['pubkey'] = peer._pub.encode('hex')
-            else:
-                peer_item['pubkey'] = 'unknown'
-            peer_item['guid'] = peer._guid
-            peer_item['sin'] = peer._sin
-            peer_item['nick'] = peer._nickname
-            self._log.info('Peer Nick %s '  % peer)
-            peers.append(peer_item)
+
+            if hasattr(peer, '_address'):
+                peer_item = {'uri': peer._address}
+                if peer._pub:
+                    peer_item['pubkey'] = peer._pub.encode('hex')
+                else:
+                    peer_item['pubkey'] = 'unknown'
+                peer_item['guid'] = peer._guid
+                peer_item['sin'] = peer._sin
+                peer_item['nick'] = peer._nickname
+                self._log.info('Peer Nick %s '  % peer)
+                peers.append(peer_item)
 
         return peers
 
@@ -501,12 +503,15 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._connected = True
 
     def on_close(self):
-        self._log.info("websocket closed")
+        self._log.info("Websocket closed")
         disconnect_msg = {'command': 'disconnect_client', 'id': 0, 'params': []}
         self._connected = False
         self._app_handler.handle_request(self, disconnect_msg)
         with WebSocketHandler.listen_lock:
-            self.listeners.remove(self)
+            try:
+                self.listeners.remove(self)
+            except:
+                self._log.error('Cannot remove socket listener')
 
     @staticmethod
     def _check_request(request):
