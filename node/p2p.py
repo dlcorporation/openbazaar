@@ -24,6 +24,7 @@ class PeerConnection(object):
         self._timeout = 10
         self._transport = transport
         self._address = address
+        self._nickname = ""
         self._responses_received = {}
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
         self.create_socket()
@@ -150,6 +151,7 @@ class TransportLayer(object):
     def send(self, data, send_to=None, callback=lambda msg: None):
 
         self._log.info("Outgoing Data: %s %s" % (data, send_to))
+        data['senderNick'] = self._nickname
 
         # Directed message
         if send_to is not None:
