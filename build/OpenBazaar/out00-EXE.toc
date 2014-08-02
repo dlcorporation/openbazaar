@@ -1,9 +1,0 @@
-('/Users/brianhoffman/Projects/OB/OpenBazaar/dist/OpenBazaar',
- True,
- False,
- None,
- None,
- [],
- None,
- False,
- 1406936711)
