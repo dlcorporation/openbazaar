@@ -254,7 +254,8 @@ class DHT(object):
                 self._log.debug('Found the node you were looking for: %s' % foundNode)
 
                 # Add foundNode to active peers list and routing table
-                self.add_active_peer(self._transport, (foundNode[2], foundNode[1], foundNode[0], foundNode[3]))
+                if foundNode[2] != self._transport._guid:
+                    self.add_active_peer(self._transport, (foundNode[2], foundNode[1], foundNode[0], foundNode[3]))
 
                 for idx, search in enumerate(self._searches):
                     if search._findID == msg['findID']:
@@ -288,7 +289,9 @@ class DHT(object):
 
                 # Extends shortlist if necessary
                 for node in msg['foundNodes']:
-                    if node[0] != self._transport._guid:
+                    self._log.info('FOUND NODE: %s' % node)
+                    if node[0] != self._transport._guid and node[2] != self._transport.pubkey and node[1] != self._transport._uri:
+                        self._log.info('Found it %s %s' % (node[0], self._transport.guid))
                         self.extendShortlist(transport, msg['findID'], [node])
 
                 # Remove active probe to this node for this findID
