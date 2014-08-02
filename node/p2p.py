@@ -47,7 +47,7 @@ class PeerConnection(object):
         self._stream.send(serialized)
 
         def cb(msg):
-            self._log.debug('Message %s received from remote peer')
+            self._log.debug('Message %s received from remote peer' % msg)
             response = json.loads(msg[0])
             if response.has_key('senderNick') and response['senderNick'] != self._nickname:
                 self._nickname = response['senderNick']
@@ -164,11 +164,17 @@ class TransportLayer(object):
             for peer in self._dht._activePeers:
                 try:
                     data['senderGUID'] = self._guid
-                    if peer._pub:
-                        peer.send(data, callback)
-                    else:
-                        serialized = json.dumps(data)
-                        peer.send_raw(serialized, callback)
+                    data['pubkey'] = self.pubkey
+                    #if peer._pub:
+                    #    peer.send(data, callback)
+                    #else:
+                    print 'test %s' % peer
+
+                    def cb(msg):
+                        print msg
+
+                    peer.send(data, cb)
+
                 except:
                     self._log.info("Error sending over peer!")
                     traceback.print_exc()
