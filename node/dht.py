@@ -104,7 +104,7 @@ class DHT(object):
                                              peer_tuple[1],
                                              peer_tuple[0],
                                              peer_tuple[3])
-        self._log.debug('New Peer: %s %s' % (new_peer._nickname, peer_tuple[3]))
+        self._log.debug('New Peer: %s: %s' % (new_peer._nickname, peer_tuple[3]))
         self._activePeers.append(new_peer)
         self._log.debug('Removing old information about this node')
         self._routingTable.removeContact(new_peer._guid)

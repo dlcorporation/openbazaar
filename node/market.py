@@ -57,7 +57,7 @@ class Market(object):
         self.welcome = False
         self.mypage = None
         self.signature = None
-        self.nickname = None
+        self._nickname = ""
 
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
 
@@ -101,7 +101,7 @@ class Market(object):
 
         tagline = "%s: %s" % (nickname, store_description)
         self.mypage = tagline
-        self.nickname = nickname
+        self._nickname = nickname
         self.signature = self._transport._myself.sign(tagline)
 
         if welcome:

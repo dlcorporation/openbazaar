@@ -52,10 +52,11 @@ class CryptoPeerConnection(PeerConnection):
 
                     self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
                     self._pub = msg['pubkey']
+                    self._nickname = msg['senderNick']
 
-                    self._log.debug('New Crypt Peer: %s %s %s' % (self._address, self._pub, self._guid))
-
-                    callback(msg)
+                    self._log.debug('New Crypt Peer: %s %s %s %s' % (self._address, self._pub, self._guid, self._nickname))
+                    if callback != None:
+                        callback(msg)
             try:
                 self.send_raw(json.dumps({'type':'hello',
                                           'pubkey':transport.pubkey,
@@ -137,7 +138,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
 
-        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid, self.nickname)
+        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid, self._nickname)
 
         # Set up callbacks
         self.add_callback('hello', self._ping)
@@ -221,6 +222,7 @@ class CryptoTransportLayer(TransportLayer):
             {"type": "hello_response",
              "senderGUID": self.guid,
              "uri": self._uri,
+             "senderNick": self._nickname,
              "pubkey": self.pubkey,
             }))
 
@@ -239,7 +241,7 @@ class CryptoTransportLayer(TransportLayer):
         self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
 
         if self.settings:
-            self.nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
+            self._nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
             self.secret = self.settings['secret'] if self.settings.has_key("secret") else ""
             self.pubkey = self.settings['pubkey'] if self.settings.has_key("pubkey") else ""
             self.guid = self.settings['guid'] if self.settings.has_key("guid") else ""
@@ -247,7 +249,7 @@ class CryptoTransportLayer(TransportLayer):
             self.bitmessage = self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ""
 
         else:
-            self.nickname = 'Default'
+            self._nickname = 'Default'
 
             # Generate Bitcoin keypair
             self._generate_new_keypair()
@@ -369,7 +371,7 @@ class CryptoTransportLayer(TransportLayer):
                 self._activePeers[idx] = peer_to_add
 
         if not foundOutdatedPeer and peer_to_add._guid != self._guid:
-            self._log.info('Adding crypto peer at %s' % peer_to_add._address)
+            self._log.info('Adding crypto peer at %s' % peer_to_add._nickname)
             self._dht.add_active_peer(self, (peer_to_add._pub, peer_to_add._address, peer_to_add._guid, peer_to_add._nickname))
 
 
@@ -397,7 +399,7 @@ class CryptoTransportLayer(TransportLayer):
         for uri, peer in self._peers.iteritems():
             if peer._pub:
                 peers[uri] = peer._pub.encode('hex')
-        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'),'nickname': self.nickname,
+        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'),'nickname': self._nickname,
                 'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
@@ -556,11 +558,10 @@ class CryptoTransportLayer(TransportLayer):
         guid = msg.get('senderGUID')
         nickname = msg.get('senderNick')
 
+        self._log.info('on message %s' % msg)
+
         self._dht.add_known_node((ip, port, guid, nickname))
-
         self._dht.add_active_peer(self, (pubkey, uri, guid, nickname))
-
-
         self.trigger_callbacks(msg['type'], msg)
 
 
@@ -595,6 +596,7 @@ class CryptoTransportLayer(TransportLayer):
                         return
 
                     msg = json.loads(data)
+                    self._log.debug('Message Data %s ' % msg)
                 except:
                     self._log.error('Could not decrypt message properly')
 
