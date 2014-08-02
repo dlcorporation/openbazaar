@@ -465,12 +465,20 @@ class CryptoTransportLayer(TransportLayer):
 
             for peer in self._dht._activePeers:
                 try:
+                    peer = self._dht._routingTable.getContact(peer._guid)
                     data['senderGUID'] = self._guid
-                    if peer._pub:
-                        peer.send(data, callback)
-                    else:
-                        serialized = json.dumps(data)
-                        peer.send_raw(serialized, callback)
+                    data['pubkey'] = self.pubkey
+                    print data
+                    #if peer._pub:
+                    #    peer.send(data, callback)
+                    #else:
+
+
+                    def cb(msg):
+                        print 'msg %s' % msg
+
+                    peer.send(data, cb)
+
                 except:
                     self._log.info("Error sending over peer!")
                     traceback.print_exc()

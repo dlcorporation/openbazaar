@@ -11,6 +11,7 @@ from market import Market
 from ws import WebSocketHandler
 import logging
 import signal
+import time
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -49,7 +50,7 @@ class MarketApplication(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
     def get_transport(self):
-        return self.dht._transport
+        return self.transport
 
 def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False):
 
@@ -88,8 +89,9 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
     # handle shutdown
     def shutdown(x, y):
         locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
-        locallogger.warning("Received TERMINATE, exiting...")
-        #application.get_transport().broadcast_goodbye()
+        locallogger.info("Received TERMINATE, exiting...")
+        application.get_transport().broadcast_goodbye()
+        time.sleep(10)
         sys.exit(0)
     try:
         signal.signal(signal.SIGTERM, shutdown)
