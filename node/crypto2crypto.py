@@ -159,6 +159,8 @@ class CryptoTransportLayer(TransportLayer):
                     self._uri = 'tcp://%s:%s' % (self._ip, self._port)
                     self.stream.close()
                     self.listen(self.pubkey)
+            else:
+                self._log.error('Could not get ip')
 
         if seed_mode == 0 and not dev_mode:
             # Check IP periodically for changes
@@ -326,6 +328,15 @@ class CryptoTransportLayer(TransportLayer):
                 callback(msg)
 
             self.connect('tcp://%s:12345' % seed, callback=cb)
+
+        # Try to connect to known peers
+        known_peers = self._db.peers.find()
+        for known_peer in known_peers:
+            def cb(msg):
+                #self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
+                callback(msg)
+
+            self.connect(known_peer['uri'], callback=cb)
 
         # self.listen(self.pubkey) # Turn on zmq socket
         #
