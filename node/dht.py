@@ -79,7 +79,7 @@ class DHT(object):
 
         # Check if peer to add is yourself
         if peer_tuple[2] == self._settings['guid']:
-            self._log.info('[Add Active Peer] Trying to add yourself to ' +
+            self._log.debug('[Add Active Peer] Trying to add yourself to ' +
                            'active peers')
             return
 
@@ -87,7 +87,6 @@ class DHT(object):
         for idx, peer in enumerate(self._activePeers):
 
             active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
-            self._log.debug('Active Peer Tuple %s' % str(active_peer_tuple))
 
             if active_peer_tuple == peer_tuple:
                 self._log.info('Already connected to this node')
@@ -103,13 +102,21 @@ class DHT(object):
                                              peer_tuple[1],
                                              peer_tuple[0],
                                              peer_tuple[3])
-        new_peer._nickname = peer_tuple[3]
-        self._log.debug('New Peer: %s: %s' % (new_peer._nickname, peer_tuple[3]))
-        self._activePeers.append(new_peer)
-        self._log.debug('Removing old information about this node')
-        self._routingTable.removeContact(new_peer._guid)
-        self._routingTable.addContact(new_peer)
 
+        new_peer._nickname = peer_tuple[3]
+
+        def cb(msg):
+            add_it = True
+            for peer in self._activePeers:
+                if peer._guid == new_peer._guid:
+                    add_it = False
+            if add_it:
+                self._activePeers.append(new_peer)
+                self._log.debug('Removing old information about this node')
+                self._routingTable.removeContact(new_peer._guid)
+                self._routingTable.addContact(new_peer)
+
+        new_peer.send({'type':'ping'}, cb)
 
 
     def add_known_node(self, node):
