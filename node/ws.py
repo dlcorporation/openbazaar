@@ -178,9 +178,7 @@ class ProtocolHandler:
     def client_republish_contracts(self, socket_handler, msg):
 
         self._log.info("Republishing contracts")
-
-        # Query mongo for products
-        products = self._market.republish_contracts()
+        self._market.republish_contracts()
 
     def client_import_raw_contract(self, socket_handler, contract):
 

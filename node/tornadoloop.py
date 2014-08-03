@@ -36,6 +36,7 @@ class MarketApplication(tornado.web.Application):
             self.transport.join_network(dev_mode=dev_mode)
 
         self.market = Market(self.transport)
+        self.market.republish_contracts()
 
         handlers = [
             (r"/", MainHandler),
