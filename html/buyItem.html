@@ -7,6 +7,10 @@
     <!--<div class="alert alert-info">Wow you're almost ready to purchase an item from an Open Bazaar merchant!</div>-->
     <form id="form-item-purchase" role="form" novalidate="novalidate" name="buyItem">
 
+    <div class="alert alert-danger" role="alert" ng-show="!notaries.length" >
+                You don't have any notaries trusted. Please add one before you purchase contracts or you are putting yourself at risk.
+            </div>
+
     <div id="purchase_step1" ng-show="!order.step2">
 
     <table class="table table-striped" style="margin-bottom:0">
@@ -70,22 +74,21 @@
             case that something goes wrong with your transaction and ensures things go smoothly.<br/><br/>You can add a notary or
             arbiter on the <strong>Settings Page</strong> or <a href="https://github.com/OpenBazaar/OpenBazaar/wiki/Contracts-and-Listings" target="_blank">find out more here</a>.</div>
 
-
-            <div class="form-group row">
-                <div class="col-sm-6">
+            <div class="form-group row" ng-show="!!notaries.length">
+                <div class="col-sm-12">
                 <label for="notary">Notary</label>
 
-                <select id="notary" ng-model="order.notary" ng-options="notary for notary in notaries" class="form-control col-sm-4"></select>
+                <select id="notary" ng-model="order.notary" ng-options="notary.guid as notary.nickname+' ('+notary.guid+')' for notary in notaries" class="form-control col-sm-12"></select>
                 </div>
             </div>
 
 
-            <div class="form-group row">
-                <div class="col-sm-6">
-                    <label for="arbiter">Arbiter</label>
-                    <select id="arbiter" ng-model="order.arbiter" ng-options="arbiter for arbiter in arbiters" class="form-control col-sm-4"></select>
-                </div>
-            </div>
+            <!--<div class="form-group row">-->
+                <!--<div class="col-sm-6">-->
+                    <!--<label for="arbiter">Arbiter</label>-->
+                    <!--<select id="arbiter" ng-model="order.arbiter" ng-options="arbiter for arbiter in arbiters" class="form-control col-sm-4"></select>-->
+                <!--</div>-->
+            <!--</div>-->
 
         </div>
 

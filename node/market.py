@@ -225,6 +225,24 @@ class Market(object):
             self._transport._dht.iterativeStore(self._transport, listing['key'], listing.get('signed_contract_body'), self._transport._guid)
         self.update_listings_index()
 
+    def get_notaries(self):
+        self._log.debug('Getting notaries')
+
+        notaries = []
+        self.settings = self.get_settings()
+        notary_guids = self.settings['notaries']
+        for guid in notary_guids:
+            self._log.debug(guid)
+
+            peer = self._dht._routingTable.getContact(guid)
+            if peer and hasattr(peer, '_nickname'):
+                nickname = peer._nickname
+            else:
+                nickname = ""
+
+            notaries.append({"guid":guid, "nickname": nickname})
+        self._log.debug(notaries)
+        return notaries
 
     def republish_listing(self, msg):
 
