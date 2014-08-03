@@ -83,9 +83,9 @@ class Orders(object):
 
         return order
 
-    def get_orders(self):
+    def get_orders(self, page=0):
         orders = []
-        for _order in self._db.orders.find({'market_id': self._market_id}).sort([("updated", -1)]):
+        for _order in self._db.orders.find({'market_id': self._market_id}).sort([("updated", -1)]).skip(page*10).limit(10):
             # Get order prototype object before storing
             orders.append({"id": _order['id'],
                            "state": _order['state'],
@@ -97,7 +97,7 @@ class Orders(object):
                            "updated": _order['updated'] if _order.has_key("updated") else ""})
             # orders.append(_order)
 
-        return orders
+        return {"total": self._db.orders.find({'market_id': self._market_id}).count(), "orders":orders}
 
 
     # Create a new order

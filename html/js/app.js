@@ -238,9 +238,23 @@ angular.module('app')
 
   }
 
+  $scope.getNumber = function(num) {
+    return new Array(num);
+  }
+
+  $scope.orders_page_changed = function() {
+    console.log($scope.orders_current_page)
+    var query = {'page':$scope.orders_current_page-1}
+    socket.send('query_orders', query)
+
+  }
+
   $scope.parse_myorders = function(msg) {
 
   	  $scope.orders = msg['orders'];
+  	  $scope.orders_total = msg['total'];
+  	  $scope.orders_pages = msg['total']%10
+  	  $scope.orders_current_page = msg['page']+1
 
       if (!$scope.$$phase) {
 	       $scope.$apply();
@@ -430,7 +444,6 @@ angular.module('app')
 
     $scope.myself = msg;
 
-
     if (!$scope.$$phase) {
        $scope.$apply();
     }
@@ -439,9 +452,9 @@ angular.module('app')
     // Settings
     $scope.settings = msg.settings
 
-    msg.reputation.forEach(function(review) {
-       add_review_to_page($scope.myself.pubkey, review)
-    });
+    //msg.reputation.forEach(function(review) {
+    //   add_review_to_page($scope.myself.pubkey, review)
+    //});
 
     msg.peers.forEach(function(peer) {
        $scope.add_peer(peer)
