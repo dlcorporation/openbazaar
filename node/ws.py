@@ -39,6 +39,7 @@ class ProtocolHandler:
             "order": self.client_order,
             "search": self.client_query_network_for_products,
             "shout": self.client_shout,
+            "get_notaries": self.client_get_notaries,
             "query_store_products": self.client_query_store_products,
             "check_order_count": self.client_check_order_count,
             "query_orders": self.client_query_orders,
@@ -84,6 +85,11 @@ class ProtocolHandler:
         }
 
         self.send_to_client(None, message)
+
+    def client_get_notaries(self, socket_handler, msg):
+        self._log.debug('Retrieving notaries')
+        notaries = self._market.get_notaries()
+        self.send_to_client(None, {"type": "notaries", "notaries":notaries})
 
     # Requests coming from the client
     def client_connect(self, socket_handler, msg):

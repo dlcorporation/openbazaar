@@ -135,6 +135,9 @@ angular.module('app')
       case 'new_listing':
          $scope.parse_new_listing(msg)
          break;
+      case 'notaries':
+         $scope.parse_notaries(msg)
+         break;
       case 'global_search_result':
          $scope.parse_search_result(msg)
          break;
@@ -186,6 +189,13 @@ angular.module('app')
     if (!$scope.$$phase) {
 	       $scope.$apply();
 	    }
+  }
+
+  $scope.parse_notaries = function(msg) {
+    $scope.trusted_notaries = msg.notaries
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
   }
 
   $scope.parse_order = function(msg) {
@@ -554,10 +564,13 @@ angular.module('app')
                       trustedNotaries:{}
                     }
 
-  $scope.saveSettings = function() {
+  $scope.saveSettings = function(notify) {
+
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query);
-      Notifier.success('Success', 'Settings saved successfully.');
+      if (typeof notify === "undefined") {
+        Notifier.success('Success', 'Settings saved successfully.');
+      }
   }
 
 
@@ -641,7 +654,8 @@ angular.module('app')
 
     $scope.settings.trustedArbiters = uniqueArbiters;
 
-    $scope.saveSettings();
+    $scope.saveSettings(false);
+    Notifier.success('Success', 'Arbiter added successfully.');
   }
 
   $scope.removeArbiter = function(arbiterGUID) {
@@ -654,7 +668,8 @@ angular.module('app')
 
     $scope.settings.trustedArbiters = uniqueArbiters;
 
-    $scope.saveSettings();
+    $scope.saveSettings(false);
+    Notifier.success('Success', 'Arbiter removed successfully.');
   }
 
 
@@ -682,7 +697,8 @@ angular.module('app')
 
     $scope.settings.notaries = uniqueNotaries;
 
-    $scope.saveSettings();
+    $scope.saveSettings(false);
+    Notifier.success('Success', 'Notary added successfully.');
   }
 
   $scope.removeNotary = function(notaryGUID) {
@@ -694,8 +710,15 @@ angular.module('app')
     });
 
     $scope.settings.notaries = uniqueNotaries;
+    $scope.saveSettings(false);
+    Notifier.success('Success', 'Notary removed successfully.');
 
-    $scope.saveSettings();
+    $scope.getNotaries();
+  }
+
+  $scope.getNotaries = function() {
+    console.log('Getting notaries');
+    socket.send('get_notaries', {});
   }
 
   function resetPanels() {
@@ -745,6 +768,7 @@ angular.module('app')
   			break;
   		case 'settings':
   			$scope.settingsPanel = true;
+  			$scope.getNotaries()
   			break;
   		case 'myInfo':
   			$scope.myInfoPanel = true;
@@ -779,6 +803,7 @@ angular.module('app')
   	        $scope.storeProductsPanel = true;
             $scope.store_listings = [];
             $scope.queryStoreProducts($scope.awaitingShop);
+            $scope.getNotaries();
   			break;
   		case 'storeOrders':
   			//$scope.storeOrdersPanel = true;
@@ -1127,10 +1152,13 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
 $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
     $scope.open = function (size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
-        notaries, arbiters, btc_pubkey) {
+        notaries, arbiters, btc_pubkey, guid) {
 
       // Send socket a request for order info
       //socket.send('query_order', { orderId: orderId } )
+
+
+
 
       modalInstance = $modal.open({
         templateUrl: 'buyItem.html',
@@ -1146,7 +1174,8 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
             btc_pubkey: function() { return btc_pubkey },
             rawContract: function() { return rawContract },
             notaries: function() { return notaries },
-            arbiters: function() { return arbiters }
+            arbiters: function() { return arbiters },
+            guid: function() { return guid }
         },
         size: size
       });
@@ -1171,9 +1200,11 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
     rawContract,
     notaries,
     arbiters,
-    btc_pubkey) {
+    btc_pubkey,
+    guid) {
 
-    console.log(productTitle, productPrice, productDescription, productImageData, rawContract, notaries, arbiters, btc_pubkey);
+
+    console.log(productTitle, productPrice, productDescription, productImageData, rawContract, notaries, arbiters, btc_pubkey, guid);
     $scope.myself = myself;
     $scope.merchantPubkey = merchantPubkey;
     $scope.productTitle = productTitle;
@@ -1183,8 +1214,20 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
     $scope.totalPrice = productPrice;
     $scope.productQuantity = 1;
     $scope.rawContract = rawContract;
-    $scope.notaries = notaries;
+    $scope.guid = guid;
+
     $scope.arbiters = arbiters;
+
+    $scope.notaries = []
+    jQuery.each(notaries, function(key, value) {
+        notary = value
+        console.log(value.guid + ' ' + guid)
+        if (value.guid != guid) {
+            $scope.notaries.push({"guid": value.guid, "nickname": value.nickname})
+        }
+    })
+    console.log($scope.notaries)
+
 
 
     $scope.key = key;
@@ -1224,7 +1267,7 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
 
 
     $scope.order = {message:'', tx: '', listingKey:key, listingTotal:'', productTotal:'', productQuantity:1, rawContract:rawContract, btc_pubkey: btc_pubkey}
-    $scope.order.notary = $scope.notaries[0];
+    $scope.order.notary = ($scope.notaries.length > 0) ? $scope.notaries[0].guid : "";
     $scope.order.arbiter = $scope.arbiters[0];
 
     $scope.submitOrder = function() {
