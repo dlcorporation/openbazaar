@@ -40,6 +40,7 @@ class ProtocolHandler:
             "search": self.client_query_network_for_products,
             "shout": self.client_shout,
             "query_store_products": self.client_query_store_products,
+            "check_order_count": self.client_check_order_count,
             "query_orders": self.client_query_orders,
             "query_contracts": self.client_query_contracts,
             "query_messages": self.client_query_messages,
@@ -93,6 +94,10 @@ class ProtocolHandler:
     def client_peers(self, socket_handler, msg):
         self._log.info("Peers command")
         self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+
+    def client_check_order_count(self, socket_handler, msg):
+        self._log.debug('Checking order count')
+        self.send_to_client(None, {"type": "order_count", "count": self._market.orders.orders.count()})
 
     def refresh_peers(self):
         self._log.info("Peers command")
