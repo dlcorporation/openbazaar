@@ -111,6 +111,7 @@ class DHT(object):
                 if peer._guid == new_peer._guid:
                     add_it = False
             if add_it:
+                self._transport.save_peer_to_db(peer_tuple)
                 self._activePeers.append(new_peer)
                 self._log.debug('Removing old information about this node')
                 self._routingTable.removeContact(new_peer._guid)
