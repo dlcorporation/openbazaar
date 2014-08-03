@@ -117,6 +117,9 @@ angular.module('app')
       case 'order':
          $scope.parse_order(msg)
          break;
+      case 'order_count':
+         $scope.parse_order_count(msg)
+         break;
       case 'myorders':
       	 $scope.parse_myorders(msg)
       	 break;
@@ -175,6 +178,14 @@ angular.module('app')
     }
     $scope.$apply();
     console.log($scope.reviews);
+  }
+
+  $scope.parse_order_count = function(msg) {
+    console.log(msg)
+    $scope.orders_total = msg.count
+    if (!$scope.$$phase) {
+	       $scope.$apply();
+	    }
   }
 
   $scope.parse_order = function(msg) {
@@ -516,6 +527,10 @@ angular.module('app')
     if (!$scope.$$phase) {
        $scope.$apply();
     }
+  }
+
+  $scope.checkOrderCount = function() {
+    socket.send('check_order_count', {});
   }
 
   $scope.search = ""
@@ -1325,6 +1340,5 @@ $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my
       $modalInstance.dismiss('cancel');
     };
 };
-
 
 }])
