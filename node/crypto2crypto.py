@@ -150,18 +150,28 @@ class CryptoTransportLayer(TransportLayer):
 
         def cb():
             r = requests.get(r'http://icanhazip.com')
-            ip = r.text
-            ip = ip.strip(' \t\n\r')
-            if ip != self._ip:
-                self._ip = ip
-                self._uri = 'tcp://%s:%s' % (self._ip, self._port)
-                self.stream.close()
-                self.listen(self.pubkey)
+
+            if r and hasattr(r,'text'):
+                ip = r.text
+                ip = ip.strip(' \t\n\r')
+                if ip != self._ip:
+                    self._ip = ip
+                    self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+                    self.stream.close()
+                    self.listen(self.pubkey)
 
         if seed_mode == 0 and not dev_mode:
             # Check IP periodically for changes
             self.caller = PeriodicCallback(cb, 5000, ioloop.IOLoop.instance())
             self.caller.start()
+
+    def save_peer_to_db(self, peer_tuple):
+        pubkey = peer_tuple[0]
+        uri = peer_tuple[1]
+        guid = peer_tuple[2]
+        nickname = peer_tuple[3]
+
+        self._db.peers.update({"guid":'%s' % guid}, {"$set": {"uri":uri, "pubkey":pubkey, "nickname":nickname}}, True)
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
