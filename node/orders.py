@@ -37,7 +37,7 @@ class Orders(object):
 
         _order = self._db.orders.find_one({"id": orderId, "market_id": self._market_id})
 
-        if _order['state'] in ('Need to Pay', 'notarized', 'Waiting for Payment'):
+        if _order['state'] in ('Need to Pay', 'Notarized', 'Waiting for Payment'):
             offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
             index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
             offer_data_json = offer_data[0:index_of_seller_signature-4]
@@ -356,7 +356,7 @@ class Orders(object):
             '$set': {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
-                     'state': 'notarized',
+                     'state': 'Notarized',
                      'merchant': offer_data_json['Seller']['seller_GUID'],
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'address': multisig_address,
@@ -369,7 +369,7 @@ class Orders(object):
         self._log.info('Sending notarized contract to buyer and seller %s' % bid)
 
         notarized_order = {"type": "order",
-                           "state": "notarized",
+                           "state": "Notarized",
                            "rawContract": str(signed_data)}
 
         self._log.info('SELLER %s' % offer_data_json['Seller']['seller_GUID'])
@@ -459,7 +459,7 @@ class Orders(object):
         if state == 'bid':
             self.handle_bid_order(msg)
 
-        if state == 'notarized':
+        if state == 'Notarized':
             self._log.info('You received a notarized contract')
             self.handle_notarized_order(msg)
 
