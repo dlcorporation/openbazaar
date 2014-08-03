@@ -134,12 +134,16 @@ class ProtocolHandler:
 
     def client_query_orders(self, socket_handler, msg):
 
-        self._log.info("Querying for Orders")
+        self._log.info("Querying for Orders %s " % msg)
 
-        # Query mongo for orders
-        orders = self._market.orders.get_orders()
+        if 'page' in msg:
+            page = msg['page']
+        else:
+            page = 0
 
-        self.send_to_client(None, {"type": "myorders", "orders": orders})
+        orders = self._market.orders.get_orders(page)
+
+        self.send_to_client(None, {"type": "myorders", "page":page, "total": orders['total'], "orders": orders['orders']})
 
     def client_query_contracts(self, socket_handler, msg):
 

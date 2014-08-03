@@ -523,20 +523,17 @@
         Your order has been submitted to the seller.
     </div>
 
-    <div ng-show="orders.length == 0">
+    <div ng-show="orders_total == 0">
         <p>You have no orders at this time.</p>
     </div>
 
-    <div ng-show="orders.length > 0">
+    <div ng-show="orders_total > 0">
 
-        <div ng-show="orders.length > 10" style="float:right">
-            <ul class="pagination">
-                <li><a href="#">&laquo;</a></li>
-                <li><a href="#">1</a></li>
-                <li><a href="#">2</a></li>
-                <li><a href="#">3</a></li>
-                <li><a href="#">&raquo;</a></li>
-            </ul>
+
+
+        <div ng-show="orders_total > 10" style="float:right">
+
+            <pagination total-items="orders_total" num-pages="orders_pages" ng-change="orders_page_changed()" ng-model="orders_current_page" max-size="4" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" boundary-links="true"></pagination>
         </div>
 
 
@@ -675,7 +672,7 @@
                         <th>Status</th>
                     </tr>
 
-                    <tr ng-repeat="order in orders">
+                    <tr ng-repeat="order in orders" >
                         <td width=20><input type="checkbox"/></td>
                         <td width=70><a href="" ng-click="open('lg', order.id)">{{order.id}}</a></td>
                         <td width=130>{{order.updated * 1000 | date: 'short'}}</td>
@@ -1029,7 +1026,7 @@
                 <td width="40"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
                 <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.sin}}
-                    <div ng-show="{{peer.uri}}">{{peer.uri}}</div>
+                    <div ng-show="peer.uri">{{peer.uri}}</div>
                     </span></span></td>
             </tr>
             </tbody>
