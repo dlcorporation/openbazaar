@@ -79,7 +79,12 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.sign(data)
 
     def encrypt(self, data):
-        return self._priv.encrypt(data, self._pub.decode('hex'))
+        try:
+            result = self._priv.encrypt(data, self._pub.decode('hex'))
+            return result
+        except:
+            self._log.error('Missing public key')
+
 
     def send(self, data, callback=lambda msg: None):
 

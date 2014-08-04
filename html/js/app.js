@@ -77,15 +77,14 @@ angular.module('app')
 
   $scope.awaitingShop = null;
   $scope.queryShop = function(peer) {
-     console.log('Shop',peer);
      $scope.awaitingShop = peer.guid;
      console.log('Querying for shop: ',peer);
      var query = {'type': 'query_page', 'findGUID': peer.guid}
 
-     $('#listing-loader').show();
      socket.send('query_page', query)
      $('#store-tabs li').removeClass('active');
   	 $('#store-tabs li').first().addClass('active');
+
   }
 
 
@@ -265,17 +264,13 @@ angular.module('app')
 
   $scope.orders_page_changed = function() {
     console.log($scope.orders_current_page)
-    var query = {'page':$scope.orders_current_page-1}
+    var query = {'page': $scope.orders_current_page-1}
     socket.send('query_orders', query)
 
   }
 
-  $scope.contracts_page_changed = function() {
-    console.log($scope.contracts_current_page)
-    var query = {'page':$scope.contracts_current_page-1}
-    socket.send('query_contracts', query)
 
-  }
+
 
 
   $scope.parse_myorders = function(msg) {
@@ -293,14 +288,17 @@ angular.module('app')
 
   $scope.contract2 = {};
   $scope.parse_contracts = function(msg) {
+
       console.log(msg);
+
+      page = msg['page'];
 
       $scope.contracts = msg.contracts.contracts;
 
       $scope.total_contracts = msg.contracts.total_contracts;
       $scope.contracts_pages = $scope.total_contracts%10
       console.log('contracts', $scope.total_contracts);
-      $scope.contracts_current_page = msg['page']+1;
+      $scope.contracts_current_page = page-1;
 
 
       for(var key in msg.contracts.contracts) {
@@ -853,7 +851,7 @@ angular.module('app')
 
   $scope.queryProducts = function() {
       // Query for products
-      var query = {'type': 'query_contracts', 'pubkey': ''}
+      var query = {'type': 'query_contracts'}
       console.log('querying products')
       socket.send('query_contracts', query)
 
@@ -1026,6 +1024,14 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
 
 $scope.ProductModal = function ($scope, $modal, $log) {
 
+  $scope.contracts_page_changed = function() {
+        console.log($scope.contracts_current_page)
+        var query = {'page':$scope.contracts_current_page-1}
+        console.log(query)
+        socket.send('query_contracts', query)
+
+      }
+
   $scope.open = function (size, backdrop) {
 
       backdrop = backdrop ? backdrop : true;
@@ -1059,6 +1065,9 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
   $scope.contract = contract;
   $scope.contract.productQuantity = 1;
   $scope.contract.productCondition = 'New';
+  $scope.contracts_current_page = 0;
+
+
 
 
     $scope.createContract = function() {

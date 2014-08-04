@@ -382,7 +382,7 @@ class Market(object):
             except:
                 self._log.error('Problem loading the contract body JSON')
 
-        return {"contracts": my_contracts, "total_contracts":self._db.contracts.find().count()}
+        return {"contracts": my_contracts, "page": page, "total_contracts":self._db.contracts.find().count()}
 
     # SETTINGS
 
@@ -428,6 +428,7 @@ class Market(object):
                     "trustedArbiters": settings['trustedArbiters'] if settings.has_key("trustedArbiters") else "",
                     "notaries": settings['notaries'] if settings.has_key("notaries") else "",
                     "storeDescription": settings['storeDescription'] if settings.has_key("storeDescription") else "",
+                    "obelisk": settings['obelisk'] if settings.has_key("obelisk") else "",
                     "city": settings['city'] if settings.has_key("city") else "",
                     "stateRegion": settings['stateRegion'] if settings.has_key("stateRegion") else "",
                     "street1": settings['street1'] if settings.has_key("street1") else "",

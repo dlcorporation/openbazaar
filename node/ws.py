@@ -161,7 +161,9 @@ class ProtocolHandler:
         self._log.info("Querying for Contracts")
 
         # Query mongo for products
-        contracts = self._market.get_contracts()
+        print msg
+        page = msg['page'] if msg.has_key('page') else 0
+        contracts = self._market.get_contracts(page)
 
         self.send_to_client(None, {"type": "contracts", "contracts": contracts})
 
