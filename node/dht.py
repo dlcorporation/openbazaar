@@ -90,7 +90,7 @@ class DHT(object):
 
             if active_peer_tuple == peer_tuple:
                 self._log.info('Already connected to this node')
-                
+                return
 
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
