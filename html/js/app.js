@@ -270,6 +270,14 @@ angular.module('app')
 
   }
 
+  $scope.contracts_page_changed = function() {
+    console.log($scope.contracts_current_page)
+    var query = {'page':$scope.contracts_current_page-1}
+    socket.send('query_contracts', query)
+
+  }
+
+
   $scope.parse_myorders = function(msg) {
 
   	  $scope.orders = msg['orders'];
@@ -288,6 +296,13 @@ angular.module('app')
       console.log(msg);
 
       $scope.contracts = msg.contracts.contracts;
+
+      $scope.total_contracts = msg.contracts.total_contracts;
+      $scope.contracts_pages = $scope.total_contracts%10
+      console.log('contracts', $scope.total_contracts);
+      $scope.contracts_current_page = msg['page']+1;
+
+
       for(var key in msg.contracts.contracts) {
 
         var obj = msg.contracts.contracts[key];

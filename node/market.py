@@ -356,9 +356,9 @@ class Market(object):
             self._log.error(traceback.format_exc())
             return {}
 
-    def get_contracts(self):
+    def get_contracts(self, page=0):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
-        contracts = self._db.contracts.find({'market_id':self._transport._market_id})
+        contracts = self._db.contracts.find({'market_id':self._transport._market_id}).skip(page*10).limit(10)
         my_contracts = []
 
         for contract in contracts:
@@ -382,7 +382,7 @@ class Market(object):
             except:
                 self._log.error('Problem loading the contract body JSON')
 
-        return {"contracts": my_contracts}
+        return {"contracts": my_contracts, "total_contracts":self._db.contracts.find().count()}
 
     # SETTINGS
 
@@ -423,6 +423,7 @@ class Market(object):
                     "pubkey": settings['pubkey'] if settings.has_key("pubkey") else "",
                     "nickname": settings['nickname'] if settings.has_key("nickname") else "",
                     "secret": settings['secret'] if settings.has_key("secret") else "",
+                    "privkey": settings['secret'][8:] if settings.has_key("secret") else "",
                     "welcome": settings['welcome'] if settings.has_key("welcome") else "",
                     "trustedArbiters": settings['trustedArbiters'] if settings.has_key("trustedArbiters") else "",
                     "notaries": settings['notaries'] if settings.has_key("notaries") else "",
