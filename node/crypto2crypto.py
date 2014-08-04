@@ -615,7 +615,7 @@ class CryptoTransportLayer(TransportLayer):
                     if ecc.verify(sig, data):
                         self._log.info('Verified')
                     else:
-                        self._log.error('Message signature could not be verified')
+                        self._log.error('Message signature could not be verified %s' % msg)
                         return
 
                     msg = json.loads(data)
