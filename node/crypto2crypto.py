@@ -338,6 +338,7 @@ class CryptoTransportLayer(TransportLayer):
 
             self.connect(known_peer['uri'], callback=cb)
 
+
         # self.listen(self.pubkey) # Turn on zmq socket
         #
         # if seed_uri:
@@ -353,11 +354,14 @@ class CryptoTransportLayer(TransportLayer):
 
             self._dht.add_known_node((ip, port, peer._guid))
 
+
+
             # Turning off peers
             #self._init_peer({'uri': seed_uri, 'guid':seed_guid})
 
             # Add to routing table
-            self.addCryptoPeer(peer)
+            #self.addCryptoPeer(peer)
+
             callback(msg)
 
         peer = CryptoPeerConnection(self, uri, callback=cb)

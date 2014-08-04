@@ -475,7 +475,10 @@ class Market(object):
         self._log.info("Someone is querying for your page")
         settings = self.get_settings()
         #self._log.info(base64.b64encode(self.settings['storeDescription']))
-        self._transport.send(proto_page(self._transport._uri,
+
+        new_peer = self._transport.get_crypto_peer(peer['senderGUID'], peer['uri'], pubkey=peer['pubkey'], nickname=peer['senderNick'])
+
+        new_peer.send(proto_page(self._transport._uri,
                                         self._transport.pubkey,
                                         self._transport.guid,
                                         settings['storeDescription'],
@@ -487,8 +490,7 @@ class Market(object):
                                         settings['arbiter'] if settings.has_key('arbiter') else '',
                                         settings['notary'] if settings.has_key('notary') else '',
                                         settings['arbiterDescription'] if settings.has_key('arbiterDescription') else '',
-                                        self._transport.sin),
-                                        peer['senderGUID']
+                                        self._transport.sin)
                                         )
 
     def on_query_myorders(self, peer):
