@@ -8,7 +8,7 @@
     <form class="form-horizontal" name="composeForm" role="form">
         <div class="form-group">
             <label for="receivedTime" class="col-sm-2 control-label">Received</label>
-            <div class="col-sm-6">
+            <div class="col-sm-6">{{msg}}
                 <p class="form-control-static">{{msg.receivedTime * 1000 | date: 'medium'}}</p>
             </div>
         </div>
@@ -48,5 +48,5 @@
 </div>
 
 <div class="modal-footer">
-    <a class="btn btn-default" ng-click="close()" type="cancel">Close</a> 
+    <button class="btn btn-info" role="button" ng-click="close()" type="submit">Close</button>
 </div>

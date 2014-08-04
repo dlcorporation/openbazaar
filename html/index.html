@@ -727,17 +727,15 @@
 
     <h3>Messages</h3>
 
-    <div class="row">
-        <div class="col-sm-9">
-        <p>This is your private messages inbox.</p>
-        <div>
-            Your Bitmessage receiving address is <b>{{settings.bitmessage}}</b>
+    <div role="alert" class="alert alert-warning">
+        <div class="row">
+        <div class="col-sm-10">OpenBazaar uses <strong><a href="https://bitmessage.org/wiki/Main_Page" target="_blank">Bitmessage</a></strong> as our private messaging technology. This is your inbox where all messages from other network members will reside. Your Bitmessage address is <strong>{{settings.bitmessage}}</strong>
         </div>
-        </div>
-        <div class="col-sm-3" style="text-align:right">
-            <button class="btn btn-info" ng-click="compose('lg', myself, settings.bitmessage, null)">Send Message</button>
+        <div class="col-sm-2" style="text-align:right"><button class="btn btn-info" ng-click="compose('lg', myself, settings.bitmessage, null)"><span class="glyphicon glyphicon-pencil"/> Compose</button></div>
         </div>
     </div>
+
+
 
     <div ng-repeat="message in myself.messages">
         {{message.text}}
@@ -758,8 +756,8 @@
                 <td style="border-left:none;"><identicon icon-size="32" hash="message.fromAddress" title="{{message.fromAddress}}"></identicon> {{message.fromAddress}}</td>
                 <td style="border-left:none;"><a href="#"
                     ng-click="view('lg', myself, settings.bitmessage, message)">{{message.subject}}</a></td>
-                <td style="border-left:none;"><a href="#"
-                    ng-click="compose('lg', myself, settings.bitmessage, message)">Reply</a></td>
+                <td width="40" style="border-left:none;"><a href="#"
+                    ng-click="compose('lg', myself, settings.bitmessage, message)"><button class="btn btn-info">Reply</button></a></td>
             </tr>
         </table>
     </div>
@@ -787,7 +785,7 @@
             <li class="active" ng-click="showStorePanel('storeInfo')"><a href="#storeInfo">Info</a></li>
             <li ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
             <li><a href="#storeReviews" ng-click="showStorePanel('storeReviews')">Reviews</a></li>
-            <li ng-show="page.arbiter"><a href="#storeArbiter" ng-click="showStorePanel('storeArbiter')">Arbitration</a></li>
+            <li ng-show="page.arbiter || page.notary"><a href="#storeArbiter" ng-click="showStorePanel('storeArbiter')">Services</a></li>
         </ul>
     </div>
 

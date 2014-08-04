@@ -1301,6 +1301,7 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
 
 $scope.ComposeMessageCtrl = function ($scope, $modal, $log) {
     $scope.compose = function (size, myself, my_address, msg) {
+
       composeModal = $modal.open({
         templateUrl: 'composeMessage.html',
         controller: $scope.ComposeMessageInstanceCtrl,
@@ -1319,7 +1320,9 @@ $scope.ComposeMessageCtrl = function ($scope, $modal, $log) {
             $log.info('Modal dismissed at: ' + new Date());
       });
     };
+
     $scope.view = function (size, myself, my_address, msg) {
+    console.log(msg)
       viewModal = $modal.open({
         templateUrl: 'viewMessage.html',
         controller: $scope.ViewMessageInstanceCtrl,
@@ -1340,6 +1343,48 @@ $scope.ComposeMessageCtrl = function ($scope, $modal, $log) {
     };
   };
 
+$scope.ViewMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_address, msg) {
+    $scope.myself = myself;
+    $scope.my_address = my_address;
+    $scope.msg = msg;
+
+    // Fill in form if msg is passed - reply mode
+    if(msg != null) {
+        $scope.toAddress = msg.fromAddress;
+        // Make sure subject start with RE:
+        var sj = msg.subject;
+        if(sj.match(/^RE:/) == null) {
+            sj = "RE: " + sj;
+        }
+        $scope.subject = sj;
+        // Quote message
+        quote_re = /^(.*?)/mg;
+        var quote_msg = msg.message.replace(quote_re, "> $1");
+        $scope.body = "\n"+quote_msg;
+    }
+
+    $scope.send = function () {
+      // Trigger validation flag.
+      $scope.submitted = true;
+
+      // If form is invalid, return and let AngularJS show validation errors.
+      if (composeForm.$invalid) {
+        return;
+      }
+
+      var query = {'type': 'send_message', 'to': toAddress.value,
+                   'subject': subject.value,
+                   'body': body.value}
+      console.log('sending message with subject ' + subject)
+      socket.send('send_message', query)
+
+      $modalInstance.close();
+    };
+
+    $scope.close = function () {
+      $modalInstance.dismiss('cancel');
+    };
+};
 
 $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_address, msg) {
     $scope.myself = myself;
