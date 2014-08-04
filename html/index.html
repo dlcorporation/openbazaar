@@ -58,7 +58,7 @@
 <div class="container">
 
     <!-- Header -->
-    <div class="row" style="border-bottom:1px solid #bbb;padding-bottom:5px;">
+    <div class="row col-sm-12" style="border-bottom:1px solid #bbb;padding:5px 0;">
     <div id="header">
 
         <!-- Logo -->
@@ -67,17 +67,17 @@
         </div>
 
         <!-- Search and Navigation -->
-        <div class="col-sm-8 search-area ">
+        <div class="col-sm-8 search-area">
 
-            <div class="row">
-                <div id="header-search">
-                    <form class="search-form form-inline">
-                        <label class="sr-only" for="search">Search:</label> <input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for markets or products..."> <input class="btn btn-primary" ng-click="searchNetwork()" type="submit" value="Search">
+            <div class="row col-sm-12" style="padding-right:0">
+
+                    <form class="search-form2 form-inline">
+                        <div class="col-sm-12 text-right" style="padding-right:0"><input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for markets or products..."> <input class="btn btn-primary" ng-click="searchNetwork()" type="submit" value="Search"></div>
                     </form>
-                </div>
+
             </div>
 
-            <div class="row">
+            <div class="row col-sm-12" style="padding-right:0">
                 <div id="header-navigation">
                     <ul class="nav nav-pills">
                          <li><a href="/">Home</a></li>
@@ -157,6 +157,7 @@
 
 
         <div style="text-align:right">
+
         <pagination total-items="total_contracts" num-pages="contracts_pages" ng-change="contracts_page_changed()" ng-model="contracts_current_page" max-size="4" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" boundary-links="true"></pagination>
             </div>
 
@@ -284,8 +285,25 @@
             </div>
         </div>
 
+        <h4>Password</h4>
+        <div class="alert alert-warning">This password will protect your keys and prevent others from accessing your store.</div>
+
+        <div class="form-group">
+            <label for="inputPassword" class="col-sm-3 control-label">Password</label>
+            <div class="col-sm-9">
+                <input class="form-control" id="inputPassword" type="password">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputConfirmPassword" class="col-sm-3 control-label">Confirm Password</label>
+            <div class="col-sm-9">
+                <input class="form-control" id="inputConfirmPassword" type="password">
+            </div>
+        </div>
+
         <h4>Shipping Information</h4>
-        <p>This information will be encrypted and only be sent to your seller when you have marked your order for payment</p>
+        <div class="alert alert-warning">This information will be encrypted and only be sent to your seller when you have marked your order for payment</div>
 
         <div class="form-group">
             <label for="inputStreet1" class="col-sm-3 control-label">Street 1</label>
@@ -359,14 +377,14 @@
             <label for="inputSecret" class="col-sm-3 control-label">Private Key</label>
             <div class="col-sm-9">
                 <input ng-model="settings.privkey" class="form-control" id="inputSecret" placeholder="" readonly>
-                <a href="#" ng-click="generateNewSecret()">Generate a new secret</a>
+                <!--<a href="#" ng-click="generateNewSecret()">Generate a new secret</a>-->
             </div>
         </div>
 
         <div class="form-group">
             <label for="inputPGPPubkey" class="col-sm-3 control-label">PGP Public Key</label>
             <div class="col-sm-9">
-                <textarea class="form-control" ng-model="settings.PGPPubKey" id="inputPGPPubkey" rows="8" style="font-size:12px;" placeholder="Copy-paste your PGP public key here"></textarea>
+                <textarea class="form-control" ng-model="settings.PGPPubKey" id="inputPGPPubkey" rows="20" style="font-size:12px;" placeholder="Copy-paste your PGP public key here"></textarea>
             </div>
         </div>
 
@@ -519,10 +537,18 @@
             <input type="checkbox" id="inputTestnet" class="col-sm-9" ng-model="settings.testnet" value="1" />
         </div>
 
+        <div class="form-group">
+            <div class="col-sm-3 text-right">
+            <label for="inputObelisk" class="control-label">Obelisk Server</label>
+                </div>
+            <div class="col-sm-5">
+            <input type="text" id="inputObelisk" class="form-control text" ng-model="settings.obelisk" placeholder="tcp://85.25.198.97:8081" />
+            </div>
+        </div>
 
         <div class="form-group">
             <div class="col-sm-3"></div>
-            <div class="col-sm-9" style="text-align:right">
+            <div class="col-sm-5" style="padding:0">
                 <button type="submit" class="btn btn-default" ng-click="saveSettings()">Save</button>
             </div>
         </div>
