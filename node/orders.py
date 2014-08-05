@@ -4,8 +4,9 @@ import time
 
 from protocol import order
 from pyelliptic import ECC
-from pymongo import MongoClient
+
 from multisig import Multisig
+from db_store import Obdb
 import gnupg
 import hashlib
 import string
@@ -23,11 +24,9 @@ class Orders(object):
         self._market_id = market_id
 
         self._gpg = gnupg.GPG()
-
-        _dbclient = MongoClient()
-        self._db = _dbclient.openbazaar
+        self._db = Obdb()
         self._orders = self.get_orders()
-        self.orders = self._db.orders
+        self.orders = self._orders
 
         self._transport.add_callback('order', self.on_order)
 
@@ -35,7 +34,7 @@ class Orders(object):
 
     def get_order(self, orderId):
 
-        _order = self._db.orders.find_one({"id": orderId, "market_id": self._market_id})
+        _order = self._db.selectEntries("orders", {"id": orderId})[0]
 
         if _order['state'] in ('Need to Pay', 'Notarized', 'Waiting for Payment'):
             offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
@@ -84,20 +83,10 @@ class Orders(object):
         return order
 
     def get_orders(self, page=0):
-        orders = []
-        for _order in self._db.orders.find({'market_id': self._market_id}).sort([("updated", -1)]).skip(page*10).limit(10):
-            # Get order prototype object before storing
-            orders.append({"id": _order['id'],
-                           "state": _order['state'],
-                           "address": _order['address'] if _order.has_key("address") else "",
-                           "buyer": _order['buyer'] if _order.has_key("buyer") else "",
-                           "merchant": _order['merchant'] if _order.has_key("merchant") else "",
-                           "notary": _order['notary'] if _order.has_key("notary") else "",
-                           "text": _order['text'] if _order.has_key("text") else "",
-                           "updated": _order['updated'] if _order.has_key("updated") else ""})
-            # orders.append(_order)
+        orders = self._db.selectEntries("orders", {'market_id': self._market_id}, order_field="created", order="DESC", limit=10, limit_offset=page*10)
 
-        return {"total": self._db.orders.find({'market_id': self._market_id}).count(), "orders":orders}
+
+        return {"total": self._db.numEntries("orders", {'market_id': self._market_id}), "orders":orders}
 
 
     # Create a new order
@@ -112,7 +101,7 @@ class Orders(object):
 
         self._transport.send(new_order, seller)
 
-        self._db.orders.insert(new_order)
+        self._db.insertEntry("orders", new_order)
 
 
     def accept_order(self, new_order):
@@ -131,13 +120,13 @@ class Orders(object):
 
         new_order['address'] = self._multisig.address
 
-        self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
+        self._db.updateEntries("orders", {"id": new_order['id']}, {new_order})
 
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
 
     def pay_order(self, new_order):  # action
         new_order['state'] = 'Paid'
-        self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
+        self._db.updateEntries("orders", {"id": new_order['id']},new_order)
         new_order['type'] = 'order'
         self._transport.send(new_order, new_order['merchant'])
 
@@ -164,10 +153,10 @@ class Orders(object):
                 self._log.info('Verified Contract')
 
                 try:
-                    self._db.orders.update({"id": order_id}, {"$set": {"state": "Sent",
+                    self._db.updateEntries("orders", {"id": order_id}, {"state": "Sent",
                                                                        "updated": time.time(),
                                                                        "merchant": contract_data_json['Seller']['seller_GUID'],
-                                                                       "buyer": self._transport._guid}}, True)
+                                                                       "buyer": self._transport._guid})
                 except:
                     self._log.error('Cannot update DB')
 
@@ -190,7 +179,7 @@ class Orders(object):
 
     def receive_order(self, new_order):  # action
         new_order['state'] = 'received'
-        self._db.orders.update({"id": new_order['id']}, {"$set": new_order}, True)
+        self._db.updateEntries("orders", {"id": new_order['id']}, new_order)
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
     def new_order(self, msg):
@@ -239,13 +228,12 @@ class Orders(object):
         hash_value.update(contract_key)
         contract_key = hash_value.hexdigest()
 
-        self._db.orders.update({'id': order_id}, {
-            '$set': {'market_id': self._transport._market_id,
+        self._db.updateEntries("orders", {'id': order_id}, {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
                      'state': 'new',
                      'updated': time.time(),
-                     'note_for_merchant': msg['message']}}, True)
+                     'note_for_merchant': msg['message']})
 
         # Send order to seller
         self.send_order(order_id, str(signed_data), msg['notary'])
@@ -352,8 +340,7 @@ class Orders(object):
                                       self._transport.settings['pubkey'].decode('hex')])
         multisig_address = multisig.address
 
-        self._db.orders.update({'id': order_id}, {
-            '$set': {'market_id': self._transport._market_id,
+        self._db.updateEntries("orders", {'id': order_id}, {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
                      'state': 'Notarized',
@@ -363,7 +350,7 @@ class Orders(object):
                      'item_price': offer_data_json['Contract']['item_price'],
                      'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
-                     "updated": time.time()}}, True)
+                     "updated": time.time()})
 
         # Send order to seller and buyer
         self._log.info('Sending notarized contract to buyer and seller %s' % bid)
@@ -432,8 +419,7 @@ class Orders(object):
             self._log.info('I am the buyer')
             state = 'Need to Pay'
 
-        self._db.orders.update({'id': order_id}, {
-            '$set': {'market_id': self._transport._market_id,
+        self._db.updateEntries("orders", {'id': order_id}, {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(contract),
                      'state': state,
@@ -444,7 +430,7 @@ class Orders(object):
                      'item_price': offer_data_json['Contract']['item_price'],
                      'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
-                     "updated": time.time()}}, True)
+                     "updated": time.time()})
 
     # Order callbacks
     def on_order(self, msg):

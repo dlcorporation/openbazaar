@@ -7,7 +7,7 @@ import gnupg
 
 import obelisk
 from protocol import hello_request, hello_response, proto_response_pubkey
-from pymongo import MongoClient
+from db_store import Obdb
 import pyelliptic as ec
 from p2p import PeerConnection, TransportLayer
 from dht import DHT
@@ -121,9 +121,7 @@ class CryptoTransportLayer(TransportLayer):
         requests_log.setLevel(logging.WARNING)
 
         # Connect to database
-        MONGODB_URI = 'mongodb://localhost:27017'
-        _dbclient = MongoClient()
-        self._db = _dbclient.openbazaar
+        self._db = Obdb()
 
         self._bitmessage_api = None
         if (bm_user, bm_pass, bm_port) != (None, None, None):
@@ -178,7 +176,8 @@ class CryptoTransportLayer(TransportLayer):
         guid = peer_tuple[2]
         nickname = peer_tuple[3]
 
-        self._db.peers.update({"guid":'%s' % guid}, {"$set": {"uri":uri, "pubkey":pubkey, "nickname":nickname}}, True)
+        # Update query
+        self._db.updateEntries("peers", {"guid": guid}, {"uri":uri, "pubkey": pubkey, "nickname": nickname})
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -255,8 +254,11 @@ class CryptoTransportLayer(TransportLayer):
 
     def _setup_settings(self):
 
-        self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
-
+        self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})
+        if len(self.settings) == 0:
+            self.settings = None
+        else:
+            self.settings = self.settings[0]
         if self.settings:
             self._nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
             self.secret = self.settings['secret'] if self.settings.has_key("secret") else ""
@@ -266,6 +268,8 @@ class CryptoTransportLayer(TransportLayer):
             self.bitmessage = self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ""
 
         else:
+
+	    self._db.insertEntry("settings", {"market_id": self._market_id})
             self._nickname = 'Default'
 
             # Generate Bitcoin keypair
@@ -281,9 +285,9 @@ class CryptoTransportLayer(TransportLayer):
             key = gpg.gen_key(input_data)
             pubkey_text = gpg.export_keys(key.fingerprint)
 
-            self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"PGPPubKey":pubkey_text, "PGPPubkeyFingerprint":key.fingerprint}}, True)
+            self._db.updateEntries("settings", {"market_id": self._market_id}, {"PGPPubKey":pubkey_text, "PGPPubkeyFingerprint": key.fingerprint})
 
-            self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
+            self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})[0]
 
         self._log.debug('Retrieved Settings: %s', self.settings)
 
@@ -307,13 +311,14 @@ class CryptoTransportLayer(TransportLayer):
         self.guid = ripe_hash.digest().encode('hex')
         self.sin = obelisk.EncodeBase58Check('\x0F\x02%s' + ripe_hash.digest())
 
-        self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid, "sin":self.sin}}, True)
+        self._db.updateEntries("settings", {"market_id": self._market_id}, {"secret":self.secret, "pubkey":self.pubkey, "guid":self.guid, "sin":self.sin})
+
 
     def _generate_new_bitmessage_address(self):
       # Use the guid generated previously as the key
       self.bitmessage = self._bitmessage_api.createRandomAddress(self.guid.encode('base64'),
             False, 1.05, 1.1111)
-      self._db.settings.update({"id":'%s' % self._market_id}, {"$set": {"bitmessage":self.bitmessage}}, True)
+      self._db.updateEntries("settings", {"market_id": self._market_id}, {"bitmessage":self.bitmessage})
 
 
     def join_network(self, dev_mode=0, callback=lambda msg: None):
@@ -335,7 +340,7 @@ class CryptoTransportLayer(TransportLayer):
             self.connect('tcp://%s:12345' % seed, callback=cb)
 
         # Try to connect to known peers
-        known_peers = self._db.peers.find()
+        known_peers = self._db.selectEntries("peers")
         for known_peer in known_peers:
             def cb(msg):
                 #self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
@@ -426,7 +431,7 @@ class CryptoTransportLayer(TransportLayer):
     def get_profile(self):
         peers = {}
 
-        self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
+        self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})[0]
 
         for uri, peer in self._peers.iteritems():
             if peer._pub:

@@ -29,7 +29,7 @@ class DHT(object):
         # Routing table
         self._routingTable = routingtable.OptimizedTreeRoutingTable(
             self._settings['guid'], market_id)
-        self._dataStore = datastore.MongoDataStore()
+        self._dataStore = datastore.SqliteDataStore()
 
     def getActivePeers(self):
         return self._activePeers

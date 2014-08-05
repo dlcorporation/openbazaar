@@ -11,7 +11,7 @@ import protocol
 import pycountry
 import gnupg
 import pprint
-
+from db_store import Obdb
 import time
 
 ioloop.install()
@@ -23,6 +23,7 @@ class ProtocolHandler:
         self._market = market
         self._transport = transport
         self._handler = handler
+        self._db = Obdb()
 
         # register on transport events to forward..
         self._transport.add_callback('peer', self.on_node_peer)
@@ -103,7 +104,7 @@ class ProtocolHandler:
 
     def client_check_order_count(self, socket_handler, msg):
         self._log.debug('Checking order count')
-        self.send_to_client(None, {"type": "order_count", "count": self._market.orders.orders.count()})
+        self.send_to_client(None, {"type": "order_count", "count": self._db.numEntries("orders",{"market_id":self._transport._market_id})})
 
     def refresh_peers(self):
         self._log.info("Peers command")

@@ -13,7 +13,7 @@ from reputation import Reputation
 from orders import Orders
 import protocol
 import lookup
-from pymongo import MongoClient
+from db_store import Obdb
 from data_uri import DataURI
 from zmq.eventloop import ioloop
 import tornado
@@ -61,8 +61,8 @@ class Market(object):
 
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
 
-        _dbclient = MongoClient()
-        self._db = _dbclient.openbazaar
+
+        self._db = Obdb()
 
         self.settings = self._transport.settings
 
@@ -105,7 +105,7 @@ class Market(object):
         self.signature = self._transport._myself.sign(tagline)
 
         if welcome:
-            self._db.settings.update({}, {"$set":{"welcome":"noshow"}})
+            self._db.updateEntries("settings", {'market_id': self._transport._market_id}, {"welcome":"noshow"})
         else:
             self.welcome = False
 
@@ -129,9 +129,7 @@ class Market(object):
         contract_state = "seed"
 
         # Store in DB
-        self._db.contracts.update({'id':contract_id}, {'$set':{'contract': contract['contract'],
-                                                               'timestamp': timestamp,
-                                                               'state': 'seed'}}, True)
+        db.insertEntry("contracts",  {'contract': contract['contract'], 'timestamp': timestamp, 'state': 'seed'})
 
         self._log.debug('New Contract ID: %s' % contract_id)
 
@@ -154,7 +152,7 @@ class Market(object):
         gpg = gnupg.GPG()
 
         # Insert PGP Key
-        self.settings = self._db.settings.find_one({'id':"%s" % self._market_id})
+        self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})[0]
 
         self._log.debug('Settings %s' % self._transport.settings)
         msg['Seller']['seller_PGP'] = gpg.export_keys(self._transport.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
@@ -199,7 +197,7 @@ class Market(object):
         hash_value.update(contract_key)
         contract_key = hash_value.hexdigest()
 
-        self._db.contracts.update({'id':contract_id}, {'$set':{'market_id':self._transport._market_id, 'contract_body':json.dumps(msg), 'signed_contract_body':str(signed_data), 'state':'seed', 'key':contract_key}}, True)
+        self._db.insertEntry("contracts", {"id": contract_id, "market_id": self._transport._market_id, "contract_body": json.dumps(msg), "signed_contract_body": str(signed_data), "state": "seed", "key": contract_key})
 
         self._log.debug('New Contract Key: %s' % contract_key)
 
@@ -220,7 +218,8 @@ class Market(object):
             self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':contract_key}), self._transport._guid)
 
     def republish_contracts(self):
-        listings = self._db.contracts.find()
+        #listings = self._db.contracts.find()
+        listings = self._db.selectEntries("contracts")
         for listing in listings:
             self._transport._dht.iterativeStore(self._transport, listing['key'], listing.get('signed_contract_body'), self._transport._guid)
         self.update_listings_index()
@@ -247,7 +246,11 @@ class Market(object):
     def republish_listing(self, msg):
 
         listing_id = msg.get('productID')
-        listing = self._db.contracts.find_one({'id':listing_id})
+        listing = self._db.selectEntries("products", {"id": listing_id})
+        if listing:
+            listing = listing[0]
+        else:
+            return
 
         listing_key = listing['key']
 
@@ -276,7 +279,7 @@ class Market(object):
         contract_index_key = hashvalue.hexdigest()
 
         # Calculate index of contracts
-        contract_ids = self._db.contracts.find({'market_id':self._transport._market_id}, {'key':1})
+        contract_ids = self._db.selectEntries("contracts", {"market_id":self._transport._market_id})
         my_contracts = []
         for contract_id in contract_ids:
             my_contracts.append(contract_id['key'])
@@ -299,12 +302,13 @@ class Market(object):
         # Remove from DHT keyword indices
         self.remove_from_keyword_indexes(msg['contract_id'])
 
-        self._db.contracts.remove({'id':msg['contract_id']})
+
+        self._db.deleteEntries("contracts", {"id": msg["contract_id"]})
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
 
-        contract = self._db.contracts.find_one({'id':contract_id})
+        contract = self._db.selectEntries("contracts", {"id": contract_id})[0]
         contract_key = contract['key']
 
         contract = json.loads(contract['contract_body'])
@@ -332,7 +336,7 @@ class Market(object):
                 m['subject'] = b64decode(m['subject'])
                 m['message'] = b64decode(m['message'])
                 # TODO: Augment with market, if available
-                
+
             return {"messages": inboxmsgs}
         except Exception as e:
             self._log.error("Failed to get inbox messages: {}".format(e))
@@ -347,7 +351,7 @@ class Market(object):
             self._log.info("Encoding message: {}".format(msg))
             subject = b64encode(msg['subject'])
             body = b64encode(msg['body'])
-            result = self._transport._bitmessage_api.sendMessage(msg['to'], 
+            result = self._transport._bitmessage_api.sendMessage(msg['to'],
                 settings['bitmessage'], subject, body)
             self._log.info("Send message result: {}".format(result))
             return {}
@@ -358,7 +362,7 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
-        contracts = self._db.contracts.find({'market_id':self._transport._market_id}).skip(page*10).limit(10)
+        contracts = self._db.selectEntries("contracts", {"market_id": self._transport._market_id}, limit=10, limit_offset=(page*10))
         my_contracts = []
 
         for contract in contracts:
@@ -382,7 +386,7 @@ class Market(object):
             except:
                 self._log.error('Problem loading the contract body JSON')
 
-        return {"contracts": my_contracts, "page": page, "total_contracts":self._db.contracts.find().count()}
+        return {"contracts": my_contracts, "page": page, "total_contracts":self._db.numEntries("contracts")}
 
     # SETTINGS
 
@@ -410,38 +414,22 @@ class Market(object):
         self._transport._nickname = msg['nickname']
 
         # Update local settings
-        self._db.settings.update({'id':'%s'%self._transport._market_id}, {'$set':msg}, True)
+        self._db.updateEntries("settings", {'market_id': self._transport._market_id}, msg)
 
     def get_settings(self):
 
         self._log.info('Getting settings info for Market %s' % self._transport._market_id)
-        settings = self._db.settings.find_one({'id':'%s'%self._transport._market_id})
-        settings_dict = {"bitmessage": settings['bitmessage'] if settings.has_key("bitmessage") else "",
-                    "email": settings['email'] if settings.has_key("email") else "",
-                    "PGPPubKey": settings['PGPPubKey'] if settings.has_key("PGPPubKey") else "",
-                    "PGPPubkeyFingerprint": settings['PGPPubkeyFingerprint'] if settings.has_key("PGPPubkeyFingerprint") else "",
-                    "pubkey": settings['pubkey'] if settings.has_key("pubkey") else "",
-                    "nickname": settings['nickname'] if settings.has_key("nickname") else "",
-                    "secret": settings['secret'] if settings.has_key("secret") else "",
-                    "privkey": settings['secret'][8:] if settings.has_key("secret") else "",
-                    "welcome": settings['welcome'] if settings.has_key("welcome") else "",
-                    "trustedArbiters": settings['trustedArbiters'] if settings.has_key("trustedArbiters") else "",
-                    "notaries": settings['notaries'] if settings.has_key("notaries") else "",
-                    "storeDescription": settings['storeDescription'] if settings.has_key("storeDescription") else "",
-                    "obelisk": settings['obelisk'] if settings.has_key("obelisk") else "",
-                    "city": settings['city'] if settings.has_key("city") else "",
-                    "stateRegion": settings['stateRegion'] if settings.has_key("stateRegion") else "",
-                    "street1": settings['street1'] if settings.has_key("street1") else "",
-                    "street2": settings['street2'] if settings.has_key("street2") else "",
-                    "countryCode": settings['countryCode'] if settings.has_key("countryCode") else "",
-                    "zip": settings['zip'] if settings.has_key("zip") else "",
-                    "arbiterDescription": settings['arbiterDescription'] if settings.has_key("arbiterDescription") else "",
-                    "arbiter": settings['arbiter'] if settings.has_key("arbiter") else "",
-                    "notary": settings['notary'] if settings.has_key("notary") else "",
-                   }
+        settings = self._db.getOrCreate("settings", {"market_id": self._transport._market_id})
+
+        if settings['arbiter'] == 1:
+          settings['arbiter'] = True
+        if settings['notary'] == 1:
+          settings['notary'] = True
+
+        self._log.info('SETTINGS: %s' % settings)
 
         if settings:
-            return settings_dict
+            return settings
         else:
             return {}
 
