@@ -485,6 +485,7 @@ angular.module('app')
 
     // Settings
     $scope.settings = msg.settings
+    console.log(msg.settings)
 
     //msg.reputation.forEach(function(review) {
     //   add_review_to_page($scope.myself.pubkey, review)
