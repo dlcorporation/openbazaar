@@ -426,6 +426,8 @@ class Market(object):
         if settings['notary'] == 1:
           settings['notary'] = True
 
+        settings['privkey'] = settings['secret'][8:] if settings.has_key("secret") else ""
+
         self._log.info('SETTINGS: %s' % settings)
 
         if settings:
