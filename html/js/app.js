@@ -298,8 +298,8 @@ angular.module('app')
       $scope.total_contracts = msg.contracts.total_contracts;
       $scope.contracts_pages = $scope.total_contracts%10
       console.log('contracts', $scope.total_contracts);
-      $scope.contracts_current_page = page-1;
-
+      $scope.contracts_current_page = (page > 0) ? page-1 : 0;
+      console.log($scope)
 
       for(var key in msg.contracts.contracts) {
 
