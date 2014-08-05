@@ -143,7 +143,7 @@
             <h3>Contracts</h3>
         </div>
 
-    <div class="row" style="margin-bottom:0px;">
+    <div class="row" style="margin-bottom:0px;" >
          <ul class="nav nav-pills" style="float:right;margin-top:10px;margin-right:20px;">
             <li class="active" ><a href="#all">All</a></li>
             <li><a href="#fixedPrice">Fixed Price</a></li>
@@ -156,14 +156,14 @@
 
 
 
-        <div style="text-align:right">
+        <div style="text-align:right" ng-show="total_contracts > 0">
 
         <pagination total-items="total_contracts" num-pages="contracts_pages" ng-change="contracts_page_changed()" ng-model="contracts_current_page" max-size="4" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" boundary-links="true"></pagination>
             </div>
 
-    <div ng-show="contracts">
+    <div>
 
-        <table class="table table-striped table-bordered contract-table" style="margin-top:0px;">
+        <table ng-show="total_contracts > 0" class="table table-striped table-bordered contract-table" style="margin-top:0px;">
             <tr>
                 <th><input type="checkbox"/></th>
                 <th colspan=2>Product</th>
@@ -202,7 +202,7 @@
 
     </div>
 
-    <div class="col-sm-12" ng-show="!contracts">
+    <div class="col-sm-12" ng-show="total_contracts == 0">
         <p>There are no listings for your marketplace.</p>
     </div>
 
