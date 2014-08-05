@@ -1,6 +1,8 @@
 
 *.log
 
+*.db
+
 html/less/.DS_Store
 
 .DS_Store
