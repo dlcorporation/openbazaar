@@ -177,7 +177,11 @@ class CryptoTransportLayer(TransportLayer):
         nickname = peer_tuple[3]
 
         # Update query
-        self._db.updateEntries("peers", {"guid": guid}, {"uri":uri, "pubkey": pubkey, "nickname": nickname})
+        results = self._db.selectEntries("peers", {"guid": guid})
+        if len(results) > 0:
+            self._db.updateEntry("peers", {"id":results[0]['id']}, {"uri":uri, "pubkey": pubkey, "nickname": nickname})
+        else:
+            self._db.insertEntry("peers", {"uri":uri, "pubkey": pubkey, "nickname": nickname})
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -334,7 +338,7 @@ class CryptoTransportLayer(TransportLayer):
             self._log.info('Initializing Seed Peer(s): [%s]' % seed)
 
             def cb(msg):
-                self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
+                #self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
                 callback(msg)
 
             self.connect('tcp://%s:12345' % seed, callback=cb)
@@ -343,7 +347,7 @@ class CryptoTransportLayer(TransportLayer):
         known_peers = self._db.selectEntries("peers")
         for known_peer in known_peers:
             def cb(msg):
-                #self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
+                self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
                 callback(msg)
 
             self.connect(known_peer['uri'], callback=cb)
