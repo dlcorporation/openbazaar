@@ -77,4 +77,10 @@ Here are some screenshots of the *alpha* UI so far:
 - [IBTimes](https://www.ibtimes.co.uk/silk-road-successor-darkmarket-untouchable-by-feds-claim-creators-1446241)
 - [DeepDotWeb](https://www.deepdotweb.com/2014/06/23/openbazaar-a-decentralized-alternative/)
 
+## License
+
+[Available here](LICENSE)
+
 =======
+
+
