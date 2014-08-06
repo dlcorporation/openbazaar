@@ -31,6 +31,8 @@ fi
 # Default values
 SERVER_PORT=12345
 LOGDIR=logs
+DBDIR=db
+DBFILE=ob.db
 DEVELOPMENT=0
 SEED_URI=tcp://seed2.openbazaar.org:12345
 LOG_FILE=production.log
@@ -109,6 +111,16 @@ fi
 
 if [ ! -d "$LOGDIR" ]; then
   mkdir $LOGDIR
+fi
+
+if [ ! -d "$DBDIR" ]; then
+  mkdir $DBDIR
+fi
+
+if [ ! -f $DBFILE ]; then
+   echo "File $DBFILE does not exist."
+   $PYTHON util/setup_db.py
+   wait
 fi
 
 if [ "$SEED_MODE" == 1 ]; then
