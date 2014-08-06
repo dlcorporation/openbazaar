@@ -82,8 +82,6 @@ class Market(object):
 
         self.load_page(welcome)
 
-        self._dht._refreshNode()
-
         self.republish_contracts()
 
         # Periodically refresh buckets

@@ -107,7 +107,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("my_market_ip")
     parser.add_argument("-p", "--my_market_port", type=int, default=12345)
-    parser.add_argument("-l", "--log_file", default='production.log')
+    parser.add_argument("-l", "--log_file", default='logs/production.log')
     parser.add_argument("-u", "--market_id", default=1)
     parser.add_argument("-s", "--seed_mode", default=0)
     parser.add_argument("-d", "--dev_mode", action='store_true')
