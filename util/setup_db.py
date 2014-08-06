@@ -64,6 +64,7 @@ if not path.isfile(DB_PATH):
                     "address TEXT, " \
                     "buyer TEXT, " \
                     "seller TEXT, " \
+                    "note_for_merchant TEXT, " \
                     "escrows TEXT, " \
                     "text TEXT, " \
                     "contract_key TEXT, " \

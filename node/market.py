@@ -426,8 +426,8 @@ class Market(object):
         if settings['notary'] == 1:
           settings['notary'] = True
 
-        settings['notaries'] = ast.literal_eval(settings['notaries'])
-        settings['trustedArbiters'] = ast.literal_eval(settings['trustedArbiters'])
+        settings['notaries'] = ast.literal_eval(settings['notaries']) if settings['notaries'] != "" else []
+        settings['trustedArbiters'] = ast.literal_eval(settings['trustedArbiters']) if settings['trustedArbiters'] != "" else []
 
         settings['privkey'] = settings['secret'][8:] if settings.has_key("secret") else ""
 
