@@ -38,7 +38,7 @@ class CryptoPeerConnection(PeerConnection):
 
         self._peer_alive = False
 
-        if guid is not None:
+        if guid is not None and pub is not None:
             self._guid = guid
             self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
             callback(None)
