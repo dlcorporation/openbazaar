@@ -174,7 +174,7 @@ class Market(object):
                 charset = uri.charset
 
                 image = Image.open(StringIO(imageData))
-                croppedImage = ImageOps.fit(image, (100, 100), centering=(0.5, 0.5))
+                croppedImage = ImageOps.fit(image, (200, 200), centering=(0.5, 0.5))
                 data = StringIO()
                 croppedImage.save(data, format='PNG')
 
