@@ -102,22 +102,26 @@ class CryptoPeerConnection(PeerConnection):
 
     def send(self, data, callback=lambda msg: None):
 
-        # Include guid
-        data['guid'] = self._guid
-        data['senderGUID'] = self._transport.guid
-        data['uri'] = self._transport._uri
-        data['pubkey'] = self._transport.pubkey
-        data['senderNick'] = self._transport._nickname
+        if hasattr(self, '_guid'):
 
-        self._log.debug('Sending to peer: %s %s' % (self._ip, data))
+            # Include guid
+            data['guid'] = self._guid
+            data['senderGUID'] = self._transport.guid
+            data['uri'] = self._transport._uri
+            data['pubkey'] = self._transport.pubkey
+            data['senderNick'] = self._transport._nickname
 
-        if self._pub == '':
-            self._log.info('There is no public key for encryption')
+            self._log.debug('Sending to peer: %s %s' % (self._ip, data))
+
+            if self._pub == '':
+                self._log.info('There is no public key for encryption')
+            else:
+                signature = self.sign(json.dumps(data))
+                self._log.info('signature %s' % signature.encode('hex'))
+                data = self.encrypt(json.dumps(data))
+                self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':data.encode('hex')}), callback)
         else:
-            signature = self.sign(json.dumps(data))
-            self._log.info('signature %s' % signature.encode('hex'))
-            data = self.encrypt(json.dumps(data))
-            self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':data.encode('hex')}), callback)
+            self._log.error('Cannot send to peer')
 
     def peer_to_tuple(self):
         return self._ip, self._port, self._guid
