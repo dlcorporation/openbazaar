@@ -177,11 +177,11 @@ class CryptoTransportLayer(TransportLayer):
         nickname = peer_tuple[3]
 
         # Update query
-        results = self._db.selectEntries("peers", {"guid": guid})
+        results = self._db.selectEntries("peers", {"uri": uri, "guid": guid}, "OR")
         if len(results) > 0:
-            self._db.updateEntry("peers", {"id":results[0]['id']}, {"uri":uri, "pubkey": pubkey, "nickname": nickname})
+            self._db.updateEntries("peers", {"id":results[0]['id']}, {"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
         else:
-            self._db.insertEntry("peers", {"uri":uri, "pubkey": pubkey, "nickname": nickname})
+            self._db.insertEntry("peers", {"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
