@@ -93,6 +93,7 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.sign(data)
 
     def encrypt(self, data):
+        print data
         try:
             result = self._priv.encrypt(data, self._pub.decode('hex'))
             return result
@@ -201,9 +202,9 @@ class CryptoTransportLayer(TransportLayer):
         # Update query
         results = self._db.selectEntries("peers", {"uri": uri})
         if len(results) > 0:
-            self._db.updateEntries("peers", {"id":results[0]['id']}, {"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
+            self._db.updateEntries("peers", {"id":results[0]['id']}, {"market_id":self._market_id,"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
         else:
-            self._db.insertEntry("peers", {"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
+            self._db.insertEntry("peers", {"market_id":self._market_id, "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -351,7 +352,7 @@ class CryptoTransportLayer(TransportLayer):
 
         if dev_mode:
             self._log.info('DEV MODE')
-            seed_peers = {'127.0.0.1'}
+            seed_peers = ('127.0.0.1')
         else:
             seed_peers = ('seed.openbazaar.org',
                           'seed2.openbazaar.org')
@@ -366,7 +367,7 @@ class CryptoTransportLayer(TransportLayer):
             self.connect('tcp://%s:12345' % seed, callback=cb)
 
         # Try to connect to known peers
-        known_peers = self._db.selectEntries("peers")
+        known_peers = self._db.selectEntries("peers", {"market_id": self._market_id})
         for known_peer in known_peers:
 
             self._log.info(known_peer['uri'])
@@ -647,13 +648,13 @@ class CryptoTransportLayer(TransportLayer):
                 sig = msg.get('sig').decode('hex')
 
                 try:
+
                     data = self._myself.decrypt(data)
 
                     self._log.debug('Signature: %s' % sig.encode('hex'))
                     self._log.debug('Signed Data: %s' % data)
 
                     guid =  json.loads(data).get('guid')
-                    peer = self._dht._routingTable.getContact(guid)
 
                     ecc = ec.ECC(curve='secp256k1',pubkey=json.loads(data).get('pubkey').decode('hex'))
 
@@ -666,8 +667,8 @@ class CryptoTransportLayer(TransportLayer):
 
                     msg = json.loads(data)
                     self._log.debug('Message Data %s ' % msg)
-                except:
-                    self._log.error('Could not decrypt message properly')
+                except Exception, e:
+                    self._log.error('Could not decrypt message properly %s' % e)
 
         except ValueError:
             try:

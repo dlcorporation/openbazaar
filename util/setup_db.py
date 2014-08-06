@@ -78,6 +78,7 @@ if not path.isfile(DB_PATH):
                     "uri TEXT, " \
                     "pubkey TEXT, " \
                     "nickname TEXT, " \
+                    "market_id TEXT, " \
                     "guid TEXT, " \
                     "updated INT, " \
                     "created INT)")
