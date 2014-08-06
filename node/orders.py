@@ -196,7 +196,7 @@ class Orders(object):
 
         # Save order locally in database
         order_id = random.randint(0, 1000000)
-        while self._db.contracts.find({'id': order_id}).count() > 0:
+        while self._db.numEntries("orders",{'id': order_id}) > 0:
             order_id = random.randint(0, 1000000)
 
         buyer['Buyer']['buyer_order_id'] = order_id
