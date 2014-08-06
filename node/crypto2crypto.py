@@ -169,6 +169,10 @@ class CryptoTransportLayer(TransportLayer):
 
         self.listen(self.pubkey)
 
+        self._dht._refreshNode()
+
+
+
         def cb():
             r = requests.get(r'http://icanhazip.com')
 
@@ -364,7 +368,13 @@ class CryptoTransportLayer(TransportLayer):
         # Try to connect to known peers
         known_peers = self._db.selectEntries("peers")
         for known_peer in known_peers:
+
+            self._log.info(known_peer['uri'])
+            self._dht.add_known_node((urlparse(known_peer['uri']).hostname, urlparse(known_peer['uri']).port, known_peer['guid'], known_peer['nickname']))
+            self._dht.add_active_peer(self, (known_peer['pubkey'], known_peer['uri'], known_peer['guid'], known_peer['nickname']))
+
             def cb(msg):
+
                 self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
                 callback(msg)
 
