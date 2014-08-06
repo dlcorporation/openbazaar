@@ -110,12 +110,16 @@ class DHT(object):
             for peer in self._activePeers:
                 if peer._guid == new_peer._guid:
                     add_it = False
+
             if add_it:
-                self._transport.save_peer_to_db(peer_tuple)
-                self._activePeers.append(new_peer)
-                self._log.debug('Removing old information about this node')
-                self._routingTable.removeContact(new_peer._guid)
-                self._routingTable.addContact(new_peer)
+                if new_peer.check_port():
+                    self._transport.save_peer_to_db(peer_tuple)
+                    self._activePeers.append(new_peer)
+                    self._log.debug('Removing old information about this node')
+                    self._routingTable.removeContact(new_peer._guid)
+                    self._routingTable.addContact(new_peer)
+                else:
+                    self._log.info('Peer to add is not available')
 
         new_peer.send({'type':'ping'}, cb)
 

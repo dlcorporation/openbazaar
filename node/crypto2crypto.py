@@ -13,6 +13,7 @@ from p2p import PeerConnection, TransportLayer
 from dht import DHT
 from zmq.eventloop import ioloop
 from pprint import pprint
+import socket
 import time
 import requests
 from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
@@ -36,35 +37,38 @@ class CryptoPeerConnection(PeerConnection):
 
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
-        self._peer_alive = False
+        if self.check_port():
+            self._log.debug('Peer is listening')
+            if guid is not None:
+                self._guid = guid
+                self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
+                callback(None)
+            else:
+                def cb(msg):
+                    if msg:
+                        self._peer_alive = True
+                        msg = msg[0]
+                        msg = json.loads(msg)
+                        self._guid = msg['senderGUID']
 
-        if guid is not None:
-            self._guid = guid
-            self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
-            callback(None)
+                        self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
+                        self._pub = msg['pubkey']
+                        self._nickname = msg['senderNick']
+
+                        self._log.debug('New Crypt Peer: %s %s %s %s' % (self._address, self._pub, self._guid, self._nickname))
+                        if callback != None:
+                            callback(msg)
+                try:
+                    self.send_raw(json.dumps({'type':'hello',
+                                              'pubkey':transport.pubkey,
+                                              'uri':transport._uri,
+                                              'senderGUID':transport.guid,
+                                              'senderNick':transport._nickname}), cb)
+                except:
+                    print 'Sending raw message failed'
+
         else:
-            def cb(msg):
-                if msg:
-                    self._peer_alive = True
-                    msg = msg[0]
-                    msg = json.loads(msg)
-                    self._guid = msg['senderGUID']
-
-                    self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
-                    self._pub = msg['pubkey']
-                    self._nickname = msg['senderNick']
-
-                    self._log.debug('New Crypt Peer: %s %s %s %s' % (self._address, self._pub, self._guid, self._nickname))
-                    if callback != None:
-                        callback(msg)
-            try:
-                self.send_raw(json.dumps({'type':'hello',
-                                          'pubkey':transport.pubkey,
-                                          'uri':transport._uri,
-                                          'senderGUID':transport.guid,
-                                          'senderNick':transport._nickname}), cb)
-            except:
-                print 'Sending raw message failed'
+            self._log.debug('Cannot reach this peer. Port may not be open.')
 
 
     def __repr__(self):
@@ -74,6 +78,16 @@ class CryptoPeerConnection(PeerConnection):
         def cb(msg):
             print 'heartbeat'
         self.send_raw(json.dumps({'type':'heartbeat','guid':self._guid, 'pubkey':self._transport.pubkey, 'senderGUID':self._transport.guid, 'uri':self._transport._uri, 'checkPubkey':self._pub}), cb)
+
+    def check_port(self):
+        try:
+            s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(0.2)
+            s.connect((self._ip, self._port))
+            s.close()
+            return True
+        except:
+            return False
 
     def sign(self, data):
         return self._priv.sign(data)

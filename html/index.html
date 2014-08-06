@@ -1066,7 +1066,7 @@
     <div class="peers-area" >
         <table id="favorite-peers" class="peers-table table-hover">
             <tbody>
-            <tr ng-repeat="peer in peers | limitTo:10" ng-click="queryShop(peer)">
+            <tr ng-repeat="peer in peers" ng-click="queryShop(peer)">
                 <td width="40"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
                 <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.sin}}
