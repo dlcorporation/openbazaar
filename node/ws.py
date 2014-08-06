@@ -56,6 +56,7 @@ class ProtocolHandler:
             "republish_contracts": self.client_republish_contracts,
             "import_raw_contract": self.client_import_raw_contract,
             "create_contract": self.client_create_contract,
+            "clear_dht_data": self.client_clear_dht_data,
         }
 
         self._timeouts = []
@@ -91,6 +92,10 @@ class ProtocolHandler:
         self._log.debug('Retrieving notaries')
         notaries = self._market.get_notaries()
         self.send_to_client(None, {"type": "notaries", "notaries":notaries})
+
+    def client_clear_dht_data(self, socket_handler, msg):
+        self._log.debug('Clearing DHT Data')
+        self._db.deleteEntries("datastore")
 
     # Requests coming from the client
     def client_connect(self, socket_handler, msg):

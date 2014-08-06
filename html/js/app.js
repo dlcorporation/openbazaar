@@ -687,6 +687,9 @@ angular.module('app')
   }
 
 
+  $scope.clearDHTData = function() {
+    socket.send('clear_dht_data', {});
+  }
 
   $scope.addNotary = function(notary) {
 
