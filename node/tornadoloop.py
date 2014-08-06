@@ -86,6 +86,7 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
             port += 1
 
     locallogger.info("Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, port))
+    print "Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, port)
 
     # handle shutdown
     def shutdown(x, y):

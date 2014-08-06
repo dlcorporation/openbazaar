@@ -105,3 +105,13 @@ h4 {
     font-size: 24px;
     color: #d17581;
 }
+
+.trim-info {
+      max-width: 160px;
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 15px;
+      position: relative;
+   }
