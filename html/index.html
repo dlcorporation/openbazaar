@@ -58,21 +58,24 @@
 <div class="container">
 
     <!-- Header -->
-    <div class="row col-sm-12" style="border-bottom:1px solid #bbb;padding:5px 0;">
+    <div class="col-sm-12 clearfix" style="border-bottom:1px solid #bbb;padding:5px 0;">
     <div id="header">
 
         <!-- Logo -->
-        <div class="col-sm-4" >
+        <div class="col-sm-4 col-xs-12" >
             <a href="/"><img src="img/logo_header.png" class="img-responsive" style="max-height:100px;" /></a>
         </div>
 
         <!-- Search and Navigation -->
-        <div class="col-sm-8 search-area">
+        <div class="col-sm-8 col-xs-12 search-area">
 
-            <div class="row col-sm-12" style="padding-right:0">
+            <div class="" style="padding-right:0">
 
                     <form class="search-form2 form-inline">
-                        <div class="col-sm-12 text-right" style="padding-right:0"><input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for markets or products..."> <input class="btn btn-primary" ng-click="searchNetwork()" type="submit" value="Search"></div>
+                        <div class="text-right" style="padding-right:0">
+                            <input class="form-control" size="60" ng-model="search" type="text" placeholder="Search for markets or products...">
+                            <input class="btn btn-primary" ng-click="searchNetwork()" type="submit" value="Search">
+                        </div>
                     </form>
 
             </div>
@@ -111,7 +114,7 @@
 <div ng-show="dashboard" style="text-align:left;padding:10px;">
     <div class="dashboard-panel">
 
-        <div ng-show="myInfoPanel" class="animated fadeInLeft">
+        <div ng-show="myInfoPanel" class="animated fadeInLeft hidden-xs">
 
             <div class="jumbotron">
                 <h1 style="font-weight:130">Welcome</h1>
@@ -134,8 +137,8 @@
 
 
 
-<!-- Product Catalog -->
-<div ng-show="productCatalogPanel" class="animated fadeInLeft">
+    <!-- Product Catalog -->
+    <div ng-show="productCatalogPanel" class="animated fadeInLeft">
 
     <div ng-controller="ProductModal" >
 
@@ -493,9 +496,9 @@
                 <input type="hidden" ng-model="settings.notaries" />
                 <div class="col-sm-12">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="inputNotaryGUID" placeholder="Enter an notary's OB guid">
+                        <input type="text" class="form-control" ng-model="newNotary" id="inputNotaryGUID" placeholder="Enter an notary's OB guid">
                             <span class="input-group-btn">
-                              <button class="btn btn-default" type="button" ng-click="addNotary()">Add</button>
+                              <button class="btn btn-default" type="button" ng-click="addNotary(newNotary)">Add</button>
                             </span>
                     </div>
                     <table class="table table-striped table-bordered" style="margin-top:10px;padding:0">
@@ -879,7 +882,7 @@
         <div ng-show="storeArbiterPanel" class="animated fadeIn">
 
             <div style="margin-bottom:20px">
-                <h4>Make this merchant a trusted:
+                <h4>Make this merchant a trusted: {{settings.notaries}}
                 <button ng-show="page.arbiter" type="button" class="btn btn-info btn-sm" ng-click="addArbiter(page.senderGUID)">Arbiter</button>
                 <button ng-show="page.notary" type="button" class="btn btn-info btn-sm" ng-click="addNotary(page.senderGUID)">Notary</button>
                     </h4>

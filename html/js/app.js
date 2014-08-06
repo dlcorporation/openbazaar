@@ -579,7 +579,7 @@ angular.module('app')
                     }
 
   $scope.saveSettings = function(notify) {
-
+      console.log($scope.settings)
       var query = {'type': 'update_settings', settings: $scope.settings }
       socket.send('update_settings', query);
       if (typeof notify === "undefined") {
@@ -690,19 +690,20 @@ angular.module('app')
 
   $scope.addNotary = function(notary) {
 
-    notaryGUID = (notary != '') ? notary : $('#inputNotaryGUID').val();
-    $('#inputNotaryGUID').val('');
+    notaryGUID = (notary != '') ? notary : $scope.newNotary;
 
     //if(notaryGUID.length != 40 || !notaryGUID.match(/^[0-9a-z]+$/)) {
     //    alert('Incorrect format for GUID');
     //    return;
     //}
 
-    if(!$scope.settings.notaries) {
+    if(!$scope.settings.notaries || !($scope.settings.notaries instanceof Array)) {
       $scope.settings.notaries = [];
     }
+    console.log(notaryGUID);
     $scope.settings.notaries.push(notaryGUID);
 
+    console.log($scope.settings.notaries);
     // Dedupe notary GUIDs
     var uniqueNotaries = [];
     $.each($scope.settings.notaries, function(i, el){
@@ -710,6 +711,7 @@ angular.module('app')
     });
 
     $scope.settings.notaries = uniqueNotaries;
+    console.log($scope.settings)
 
     $scope.saveSettings(false);
     Notifier.success('Success', 'Notary added successfully.');

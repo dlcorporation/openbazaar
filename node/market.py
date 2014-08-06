@@ -24,6 +24,7 @@ from StringIO import StringIO
 import datetime
 import traceback
 import gnupg
+import ast
 import string
 
 class Market(object):
@@ -424,6 +425,9 @@ class Market(object):
           settings['arbiter'] = True
         if settings['notary'] == 1:
           settings['notary'] = True
+
+        settings['notaries'] = ast.literal_eval(settings['notaries'])
+        settings['trustedArbiters'] = ast.literal_eval(settings['trustedArbiters'])
 
         settings['privkey'] = settings['secret'][8:] if settings.has_key("secret") else ""
 
