@@ -177,7 +177,7 @@ class CryptoTransportLayer(TransportLayer):
         nickname = peer_tuple[3]
 
         # Update query
-        results = self._db.selectEntries("peers", {"uri": uri, "guid": guid}, "OR")
+        results = self._db.selectEntries("peers", {"uri": uri})
         if len(results) > 0:
             self._db.updateEntries("peers", {"id":results[0]['id']}, {"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
         else:
