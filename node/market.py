@@ -22,7 +22,6 @@ ioloop.install()
 from PIL import Image, ImageOps
 from StringIO import StringIO
 import datetime
-from contract import OBContract
 import traceback
 import gnupg
 import string
