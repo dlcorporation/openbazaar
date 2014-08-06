@@ -4,7 +4,7 @@ Dionysis Zindros, National Technical University of Athens <dionyziz@gmail.com>
 
 ## Keywords
 
-pseudonymous anonymous web-of-trust identity trust bitcoin namecoin proof-of-burn timelock decentralized anonymous marketplace openbazaar
+pseudonymous, anonymous, web-of-trust, identity, trust, bitcoin, namecoin, proof-of-burn, timelock, decentralized, anonymous, marketplace, openbazaar
 
 ## Abstract
 
