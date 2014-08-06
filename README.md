@@ -76,6 +76,8 @@ Here are some screenshots of the *alpha* UI so far:
 - [Coindesk](https://www.coindesk.com/openbazaar-bitcoin-build-decentralised-ebay/)
 - [IBTimes](https://www.ibtimes.co.uk/silk-road-successor-darkmarket-untouchable-by-feds-claim-creators-1446241)
 - [DeepDotWeb](https://www.deepdotweb.com/2014/06/23/openbazaar-a-decentralized-alternative/)
+- [CryptoCoinsNews](http://www.cryptocoinsnews.com/news/openbazaar-blazing-trail-bitcoin-commerce-without-barriers/2014/07/22)
+
 
 ## License
 
