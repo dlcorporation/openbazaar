@@ -120,10 +120,11 @@ class CryptoPeerConnection(PeerConnection):
                 signature = self.sign(json.dumps(data))
                 self._log.info('Signature of Data: %s' % signature.encode('hex'))
                 data = self.encrypt(json.dumps(data))
-                if data is not None:
+
                 try:
-                    encoded_data = data.encode('hex')
-                    self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':encoded_data}), callback)
+                    if data is not None:
+                        encoded_data = data.encode('hex')
+                        self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':encoded_data}), callback)
                 except Exception, e:
                     self._log.error("Was not able to encode empty data: %e")
         else:
