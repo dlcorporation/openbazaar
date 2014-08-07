@@ -89,10 +89,10 @@ class DHT(object):
 
             active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
 
-            # if active_peer_tuple == peer_tuple:
-            #     self._log.info('Already connected to this node')
-            #
-            #     return
+            if active_peer_tuple == peer_tuple:
+                self._log.info('Already connected to this node')
+
+                return
 
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
