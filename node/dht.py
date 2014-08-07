@@ -9,6 +9,7 @@ from threading import Thread
 import routingtable
 import datastore
 import constants
+from pprint import pprint, pformat
 from protocol import proto_store
 import obelisk
 
@@ -88,9 +89,10 @@ class DHT(object):
 
             active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
 
-            if active_peer_tuple == peer_tuple:
-                self._log.info('Already connected to this node')
-                return
+            # if active_peer_tuple == peer_tuple:
+            #     self._log.info('Already connected to this node')
+            #
+            #     return
 
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
@@ -116,6 +118,7 @@ class DHT(object):
                 if add_it:
 
                     self._transport.save_peer_to_db(peer_tuple)
+                    self._log.info('New Peer Address %s' % new_peer._address)
                     self._activePeers.append(new_peer)
                     self._log.debug('Removing old information about this node')
                     self._routingTable.removeContact(new_peer._guid)
@@ -373,7 +376,7 @@ class DHT(object):
         self._log.debug('Republishing Data')
         expiredKeys = []
 
-        self._log.debug('Key: %s' % self._dataStore.keys())
+        self._log.debug('Key: \n%s' % pformat(self._dataStore.keys()))
 
         for key in self._dataStore.keys():
 
@@ -509,10 +512,11 @@ class DHT(object):
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
-        self._log.debug('Places to store the key-value: (%s, %s)' % (nodes, key))
+        self._log.debug('Places to store the key-value: (%s, %s %s)' % (nodes, key, type(value)))
 
         try:
-            value_json = json.loads(value)
+
+            value_json = value
 
             # Add Notary GUID to index
             if value_json.has_key('notary_index_add'):
@@ -571,8 +575,8 @@ class DHT(object):
                     return
 
 
-        except:
-            self._log.debug('Could not load JSON from value to store')
+        except Exception, e:
+            self._log.debug('Trying to store but failed %s' % e)
 
 
         now = int(time.time())
