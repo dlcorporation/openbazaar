@@ -74,11 +74,6 @@ class CryptoPeerConnection(PeerConnection):
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
 
-    def heartbeat(self):
-        def cb(msg):
-            print 'heartbeat'
-        self.send_raw(json.dumps({'type':'heartbeat','guid':self._guid, 'pubkey':self._transport.pubkey, 'senderGUID':self._transport.guid, 'uri':self._transport._uri, 'checkPubkey':self._pub}), cb)
-
     def check_port(self):
         try:
             s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -125,6 +120,8 @@ class CryptoPeerConnection(PeerConnection):
                     if data is not None:
                         encoded_data = data.encode('hex')
                         self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':encoded_data}), callback)
+                    else:
+                        self._log.error('Data was empty')
                 except Exception, e:
                     self._log.error("Was not able to encode empty data: %e")
         else:
@@ -179,7 +176,7 @@ class CryptoTransportLayer(TransportLayer):
         self._dht._refreshNode()
 
         def cb():
-            r = requests.get(r'http://icanhazip.com')
+            r = requests.get(r'https://icanhazip.com')
 
             if r and hasattr(r,'text'):
                 ip = r.text
