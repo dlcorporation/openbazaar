@@ -178,7 +178,7 @@ class CryptoTransportLayer(TransportLayer):
         def cb():
 
             try:
-                r = requests.get(r'https://icanhazip.com')
+                r = requests.get('https://icanhazip.com')
 
                 if r and hasattr(r,'text'):
                     ip = r.text
