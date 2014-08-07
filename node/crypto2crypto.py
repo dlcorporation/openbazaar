@@ -204,7 +204,7 @@ class CryptoTransportLayer(TransportLayer):
         nickname = peer_tuple[3]
 
         # Update query
-        self._db.deleteEntries("peers", {"uri": uri, "guid":guid})
+        self._db.deleteEntries("peers", {"uri": uri, "guid":guid}, "OR")
         #if len(results) > 0:
         #    self._db.updateEntries("peers", {"id":results[0]['id']}, {"market_id":self._market_id,"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
         #else:
