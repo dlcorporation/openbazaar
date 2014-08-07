@@ -12,7 +12,7 @@ import pyelliptic as ec
 from p2p import PeerConnection, TransportLayer
 from dht import DHT
 from zmq.eventloop import ioloop
-from pprint import pprint
+from pprint import pprint, pformat
 import socket
 import time
 import requests
@@ -88,7 +88,6 @@ class CryptoPeerConnection(PeerConnection):
         return self._priv.sign(data)
 
     def encrypt(self, data):
-        print data
         try:
             result = self._priv.encrypt(data, self._pub.decode('hex'))
             return result
@@ -107,13 +106,12 @@ class CryptoPeerConnection(PeerConnection):
             data['pubkey'] = self._transport.pubkey
             data['senderNick'] = self._transport._nickname
 
-            self._log.debug('Sending to peer: %s %s' % (self._ip, data))
+            self._log.debug('Sending to peer: %s %s' % (self._ip, pformat(data)))
 
             if self._pub == '':
                 self._log.info('There is no public key for encryption')
             else:
                 signature = self.sign(json.dumps(data))
-                self._log.info('Signature of Data: %s' % signature.encode('hex'))
                 data = self.encrypt(json.dumps(data))
 
                 try:
@@ -209,7 +207,7 @@ class CryptoTransportLayer(TransportLayer):
         #if len(results) > 0:
         #    self._db.updateEntries("peers", {"id":results[0]['id']}, {"market_id":self._market_id,"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
         #else:
-        self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
+        self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname, "market_id":self._market_id})
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -263,7 +261,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _ping(self, msg):
 
-        self._log.info('Pinged %s ' % msg)
+        self._log.info('Pinged %s ' % pformat(msg))
 
         pinger = CryptoPeerConnection(self,msg['uri'], msg['pubkey'], msg['senderGUID'])
         pinger.send_raw(json.dumps(
@@ -321,7 +319,7 @@ class CryptoTransportLayer(TransportLayer):
 
             self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})[0]
 
-        self._log.debug('Retrieved Settings: %s', self.settings)
+        self._log.debug('Retrieved Settings: \n%s', pformat(self.settings))
 
 
     def _generate_new_keypair(self):
@@ -366,7 +364,7 @@ class CryptoTransportLayer(TransportLayer):
             self._log.info('Initializing Seed Peer(s): [%s]' % seed)
 
             def cb(msg):
-                #self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
+                self._dht._iterativeFind(self._guid, [], 'findNode')
                 callback(msg)
 
             self.connect('tcp://%s:12345' % seed, callback=cb)
@@ -401,7 +399,7 @@ class CryptoTransportLayer(TransportLayer):
             port = urlparse(uri).port
 
             if peer.check_port():
-                self._dht.add_known_node((ip, port, peer._guid))
+                self._dht.add_known_node((ip, port, peer._guid, peer._nickname))
             else:
                 self._log.info('Peer not listening')
 
@@ -548,7 +546,7 @@ class CryptoTransportLayer(TransportLayer):
                     data['pubkey'] = self.pubkey
 
                     def cb(msg):
-                        print 'msg %s' % msg
+                        self._log.debug('Message Back: \n%s' % pformat(msg))
 
                     peer.send(data, cb)
 
@@ -628,8 +626,6 @@ class CryptoTransportLayer(TransportLayer):
         port = urlparse(uri).port
         guid = msg.get('senderGUID')
         nickname = msg.get('senderNick')
-
-        self._log.info('on message %s' % nickname)
 
         self._dht.add_known_node((ip, port, guid, nickname))
         self._dht.add_active_peer(self, (pubkey, uri, guid, nickname))

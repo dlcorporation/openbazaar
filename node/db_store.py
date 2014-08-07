@@ -96,7 +96,7 @@ class Obdb():
                     where_part = where_part + "%s %s = '%s'" % (operator, key, value)
             query = "UPDATE %s SET %s WHERE %s" \
                     % (table, set_part, where_part)
-            self._log.info('query: %s' % query)
+            self._log.debug('query: %s' % query)
             cur.execute(query)
         self._disconnectFromDb()
 
@@ -128,7 +128,7 @@ class Obdb():
                     % (table, updatefield_part, setfield_part)
             cur.execute(query)
             lastrowid = cur.lastrowid
-            self._log.info("query: %s "% query)
+            self._log.debug("query: %s "% query)
         self._disconnectFromDb()
         if lastrowid:
             return lastrowid
@@ -163,7 +163,7 @@ class Obdb():
 
             query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
                     % (table, where_part, order_field, order, limit_clause)
-            self._log.info("query: %s "% query)
+            self._log.debug("query: %s "% query)
             cur.execute(query)
             rows = cur.fetchall()
         self._disconnectFromDb()
@@ -192,7 +192,7 @@ class Obdb():
                     where_part = where_part + "%s %s = '%s'" % (operator, key, value)
             query = "DELETE FROM %s WHERE %s" \
                     % (table, where_part)
-            self._log.info('Query: %s' % query)
+            self._log.debug('Query: %s' % query)
             cur.execute(query)
         self._disconnectFromDb()
 
@@ -211,7 +211,7 @@ class Obdb():
                     where_part = where_part + ", %s = '%s'" % (key, value)
             query = "SELECT count(*) as count FROM %s WHERE %s" \
                     % (table, where_part)
-            self._log.info('query: %s' % query)
+            self._log.debug('query: %s' % query)
             cur.execute(query)
             rows = cur.fetchall()
         self._disconnectFromDb()

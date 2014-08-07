@@ -488,6 +488,8 @@ class ProtocolHandler:
 
         for peer in self._transport._dht._activePeers:
 
+            self._log.debug('get peer %s' % peer)
+
             if hasattr(peer, '_address'):
                 peer_item = {'uri': peer._address}
                 if peer._pub:

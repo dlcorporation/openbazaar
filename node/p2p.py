@@ -16,6 +16,7 @@ import network_util
 from urlparse import urlparse
 import sys, time, random
 from ws import ProtocolHandler
+from pprint import pformat
 
 
 class PeerConnection(object):
@@ -48,7 +49,7 @@ class PeerConnection(object):
         self._stream.send(serialized)
 
         def cb(msg):
-            self._log.debug('Message %s received from remote peer' % msg)
+            self._log.debug('Response from raw send: %s' % msg[0])
             response = json.loads(msg[0])
             if response.has_key('senderNick') and response['senderNick'] != self._nickname:
                 self._nickname = response['senderNick']
