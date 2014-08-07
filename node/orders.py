@@ -154,9 +154,10 @@ class Orders(object):
 
                 try:
                     self._db.insertEntry("orders", {"state": "Sent",
-                                                                       "updated": time.time(),
-                                                                       "merchant": contract_data_json['Seller']['seller_GUID'],
-                                                                       "buyer": self._transport._guid})
+                                                    "market_id": self._market_id,
+                                                   "updated": time.time(),
+                                                   "merchant": contract_data_json['Seller']['seller_GUID'],
+                                                   "buyer": self._transport._guid})
                 except Exception, e:
                     self._log.error('Cannot update DB %s ' % e)
 
@@ -312,7 +313,7 @@ class Orders(object):
 
         # Save order locally in database
         order_id = random.randint(0, 1000000)
-        while self._db.contracts.find({'id': order_id}).count() > 0:
+        while self._db.numEntries("contracts",{'id': order_id}) > 0:
             order_id = random.randint(0, 1000000)
 
         self._log.info('Order ID: %s' % order_id)
