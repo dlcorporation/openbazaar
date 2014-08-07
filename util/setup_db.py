@@ -58,9 +58,12 @@ if not path.isfile(DB_PATH):
         cur.execute("CREATE TABLE orders(" \
                     "id INTEGER PRIMARY KEY " \
                     "AUTOINCREMENT, " \
+                    "order_id INT, " \
                     "market_id INT, " \
                     "state TEXT, " \
                     "type TEXT, " \
+                    "item_price TEXT, " \
+                    "shipping_price TEXT, " \
                     "address TEXT, " \
                     "buyer TEXT, " \
                     "merchant TEXT, " \
