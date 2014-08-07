@@ -178,8 +178,6 @@ class CryptoTransportLayer(TransportLayer):
 
         self._dht._refreshNode()
 
-
-
         def cb():
             r = requests.get(r'http://icanhazip.com')
 
@@ -206,11 +204,11 @@ class CryptoTransportLayer(TransportLayer):
         nickname = peer_tuple[3]
 
         # Update query
-        results = self._db.selectEntries("peers", {"uri": uri})
-        if len(results) > 0:
-            self._db.updateEntries("peers", {"id":results[0]['id']}, {"market_id":self._market_id,"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
-        else:
-            self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
+        self._db.deleteEntries("peers", {"uri": uri, "guid":guid})
+        #if len(results) > 0:
+        #    self._db.updateEntries("peers", {"id":results[0]['id']}, {"market_id":self._market_id,"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
+        #else:
+        self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -401,9 +399,10 @@ class CryptoTransportLayer(TransportLayer):
             ip = urlparse(uri).hostname
             port = urlparse(uri).port
 
-            self._dht.add_known_node((ip, port, peer._guid))
-
-
+            if peer.check_port():
+                self._dht.add_known_node((ip, port, peer._guid))
+            else:
+                self._log.info('Peer not listening')
 
             # Turning off peers
             #self._init_peer({'uri': seed_uri, 'guid':seed_guid})
