@@ -837,10 +837,15 @@
 </div>
 
 
+<div ng-show="page_loading" style="margin-top:40px;padding:0 20px">
+
+     <h3><img src="img/ajax-loader.gif" width="50"/> Loading merchant...</h3>
+
+</div>
 <div ng-show="page" class="" style="margin-top:40px;">
 
     <div>
-        <h2><identicon icon-size="64" hash="page.senderGUID" title="{{page.senderGUID}}"></identicon> {{page.nickname}}</h2>
+        <h2><identicon icon-size="64" hash="page.senderGUID" title="{{page.senderGUID}}"></identicon> {{page.nickname ? page.nickname : page.uri}}</h2>
 
 
 

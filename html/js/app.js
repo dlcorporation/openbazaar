@@ -76,10 +76,16 @@ angular.module('app')
   }
 
   $scope.awaitingShop = null;
+  $scope.page_loading = null;
+
   $scope.queryShop = function(peer) {
      $scope.awaitingShop = peer.guid;
      console.log('Querying for shop: ',peer);
      var query = {'type': 'query_page', 'findGUID': peer.guid}
+
+     $scope.page = null
+     $scope.dashboard = null
+     $scope.page_loading = true
 
      socket.send('query_page', query)
      $('#store-tabs li').removeClass('active');
@@ -387,6 +393,7 @@ angular.module('app')
 
   $scope.parse_page = function(msg) {
 
+    $scope.page_loading = null
     console.log('Receive a page for: ',msg)
     console.log('Waiting for: '+$scope.awaitingShop)
 
@@ -687,7 +694,7 @@ angular.module('app')
   }
 
 
-  $scope.clearDHTData = function() {
+  $scope.clearDHTData = function() {queryShop
     socket.send('clear_dht_data', {});
   }
 
