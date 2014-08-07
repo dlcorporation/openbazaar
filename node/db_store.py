@@ -169,7 +169,7 @@ class Obdb():
         self._disconnectFromDb()
         return rows
 
-    def deleteEntries(self, table, where_dict={"\"1\"":"1"}):
+    def deleteEntries(self, table, where_dict={"\"1\"":"1"}, operator="AND"):
         """ A wrapper for the SQL DELETE operation. It will always return all the
             attributes for the selected rows.
         @param table: The table to search to
@@ -189,10 +189,10 @@ class Obdb():
                     where_part = "%s = '%s'" % (key, value)
                     first = False
                 else:
-                    where_part = where_part + ", %s = '%s'" % (key, value)
+                    where_part = where_part + "%s %s = '%s'" % (operator, key, value)
             query = "DELETE FROM %s WHERE %s" \
                     % (table, where_part)
-            self._log.info('query: %s' % query)
+            self._log.info('Query: %s' % query)
             cur.execute(query)
         self._disconnectFromDb()
 
