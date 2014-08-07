@@ -176,18 +176,22 @@ class CryptoTransportLayer(TransportLayer):
         self._dht._refreshNode()
 
         def cb():
-            r = requests.get(r'https://icanhazip.com')
 
-            if r and hasattr(r,'text'):
-                ip = r.text
-                ip = ip.strip(' \t\n\r')
-                if ip != self._ip:
-                    self._ip = ip
-                    self._uri = 'tcp://%s:%s' % (self._ip, self._port)
-                    self.stream.close()
-                    self.listen(self.pubkey)
-            else:
-                self._log.error('Could not get ip')
+            try:
+                r = requests.get(r'https://icanhazip.com')
+
+                if r and hasattr(r,'text'):
+                    ip = r.text
+                    ip = ip.strip(' \t\n\r')
+                    if ip != self._ip:
+                        self._ip = ip
+                        self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+                        self.stream.close()
+                        self.listen(self.pubkey)
+                else:
+                    self._log.error('Could not get ip')
+            except Exception, e:
+                self._log.error('[Requests] error: %s' % e)
 
         if seed_mode == 0 and not dev_mode:
             # Check IP periodically for changes
