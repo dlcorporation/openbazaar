@@ -153,12 +153,12 @@ class Orders(object):
                 self._log.info('Verified Contract')
 
                 try:
-                    self._db.updateEntries("orders", {"id": order_id}, {"state": "Sent",
+                    self._db.insertEntry("orders", {"state": "Sent",
                                                                        "updated": time.time(),
                                                                        "merchant": contract_data_json['Seller']['seller_GUID'],
                                                                        "buyer": self._transport._guid})
-                except:
-                    self._log.error('Cannot update DB')
+                except Exception, e:
+                    self._log.error('Cannot update DB %s ' % e)
 
                 order_to_notary = {}
                 order_to_notary['type'] = 'order'
