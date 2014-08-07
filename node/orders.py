@@ -14,6 +14,7 @@ import json
 import datetime
 import qrcode
 import StringIO
+import ast
 
 
 class Orders(object):
@@ -34,7 +35,8 @@ class Orders(object):
 
     def get_order(self, orderId):
 
-        _order = self._db.selectEntries("orders", {"id": orderId})[0]
+        _order = self._db.selectEntries("orders", {"order_id": orderId})[0]
+
 
         if _order['state'] in ('Need to Pay', 'Notarized', 'Waiting for Payment'):
             offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
@@ -92,9 +94,9 @@ class Orders(object):
     # Create a new order
     def create_order(self, seller, text):
         self._log.info('CREATING ORDER')
-        id = random.randint(0, 1000000)
+        order_id = random.randint(0, 1000000)
         buyer = self._transport._myself.get_pubkey()
-        new_order = order(id, buyer, seller, 'new', text, self._escrows)
+        new_order = order(order_id, buyer, seller, 'new', text, self._escrows)
 
         # Add a timestamp
         new_order['created'] = time.time()
@@ -153,7 +155,9 @@ class Orders(object):
                 self._log.info('Verified Contract')
 
                 try:
-                    self._db.insertEntry("orders", {"state": "Sent",
+                    self._db.insertEntry("orders", {"order_id": order_id,
+                                                    "state": "Sent",
+                                                    "signed_contract_body": contract,
                                                     "market_id": self._market_id,
                                                    "updated": time.time(),
                                                    "merchant": contract_data_json['Seller']['seller_GUID'],

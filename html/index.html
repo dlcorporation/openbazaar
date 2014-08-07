@@ -736,7 +736,7 @@
 
                     <tr ng-repeat="order in orders" >
                         <td width=20><input type="checkbox"/></td>
-                        <td width=70><a href="" ng-click="open('lg', order.id)">{{order.id}}</a></td>
+                        <td width=70><a href="" ng-click="open('lg', order.order_id)">{{order.order_id}}</a></td>
                         <td width=130>{{order.updated * 1000 | date: 'short'}}</td>
                         <td style="word-break:break-all"><identicon icon-size="32" hash="order.buyer" title="{{order.buyer}}"></identicon> {{order.buyer}}</td>
                         <td style="word-break:break-all"><identicon icon-size="32" hash="order.merchant" title="{{order.merchant}}"></identicon> {{order.merchant}}</td>
