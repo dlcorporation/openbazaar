@@ -85,7 +85,7 @@ class Orders(object):
         return order
 
     def get_orders(self, page=0):
-        orders = self._db.selectEntries("orders", {'market_id': self._market_id}, order_field="created", order="DESC", limit=10, limit_offset=page*10)
+        orders = self._db.selectEntries("orders", {'market_id': self._market_id}, order_field="updated", order="DESC", limit=10, limit_offset=page*10)
 
 
         return {"total": self._db.numEntries("orders", {'market_id': self._market_id}), "orders":orders}

@@ -118,9 +118,14 @@ class CryptoPeerConnection(PeerConnection):
                 self._log.info('There is no public key for encryption')
             else:
                 signature = self.sign(json.dumps(data))
-                self._log.info('signature %s' % signature.encode('hex'))
+                self._log.info('Signature of Data: %s' % signature.encode('hex'))
                 data = self.encrypt(json.dumps(data))
-                self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':data.encode('hex')}), callback)
+                if data is not None:
+                try:
+                    encoded_data = data.encode('hex')
+                    self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':encoded_data}), callback)
+                except Exception, e:
+                    self._log.error("Was not able to encode empty data: %e")
         else:
             self._log.error('Cannot send to peer')
 
@@ -528,7 +533,7 @@ class CryptoTransportLayer(TransportLayer):
                 try:
                     peer.send(data, callback=callback)
                 except:
-                    self._log.error('Not sending messing directly to peer')
+                    self._log.error('Not sending message directly to peer')
             else:
                 self._log.error('No peer found')
 
@@ -540,11 +545,6 @@ class CryptoTransportLayer(TransportLayer):
                     peer = self._dht._routingTable.getContact(peer._guid)
                     data['senderGUID'] = self._guid
                     data['pubkey'] = self.pubkey
-                    print data
-                    #if peer._pub:
-                    #    peer.send(data, callback)
-                    #else:
-
 
                     def cb(msg):
                         print 'msg %s' % msg
