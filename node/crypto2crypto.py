@@ -351,15 +351,7 @@ class CryptoTransportLayer(TransportLayer):
       self._db.updateEntries("settings", {"market_id": self._market_id}, {"bitmessage":self.bitmessage})
 
 
-    def join_network(self, dev_mode=0, callback=lambda msg: None):
-
-        if dev_mode:
-            self._log.info('DEV MODE')
-            seed_peers = ('127.0.0.1')
-        else:
-            seed_peers = ('seed.openbazaar.org',
-                          'seed2.openbazaar.org')
-
+    def join_network(self, seed_peers, callback=lambda msg: None):
         for seed in seed_peers:
             self._log.info('Initializing Seed Peer(s): [%s]' % seed)
 

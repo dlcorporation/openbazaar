@@ -33,8 +33,8 @@ SERVER_PORT=12345
 LOGDIR=logs
 DBDIR=db
 DBFILE=ob.db
-DEVELOPMENT=0
-SEED_URI=tcp://seed2.openbazaar.org:12345
+DEVELOPMENT=1
+SEED_URI='seed.openbazaar.org seed2.openbazaar.org'
 LOG_FILE=production.log
 
 # CRITICAL   50
@@ -129,7 +129,7 @@ if [ "$SEED_MODE" == 1 ]; then
 
 elif [ "$DEVELOPMENT" == 0 ]; then
     echo "Production Mode"
-	$PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
+	$PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
 
 else
 	# Primary Market - No SEED_URI specified
@@ -140,7 +140,7 @@ else
     while [[ $i -le $NODES ]]
     do
         sleep 2
-	    $PYTHON node/tornadoloop.py 127.0.0.$i -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL &
+	    $PYTHON node/tornadoloop.py 127.0.0.$i -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL &
 	    ((i=i+1))
     done
 
