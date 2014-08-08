@@ -10,6 +10,8 @@ function Connection(onMessage) {
 
   websocket.onclose = function(evt) {
    console.log("closed", evt)
+   alert('The websocket closed unexpectedly. Refreshing.');
+   window.location.reload()
   }
 
   websocket.onerror = function(evt) {
