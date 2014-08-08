@@ -33,7 +33,7 @@ SERVER_PORT=12345
 LOGDIR=logs
 DBDIR=db
 DBFILE=ob.db
-DEVELOPMENT=1
+DEVELOPMENT=0
 SEED_URI='seed.openbazaar.org seed2.openbazaar.org'
 LOG_FILE=production.log
 
