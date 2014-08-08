@@ -29,7 +29,7 @@ import string
 
 class Market(object):
 
-    def __init__(self, transport):
+    def __init__(self, transport, db):
 
         """This class manages the active market for the application
 
@@ -46,11 +46,12 @@ class Market(object):
         self._market_id = transport.getMarketID()
         self._myself = transport.getMyself()
         self._peers = self._dht.getActivePeers()
+        self._db = db
 
         # Legacy for now
         self.query_ident = None
         self.reputation = Reputation(self._transport)
-        self.orders = Orders(self._transport, self._market_id)
+        self.orders = Orders(self._transport, self._market_id, db)
         self.order_entries = self.orders._orders
         self.nicks = {}
         self.pages = {}
@@ -62,7 +63,6 @@ class Market(object):
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
 
 
-        self._db = Obdb()
 
         self.settings = self._transport.settings
 

@@ -10,21 +10,19 @@
 import sqlite3
 import logging
 
-# TODO: Grab this from constants file.
-DBFILE = "db/ob.db"
-
 class Obdb():
     """ Interface for db storage. Serves as segregation of the persistence layer
     and the application logic
     """
-    def __init__(self):
+    def __init__(self, db_path):
+        self.db_path = db_path
         self.con = False
         self._log = logging.getLogger('DB')
 
     def _connectToDb(self):
         """ Opens a db connection
         """
-        self.con = sqlite3.connect(DBFILE, detect_types=sqlite3.PARSE_DECLTYPES)
+        self.con = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
         sqlite3.register_adapter(bool, int)
         sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
         self.con.row_factory = self._dictFactory
