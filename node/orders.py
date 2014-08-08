@@ -122,7 +122,10 @@ class Orders(object):
 
         new_order['address'] = self._multisig.address
 
-        self._db.updateEntries("orders", {"id": new_order['id']}, {new_order})
+        if self._db.numEntries("order",{"order_id": new_order['id']}) > 0:
+            self._db.updateEntries("orders", {"order_id": new_order['id']}, {new_order})
+        else:
+            self._db.insertEntry("orders", new_order)
 
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
 
@@ -184,7 +187,7 @@ class Orders(object):
 
     def receive_order(self, new_order):  # action
         new_order['state'] = 'received'
-        self._db.updateEntries("orders", {"id": new_order['id']}, new_order)
+        self._db.updateEntries("orders", {"order_id": new_order['id']}, new_order)
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
     def new_order(self, msg):
@@ -233,7 +236,7 @@ class Orders(object):
         hash_value.update(contract_key)
         contract_key = hash_value.hexdigest()
 
-        self._db.updateEntries("orders", {'id': order_id}, {'market_id': self._transport._market_id,
+        self._db.updateEntries("orders", {'order_id': order_id}, {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
                      'state': 'new',
