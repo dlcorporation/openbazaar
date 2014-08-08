@@ -131,7 +131,7 @@ class Orders(object):
 
     def pay_order(self, new_order):  # action
         new_order['state'] = 'Paid'
-        self._db.updateEntries("orders", {"id": new_order['id']},new_order)
+        self._db.updateEntries("orders", {"order_id": new_order['id']},new_order)
         new_order['type'] = 'order'
         self._transport.send(new_order, new_order['merchant'])
 
@@ -348,7 +348,7 @@ class Orders(object):
                                       self._transport.settings['pubkey'].decode('hex')])
         multisig_address = multisig.address
 
-        self._db.updateEntries("orders", {'id': order_id}, {'market_id': self._transport._market_id,
+        self._db.updateEntries("orders", {'order_id': order_id}, {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
                      'state': 'Notarized',
@@ -427,7 +427,7 @@ class Orders(object):
             self._log.info('I am the buyer')
             state = 'Need to Pay'
 
-        self._db.updateEntries("orders", {'id': order_id}, {'market_id': self._transport._market_id,
+        self._db.updateEntries("orders", {'order_id': order_id}, {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(contract),
                      'state': state,
