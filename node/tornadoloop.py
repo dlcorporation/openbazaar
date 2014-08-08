@@ -7,6 +7,7 @@ from zmq.eventloop import ioloop
 
 ioloop.install()
 from crypto2crypto import CryptoTransportLayer
+from db_store import Obdb
 from market import Market
 from ws import WebSocketHandler
 import logging
@@ -23,9 +24,11 @@ class MarketApplication(tornado.web.Application):
     def __init__(self, market_ip, market_port, market_id=1,
                     bm_user=None, bm_pass=None, bm_port=None, seed_peers=[], seed_mode=0, dev_mode=False):
 
+        db = Obdb('db/ob.db')
         self.transport = CryptoTransportLayer(market_ip,
                                                market_port,
                                                market_id,
+                                               db,
                                                bm_user,
                                                bm_pass,
                                                bm_port,
@@ -35,7 +38,7 @@ class MarketApplication(tornado.web.Application):
         if seed_mode == 0:
             self.transport.join_network(seed_peers)
 
-        self.market = Market(self.transport)
+        self.market = Market(self.transport, db)
         self.market.republish_contracts()
 
         handlers = [
@@ -43,7 +46,7 @@ class MarketApplication(tornado.web.Application):
             (r"/main", MainHandler),
             (r"/html/(.*)", tornado.web.StaticFileHandler, {'path': './html'}),
             (r"/ws", WebSocketHandler,
-                dict(transport=self.transport, market=self.market))
+                dict(transport=self.transport, market=self.market, db=db))
         ]
 
         # TODO: Move debug settings to configuration location

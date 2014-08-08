@@ -18,14 +18,14 @@ import ast
 
 
 class Orders(object):
-    def __init__(self, transport, market_id):
+    def __init__(self, transport, market_id, db):
 
         self._transport = transport
         self._priv = transport._myself
         self._market_id = market_id
 
         self._gpg = gnupg.GPG()
-        self._db = Obdb()
+        self._db = db
         self._orders = self.get_orders()
         self.orders = self._orders
 

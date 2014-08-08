@@ -111,8 +111,8 @@ class DictDataStore(DataStore):
 class MongoDataStore(DataStore):
     """ Example of a MongoDB database-based datastore
     """
-    def __init__(self):
-        self._db = Obdb()
+    def __init__(self, db_connection):
+        self._db = db_connection
         self._log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):
@@ -186,8 +186,8 @@ class MongoDataStore(DataStore):
 class SqliteDataStore(DataStore):
     """ Sqlite database-based datastore
     """
-    def __init__(self):
-        self._db = Obdb()
+    def __init__(self, db_connection):
+        self._db = db_connection
         self._log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):

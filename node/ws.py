@@ -19,11 +19,11 @@ ioloop.install()
 
 
 class ProtocolHandler:
-    def __init__(self, transport, market, handler):
+    def __init__(self, transport, market, handler, db):
         self._market = market
         self._transport = transport
         self._handler = handler
-        self._db = Obdb()
+        self._db = db
 
         # register on transport events to forward..
         self._transport.add_callback('peer', self.on_node_peer)
@@ -511,10 +511,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     # Protects listeners
     listen_lock = threading.Lock()
 
-    def initialize(self, transport, market):
+    def initialize(self, transport, market, db):
         self._log = logging.getLogger(self.__class__.__name__)
         self._log.info("Initialize websockethandler")
-        self._app_handler = ProtocolHandler(transport, market, self)
+        self._app_handler = ProtocolHandler(transport, market, self, db)
         self.market = market
         self._transport = transport
 

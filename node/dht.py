@@ -14,7 +14,7 @@ from protocol import proto_store
 import obelisk
 
 class DHT(object):
-    def __init__(self, transport, market_id, settings):
+    def __init__(self, transport, market_id, settings, db_connection):
 
         self._log = logging.getLogger('[%s] %s' % (market_id,
                                                    self.__class__.__name__))
@@ -30,7 +30,7 @@ class DHT(object):
         # Routing table
         self._routingTable = routingtable.OptimizedTreeRoutingTable(
             self._settings['guid'], market_id)
-        self._dataStore = datastore.SqliteDataStore()
+        self._dataStore = datastore.SqliteDataStore(db_connection)
 
     def getActivePeers(self):
         return self._activePeers
