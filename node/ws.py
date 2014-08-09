@@ -100,7 +100,7 @@ class ProtocolHandler:
     # Requests coming from the client
     def client_connect(self, socket_handler, msg):
         self._log.info("Connection command: ", msg)
-        self._transport.init_peer(msg)
+        self._transport.connect(msg['uri'], lambda x: None)
         self.send_ok()
 
     def client_peers(self, socket_handler, msg):
@@ -578,6 +578,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         try:
             # calling write_message or the socket is not thread safe
-            ioloop.add_callback(send_response)
+            ioloop.current().add_callback(send_response)
         except:
             logging.error("Error adding callback", exc_info=True)
