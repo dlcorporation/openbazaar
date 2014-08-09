@@ -348,7 +348,8 @@ class Orders(object):
                                       self._transport.settings['pubkey'].decode('hex')])
         multisig_address = multisig.address
 
-        self._db.updateEntries("orders", {'order_id': order_id}, {'market_id': self._transport._market_id,
+
+        self._db.insertEntry("orders", {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
                      'state': 'Notarized',

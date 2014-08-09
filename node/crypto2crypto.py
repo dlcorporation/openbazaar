@@ -186,6 +186,9 @@ class CryptoTransportLayer(TransportLayer):
                         self._uri = 'tcp://%s:%s' % (self._ip, self._port)
                         self.stream.close()
                         self.listen(self.pubkey)
+
+                        self._dht._iterativeFind(self._guid, [], 'findNode')
+
                 else:
                     self._log.error('Could not get ip')
             except Exception, e:
