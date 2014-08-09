@@ -80,8 +80,7 @@ class DHT(object):
 
         # Check if peer to add is yourself
         if peer_tuple[2] == self._settings['guid']:
-            self._log.debug('[Add Active Peer] Trying to add yourself to ' +
-                           'active peers')
+            self._log.error('[add_active_peer] Cannot add yourself')
             return
 
         # Refresh peer's data in case anything changed
@@ -90,13 +89,13 @@ class DHT(object):
             active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
 
             if active_peer_tuple == peer_tuple:
-                self._log.info('Already connected to this node')
+                self._log.info('[add_active_peer] Already in active peer list')
 
                 return
 
             # Found partial match
             if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
-                self._log.info('Found stale data about this node, refreshing')
+                self._log.info('[add_active_peer] Found stale data about this node, refreshing')
                 del self._activePeers[idx]
                 self._routingTable.removeContact(peer_tuple[2])
 
@@ -116,11 +115,9 @@ class DHT(object):
                         add_it = False
 
                 if add_it:
-
+                    self._log.debug('[add_active_peer] Adding new peer %s' % new_peer._address)
                     self._transport.save_peer_to_db(peer_tuple)
-                    self._log.info('New Peer Address %s' % new_peer._address)
                     self._activePeers.append(new_peer)
-                    self._log.debug('Removing old information about this node')
                     self._routingTable.removeContact(new_peer._guid)
                     self._routingTable.addContact(new_peer)
 
@@ -376,8 +373,6 @@ class DHT(object):
         self._log.debug('Republishing Data')
         expiredKeys = []
 
-        self._log.debug('Key: \n%s' % pformat(self._dataStore.keys()))
-
         for key in self._dataStore.keys():
 
             # Filter internal variables stored in the datastore
@@ -516,7 +511,7 @@ class DHT(object):
 
         try:
 
-            value_json = value
+            value_json = json.loads(value)
 
             # Add Notary GUID to index
             if value_json.has_key('notary_index_add'):
@@ -576,7 +571,7 @@ class DHT(object):
 
 
         except Exception, e:
-            self._log.debug('Trying to store but failed %s' % e)
+            self._log.debug('Value is not a JSON array: %s' % e)
 
 
         now = int(time.time())
@@ -585,10 +580,7 @@ class DHT(object):
         # Store it in your own node
         self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, market_id=self._market_id)
 
-        self._log.debug('Nodes: %s' % len(nodes))
-
         for node in nodes:
-            self._log.debug('Store Node: %s' % str(node))
 
             uri = 'tcp://%s:%s' % (node[0], node[1])
             guid = node[2]
@@ -599,7 +591,6 @@ class DHT(object):
                 break
 
             if not peer:
-                self._log.info('Could not find existing peer')
                 peer = self._transport.get_crypto_peer(guid, uri)
 
             peer.send(proto_store(key, value, originalPublisherID, age))

@@ -2,8 +2,10 @@ from behave import *
 from zmq.eventloop import ioloop
 from node.crypto2crypto import *
 from tornado.testing import *
+from node.db_store import Obdb
 
 port = 12345
+db = Obdb()
 
 
 def create_layers(context, num_layers):
@@ -23,12 +25,12 @@ def step_impl(context, i, j):
     i = context.layers[int(i)]
     j = context.layers[int(j)]
 
-    j.join_network(None)
+    j.join_network()
 
     def cb(msg):
         ioloop.IOLoop.current().stop()
 
-    i.join_network(j._uri, callback=cb)
+    i.join_network([urlparse(j._uri).hostname], callback=cb)
     ioloop.IOLoop.current().start()
 
 
@@ -39,7 +41,9 @@ def step_impl(context, i, j):
     iLayer = context.layers[i]
     jLayer = context.layers[j]
 
-    assert(('127.0.0.%s' % (j+1), port, jLayer.guid) in iLayer._dht._knownNodes)
+
+    assert(db.numEntries("peers", {"guid": jLayer._guid, "market_id": i}) > 0)
+    assert(('127.0.0.%s' % (j+1), port, jLayer.guid, jLayer._nickname) in iLayer._dht._knownNodes)
     assert(jLayer._guid in map(lambda x: x._guid, iLayer._dht._activePeers))
     # i is not in jLayer._knownNodes
     assert(iLayer._guid in map(lambda x: x._guid, jLayer._dht._activePeers))

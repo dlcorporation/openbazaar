@@ -48,11 +48,12 @@ class KBucket(object):
 
     def getContact(self, contactID):
         """ Get the contact specified node ID"""
-        self._log.debug('Looking for %s in bucket MIN: %s MAX: %s' % (contactID, self.rangeMin, self.rangeMax))
+        self._log.debug('[getContact] %s' % contactID)
         for contact in self._contacts:
           if contact._guid == contactID:
-            self._log.debug('%s %s %s' % (contact._pub, contact._guid, contact._address))
+            self._log.debug('[getContact] Found %s' % contact)
             return contact
+        self._log.debug('[getContact] No Results')
 
     def getContacts(self, count=-1, excludeContact=None):
         """ Returns a list containing up to the first count number of contacts
