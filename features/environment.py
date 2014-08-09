@@ -1,8 +1,10 @@
+import os
 from zmq.eventloop import ioloop
 from distutils.util import strtobool as _bool
-import os
+from util.setup_db import *
 
 BEHAVE_DEBUG_ON_ERROR = _bool(os.environ.get("BEHAVE_DEBUG_ON_ERROR", "no"))
+
 
 def after_step(context, step):
     if BEHAVE_DEBUG_ON_ERROR and step.status == "failed":
@@ -10,6 +12,7 @@ def after_step(context, step):
         # NOTE: Use IPython debugger, same for pdb (basic python debugger).
         import pdb
         pdb.post_mortem(step.exc_traceback)
+
 
 def before_all(context):
     # -- SET LOG LEVEL: behave --logging-level=ERROR ...
@@ -23,3 +26,10 @@ def before_scenario(context, scenario):
     cur.close(all_fds=True)
     newloop = ioloop.IOLoop()
     newloop.make_current()
+
+
+def after_scenario(context, scenario):
+    if(context.feature.name == 'CryptoTransportLayer'):
+        # reset database peers
+        for layer in context.layers:
+            layer._db.deleteEntries('peers')
