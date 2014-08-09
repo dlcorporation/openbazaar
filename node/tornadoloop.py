@@ -22,9 +22,10 @@ class MainHandler(tornado.web.RequestHandler):
 class MarketApplication(tornado.web.Application):
 
     def __init__(self, market_ip, market_port, market_id=1,
-                    bm_user=None, bm_pass=None, bm_port=None, seed_peers=[], seed_mode=0, dev_mode=False):
+                    bm_user=None, bm_pass=None, bm_port=None, seed_peers=[],
+                    seed_mode=0, dev_mode=False, db_path='db/ob.db'):
 
-        db = Obdb('db/ob.db')
+        db = Obdb(db_path)
         self.transport = CryptoTransportLayer(market_ip,
                                                market_port,
                                                market_id,

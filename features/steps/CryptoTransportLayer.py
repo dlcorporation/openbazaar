@@ -4,22 +4,10 @@ from tornado.testing import *
 from node.crypto2crypto import *
 from node.db_store import Obdb
 from util.setup_db import *
+from test_util import ip_address, nickname, get_db_path
 import logging
 
 port = 12345
-db = Obdb()
-
-
-def uri(i):
-    return '127.0.0.%s' % str(i+1)
-
-
-def nickname(i):
-    return ''
-
-
-def get_db_path(i):
-    return 'db/ob-test-%s.db' % i
 
 
 def create_layers(context, num_layers):
@@ -29,7 +17,7 @@ def create_layers(context, num_layers):
         setup_db(db_path)
         # dev_mode is True because otherwise the layer's ip is set to the
         # public ip of the node
-        layers.append(CryptoTransportLayer(uri(i), port, i,
+        layers.append(CryptoTransportLayer(ip_address(i), port, i,
                                            Obdb(db_path), dev_mode=True))
     context.layers = layers
 
@@ -51,7 +39,7 @@ def step_impl(context, i, j):
     def cb(msg):
         ioloop.IOLoop.current().stop()
 
-    iLayer.join_network([uri(j)], callback=cb)
+    iLayer.join_network([ip_address(j)], callback=cb)
     ioloop.IOLoop.current().start()
 
 
@@ -62,7 +50,7 @@ def step_impl(context, i, j):
     iLayer = context.layers[i]
     jLayer = context.layers[j]
 
-    assert((uri(j), port, jLayer.guid, nickname(j)) in iLayer._dht._knownNodes)
+    assert((ip_address(j), port, jLayer.guid, nickname(j)) in iLayer._dht._knownNodes)
 
     # j is not necessarily in the database of i
     # db_peers = iLayer._db.selectEntries("peers")
