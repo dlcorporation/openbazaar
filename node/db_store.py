@@ -196,7 +196,7 @@ class Obdb():
             cur.execute(query)
         self._disconnectFromDb()
 
-    def numEntries(self, table, where_dict={"\"1\"":"1"}):
+    def numEntries(self, table, where_dict={"\"1\"":"1"}, operator="AND"):
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
@@ -208,7 +208,7 @@ class Obdb():
                     where_part = "%s = '%s'" % (key, value)
                     first = False
                 else:
-                    where_part = where_part + ", %s = '%s'" % (key, value)
+                    where_part = where_part + "%s %s = '%s'" % (operator, key, value)
             query = "SELECT count(*) as count FROM %s WHERE %s" \
                     % (table, where_part)
             self._log.debug('query: %s' % query)

@@ -49,8 +49,8 @@ class PeerConnection(object):
         self._stream.send(serialized)
 
         def cb(msg):
-            self._log.debug('Response from raw send: %s' % msg[0])
             response = json.loads(msg[0])
+            self._log.debug('[send_raw] %s' % pformat(response))
             if response.has_key('senderNick') and response['senderNick'] != self._nickname:
                 self._nickname = response['senderNick']
                 self._log.info('Nickname %s' % response)
