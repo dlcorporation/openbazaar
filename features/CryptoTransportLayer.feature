@@ -4,6 +4,7 @@ Feature: CryptoTransportLayer
     Given 2 layers
     When layer 0 connects to layer 1
     Then layer 0 is aware of layer 1
+    and layer 1 is aware of layer 0
 
   Scenario: Connecting 3 peers
     Given 3 layers
