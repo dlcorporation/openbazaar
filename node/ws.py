@@ -297,6 +297,10 @@ class ProtocolHandler:
         self._log.info('Found Contracts: %s' % type(results))
         self._log.info(results)
 
+        if hasattr(results, 'type') and results['type'] == 'listing_results':
+            self._log.debug('Results: %s ' % results['contracts'])
+            return
+
         if len(results):
 
             data = results['data']
