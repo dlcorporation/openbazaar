@@ -26,6 +26,7 @@ class MarketApplication(tornado.web.Application):
                     seed_mode=0, dev_mode=False, db_path='db/ob.db'):
 
         db = Obdb(db_path)
+
         self.transport = CryptoTransportLayer(market_ip,
                                                market_port,
                                                market_id,
@@ -36,23 +37,32 @@ class MarketApplication(tornado.web.Application):
                                                seed_mode,
                                                dev_mode)
 
+
+        def post_joined():
+
+            self.market = Market(self.transport, db)
+
+            self.transport._dht._refreshNode()
+
+            self.market.republish_contracts()
+
+            handlers = [
+                (r"/", MainHandler),
+                (r"/main", MainHandler),
+                (r"/html/(.*)", tornado.web.StaticFileHandler, {'path': './html'}),
+                (r"/ws", WebSocketHandler,
+                    dict(transport=self.transport, market=self.market, db=db))
+            ]
+
+            # TODO: Move debug settings to configuration location
+            settings = dict(debug=True)
+            tornado.web.Application.__init__(self, handlers, **settings)
+
+
         if seed_mode == 0:
-            self.transport.join_network(seed_peers)
+            self.transport.join_network(seed_peers, post_joined)
 
-        self.market = Market(self.transport, db)
-        self.market.republish_contracts()
 
-        handlers = [
-            (r"/", MainHandler),
-            (r"/main", MainHandler),
-            (r"/html/(.*)", tornado.web.StaticFileHandler, {'path': './html'}),
-            (r"/ws", WebSocketHandler,
-                dict(transport=self.transport, market=self.market, db=db))
-        ]
-
-        # TODO: Move debug settings to configuration location
-        settings = dict(debug=True)
-        tornado.web.Application.__init__(self, handlers, **settings)
 
     def get_transport(self):
         return self.transport

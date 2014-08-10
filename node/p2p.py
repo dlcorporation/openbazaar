@@ -51,12 +51,13 @@ class PeerConnection(object):
         def cb(msg):
             response = json.loads(msg[0])
             self._log.debug('[send_raw] %s' % pformat(response))
+
+            # Update active peer info
+
             if response.has_key('senderNick') and response['senderNick'] != self._nickname:
                 self._nickname = response['senderNick']
-                self._log.info('Nickname %s' % response)
 
             if callback is not None:
-                self._log.info('Executing callback')
                 callback(msg)
 
         self._stream.on_recv(cb)
@@ -111,8 +112,6 @@ class TransportLayer(object):
         def handle_recv(message):
             for msg in message:
                 self._on_raw_message(msg)
-
-            self._log.debug('Sending back OK %s' % self._nickname)
             self.stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey, 'senderNick':self._nickname}))
 
         self.stream.on_recv(handle_recv)

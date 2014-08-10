@@ -117,8 +117,8 @@ if [ ! -d "$DBDIR" ]; then
   mkdir $DBDIR
 fi
 
-if [ ! -f $DBFILE ]; then
-   echo "File $DBFILE does not exist."
+if [ ! -f $DBDIR/$DBFILE ]; then
+   echo "File $DBFILE does not exist. Running setup script."
    $PYTHON util/setup_db.py
    wait
 fi

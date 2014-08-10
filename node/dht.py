@@ -338,7 +338,6 @@ class DHT(object):
     def _refreshNode(self):
         """ Periodically called to perform k-bucket refreshes and data
         replication/republishing as necessary """
-        self._log.info('Refreshing DHT Data')
         self._refreshRoutingTable()
         self._republishData()
 
@@ -350,7 +349,6 @@ class DHT(object):
 
         def searchForNextNodeID():
             if len(nodeIDs) > 0:
-                self._log.info('Refreshing K-Buckets by searching for random key')
                 searchID = nodeIDs.pop()
                 self.iterativeFindNode(searchID)
                 searchForNextNodeID()
@@ -375,7 +373,7 @@ class DHT(object):
 
         for key in self._dataStore.keys():
 
-            # Filter internal variables stored in the datastore
+            # Filter internal variables stored in the data store
             if key == 'nodeState':
                 continue
 
@@ -388,7 +386,6 @@ class DHT(object):
                 # This node is the original publisher; it has to republish
                 # the data before it expires (24 hours in basic Kademlia)
                 if age >= constants.dataExpireTimeout:
-                    self._log.debug('Republishing key: %s' % key)
                     self.iterativeStore(self._transport, key, self._dataStore[key])
 
             else:
@@ -451,6 +448,19 @@ class DHT(object):
         TODO: Ideally we would want to send an array of listing IDs that we have locally and then the node would
         send back the missing or updated listings. This would save on queries for listings we already have.
         '''
+
+        peer = self._routingTable.getContact(key)
+
+        if peer:
+            if peer.check_port():
+
+                def cb(msg):
+                    self._log.info('query_listings %s' % msg)
+
+                peer.send({'type':'query_listings', 'key':key}, cb)
+                return
+
+        # Check cache in DHT if peer not available
         listing_index_key = hashlib.sha1('contracts-%s' % key).hexdigest()
         hashvalue = hashlib.new('ripemd160')
         hashvalue.update(listing_index_key)
@@ -477,7 +487,7 @@ class DHT(object):
         # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
 
 
-    def iterativeStore(self, transport, key, value, originalPublisherID=None, age=0):
+    def iterativeStore(self, transport, key, value=None, originalPublisherID=None, age=0):
         """ The Kademlia store operation
 
         Call this to store/republish data in the DHT.
@@ -502,12 +512,10 @@ class DHT(object):
         if value:
             self.iterativeFindNode(key, lambda msg, findKey=key, value=value, originalPublisherID=originalPublisherID,
                                            age=age: self.storeKeyValue(msg, findKey, value, originalPublisherID, age))
-        else:
-            self._log.info('No value to store')
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
-        self._log.debug('Places to store the key-value: (%s, %s %s)' % (nodes, key, type(value)))
+        self._log.debug('Store Key Value: (%s, %s %s)' % (nodes, key, type(value)))
 
         try:
 
@@ -703,9 +711,12 @@ class DHT(object):
             # Retrieve closest nodes adn add them to the shortlist for the search
             closeNodes = self._routingTable.findCloseNodes(key, constants.alpha, self._settings['guid'])
             shortlist = []
+
             for closeNode in closeNodes:
                 shortlist.append((closeNode._ip, closeNode._port, closeNode._guid))
-            new_search.add_to_shortlist(shortlist)
+
+            if len(shortlist) > 0:
+                new_search.add_to_shortlist(shortlist)
 
             # Refresh the k-bucket for this key
             if key != self._settings['guid']:
@@ -851,9 +862,10 @@ class DHTSearch(object):
         # Create a unique ID (SHA1) for this iterativeFind request to support parallel searches
         self._findID = hashlib.sha1(os.urandom(128)).hexdigest()
 
-    def add_to_shortlist(self, shortlist):
+    def add_to_shortlist(self, additions):
 
-        for item in shortlist:
+        self._log.debug('Additions: %s' % additions)
+        for item in additions:
             if not item in self._shortlist:
                 self._shortlist.append(item)
 

@@ -37,7 +37,7 @@ def proto_query_reputation(pubkey):
 
 
 def proto_page(uri, pubkey, guid, text, signature, nickname, PGPPubKey, email, bitmessage, arbiter, notary, arbiter_description, sin):
-    data = {'type': 'page', 'uri': uri, 'pubkey': pubkey, 'senderGUID': guid, 'signature': signature.encode('hex'),
+    data = {'type': 'page', 'uri': uri, 'pubkey': pubkey, 'senderGUID': guid,
             'text': text, 'nickname': nickname, 'PGPPubKey': PGPPubKey, 'email': email, 'bitmessage': bitmessage,
             'arbiter':arbiter,
             'notary':notary,
