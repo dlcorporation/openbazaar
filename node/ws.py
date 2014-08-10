@@ -499,7 +499,7 @@ class ProtocolHandler:
                 else:
                     peer_item['pubkey'] = 'unknown'
                 peer_item['guid'] = peer._guid
-                peer_item['sin'] = peer._sin
+                peer_item['sin'] = peer._sin if hasattr(peer, 'sin') else ""
                 peer_item['nick'] = peer._nickname
                 self._log.info('Peer Nick %s '  % peer)
                 peers.append(peer_item)
