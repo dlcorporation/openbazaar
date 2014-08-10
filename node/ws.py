@@ -13,6 +13,8 @@ import gnupg
 import pprint
 from db_store import Obdb
 import time
+import obelisk
+
 
 ioloop.install()
 
@@ -498,8 +500,9 @@ class ProtocolHandler:
                     peer_item['pubkey'] = peer._pub.encode('hex')
                 else:
                     peer_item['pubkey'] = 'unknown'
+
                 peer_item['guid'] = peer._guid
-                peer_item['sin'] = peer._sin if hasattr(peer, 'sin') else ""
+                peer_item['sin'] = obelisk.EncodeBase58Check('\x0F\x02%s' + peer._guid.decode('hex'))
                 peer_item['nick'] = peer._nickname
                 self._log.info('Peer Nick %s '  % peer)
                 peers.append(peer_item)
