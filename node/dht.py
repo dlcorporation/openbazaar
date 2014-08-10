@@ -110,7 +110,7 @@ class DHT(object):
             def cb(msg):
                 add_it = True
                 for peer in self._activePeers:
-                    if (peer._guid, peer._address, peer._pub, peer._nickname) == (new_peer._guid, new_peer._address, new_peer._pub, new_peer._nickname):
+                    if peer._guid == new_peer._guid:
                         add_it = False
 
                 if add_it:
