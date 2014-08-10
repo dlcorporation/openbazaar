@@ -48,6 +48,7 @@ class Market(object):
         self._myself = transport.getMyself()
         self._peers = self._dht.getActivePeers()
         self._db = db
+        self.orders = Orders(transport, self._market_id, db)
 
         # Legacy for now
         self.pages = {}

@@ -297,7 +297,8 @@ class ProtocolHandler:
         self._log.info('Found Contracts: %s' % type(results))
         self._log.info(results)
 
-        if 'type' in results and results['type'] == 'listing_results':
+        self._log.info(type(results[0]))
+        if 'type' in results[0] and results[0]['type'] == 'listing_results':
             self._log.debug('Results: %s ' % results['contracts'])
             return
 
