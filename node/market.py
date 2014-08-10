@@ -49,11 +49,6 @@ class Market(object):
         self._db = db
 
         # Legacy for now
-        self.query_ident = None
-        self.reputation = Reputation(self._transport)
-        self.orders = Orders(self._transport, self._market_id, db)
-        self.order_entries = self.orders._orders
-        self.nicks = {}
         self.pages = {}
         self.welcome = False
         self.mypage = None
@@ -61,9 +56,6 @@ class Market(object):
         self._nickname = ""
 
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
-
-
-
         self.settings = self._transport.settings
 
         welcome = True
@@ -82,8 +74,6 @@ class Market(object):
 
         self.load_page(welcome)
 
-        self.republish_contracts()
-
         # Periodically refresh buckets
         loop = tornado.ioloop.IOLoop.instance()
         refreshCB = tornado.ioloop.PeriodicCallback(self._dht._refreshNode,
@@ -97,10 +87,7 @@ class Market(object):
         nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
         store_description = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
 
-        tagline = "%s: %s" % (nickname, store_description)
-        self.mypage = tagline
         self._nickname = nickname
-        self.signature = self._transport._myself.sign(tagline)
 
         if welcome:
             self._db.updateEntries("settings", {'market_id': self._transport._market_id}, {"welcome":"noshow"})
