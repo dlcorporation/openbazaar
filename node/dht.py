@@ -452,12 +452,7 @@ class DHT(object):
 
         if peer:
             if peer.check_port():
-
-                def cb(msg):
-                    self._log.info('Query Listings: %s' % msg)
-                    callback(msg)
-
-                peer.send({'type':'query_listings', 'key':key}, cb)
+                peer.send({'type':'query_listings', 'key':key})
                 return
 
         # Check cache in DHT if peer not available

@@ -71,8 +71,8 @@ class Market(object):
         self._transport.add_callback('peer', self.on_peer)
         self._transport.add_callback('query_page', self.on_query_page)
         self._transport.add_callback('query_listings', self.on_query_listings)
-        self._transport.add_callback('listing_results', self.on_listing_results)
         self._transport.add_callback('page', self.on_page)
+
         self._transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
         self._transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
@@ -98,6 +98,10 @@ class Market(object):
         else:
             self.welcome = False
 
+
+
+    def on_listing_results(self, results):
+        self._log.debug('Listings %s' % results)
 
     def import_contract(self, contract):
 
@@ -485,9 +489,6 @@ class Market(object):
         contracts = self.get_contracts(page)
         contracts['type'] = "listing_results"
         self._transport.send(contracts, peer['senderGUID'])
-
-    def on_listing_results(self, results):
-        self._log.debug('Listings %s' % results)
 
 
     def on_peer(self, peer):

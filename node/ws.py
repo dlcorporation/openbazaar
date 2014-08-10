@@ -31,6 +31,7 @@ class ProtocolHandler:
         self._transport.add_callback('peer', self.on_node_peer)
         self._transport.add_callback('peer_remove', self.on_node_remove_peer)
         self._transport.add_callback('node_page', self.on_node_page)
+        self._transport.add_callback('listing_results', self.on_listing_results)
         self._transport.add_callback('all', self.on_node_message)
 
         # handlers from events coming from websocket, we shouldnt need this
@@ -90,6 +91,10 @@ class ProtocolHandler:
 
         self.send_to_client(None, message)
 
+    def on_listing_results(self, msg):
+        self._log.debug('Found results %s' % msg)
+        self.send_to_client(None, { "type":"store_contracts", "products": msg['contracts']})
+
     def client_get_notaries(self, socket_handler, msg):
         self._log.debug('Retrieving notaries')
         notaries = self._market.get_notaries()
@@ -126,8 +131,6 @@ class ProtocolHandler:
 
         def cb(msg, query_id):
             self._log.info('Received a query page response: %s' % msg)
-
-
 
             # try:
             #     self._timeouts.remove(query_id)
@@ -290,15 +293,21 @@ class ProtocolHandler:
 
     def client_query_store_products(self, socket_handler, msg):
         self._log.info("Searching network for contracts")
+
         self._transport._dht.find_listings(self._transport, msg['key'], callback=self.on_find_products_by_store)
+
 
     def on_find_products_by_store(self, results):
 
         self._log.info('Found Contracts: %s' % type(results))
         self._log.info(results)
 
-        self._log.info(type(results[0]))
-        if 'type' in results[0] and results[0]['type'] == 'listing_results':
+        if type(results[0]) == str:
+            results = json.loads(results[0])
+
+        self._log.info(results)
+
+        if 'type' in results and results['type'] == 'listing_results':
             self._log.debug('Results: %s ' % results['contracts'])
             return
 
@@ -566,6 +575,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             return
         if self._app_handler.handle_request(self, request):
             return
+
 
     def _send_response(self, response):
         if self.ws_connection:
