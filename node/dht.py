@@ -90,7 +90,6 @@ class DHT(object):
 
             if active_peer_tuple == peer_tuple:
                 self._log.info('[add_active_peer] Already in active peer list')
-
                 return
 
             # Found partial match
@@ -111,7 +110,7 @@ class DHT(object):
             def cb(msg):
                 add_it = True
                 for peer in self._activePeers:
-                    if peer._guid == new_peer._guid:
+                    if (peer._guid, peer._address, peer._pub, peer._nickname) == (new_peer._guid, new_peer._address, new_peer._pub, new_peer._nickname):
                         add_it = False
 
                 if add_it:
