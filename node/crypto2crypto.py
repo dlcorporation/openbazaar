@@ -24,13 +24,14 @@ ioloop.install()
 
 class CryptoPeerConnection(PeerConnection):
 
-    def __init__(self, transport, address, pub=None, guid=None, nickname=None, callback=lambda msg: None):
+    def __init__(self, transport, address, pub=None, guid=None, nickname=None, sin=None, callback=lambda msg: None):
 
         self._priv = transport._myself
         self._pub = pub
         self._ip = urlparse(address).hostname
         self._port = urlparse(address).port
         self._nickname = nickname
+        self._sin = sin
         self._connected = False
         self._guid = ""
 

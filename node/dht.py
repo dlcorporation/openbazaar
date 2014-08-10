@@ -114,7 +114,7 @@ class DHT(object):
                         add_it = False
 
                 if add_it:
-                    self._log.debug('[add_active_peer] Adding new peer %s' % new_peer._address)
+                    self._log.debug('[add_active_peer] Adding new peer %s' % str(peer_tuple))
                     self._transport.save_peer_to_db(peer_tuple)
                     self._activePeers.append(new_peer)
                     self._routingTable.removeContact(new_peer._guid)
