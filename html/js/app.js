@@ -122,6 +122,9 @@ angular.module('app')
       case 'order':
          $scope.parse_order(msg)
          break;
+      case 'store_contracts':
+         $scope.parse_store_listings(msg)
+         break;
       case 'order_count':
          $scope.parse_order_count(msg)
          break;
@@ -346,8 +349,6 @@ angular.module('app')
   $scope.parse_store_products = function(msg) {
 
       console.log(msg)
-
-
       $scope.store_products = msg.products;
 
 
@@ -359,6 +360,12 @@ angular.module('app')
       //
       // })
 
+  }
+    $scope.parse_listing_results = function(msg) {
+      $scope.store_products = msg.contracts;
+      if (!$scope.$$phase) {
+         $scope.$apply();
+      }
   }
 
   $scope.parse_response_pubkey = function(msg) {
@@ -529,6 +536,31 @@ angular.module('app')
             contract.Contract.item_images = "img/no-photo.png";
         }
     });
+    $('#listing-loader').hide();
+    console.log('New Listing',$scope.store_listings)
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+  }
+
+  $scope.parse_store_listings = function(msg) {
+
+    contracts = msg.products
+    console.log(contracts[0])
+    $scope.store_listings = []
+    $.each(contracts, function(key, value) {
+        console.log('value',value)
+        $scope.store_listings.push(value.contract_body)
+    });
+
+    //$scope.store_listings = jQuery.unique($scope.store_listings);
+    $.each( $scope.store_listings, function(index, contract){
+        if (jQuery.isEmptyObject(contract.Contract.item_images)) {
+            contract.Contract.item_images = "img/no-photo.png";
+        }
+    });
+
+
     $('#listing-loader').hide();
     console.log('New Listing',$scope.store_listings)
     if (!$scope.$$phase) {
