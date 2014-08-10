@@ -123,7 +123,9 @@ class ProtocolHandler:
         self._timeouts.append(query_id)
 
         def cb(msg, query_id):
-            self._log.info('Success %s' % msg)
+            self._log.info('Received a query page response: %s' % msg)
+
+
 
             # try:
             #     self._timeouts.remove(query_id)

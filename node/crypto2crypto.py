@@ -591,6 +591,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self._dht.add_known_node((ip, port, guid, nickname))
         self._dht.add_active_peer(self, (pubkey, uri, guid, nickname))
+
         self.trigger_callbacks(msg['type'], msg)
 
 
