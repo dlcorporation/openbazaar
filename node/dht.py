@@ -455,6 +455,7 @@ class DHT(object):
 
                 def cb(msg):
                     self._log.info('Query Listings: %s' % msg)
+                    callback(msg)
 
                 peer.send({'type':'query_listings', 'key':key}, cb)
                 return

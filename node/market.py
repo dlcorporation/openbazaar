@@ -26,6 +26,7 @@ import traceback
 import gnupg
 import ast
 import string
+import ws
 
 class Market(object):
 
@@ -486,6 +487,7 @@ class Market(object):
 
     def on_listing_results(self, results):
         self._log.debug('Listings %s' % results)
+
 
     def on_peer(self, peer):
         pass
