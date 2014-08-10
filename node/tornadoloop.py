@@ -37,30 +37,26 @@ class MarketApplication(tornado.web.Application):
                                                seed_mode,
                                                dev_mode)
 
+        self.market = Market(self.transport, db)
 
         def post_joined():
-
-            self.market = Market(self.transport, db)
-
             self.transport._dht._refreshNode()
-
             self.market.republish_contracts()
-
-            handlers = [
-                (r"/", MainHandler),
-                (r"/main", MainHandler),
-                (r"/html/(.*)", tornado.web.StaticFileHandler, {'path': './html'}),
-                (r"/ws", WebSocketHandler,
-                    dict(transport=self.transport, market=self.market, db=db))
-            ]
-
-            # TODO: Move debug settings to configuration location
-            settings = dict(debug=True)
-            tornado.web.Application.__init__(self, handlers, **settings)
-
 
         if seed_mode == 0:
             self.transport.join_network(seed_peers, post_joined)
+
+        handlers = [
+            (r"/", MainHandler),
+            (r"/main", MainHandler),
+            (r"/html/(.*)", tornado.web.StaticFileHandler, {'path': './html'}),
+            (r"/ws", WebSocketHandler,
+                dict(transport=self.transport, market=self.market, db=db))
+        ]
+
+        # TODO: Move debug settings to configuration location
+        settings = dict(debug=True)
+        tornado.web.Application.__init__(self, handlers, **settings)
 
 
 

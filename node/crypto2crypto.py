@@ -374,6 +374,8 @@ class CryptoTransportLayer(TransportLayer):
         known_peers = self._db.selectEntries("peers", {"market_id": self._market_id})
         for known_peer in known_peers:
             new_peer = CryptoPeerConnection(self, known_peer['uri'])
+            if not new_peer._connected:
+                    self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
 
         self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
 
