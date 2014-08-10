@@ -454,7 +454,7 @@ class DHT(object):
             if peer.check_port():
 
                 def cb(msg):
-                    self._log.info('query_listings %s' % msg)
+                    self._log.info('Query Listings: %s' % msg)
 
                 peer.send({'type':'query_listings', 'key':key}, cb)
                 return
