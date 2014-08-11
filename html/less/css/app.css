@@ -107,11 +107,11 @@ h4 {
 }
 
 .trim-info {
-      max-width: 160px;
+      max-width: 95%;
       display: inline-block;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      line-height: 15px;
+
       position: relative;
    }
