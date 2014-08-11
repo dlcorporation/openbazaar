@@ -125,6 +125,9 @@ angular.module('app')
       case 'store_contracts':
          $scope.parse_store_listings(msg)
          break;
+      case 'store_contract':
+         $scope.parse_store_contract(msg)
+         break;
       case 'order_count':
          $scope.parse_order_count(msg)
          break;
@@ -277,10 +280,6 @@ angular.module('app')
     socket.send('query_orders', query)
 
   }
-
-
-
-
 
   $scope.parse_myorders = function(msg) {
 
@@ -554,6 +553,28 @@ angular.module('app')
     });
 
     //$scope.store_listings = jQuery.unique($scope.store_listings);
+    $.each( $scope.store_listings, function(index, contract){
+        if (jQuery.isEmptyObject(contract.Contract.item_images)) {
+            contract.Contract.item_images = "img/no-photo.png";
+        }
+    });
+
+
+    $('#listing-loader').hide();
+    console.log('New Listing',$scope.store_listings)
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+  }
+
+  $scope.parse_store_contract = function(msg) {
+
+    contract = msg.contract
+    console.log(contract)
+        
+    $scope.store_listings.push(contract.contract_body)
+
+    $scope.store_listings = jQuery.unique($scope.store_listings);
     $.each( $scope.store_listings, function(index, contract){
         if (jQuery.isEmptyObject(contract.Contract.item_images)) {
             contract.Contract.item_images = "img/no-photo.png";

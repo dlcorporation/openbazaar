@@ -32,6 +32,7 @@ class ProtocolHandler:
         self._transport.add_callback('peer_remove', self.on_node_remove_peer)
         self._transport.add_callback('node_page', self.on_node_page)
         self._transport.add_callback('listing_results', self.on_listing_results)
+        self._transport.add_callback('listing_result', self.on_listing_result)
         self._transport.add_callback('all', self.on_node_message)
 
         # handlers from events coming from websocket, we shouldnt need this
@@ -94,6 +95,10 @@ class ProtocolHandler:
     def on_listing_results(self, msg):
         self._log.debug('Found results %s' % msg)
         self.send_to_client(None, { "type":"store_contracts", "products": msg['contracts']})
+
+    def on_listing_result(self, msg):
+        self._log.debug('Found result %s' % msg)
+        self.send_to_client(None, { "type":"store_contract", "contract": msg})
 
     def client_get_notaries(self, socket_handler, msg):
         self._log.debug('Retrieving notaries')

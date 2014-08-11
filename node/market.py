@@ -488,8 +488,11 @@ class Market(object):
     def on_query_listings(self, peer, page=0):
         self._log.info("Someone is querying your listings: %s" % peer)
         contracts = self.get_contracts(page)
-        contracts['type'] = "listing_results"
-        self._transport.send(contracts, peer['senderGUID'])
+
+        for contract in contracts['contracts']:
+            contract = contract
+            contract['type'] = "listing_result"
+            self._transport.send(contract, peer['senderGUID'])
 
 
     def on_peer(self, peer):
