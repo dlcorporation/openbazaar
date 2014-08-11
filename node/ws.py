@@ -247,7 +247,7 @@ class ProtocolHandler:
         order = self._market.orders.get_order(msg['orderId'])
 
         # Send to exchange partner
-        self._market.orders.pay_order(order)
+        self._market.orders.pay_order(order, msg['orderId'])
 
     def client_ship_order(self, socket_handler, msg):
 
