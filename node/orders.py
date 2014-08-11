@@ -189,7 +189,13 @@ class Orders(object):
 
     def receive_order(self, new_order):  # action
         new_order['state'] = 'received'
-        self._db.updateEntries("orders", {"order_id": new_order['id']}, new_order)
+
+        order_id = random.randint(0, 1000000)
+        while self._db.numEntries("orders",{'id': order_id}) > 0:
+            order_id = random.randint(0, 1000000)
+
+        new_order['order_id'] = order_id
+        self._db.insertEntry("orders",  new_order)
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
     def new_order(self, msg):
@@ -427,11 +433,29 @@ class Orders(object):
             self._log.info('I am the seller!')
             state = 'Waiting for Payment'
 
+            merchant_order_id = random.randint(0, 1000000)
+            while self._db.numEntries("orders",{'id': order_id}) > 0:
+                merchant_order_id = random.randint(0, 1000000)
+
+            self._db.insertEntry("orders", {'market_id': self._transport._market_id,
+                     'contract_key': contract_key,
+                     'order_id': merchant_order_id,
+                     'signed_contract_body': str(contract),
+                     'state': state,
+                     'merchant': offer_data_json['Seller']['seller_GUID'],
+                     'buyer': bid_data_json['Buyer']['buyer_GUID'],
+                     'notary': notary_data_json['Notary']['notary_GUID'],
+                     'address': multisig_address,
+                     'item_price': offer_data_json['Contract']['item_price'],
+                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
+                     'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
+                     "updated": time.time()})
+
         else:
             self._log.info('I am the buyer')
             state = 'Need to Pay'
 
-        self._db.updateEntries("orders", {'order_id': order_id}, {'market_id': self._transport._market_id,
+            self._db.updateEntries("orders", {'order_id': order_id}, {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'signed_contract_body': str(contract),
                      'state': state,
@@ -443,6 +467,8 @@ class Orders(object):
                      'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()})
+
+
 
     # Order callbacks
     def on_order(self, msg):
