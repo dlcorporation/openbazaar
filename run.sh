@@ -122,7 +122,7 @@ if [ "$SEED_MODE" == 1 ]; then
 
     if [ ! -f $DBDIR/$DBFILE ]; then
        echo "File $DBFILE does not exist. Running setup script."
-       $PYTHON util/setup_db.py
+       $PYTHON util/setup_db.py db/ob.db
        wait
     fi
 
@@ -133,7 +133,7 @@ elif [ "$DEVELOPMENT" == 0 ]; then
 
     if [ ! -f $DBDIR/$DBFILE ]; then
        echo "File $DBFILE does not exist. Running setup script."
-       $PYTHON util/setup_db.py
+       $PYTHON util/setup_db.py db/ob.db
        wait
     fi
 
@@ -145,7 +145,7 @@ else
 
 	if [ ! -f $DBDIR/ob-dev.db ]; then
        echo "File $DBFILE does not exist. Running setup script."
-       $PYTHON util/setup_db.py 'db/ob-dev.db'
+       $PYTHON util/setup_db.py db/ob-dev.db
        wait
     fi
 
