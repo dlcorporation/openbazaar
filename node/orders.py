@@ -135,9 +135,13 @@ class Orders(object):
         new_order['state'] = 'Paid'
 
         del new_order['qrcode']
+        del new_order['item_images']
+        del new_order['total_price']
+        del new_order['item_title']
 
         self._db.updateEntries("orders", {"order_id": new_order['id']}, new_order)
-        
+
+
         new_order['type'] = 'order'
         self._transport.send(new_order, new_order['merchant'])
 
