@@ -243,23 +243,26 @@ angular.module('app')
 
       $scope.modalOrder = msg.order;
 
-      if(msg.order.state == 'accepted') {
+      if(msg.order.state == 'Accepted') {
         $scope.modalOrder.waitingForPayment = true;
-      } else if (msg.order.state == 'paid') {
+      } else if (msg.order.state == 'Paid') {
 
         if (msg.order.seller == $scope.myself.pubkey) {
           $scope.modalOrder.waitingForShipment = true;
         } else {
           $scope.modalOrder.waitingForSellerToShip = true;
         }
-      } else if(msg.order.state == 'sent') {
+      } else if(msg.order.state == 'Sent') {
         $scope.modalOrder.flagForArbitration = true;
       } else {
         $scope.modalOrder.waitingForPayment = false;
       }
 
-      if (!$scope.$$phase) {
+      if(msg.order.state == 'Notarized') {
+        $scope.modalOrder.notary = $scope.myself.guid
+      }
 
+      if (!$scope.$$phase) {
          $scope.$apply();
       }
   }
