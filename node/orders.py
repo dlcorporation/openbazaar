@@ -64,6 +64,8 @@ class Orders(object):
         output.close()
 
 
+        notary = self._transport._guid if _order['state'] == 'Notarized' else ""
+
         # Get order prototype object before storing
         order = {"id": _order['id'],
                  "state": _order['state'],
@@ -73,7 +75,7 @@ class Orders(object):
                  "item_price": _order['item_price'] if _order.has_key("item_price") else "",
                  "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
                  "total_price": total_price,
-                 "notary": _order['notary'] if _order.has_key("notary") else "",
+                 "notary": notary,
                  "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
                  "qrcode": 'data:image/png;base64,'+qr,
                  "item_title": offer_data_json['Contract']['item_title'],
