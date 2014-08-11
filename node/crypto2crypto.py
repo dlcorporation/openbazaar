@@ -16,6 +16,7 @@ import socket
 import time
 import requests
 from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
+import zlib
 
 ioloop.install()
 
@@ -601,7 +602,10 @@ class CryptoTransportLayer(TransportLayer):
     def _on_raw_message(self, serialized):
 
         try:
-            # Try to de-serialize clear text message
+
+            # Decompress message
+            serialized = zlib.decompress(serialized)
+
             msg = json.loads(serialized)
             self._log.info("Message Received [%s]" % msg.get('type', 'unknown'))
 
