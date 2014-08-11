@@ -172,6 +172,7 @@ class Market(object):
                 croppedImage.save(data, format='PNG')
 
                 new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
+
                 data.close()
 
                 msg['Contract']['item_images'] = new_uri
