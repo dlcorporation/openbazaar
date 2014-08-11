@@ -48,7 +48,16 @@ class Orders(object):
             else:
                 shipping_price = 0
             total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
-
+        elif _order['state'] in ('Paid'):
+            offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
+            index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+            offer_data_json = offer_data[0:index_of_seller_signature-4]
+            offer_data_json = json.loads(str(offer_data_json))
+            if _order.has_key("shipping_price"):
+                shipping_price = _order['shipping_price'] if _order['shipping_price'] != '' else 0
+            else:
+                shipping_price = 0
+            total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
         else:
             offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
             index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
@@ -131,20 +140,21 @@ class Orders(object):
 
         self._transport.send(new_order, new_order['buyer'].decode('hex'))
 
-    def pay_order(self, new_order):  # action
+    def pay_order(self, new_order, order_id):  # action
         new_order['state'] = 'Paid'
+
+        self._log.debug(new_order)
 
         del new_order['qrcode']
         del new_order['item_image']
         del new_order['total_price']
         del new_order['item_title']
 
-        self._db.updateEntries("orders", {"order_id": new_order['id']}, new_order)
+        self._db.updateEntries("orders", {"order_id": order_id}, new_order)
 
         new_order['type'] = 'order'
 
-
-        #self._transport.send(new_order, new_order['merchant'])
+        self._transport.send(new_order, new_order['merchant'])
 
 
     def offer_json_from_seed_contract(self, seed_contract):
