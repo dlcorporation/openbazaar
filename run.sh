@@ -117,30 +117,50 @@ if [ ! -d "$DBDIR" ]; then
   mkdir $DBDIR
 fi
 
-if [ ! -f $DBDIR/$DBFILE ]; then
-   echo "File $DBFILE does not exist. Running setup script."
-   $PYTHON util/setup_db.py
-   wait
-fi
-
 if [ "$SEED_MODE" == 1 ]; then
     echo "Seed Mode $SERVER_IP"
+
+    if [ ! -f $DBDIR/$DBFILE ]; then
+       echo "File $DBFILE does not exist. Running setup script."
+       $PYTHON util/setup_db.py
+       wait
+    fi
+
     $PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
 
 elif [ "$DEVELOPMENT" == 0 ]; then
     echo "Production Mode"
+
+    if [ ! -f $DBDIR/$DBFILE ]; then
+       echo "File $DBFILE does not exist. Running setup script."
+       $PYTHON util/setup_db.py
+       wait
+    fi
+
 	$PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
 
 else
 	# Primary Market - No SEED_URI specified
 	echo "Development Mode"
-	$PYTHON node/tornadoloop.py 127.0.0.1 -s 1 --bmuser $BM_USERNAME -d --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 --log_level $LOG_LEVEL &
+
+	if [ ! -f $DBDIR/ob-dev.db ]; then
+       echo "File $DBFILE does not exist. Running setup script."
+       $PYTHON util/setup_db.py 'db/ob-dev.db'
+       wait
+    fi
+
+	$PYTHON node/tornadoloop.py 127.0.0.1 --database db/ob-dev.db -s 1 --bmuser $BM_USERNAME -d --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 --log_level $LOG_LEVEL &
     ((NODES=NODES+1))
     i=2
     while [[ $i -le $NODES ]]
     do
         sleep 2
-	    $PYTHON node/tornadoloop.py 127.0.0.$i -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL &
+        if [ ! -f db/ob-dev-$i.db ]; then
+           echo "File db/ob-dev-$i.db does not exist. Running setup script."
+           $PYTHON util/setup_db.py db/ob-dev-$i.db
+           wait
+        fi
+	    $PYTHON node/tornadoloop.py 127.0.0.$i --database db/ob-dev-$i.db -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL &
 	    ((i=i+1))
     done
 

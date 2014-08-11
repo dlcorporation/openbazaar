@@ -135,15 +135,16 @@ class Orders(object):
         new_order['state'] = 'Paid'
 
         del new_order['qrcode']
-        del new_order['item_images']
+        del new_order['item_image']
         del new_order['total_price']
         del new_order['item_title']
 
         self._db.updateEntries("orders", {"order_id": new_order['id']}, new_order)
 
-
         new_order['type'] = 'order'
-        self._transport.send(new_order, new_order['merchant'])
+
+
+        #self._transport.send(new_order, new_order['merchant'])
 
 
     def offer_json_from_seed_contract(self, seed_contract):
@@ -210,6 +211,11 @@ class Orders(object):
 
         self._log.debug('New Order: %s' % msg)
 
+        # Save order locally in database
+        order_id = random.randint(0, 1000000)
+        while self._db.numEntries("orders",{'id': order_id}) > 0:
+            order_id = random.randint(0, 1000000)
+
         buyer = {}
         buyer['Buyer'] = {}
         buyer['Buyer']['buyer_GUID'] = self._transport._guid
@@ -217,12 +223,6 @@ class Orders(object):
         buyer['Buyer']['buyer_pgp'] = self._transport.settings['PGPPubKey']
         buyer['Buyer']['buyer_deliveryaddr'] = "123 Sesame Street"
         buyer['Buyer']['note_for_seller'] = msg['message']
-
-        # Save order locally in database
-        order_id = random.randint(0, 1000000)
-        while self._db.numEntries("orders",{'id': order_id}) > 0:
-            order_id = random.randint(0, 1000000)
-
         buyer['Buyer']['buyer_order_id'] = order_id
 
         self._log.debug('Buyer: %s' % buyer)
@@ -279,6 +279,11 @@ class Orders(object):
 
         self._log.info('Bid Order: %s' % bid)
 
+        # Generate unique id for this bid
+        order_id = random.randint(0, 1000000)
+        while self._db.numEntries("contracts",{'id': order_id}) > 0:
+            order_id = random.randint(0, 1000000)
+
         # Add to contract and sign
         contract = bid.get('rawContract')
 
@@ -307,7 +312,8 @@ class Orders(object):
         notary['Notary'] = {'notary_GUID': self._transport._guid,
                             'notary_BTC_uncompressed_pubkey': self._transport.settings['pubkey'],
                             'notary_pgp': self._transport.settings['PGPPubKey'],
-                            'notary_fee': "1%"
+                            'notary_fee': "1%",
+                            'notary_order_id': order_id
                             }
 
         self._log.debug('Notary: %s' % notary)
@@ -333,11 +339,6 @@ class Orders(object):
         hash_value = hashlib.new('ripemd160')
         hash_value.update(contract_key)
         contract_key = hash_value.hexdigest()
-
-        # Save order locally in database
-        order_id = random.randint(0, 1000000)
-        while self._db.numEntries("contracts",{'id': order_id}) > 0:
-            order_id = random.randint(0, 1000000)
 
         self._log.info('Order ID: %s' % order_id)
 
