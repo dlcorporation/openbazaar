@@ -61,6 +61,7 @@ class PeerConnection(object):
                 self._nickname = response['senderNick']
 
             if callback is not None:
+                self._log.debug('%s' % msg)
                 callback(msg)
 
         self._stream.on_recv(cb)
