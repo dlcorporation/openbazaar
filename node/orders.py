@@ -133,7 +133,11 @@ class Orders(object):
 
     def pay_order(self, new_order):  # action
         new_order['state'] = 'Paid'
-        self._db.updateEntries("orders", {"order_id": new_order['id']},new_order)
+
+        del new_order['qrcode']
+
+        self._db.updateEntries("orders", {"order_id": new_order['id']}, new_order)
+        
         new_order['type'] = 'order'
         self._transport.send(new_order, new_order['merchant'])
 
