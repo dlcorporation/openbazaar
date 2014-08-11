@@ -571,13 +571,13 @@ angular.module('app')
 
     contract = msg.contract
     console.log(contract)
-        
-    $scope.store_listings.push(contract.contract_body)
+
+    $scope.store_listings.push(contract)
 
     $scope.store_listings = jQuery.unique($scope.store_listings);
     $.each( $scope.store_listings, function(index, contract){
-        if (jQuery.isEmptyObject(contract.Contract.item_images)) {
-            contract.Contract.item_images = "img/no-photo.png";
+        if (jQuery.isEmptyObject(contract.contract_body.Contract.item_images)) {
+            contract.contract_body.Contract.item_images = "img/no-photo.png";
         }
     });
 
@@ -587,7 +587,7 @@ angular.module('app')
     if (!$scope.$$phase) {
        $scope.$apply();
     }
-  }
+}
 
   $scope.search_results = [];
   $scope.parse_search_result = function(msg) {

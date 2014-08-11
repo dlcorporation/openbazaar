@@ -141,15 +141,17 @@ class Orders(object):
         contract_data = ''.join(seed_contract.split('\n')[6:])
         index_of_signature = contract_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(contract_data))
         contract_data_json = contract_data[0:index_of_signature]
+        self._log.debug('json %s' % contract_data_json)
         return json.loads(contract_data_json)
 
     def send_order(self, order_id, contract, notary):  # action
 
         self._log.info('Verify Contract and Store in Orders Table')
-
+        self._log.debug('%s' % contract)
         contract_data_json = self.offer_json_from_seed_contract(contract)
 
         try:
+            self._log.debug('%s' % contract_data_json)
             seller_pgp = contract_data_json['Seller']['seller_PGP']
             self._gpg.import_keys(seller_pgp)
             v = self._gpg.verify(contract)
@@ -179,10 +181,8 @@ class Orders(object):
             else:
                 self._log.error('Could not verify signature of contract.')
 
-        except Exception as ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            self._log.error(message)
+        except Exception, e2:
+            self._log.error(e2)
 
 
     def receive_order(self, new_order):  # action
