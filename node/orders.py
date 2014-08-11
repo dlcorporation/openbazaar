@@ -353,6 +353,7 @@ class Orders(object):
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
                      'state': 'Notarized',
+                     'order_id': order_id,
                      'merchant': offer_data_json['Seller']['seller_GUID'],
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'address': multisig_address,
