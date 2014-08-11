@@ -8,6 +8,7 @@
 # may be created by processing this file with epydoc: http://epydoc.sf.net
 import sqlite3
 from os import path, remove
+import sys
 
 DB_PATH = "db/ob.db"
 
@@ -146,4 +147,10 @@ def remove_db(db_path):
     remove(db_path)
 
 if __name__ == "__main__":
+
+
+    if sys.argv[1:] is not None:
+        DB_PATH = sys.argv[1:][0]
+
+    print 'DB_PATH',DB_PATH
     setup_db(DB_PATH)
