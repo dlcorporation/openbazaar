@@ -941,9 +941,9 @@
 
             <div class="div-listing col-sm-4" style="padding:5px" ng-repeat="listing in store_listings">
 
-                <a href="#" ng-click="open('lg', myself, page.pubkey, listing.Contract.item_title, listing.Contract.item_price, listing.Contract.item_description, listing.Contract.item_images, listing.key, listing.rawContract, trusted_notaries, settings.trustedArbiters, settings.pubkey, listing.Seller.seller_GUID)"><img class="img-thumbnail" src="{{listing.Contract.item_images}}" width="100%"/></a>
-                        <h4 style="margin-bottom:0"><a href="#" ng-click="open('lg', myself, page.pubkey, listing.Contract.item_title, listing.Contract.item_price, listing.Contract.item_description, listing.Contract.item_images, listing.key, listing.rawContract, trusted_notaries, settings.trustedArbiters, settings.pubkey, listing.Seller.seller_GUID)" class="trim-info">{{listing.Contract.item_title}}</a></h4>
-                        <span style="font-size:16px;">&#3647;{{listing.Contract.item_price}}</span>
+                <a href="#" ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_description, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, trusted_notaries, settings.trustedArbiters, settings.pubkey, listing.contract_body.Seller.seller_GUID)"><img class="img-thumbnail" src="{{listing.contract_body.Contract.item_images}}" width="100%"/></a>
+                        <h4 style="margin-bottom:0"><a href="#" ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_description, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, trusted_notaries, settings.trustedArbiters, settings.pubkey, listing.contract_body.Seller.seller_GUID)" class="trim-info">{{listing.contract_body.Contract.item_title}}</a></h4>
+                        <span style="font-size:16px;">&#3647;{{listing.contract_body.Contract.item_price}}</span>
             </div>
 
 

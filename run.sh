@@ -43,7 +43,7 @@ LOG_FILE=production.log
 # INFO       20
 # DEBUG      10
 # NOTSET      0
-LOG_LEVEL=20
+LOG_LEVEL=10
 
 NODES=3
 BM_USERNAME=username

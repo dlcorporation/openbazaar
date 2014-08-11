@@ -152,10 +152,7 @@ class Market(object):
         msg['Seller']['seller_BTC_uncompressed_pubkey'] = self._transport.settings['pubkey']
         msg['Seller']['seller_GUID'] = self._transport._guid
 
-        self._log.info('seller stuff %s' % msg)
-
         # Process and crop thumbs for images
-        self._log.debug('Msg: %s' % msg)
         if msg['Contract'].has_key('item_images'):
             if msg['Contract']['item_images'].has_key('image1'):
 
