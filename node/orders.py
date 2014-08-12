@@ -407,6 +407,28 @@ class Orders(object):
             order_id = random.randint(0, 1000000)
         return order_id
 
+    def handle_paid_order(self, msg):
+        self._log.info('Entering Paid Order handling')
+        self._log.debug('Paid Order %s' % msg)
+
+        offer_data = ''.join(msg['signed_contract_body'].split('\n')[8:])
+        index_of_seller_signature = offer_data.find('- - -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        offer_data_json = offer_data[0:index_of_seller_signature]
+        self._log.info('Offer Data: %s' % offer_data_json)
+        offer_data_json = json.loads(str(offer_data_json))
+
+        bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
+        end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+        bid_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = json.loads(bid_data_json)
+        self._log.info('Bid Data: %s' % bid_data_json)
+
+        buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
+
+        self._db.updateEntries("orders", {'buyer_order_id': buyer_order_id}, {'state':'Buyer Paid',
+                     "updated": time.time()})
+
+
     def handle_notarized_order(self, msg):
         self._log.info(msg['rawContract'])
 
@@ -456,11 +478,14 @@ class Orders(object):
             while self._db.numEntries("orders",{'id': order_id}) > 0:
                 merchant_order_id = random.randint(0, 1000000)
 
+            buyer_id = str(bid_data_json['Buyer']['buyer_GUID'])+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
+
             self._db.insertEntry("orders", {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
                      'order_id': merchant_order_id,
                      'signed_contract_body': str(contract),
                      'state': state,
+                     'buyer_order_id': buyer_id,
                      'merchant': offer_data_json['Seller']['seller_GUID'],
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'notary': notary_data_json['Notary']['notary_GUID'],
@@ -505,6 +530,10 @@ class Orders(object):
         if state == 'Notarized':
             self._log.info('You received a notarized contract')
             self.handle_notarized_order(msg)
+
+        if state == 'Paid':
+            self._log.info('You received a payment notification')
+            self.handle_paid_order(msg)
 
             #
             #
