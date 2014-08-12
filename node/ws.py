@@ -257,7 +257,7 @@ class ProtocolHandler:
         order = self._market.orders.get_order(msg['orderId'])
 
         # Send to exchange partner
-        self._market.orders.send_order(order)
+        self._market.orders.ship_order(order, msg['orderId'])
 
     def client_generate_secret(self, socket_handler, msg):
 
