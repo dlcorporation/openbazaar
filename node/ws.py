@@ -1,4 +1,5 @@
 import threading
+from twisted.internet import reactor
 import json
 import ast
 import random
@@ -7,6 +8,9 @@ import logging
 import tornado.websocket
 from zmq.eventloop import ioloop
 
+import tornado.platform.twisted
+from twisted.internet import reactor
+
 import protocol
 import pycountry
 import gnupg
@@ -14,7 +18,9 @@ import pprint
 from db_store import Obdb
 import time
 import obelisk
-
+from multisig import Multisig, Escrow
+from threading import Thread
+from twisted.internet import reactor
 
 ioloop.install()
 
@@ -55,6 +61,7 @@ class ProtocolHandler:
             "query_order": self.client_query_order,
             "pay_order": self.client_pay_order,
             "ship_order": self.client_ship_order,
+            "release_payment": self.client_release_payment,
             "remove_contract": self.client_remove_contract,
             "generate_secret": self.client_generate_secret,
             "republish_contracts": self.client_republish_contracts,
@@ -253,11 +260,90 @@ class ProtocolHandler:
 
         self._log.info("Shipping order out: %s" % msg)
 
-        # Update order in mongo
         order = self._market.orders.get_order(msg['orderId'])
 
         # Send to exchange partner
         self._market.orders.ship_order(order, msg['orderId'])
+
+    def client_release_payment(self, socket_handler, msg):
+        self._log.info('Releasing payment to Merchant %s' % msg)
+
+        order = self._market.orders.get_order(msg['orderId'])
+        contract = order['signed_contract_body']
+
+        # Find Seller Data in Contract
+        offer_data = ''.join(contract.split('\n')[8:])
+        index_of_seller_signature = offer_data.find('- - -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        offer_data_json = offer_data[0:index_of_seller_signature]
+        offer_data_json = json.loads(offer_data_json)
+        self._log.info('Offer Data: %s' % offer_data_json)
+
+        # Find Buyer Data in Contract
+        bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
+        end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+        bid_data_json = "{"+offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = json.loads(bid_data_json)
+
+        # Find Notary Data in Contract
+        notary_data_index = offer_data.find('"Notary"', end_of_bid_index, len(offer_data))
+        end_of_notary_index = offer_data.find('-----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data))
+        notary_data_json = "{" + offer_data[notary_data_index:end_of_notary_index]
+        notary_data_json = json.loads(notary_data_json)
+        self._log.info('Notary Data: %s' % notary_data_json)
+
+
+        try:
+
+            client = obelisk.ObeliskOfLightClient('tcp://obelisk.openbazaar.org:9091')
+
+            pubkeys = [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'].decode('hex'),
+                       bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
+                       notary_data_json['Notary']['notary_BTC_uncompressed_pubkey'].decode('hex')]
+
+            multisig = Multisig(client, 2, pubkeys)
+
+            def cb(ec, history):
+
+                # Debug
+                self._log.info('%s %s' % (ec, history))
+                for item in history:
+                    self._log.info(item[0].encode('hex'))
+
+                if ec is not None:
+                    self._log.error("Error fetching history: %s" % ec)
+                    # TODO: Send error message to GUI
+                    return
+
+                # Create unsigned transaction
+                unspent = [row[:4] for row in history if row[4] is None]
+                tx = multisig._build_actual_tx(unspent, '')
+                self._log.info('TX %s' % tx)
+
+
+            def get_history():
+                client.fetch_history(multisig.address, cb)
+
+            reactor.callFromThread(get_history)
+
+            def finished_cb(msg):
+                self._log.info('tx %s' % msg)
+
+            #multisig.create_unsigned_transaction('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', finished_cb)
+
+            def fetched(ec, history):
+                self._log.info(history)
+                if ec is not None:
+                    self._log.error("Error fetching history: %s" % ec)
+                    return
+                self._fetched(history, '1Fufjpf9RM2aQsGedhSpbSCGRHrmLMJ7yY', finished_cb)
+
+            #client.fetch_history('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', fetched)
+
+
+        except Exception, e:
+            self._log.error('%s' % e)
+
+
 
     def client_generate_secret(self, socket_handler, msg):
 
