@@ -1,9 +1,10 @@
 To run the identity server you need to install the websocket module
 
-$ sudo pip install websocket
+```$ sudo pip install websocket
 $ sudo pip install twisted
 
 $ python identity.py
+```
 
 see files send_ident.py and query_ident.py
 
