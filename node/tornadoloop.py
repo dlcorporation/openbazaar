@@ -13,6 +13,8 @@ from ws import WebSocketHandler
 import logging
 import signal
 import time
+from threading import Thread
+from twisted.internet import reactor
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -50,6 +52,7 @@ class MarketApplication(tornado.web.Application):
             self.transport.join_network([], post_joined)
             ioloop.PeriodicCallback(self.transport.join_network, 60000)
 
+        Thread(target=reactor.run, args=(False,)).start()
 
         handlers = [
             (r"/", MainHandler),
@@ -62,6 +65,7 @@ class MarketApplication(tornado.web.Application):
         # TODO: Move debug settings to configuration location
         settings = dict(debug=True)
         tornado.web.Application.__init__(self, handlers, **settings)
+
 
 
 

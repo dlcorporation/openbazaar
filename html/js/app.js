@@ -1015,7 +1015,7 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
 
 
 
-    $scope.open = function (size, orderId) {
+    $scope.open = function (size, orderId, settings) {
 
       // Send socket a request for order info
       socket.send('query_order', { orderId: orderId } )
@@ -1027,6 +1027,9 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
         resolve: {
           orderId: function() {
             return orderId;
+          },
+          settings: function() {
+            return settings;
           },
           scope: function() { return $scope }
         }
@@ -1041,11 +1044,12 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
   };
 
 
- var ViewOrderInstanceCtrl = function ($scope, $modalInstance, orderId, scope) {
+ var ViewOrderInstanceCtrl = function ($scope, $modalInstance, orderId, scope, settings) {
 
 
    $scope.orderId = orderId;
    $scope.Market = scope;
+   $scope.settings = settings;
 
    $scope.markOrderPaid = function(orderId) {
 
@@ -1069,6 +1073,17 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
 
     scope.modalOrder.state = 'Shipped';
     scope.modalOrder.waitingForShipment = false;
+
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+
+   }
+
+   $scope.markOrderReceived = function(orderId) {
+
+    socket.send("release_payment", { orderId: orderId} )
+    scope.modalOrder.state = 'Completed';
 
     if (!$scope.$$phase) {
        $scope.$apply();
@@ -1114,7 +1129,6 @@ $scope.ProductModal = function ($scope, $modal, $log) {
         }
       });
 
-
       modalInstance.result.then(function (selectedItem) {
         $scope.selected = selectedItem;
       }, function () {
@@ -1132,9 +1146,6 @@ var ProductModalInstance = function ($scope, $modalInstance, contract) {
   $scope.contract.productQuantity = 1;
   $scope.contract.productCondition = 'New';
   $scope.contracts_current_page = 0;
-
-
-
 
     $scope.createContract = function() {
 
