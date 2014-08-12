@@ -13,6 +13,7 @@ import string
 import json
 import datetime
 import qrcode
+import urllib
 import StringIO
 import ast
 
@@ -66,7 +67,8 @@ class Orders(object):
             total_price = ""
             offer_data_json = json.loads(str(offer_data_json))
 
-        qr = qrcode.make("bitcoin:"+_order['address']+"?amount"+str(total_price)+"&message="+offer_data_json['Contract']['item_title'])
+        qr_url = urllib.urlencode({"url":offer_data_json['Contract']['item_title']})
+        qr = qrcode.make("bitcoin:"+_order['address']+"?amount="+str(total_price)+"&message="+qr_url)
         output = StringIO.StringIO()
         qr.save(output, "PNG")
         qr = output.getvalue().encode("base64")
