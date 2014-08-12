@@ -96,7 +96,7 @@ Here are some screenshots of the *alpha* UI so far:
 
 ## License
 
-[Available here](LICENSE)
+[Available here](LICENSE.txt)
 
 =======
 

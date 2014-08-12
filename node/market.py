@@ -71,8 +71,8 @@ class Market(object):
         self._transport.add_callback('peer', self.on_peer)
         self._transport.add_callback('query_page', self.on_query_page)
         self._transport.add_callback('query_listings', self.on_query_listings)
-        self._transport.add_callback('listing_results', self.on_listing_results)
         self._transport.add_callback('page', self.on_page)
+
         self._transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
         self._transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
@@ -98,6 +98,10 @@ class Market(object):
         else:
             self.welcome = False
 
+
+
+    def on_listing_results(self, results):
+        self._log.debug('Listings %s' % results)
 
     def import_contract(self, contract):
 
@@ -148,10 +152,7 @@ class Market(object):
         msg['Seller']['seller_BTC_uncompressed_pubkey'] = self._transport.settings['pubkey']
         msg['Seller']['seller_GUID'] = self._transport._guid
 
-        self._log.info('seller stuff %s' % msg)
-
         # Process and crop thumbs for images
-        self._log.debug('Msg: %s' % msg)
         if msg['Contract'].has_key('item_images'):
             if msg['Contract']['item_images'].has_key('image1'):
 
@@ -168,6 +169,7 @@ class Market(object):
                 croppedImage.save(data, format='PNG')
 
                 new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
+
                 data.close()
 
                 msg['Contract']['item_images'] = new_uri
@@ -483,11 +485,11 @@ class Market(object):
     def on_query_listings(self, peer, page=0):
         self._log.info("Someone is querying your listings: %s" % peer)
         contracts = self.get_contracts(page)
-        contracts['type'] = "listing_results"
-        self._transport.send(contracts, peer['senderGUID'])
 
-    def on_listing_results(self, results):
-        self._log.debug('Listings %s' % results)
+        for contract in contracts['contracts']:
+            contract = contract
+            contract['type'] = "listing_result"
+            self._transport.send(contract, peer['senderGUID'])
 
 
     def on_peer(self, peer):

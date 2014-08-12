@@ -45,6 +45,10 @@ class MarketApplication(tornado.web.Application):
 
         if seed_mode == 0:
             self.transport.join_network(seed_peers, post_joined)
+            ioloop.PeriodicCallback(self.transport.join_network, 60000)
+        else:
+            self.transport.join_network([], post_joined)
+            ioloop.PeriodicCallback(self.transport.join_network, 60000)
 
 
         handlers = [
@@ -64,7 +68,7 @@ class MarketApplication(tornado.web.Application):
     def get_transport(self):
         return self.transport
 
-def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_peers=[], seed_mode=0, dev_mode=False, log_level=None):
+def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_peers=[], seed_mode=0, dev_mode=False, log_level=None, database='db/ob.db'):
 
     logging.basicConfig(level=int(log_level),
                         format='%(asctime)s - %(name)s -  \
@@ -85,7 +89,8 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
                                     bm_port,
                                     seed_peers,
                                     seed_mode,
-                                    dev_mode)
+                                    dev_mode,
+                                    database)
 
 
     error = True
@@ -124,6 +129,7 @@ if __name__ == "__main__":
     parser.add_argument("-S", "--seed_peers", nargs='*', default=[])
     parser.add_argument("-s", "--seed_mode", default=0)
     parser.add_argument("-d", "--dev_mode", action='store_true')
+    parser.add_argument("--database", default='db/ob.db', help="Database filename")
     parser.add_argument("--bmuser", default='username', help="Bitmessage instance user")
     parser.add_argument("--bmpass", default='password', help="Bitmessage instance pass")
     parser.add_argument("--bmport", default='8442', help="Bitmessage instance RPC port")
@@ -131,4 +137,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     start_node(args.my_market_ip,
                args.my_market_port, args.log_file, args.market_id,
-               args.bmuser, args.bmpass, args.bmport, args.seed_peers, args.seed_mode, args.dev_mode, args.log_level)
+               args.bmuser, args.bmpass, args.bmport, args.seed_peers, args.seed_mode, args.dev_mode, args.log_level, args.database)

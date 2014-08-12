@@ -232,7 +232,7 @@ class DHT(object):
                          "foundNodes": contactTriples,
                          "findID": findID})
 
-            if hasattr(new_peer, '_guid') and not self._routingTable.getContact(new_peer._guid):
+            if hasattr(new_peer, '_guid') and new_peer._guid is not '' and not self._routingTable.getContact(new_peer._guid):
                 self._routingTable.addContact(new_peer)
 
     def on_findNodeResponse(self, transport, msg):
@@ -452,12 +452,7 @@ class DHT(object):
 
         if peer:
             if peer.check_port():
-
-                def cb(msg):
-                    self._log.info('Query Listings: %s' % msg)
-                    callback(msg)
-
-                peer.send({'type':'query_listings', 'key':key}, cb)
+                peer.send({'type':'query_listings', 'key':key})
                 return
 
         # Check cache in DHT if peer not available

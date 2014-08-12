@@ -11,6 +11,7 @@ import zmq
 
 ioloop.install()
 import tornado
+import zlib
 from protocol import goodbye, hello_request
 import network_util
 from urlparse import urlparse
@@ -46,7 +47,9 @@ class PeerConnection(object):
 
     def send_raw(self, serialized, callback=lambda msg: None):
 
-        self._stream.send(serialized)
+        compressed_data = zlib.compress(serialized,9)
+
+        self._stream.send(compressed_data)
 
         def cb(msg):
             response = json.loads(msg[0])
@@ -58,6 +61,7 @@ class PeerConnection(object):
                 self._nickname = response['senderNick']
 
             if callback is not None:
+                self._log.debug('%s' % msg)
                 callback(msg)
 
         self._stream.on_recv(cb)
