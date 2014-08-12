@@ -122,6 +122,12 @@ angular.module('app')
       case 'order':
          $scope.parse_order(msg)
          break;
+      case 'store_contracts':
+         $scope.parse_store_listings(msg)
+         break;
+      case 'store_contract':
+         $scope.parse_store_contract(msg)
+         break;
       case 'order_count':
          $scope.parse_order_count(msg)
          break;
@@ -237,23 +243,26 @@ angular.module('app')
 
       $scope.modalOrder = msg.order;
 
-      if(msg.order.state == 'accepted') {
+      if(msg.order.state == 'Accepted') {
         $scope.modalOrder.waitingForPayment = true;
-      } else if (msg.order.state == 'paid') {
-
-        if (msg.order.seller == $scope.myself.pubkey) {
+      } else if (msg.order.state == 'Paid' || msg.order.state == 'Buyer Paid') {
+        console.log('order',msg.order,$scope.myself.guid)
+        if (msg.order.merchant == $scope.myself.guid) {
           $scope.modalOrder.waitingForShipment = true;
         } else {
           $scope.modalOrder.waitingForSellerToShip = true;
         }
-      } else if(msg.order.state == 'sent') {
+      } else if(msg.order.state == 'Sent') {
         $scope.modalOrder.flagForArbitration = true;
       } else {
         $scope.modalOrder.waitingForPayment = false;
       }
 
-      if (!$scope.$$phase) {
+      if(msg.order.state == 'Notarized') {
+        $scope.modalOrder.notary = $scope.myself.guid
+      }
 
+      if (!$scope.$$phase) {
          $scope.$apply();
       }
   }
@@ -274,10 +283,6 @@ angular.module('app')
     socket.send('query_orders', query)
 
   }
-
-
-
-
 
   $scope.parse_myorders = function(msg) {
 
@@ -346,8 +351,6 @@ angular.module('app')
   $scope.parse_store_products = function(msg) {
 
       console.log(msg)
-
-
       $scope.store_products = msg.products;
 
 
@@ -359,6 +362,12 @@ angular.module('app')
       //
       // })
 
+  }
+    $scope.parse_listing_results = function(msg) {
+      $scope.store_products = msg.contracts;
+      if (!$scope.$$phase) {
+         $scope.$apply();
+      }
   }
 
   $scope.parse_response_pubkey = function(msg) {
@@ -535,6 +544,53 @@ angular.module('app')
        $scope.$apply();
     }
   }
+
+  $scope.parse_store_listings = function(msg) {
+
+    contracts = msg.products
+    console.log(contracts[0])
+    $scope.store_listings = []
+    $.each(contracts, function(key, value) {
+        console.log('value',value)
+        $scope.store_listings.push(value.contract_body)
+    });
+
+    //$scope.store_listings = jQuery.unique($scope.store_listings);
+    $.each( $scope.store_listings, function(index, contract){
+        if (jQuery.isEmptyObject(contract.Contract.item_images)) {
+            contract.Contract.item_images = "img/no-photo.png";
+        }
+    });
+
+
+    $('#listing-loader').hide();
+    console.log('New Listing',$scope.store_listings)
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+  }
+
+  $scope.parse_store_contract = function(msg) {
+
+    contract = msg.contract
+    console.log(contract)
+
+    $scope.store_listings.push(contract)
+
+    $scope.store_listings = jQuery.unique($scope.store_listings);
+    $.each( $scope.store_listings, function(index, contract){
+        if (jQuery.isEmptyObject(contract.contract_body.Contract.item_images)) {
+            contract.contract_body.Contract.item_images = "img/no-photo.png";
+        }
+    });
+
+
+    $('#listing-loader').hide();
+    console.log('New Listing',$scope.store_listings)
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
+}
 
   $scope.search_results = [];
   $scope.parse_search_result = function(msg) {
@@ -1011,11 +1067,8 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
 
     socket.send("ship_order", { orderId: orderId} )
 
-    scope.modalOrder.state = 'sent';
+    scope.modalOrder.state = 'Shipped';
     scope.modalOrder.waitingForShipment = false;
-
-    // Refresh orders in background
-    scope.queryMyOrder();
 
     if (!$scope.$$phase) {
        $scope.$apply();
