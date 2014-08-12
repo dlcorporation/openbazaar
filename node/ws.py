@@ -128,7 +128,7 @@ class ProtocolHandler:
 
     def client_check_order_count(self, socket_handler, msg):
         self._log.debug('Checking order count')
-        self.send_to_client(None, {"type": "order_count", "count": self._db.numEntries("orders",{"market_id":self._transport._market_id})})
+        self.send_to_client(None, {"type": "order_count", "count": self._db.numEntries("orders",{"market_id":self._transport._market_id, "state":"Waiting for Payment"},"AND")})
 
     def refresh_peers(self):
         self._log.info("Peers command")

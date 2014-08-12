@@ -196,7 +196,7 @@ angular.module('app')
 
   $scope.parse_order_count = function(msg) {
     console.log(msg)
-    $scope.orders_total = msg.count
+    $scope.orders_new = msg.count
     if (!$scope.$$phase) {
 	       $scope.$apply();
 	    }
