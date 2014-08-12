@@ -372,7 +372,7 @@ class CryptoTransportLayer(TransportLayer):
         if seed_peers:
             for seed in seed_peers:
 
-                if self._dev_mode and seed.iptype() is 'PRIVATE':
+                if self._dev_mode and IP(seed).iptype() is 'PRIVATE':
                     new_peer = CryptoPeerConnection(self, 'tcp://%s:12345' % seed)
                     if not new_peer._connected:
                         self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
