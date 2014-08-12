@@ -84,7 +84,7 @@
                 <div id="header-navigation">
                     <ul class="nav nav-pills">
                          <li><a href="/">Home</a></li>
-                        <li id="pill-orders"><a href="#orders" ng-click="showDashboardPanel('orders')">Orders <span class="badge" ng-show="orders_total">{{orders_total}}</span></a></li>
+                        <li id="pill-orders"><a href="#orders" ng-click="showDashboardPanel('orders')">Orders <span class="badge" style="color: #5bc0de;background-color: #fff;" ng-show="orders_new">{{orders_new}}</span></a></li>
                         <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
                         <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Contracts</a></li>
                         <li class="dropdown"><a href="#arbitration" data-toggle="dropdown" class="dropdown-toggle">Arbitration <b class="caret"></b></a>
@@ -956,12 +956,8 @@
             <div ng-controller="BuyItemCtrl">
 
             <div id="listing-loader">
-                 <div style="margin-bottom:10px">No listings found yet. Searching...</div>
-                 <div class="progress progress-striped active" style="width:50%">
-                  <div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 25%">
-                    <span class="sr-only">Loading...</span>
-                  </div>
-                </div>
+                 <div style="margin-bottom:10px"><img src="img/ajax-loader.gif" width="25"/> Looking for contracts...</div>
+
             </div>
 
 
