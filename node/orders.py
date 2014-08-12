@@ -48,7 +48,7 @@ class Orders(object):
             else:
                 shipping_price = 0
             total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
-        elif _order['state'] in ('Paid'):
+        elif _order['state'] in ('Paid', 'Buyer Paid', 'Shipped'):
             offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
             index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
             offer_data_json = offer_data[0:index_of_seller_signature-4]
@@ -115,6 +115,36 @@ class Orders(object):
         self._transport.send(new_order, seller)
 
         self._db.insertEntry("orders", new_order)
+
+    def ship_order(self, order, order_id):
+        self._log.info('Shipping order')
+
+        del order['qrcode']
+        del order['item_image']
+        del order['total_price']
+        del order['item_title']
+
+        order['state'] = "Shipped"
+        self._db.updateEntries("orders", {"order_id": order_id}, order)
+
+        order['type'] = 'order'
+
+        # Find Seller Data in Contract
+        offer_data = ''.join(order['signed_contract_body'].split('\n')[8:])
+        index_of_seller_signature = offer_data.find('- - -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        offer_data_json = offer_data[0:index_of_seller_signature]
+        self._log.info('Offer Data: %s' % offer_data_json)
+        offer_data_json = json.loads(str(offer_data_json))
+
+        # Find Buyer Data in Contract
+        self._log.info(offer_data)
+        bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
+        end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+        bid_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = json.loads(bid_data_json)
+        self._log.info('Bid Data: %s' % bid_data_json)
+
+        self._transport.send(order, bid_data_json['Buyer']['buyer_GUID'])
 
 
     def accept_order(self, new_order):
@@ -370,6 +400,8 @@ class Orders(object):
         bid_data_json = json.loads(bid_data_json)
         self._log.info('Bid Data: %s' % bid_data_json)
 
+        buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
+
         multisig = Multisig(None, 2, [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'].decode('hex'),
                                       bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
                                       self._transport.settings['pubkey'].decode('hex')])
@@ -380,6 +412,7 @@ class Orders(object):
                      'contract_key': contract_key,
                      'signed_contract_body': str(signed_data),
                      'state': 'Notarized',
+                     'buyer_order_id': buyer_order_id,
                      'order_id': order_id,
                      'merchant': offer_data_json['Seller']['seller_GUID'],
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
@@ -426,6 +459,23 @@ class Orders(object):
         buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
 
         self._db.updateEntries("orders", {'buyer_order_id': buyer_order_id}, {'state':'Buyer Paid',
+                     "updated": time.time()})
+
+    def handle_shipped_order(self, msg):
+        self._log.info('Entering Shipped Order handling')
+        self._log.debug('Shipped Order %s' % msg)
+
+        offer_data = ''.join(msg['signed_contract_body'].split('\n')[8:])
+        index_of_seller_signature = offer_data.find('- - -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        offer_data_json = offer_data[0:index_of_seller_signature]
+        offer_data_json = json.loads(str(offer_data_json))
+
+        bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
+        end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+        bid_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = json.loads(bid_data_json)
+
+        self._db.updateEntries("orders", {'order_id': bid_data_json['Buyer']['buyer_order_id']}, {'state':'Shipped',
                      "updated": time.time()})
 
 
@@ -535,6 +585,9 @@ class Orders(object):
             self._log.info('You received a payment notification')
             self.handle_paid_order(msg)
 
+        if state == 'Shipped':
+            self._log.info('You received a shipping notification')
+            self.handle_shipped_order(msg)
             #
             #
             # state = msg.get('state')

@@ -245,9 +245,9 @@ angular.module('app')
 
       if(msg.order.state == 'Accepted') {
         $scope.modalOrder.waitingForPayment = true;
-      } else if (msg.order.state == 'Paid') {
-
-        if (msg.order.seller == $scope.myself.pubkey) {
+      } else if (msg.order.state == 'Paid' || msg.order.state == 'Buyer Paid') {
+        console.log('order',msg.order,$scope.myself.guid)
+        if (msg.order.merchant == $scope.myself.guid) {
           $scope.modalOrder.waitingForShipment = true;
         } else {
           $scope.modalOrder.waitingForSellerToShip = true;
@@ -1067,11 +1067,8 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
 
     socket.send("ship_order", { orderId: orderId} )
 
-    scope.modalOrder.state = 'sent';
+    scope.modalOrder.state = 'Shipped';
     scope.modalOrder.waitingForShipment = false;
-
-    // Refresh orders in background
-    scope.queryMyOrder();
 
     if (!$scope.$$phase) {
        $scope.$apply();
