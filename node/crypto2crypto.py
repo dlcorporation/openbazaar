@@ -17,6 +17,7 @@ import time
 import requests
 from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
 import zlib
+from IPy import IP
 
 ioloop.install()
 
@@ -157,6 +158,7 @@ class CryptoTransportLayer(TransportLayer):
         self._uri = "tcp://%s:%s" % (my_ip, my_port)
         self._ip = my_ip
         self._nickname = ""
+        self._dev_mode = dev_mode
 
         # Set up
         self._setup_settings()
@@ -214,6 +216,8 @@ class CryptoTransportLayer(TransportLayer):
         #    self._db.updateEntries("peers", {"id":results[0]['id']}, {"market_id":self._market_id,"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
         #else:
         self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname, "market_id":self._market_id})
+
+
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -367,10 +371,15 @@ class CryptoTransportLayer(TransportLayer):
         # Connect up through seed servers
         if seed_peers:
             for seed in seed_peers:
-                new_peer = CryptoPeerConnection(self, 'tcp://%s:12345' % seed)
-                if not new_peer._connected:
-                    self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
 
+                if self._dev_mode and seed.iptype() is 'PRIVATE':
+                    new_peer = CryptoPeerConnection(self, 'tcp://%s:12345' % seed)
+                    if not new_peer._connected:
+                        self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
+                else:
+                    new_peer = CryptoPeerConnection(self, 'tcp://%s:12345' % seed)
+                    if not new_peer._connected:
+                        self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
 
         # Connect to persisted peers
         known_peers = self._db.selectEntries("peers", {"market_id": self._market_id})
@@ -381,7 +390,8 @@ class CryptoTransportLayer(TransportLayer):
 
         self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
 
-        callback()
+        if callback is not None:
+            callback()
 
 
     def get_crypto_peer(self, guid, uri, pubkey=None, nickname=None):
