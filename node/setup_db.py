@@ -10,7 +10,7 @@ from os import path, remove
 import sqlite3
 import sys
 
-from node import constants
+import constants
 
 DB_PATH = constants.DB_PATH
 
