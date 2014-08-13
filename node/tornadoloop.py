@@ -1,21 +1,17 @@
-import sys, os, argparse
-
-import tornado.ioloop
+import sys, argparse
 import tornado.web
-import tornado.ioloop
-from zmq.eventloop import ioloop
 
+from zmq.eventloop import ioloop
 ioloop.install()
+
 from crypto2crypto import CryptoTransportLayer
 from db_store import Obdb
 from market import Market
 from ws import WebSocketHandler
 import logging
 import signal
-import time
 from threading import Thread
 from twisted.internet import reactor
-
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -45,12 +41,8 @@ class MarketApplication(tornado.web.Application):
             self.transport._dht._refreshNode()
             self.market.republish_contracts()
 
-        if seed_mode == 0:
-            self.transport.join_network(seed_peers, post_joined)
-            ioloop.PeriodicCallback(self.transport.join_network, 60000)
-        else:
-            self.transport.join_network([], post_joined)
-            ioloop.PeriodicCallback(self.transport.join_network, 60000)
+        self.transport.join_network(seed_peers if seed_mode==0 else [], post_joined)
+        ioloop.PeriodicCallback(self.transport.join_network, 60000)
 
         Thread(target=reactor.run, args=(False,)).start()
 
@@ -66,9 +58,6 @@ class MarketApplication(tornado.web.Application):
         settings = dict(debug=True)
         tornado.web.Application.__init__(self, handlers, **settings)
 
-
-
-
     def get_transport(self):
         return self.transport
 
@@ -81,8 +70,8 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
 
     locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
 
-    handler = logging.handlers.RotatingFileHandler(
-              log_file, maxBytes=20, backupCount=2)
+    #handler = logging.handlers.RotatingFileHandler(
+    #          log_file, maxBytes=20, backupCount=2)
     #locallogger.addHandler(handler)
 
     application = MarketApplication(my_market_ip,
