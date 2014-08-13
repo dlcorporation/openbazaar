@@ -51,6 +51,12 @@ angular.module('app')
   $scope.myReviews = []
   $scope.sidebar = true
 
+
+
+
+
+
+
   $scope.createShout = function() {
      // launch a shout
      console.log($scope)
@@ -205,12 +211,16 @@ angular.module('app')
 	    }
   }
 
+
+
   $scope.parse_log_output = function(msg) {
     console.log(msg)
     $scope.log_output += msg.line
+
     if (!$scope.$$phase) {
        $scope.$apply();
     }
+
   }
 
   $scope.parse_notaries = function(msg) {
@@ -1551,3 +1561,4 @@ $scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my
 };
 
 }])
+
