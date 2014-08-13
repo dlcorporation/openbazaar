@@ -133,6 +133,7 @@ elif [ "$DEVELOPMENT" == 0 ]; then
 
     if [ ! -f $DBDIR/$DBFILE ]; then
        echo "File $DBFILE does not exist. Running setup script."
+       export PYTHONPATH=$PYTHONPATH:`pwd`
        $PYTHON util/setup_db.py db/ob.db
        wait
     fi
@@ -145,6 +146,7 @@ else
 
 	if [ ! -f $DBDIR/ob-dev.db ]; then
        echo "File $DBFILE does not exist. Running setup script."
+       export PYTHONPATH=$PYTHONPATH:`pwd`
        $PYTHON util/setup_db.py db/ob-dev.db
        wait
     fi
@@ -157,13 +159,11 @@ else
         sleep 2
         if [ ! -f db/ob-dev-$i.db ]; then
            echo "File db/ob-dev-$i.db does not exist. Running setup script."
+           export PYTHONPATH=$PYTHONPATH:`pwd`
            $PYTHON util/setup_db.py db/ob-dev-$i.db
            wait
         fi
 	    $PYTHON node/tornadoloop.py 127.0.0.$i --database db/ob-dev-$i.db -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL &
 	    ((i=i+1))
     done
-
-
-
 fi
