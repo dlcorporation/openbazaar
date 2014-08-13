@@ -68,6 +68,7 @@ class ProtocolHandler:
             "import_raw_contract": self.client_import_raw_contract,
             "create_contract": self.client_create_contract,
             "clear_dht_data": self.client_clear_dht_data,
+            "clear_peers_data": self.client_clear_peers_data,
         }
 
         self._timeouts = []
@@ -115,6 +116,10 @@ class ProtocolHandler:
     def client_clear_dht_data(self, socket_handler, msg):
         self._log.debug('Clearing DHT Data')
         self._db.deleteEntries("datastore")
+
+    def client_clear_peers_data(self, socket_handler, msg):
+        self._log.debug('Clearing Peers Data')
+        self._db.deleteEntries("peers")
 
     # Requests coming from the client
     def client_connect(self, socket_handler, msg):

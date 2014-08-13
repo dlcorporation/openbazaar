@@ -750,8 +750,14 @@ angular.module('app')
   }
 
 
-  $scope.clearDHTData = function() {queryShop
+  $scope.clearDHTData = function() {
     socket.send('clear_dht_data', {});
+    Notifier.success('Success', 'DHT cache cleared');
+  }
+
+  $scope.clearPeers = function() {
+    socket.send('clear_peers_data', {});
+    Notifier.success('Success', 'Peers table cleared');
   }
 
   $scope.addNotary = function(notary) {
