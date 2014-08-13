@@ -1,28 +1,23 @@
-import sys, os, hashlib, xmlrpclib
+from IPy import IP
+from dht import DHT
+from p2p import PeerConnection, TransportLayer
+from pprint import pformat
+from protocol import hello_request, hello_response, proto_response_pubkey
+from urlparse import urlparse
+from zmq.eventloop import ioloop
+from zmq.eventloop.ioloop import PeriodicCallback
+import gnupg
+import hashlib, xmlrpclib
 import json
 import logging
-import traceback
-from urlparse import urlparse
-import gnupg
-
 import obelisk
-from protocol import hello_request, hello_response, proto_response_pubkey
 import pyelliptic as ec
-from p2p import PeerConnection, TransportLayer
-from dht import DHT
-from zmq.eventloop import ioloop
-from pprint import pprint, pformat
-import socket
-import time
 import requests
-from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
+import socket
+import traceback
 import zlib
-from IPy import IP
 
 ioloop.install()
-
-
-
 
 class CryptoPeerConnection(PeerConnection):
 
