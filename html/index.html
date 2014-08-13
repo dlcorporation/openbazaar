@@ -556,6 +556,7 @@
             </div>
         </div>
 
+        <div style="margin:20px 0">
         <h4>Developer Tools</h4>
 
         <div>
@@ -563,8 +564,12 @@
             <button class="btn btn-info" ng-click="clearPeers()">Clear Peers</button>
             <button class="btn btn-info" ng-click="restartServer()">Restart Server</button>
         </div>
+        </div>
 
-
+        <div style="margin:20px 0">
+        <h4>Log</h4>
+        <div style="white-space:pre;height:600px;overflow:scroll;word-wrap:break-word" class="col-sm-12 well">{{log_output}}</div>
+        </div>
 
 
     </form>

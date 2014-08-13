@@ -122,6 +122,9 @@ angular.module('app')
       case 'order':
          $scope.parse_order(msg)
          break;
+      case 'log_output':
+         $scope.parse_log_output(msg)
+         break;
       case 'store_contracts':
          $scope.parse_store_listings(msg)
          break;
@@ -200,6 +203,14 @@ angular.module('app')
     if (!$scope.$$phase) {
 	       $scope.$apply();
 	    }
+  }
+
+  $scope.parse_log_output = function(msg) {
+    console.log(msg)
+    $scope.log_output += msg.line
+    if (!$scope.$$phase) {
+       $scope.$apply();
+    }
   }
 
   $scope.parse_notaries = function(msg) {
