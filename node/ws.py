@@ -168,7 +168,7 @@ class ProtocolHandler:
         #self.loop.add_timeout(time.time() + .5, lambda query_id=query_id: unreachable_market(query_id))
 
 
-    def client_query_orders(self, socket_handler, msg):
+    def client_query_orders(self, socket_handler=None, msg=None):
 
         self._log.info("Querying for Orders %s " % msg)
 
@@ -255,6 +255,7 @@ class ProtocolHandler:
 
         # Send to exchange partner
         self._market.orders.pay_order(order, msg['orderId'])
+
 
     def client_ship_order(self, socket_handler, msg):
 
