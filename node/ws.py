@@ -112,8 +112,6 @@ class ProtocolHandler:
         self.stream.read_until("\n", self.line_from_nettail)
 
 
-
-
     def line_from_nettail(self, data):
         self.send_to_client(None, {"type":"log_output", "line":data})
         self.stream.read_until("\n", self.line_from_nettail)
