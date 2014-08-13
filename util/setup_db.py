@@ -6,13 +6,14 @@
 #
 # The docstrings in this module contain epytext markup; API documentation
 # may be created by processing this file with epydoc: http://epydoc.sf.net
-import sqlite3
 from os import path, remove
+import sqlite3
 import sys
 
-DB_PATH = "db/ob.db"
+from node import constants
 
-# TODO: Move DB_PATH to constants file.
+DB_PATH = constants.DB_PATH
+
 # TODO: Use actual foreign keys.
 # TODO: Use indexes.
 # TODO: Maybe it makes sense to put tags on a different table

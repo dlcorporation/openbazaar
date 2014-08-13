@@ -29,3 +29,5 @@ checkRefreshInterval = refreshTimeout / 5
 #: Max size of a single UDP datagram, in bytes. If a message is larger than this, it will
 #: be spread accross several UDP packets.
 udpDatagramMaxSize = 8192  # 8 KB
+
+DB_PATH = "db/ob.db"
