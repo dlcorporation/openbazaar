@@ -7,10 +7,10 @@ $ sudo pip install twisted
 $ python identity.py
 ```
 
-see files send_ident.py and query_ident.py
+see files `send_ident.py` and `query_ident.py`
 
 
 OSX Users: 
 
-You may get a missing _bsddb issue. Install python27 via MacPorts and then install py-bsddb
+You may get a `missing _bsddb` issue. Install `python27` via MacPorts and then install `py-bsddb`
 
