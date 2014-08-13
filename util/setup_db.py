@@ -14,7 +14,6 @@ from node import constants
 
 DB_PATH = constants.DB_PATH
 
-# TODO: Use actual foreign keys.
 # TODO: Use indexes.
 # TODO: Maybe it makes sense to put tags on a different table
 
@@ -44,7 +43,8 @@ def setup_db(db_path):
                         "item_condition TEXT, " \
                         "item_quantity_available, " \
                         "state TEXT, " \
-                        "key TEXT)")
+                        "key TEXT, "\
+                        "FOREIGN KEY(market_id) REFERENCES markets(id))")
 
             cur.execute("CREATE TABLE products(" \
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
@@ -56,7 +56,8 @@ def setup_db(db_path):
                         "imageData BLOB, " \
                         "productQuantity INT, " \
                         "productTags TEXT, " \
-                        "key TEXT)")
+                        "key TEXT, " \
+                        "FOREIGN KEY(market_id) REFERENCES markets(id))")
 
             cur.execute("CREATE TABLE orders(" \
                         "id INTEGER PRIMARY KEY " \
@@ -78,7 +79,8 @@ def setup_db(db_path):
                         "contract_key TEXT, " \
                         "signed_contract_body TEXT, " \
                         "updated INT, " \
-                        "created INT)")
+                        "created INT, " \
+                        "FOREIGN KEY(market_id) REFERENCES markets(id))")
 
             cur.execute("CREATE TABLE peers(" \
                         "id INTEGER PRIMARY KEY " \
@@ -90,6 +92,8 @@ def setup_db(db_path):
                         "guid TEXT, " \
                         "updated INT, " \
                         "created INT)")
+            #not sure if peers.market_id is actually supposed to be a TEXT field or an INT with foreign key
+            #referencing the markets(id)
 
             cur.execute("CREATE TABLE settings(" \
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
@@ -120,12 +124,14 @@ def setup_db(db_path):
                         "privkey TEXT, " \
                         "obelisk TEXT, " \
                         "notaries TEXT, " \
-                        "notary BOOLEAN)")
+                        "notary BOOLEAN, " \
+                        "FOREIGN KEY(market_id) REFERENCES markets(id))")
 
             cur.execute("CREATE TABLE escrows(" \
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
                         "order_id INT, " \
-                        "address TEXT)")
+                        "address TEXT, " \
+                        "FOREIGN KEY(order_id) REFERENCES orders(id))")
 
             cur.execute("CREATE TABLE reviews(" \
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
@@ -142,7 +148,8 @@ def setup_db(db_path):
                         "lastPublished TEXT, " \
                         "originallyPublished TEXT, " \
                         "originalPublisherID TEXT, " \
-                        "value TEXT)")
+                        "value TEXT, " \
+                        "FOREIGN KEY(market_id) REFERENCES markets(id))")
 
 
 def remove_db(db_path):
