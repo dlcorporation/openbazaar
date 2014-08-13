@@ -7,9 +7,11 @@ import logging
 
 import tornado.websocket
 from zmq.eventloop import ioloop
+from zmq.eventloop.ioloop import PeriodicCallback
 
 import tornado.platform.twisted
 from twisted.internet import reactor
+import subprocess
 
 import protocol
 import pycountry
@@ -69,6 +71,7 @@ class ProtocolHandler:
             "create_contract": self.client_create_contract,
             "clear_dht_data": self.client_clear_dht_data,
             "clear_peers_data": self.client_clear_peers_data,
+            "read_log": self.client_read_log,
         }
 
         self._timeouts = []
@@ -99,6 +102,19 @@ class ProtocolHandler:
         }
 
         self.send_to_client(None, message)
+
+    def client_read_log(self, socket_handler, msg):
+        self.p = subprocess.Popen(
+            ["tail", "-f", "logs/development.log", "logs/production.log"],
+            stdout=subprocess.PIPE)
+
+        self.stream = tornado.iostream.PipeIOStream(self.p.stdout.fileno())
+        self.stream.read_until("\n", self.line_from_nettail)
+
+
+    def line_from_nettail(self, data):
+        self.send_to_client(None, {"type":"log_output", "line":data})
+        self.stream.read_until("\n", self.line_from_nettail)
 
     def on_listing_results(self, msg):
         self._log.debug('Found results %s' % msg)

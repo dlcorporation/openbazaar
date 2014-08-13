@@ -27,6 +27,7 @@ import gnupg
 import ast
 import string
 import ws
+import time
 
 class Market(object):
 
@@ -84,6 +85,7 @@ class Market(object):
                                                     constants.refreshTimeout,
                                                     io_loop=loop)
         refreshCB.start()
+
 
 
     def load_page(self, welcome):
