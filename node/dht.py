@@ -1,17 +1,14 @@
+from protocol import proto_store
+from urlparse import urlparse
+import constants
+import datastore
+import hashlib
 import json
 import logging
-import hashlib
 import os
-import time
-from urlparse import urlparse
-from threading import Thread
-
 import routingtable
-import datastore
-import constants
-from pprint import pprint, pformat
-from protocol import proto_store
-import obelisk
+import time
+
 
 class DHT(object):
     def __init__(self, transport, market_id, settings, db_connection):
