@@ -293,7 +293,7 @@ angular.module('app')
 
       if (!$scope.$$phase) {
 	       $scope.$apply();
-	    }
+	  }
 
   }
 
@@ -912,9 +912,12 @@ angular.module('app')
 
   $scope.queryMyOrder = function() {
     	// Query for orders
-    	var query = {'type': 'query_orders', 'pubkey': ''}
-    	console.log('querying orders')
+    	var query = {'type': 'query_orders'}
+    	console.log('querying orders', query)
     	socket.send('query_orders', query)
+    	if (!$scope.$$phase) {
+           $scope.$apply();
+        }
 
   }
 
