@@ -114,6 +114,9 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
         locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
         locallogger.info("Received TERMINATE, exiting...")
         #application.get_transport().broadcast_goodbye()
+
+        application.market.p.kill()
+
         sys.exit(0)
     try:
         signal.signal(signal.SIGTERM, shutdown)

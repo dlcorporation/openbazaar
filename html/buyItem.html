@@ -72,7 +72,8 @@
 
             <div class="alert alert-warning">Use the form below to select an arbiter and notary. By doing this you are protecting yourself in the
             case that something goes wrong with your transaction and ensures things go smoothly.<br/><br/>You can add a notary or
-            arbiter on the <strong>Settings Page</strong> or <a href="https://github.com/OpenBazaar/OpenBazaar/wiki/Contracts-and-Listings" target="_blank">find out more here</a>.</div>
+            arbiter on the <strong>Settings Page</strong> or <a href="https://github.com/OpenBazaar/OpenBazaar/wiki/Contracts-and-Listings" target="_blank">find out more here</a>.
+            </div>
 
             <div class="form-group row" ng-show="!!notaries.length">
                 <div class="col-sm-12">
@@ -81,6 +82,7 @@
                 <select id="notary" ng-model="order.notary" ng-options="notary.guid as notary.nickname+' ('+notary.guid+')' for notary in notaries" class="form-control col-sm-12"></select>
                 </div>
             </div>
+
 
 
             <!--<div class="form-group row">-->

@@ -104,12 +104,14 @@ class ProtocolHandler:
         self.send_to_client(None, message)
 
     def client_read_log(self, socket_handler, msg):
-        self.p = subprocess.Popen(
+        self._market.p = subprocess.Popen(
             ["tail", "-f", "logs/development.log", "logs/production.log"],
             stdout=subprocess.PIPE)
 
-        self.stream = tornado.iostream.PipeIOStream(self.p.stdout.fileno())
+        self.stream = tornado.iostream.PipeIOStream(self._market.p.stdout.fileno())
         self.stream.read_until("\n", self.line_from_nettail)
+
+
 
 
     def line_from_nettail(self, data):
