@@ -234,9 +234,8 @@ class ProtocolHandler:
         self._market.republish_contracts()
 
     def client_import_raw_contract(self, socket_handler, contract):
-
-        self._log.info("Importing New Contract")
-        self._market.import_contract(contract)
+        self._log.info("Importing New Contract (NOT IMPLEMENTED! TODO: Market.import_contract(contract)")
+        #self._market.import_contract(contract)
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
