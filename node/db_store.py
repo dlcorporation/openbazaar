@@ -45,16 +45,16 @@ class Obdb():
                 d[col[0]] = row[idx]
         return d
 
-    def getOrCreate(self, table, get_where_dict, operator="AND"):
+    def getOrCreate(self, table, where_clause, data_dict):
         """ This method attempts to grab the record first. If it fails to find it,
         it will create it.
         @param table: The table to search to
         @param get_where_dict: A dictionary with the WHERE/SET clauses
         """
-        entries = self.selectEntries(table, get_where_dict, operator)
+        entries = self.selectEntries(table, where_clause)
         if len(entries) == 0:
-            self.insertEntry(table, get_where_dict)
-        return self.selectEntries(table, get_where_dict, operator)[0]
+            self.insertEntry(table, data_dict)
+        return self.selectEntries(table, where_clause)[0]
 
 
     def updateEntries(self, table, where_dict, set_dict, operator="AND"):
@@ -131,7 +131,7 @@ class Obdb():
         if lastrowid:
             return lastrowid
 
-    def selectEntries(self, table, where_dict={"\"1\"":"1"}, operator="AND", order_field="id", order="ASC", limit=None, limit_offset=None):
+    def selectEntries(self, table, where_clause="'1'='1'", order_field="id", order="ASC", limit=None, limit_offset=None):
         """ A wrapper for the SQL SELECT operation. It will always return all the
             attributes for the selected rows.
         @param table: The table to search to
@@ -142,25 +142,17 @@ class Obdb():
         with self.con:
             cur = self.con.cursor()
             first = True
-            for key, value in where_dict.iteritems():
-                key = str(key).replace("'","''");
-                value = str(value).replace("'","''");
-                if first:
-                    where_part = "%s = '%s'" % (key, value)
-                    first = False
-                else:
-                    where_part = where_part + "%s %s = '%s'" % (operator, key, value)
 
-                if limit != None and limit_offset is None:
-                    limit_clause = "LIMIT %s" % limit
-                elif limit != None and limit_offset is not None:
-                      limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
-                else:
-                    limit_clause = ""
 
+            if limit != None and limit_offset is None:
+                limit_clause = "LIMIT %s" % limit
+            elif limit != None and limit_offset is not None:
+                  limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
+            else:
+                limit_clause = ""
 
             query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
-                    % (table, where_part, order_field, order, limit_clause)
+                    % (table, where_clause, order_field, order, limit_clause)
             self._log.debug("query: %s "% query)
             cur.execute(query)
             rows = cur.fetchall()
@@ -194,21 +186,14 @@ class Obdb():
             cur.execute(query)
         self._disconnectFromDb()
 
-    def numEntries(self, table, where_dict={"\"1\"":"1"}, operator="AND"):
+    def numEntries(self, table, where_clause="'1'='1'"):
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
             first = True
-            for key, value in where_dict.iteritems():
-                key = str(key).replace("'","''");
-                value = str(value).replace("'","''");
-                if first:
-                    where_part = "%s = '%s'" % (key, value)
-                    first = False
-                else:
-                    where_part = where_part + "%s %s = '%s'" % (operator, key, value)
+
             query = "SELECT count(*) as count FROM %s WHERE %s" \
-                    % (table, where_part)
+                    % (table, where_clause)
             self._log.debug('query: %s' % query)
             cur.execute(query)
             rows = cur.fetchall()

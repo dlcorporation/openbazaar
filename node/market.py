@@ -100,7 +100,8 @@ class Market(object):
         else:
             self.welcome = False
 
-
+    def private_key(self):
+        return self.settings['privkey']
 
     def on_listing_results(self, results):
         self._log.debug('Listings %s' % results)
@@ -147,7 +148,7 @@ class Market(object):
         gpg = gnupg.GPG()
 
         # Insert PGP Key
-        self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})[0]
+        self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)[0]
 
         self._log.debug('Settings %s' % self._transport.settings)
         msg['Seller']['seller_PGP'] = gpg.export_keys(self._transport.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
@@ -272,7 +273,7 @@ class Market(object):
         contract_index_key = hashvalue.hexdigest()
 
         # Calculate index of contracts
-        contract_ids = self._db.selectEntries("contracts", {"market_id":self._transport._market_id})
+        contract_ids = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id)
         my_contracts = []
         for contract_id in contract_ids:
             my_contracts.append(contract_id['key'])
@@ -355,7 +356,7 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
-        contracts = self._db.selectEntries("contracts", {"market_id": self._transport._market_id}, limit=10, limit_offset=(page*10))
+        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id, limit=10, limit_offset=(page*10))
         my_contracts = []
 
         for contract in contracts:
@@ -412,7 +413,7 @@ class Market(object):
     def get_settings(self):
 
         self._log.info('Getting settings info for Market %s' % self._transport._market_id)
-        settings = self._db.getOrCreate("settings", {"market_id": self._transport._market_id})
+        settings = self._db.getOrCreate("settings", "market_id = '%s'" % self._transport._market_id, {"market_id":self._transport._market_id})
 
         if settings['arbiter'] == 1:
           settings['arbiter'] = True

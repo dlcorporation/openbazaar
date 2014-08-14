@@ -149,7 +149,7 @@ class ProtocolHandler:
 
     def client_check_order_count(self, socket_handler, msg):
         self._log.debug('Checking order count')
-        self.send_to_client(None, {"type": "order_count", "count": self._db.numEntries("orders",{"market_id":self._transport._market_id, "state":"Waiting for Payment"},"AND")})
+        self.send_to_client(None, {"type": "order_count", "count": self._db.numEntries("orders","market_id = '%s' and state = '%s'" % (self._transport._market_id, "Waiting for Payment"))})
 
     def refresh_peers(self):
         self._log.info("Peers command")
@@ -198,7 +198,14 @@ class ProtocolHandler:
         else:
             page = 0
 
-        orders = self._market.orders.get_orders(page)
+        if msg is not None and 'merchant' in msg:
+            if msg['merchant'] == 1:
+                orders = self._market.orders.get_orders(page, True)
+            else:
+                orders = self._market.orders.get_orders(page, False)
+        else:
+            orders = self._market.orders.get_orders(page)
+
 
         self.send_to_client(None, {"type": "myorders", "page":page, "total": orders['total'], "orders": orders['orders']})
 
@@ -328,8 +335,6 @@ class ProtocolHandler:
 
                 # Debug
                 self._log.info('%s %s' % (ec, history))
-                for item in history:
-                    self._log.info(item[0].encode('hex'))
 
                 if ec is not None:
                     self._log.error("Error fetching history: %s" % ec)
@@ -338,8 +343,15 @@ class ProtocolHandler:
 
                 # Create unsigned transaction
                 unspent = [row[:4] for row in history if row[4] is None]
-                tx = multisig._build_actual_tx(unspent, '')
-                self._log.info('TX %s' % tx)
+                tx = multisig._build_actual_tx(unspent, '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt')
+                self._log.info(tx.serialize().encode("hex"))
+
+                private_key = self._market.private_key()
+
+                buyer_signed_tx = multisig.sign_all_inputs(tx, private_key.decode('hex'))
+
+                self.send_to_client(None, {"type":"signed_tx_sent", "test":"teest"})
+
 
 
             def get_history():
@@ -347,19 +359,22 @@ class ProtocolHandler:
 
             reactor.callFromThread(get_history)
 
-            def finished_cb(msg):
-                self._log.info('tx %s' % msg)
 
-            #multisig.create_unsigned_transaction('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', finished_cb)
 
-            def fetched(ec, history):
-                self._log.info(history)
-                if ec is not None:
-                    self._log.error("Error fetching history: %s" % ec)
-                    return
-                self._fetched(history, '1Fufjpf9RM2aQsGedhSpbSCGRHrmLMJ7yY', finished_cb)
 
-            #client.fetch_history('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', fetched)
+            # def finished_cb(msg):
+            #     self._log.info('tx %s' % msg)
+            #
+            # #multisig.create_unsigned_transaction('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', finished_cb)
+            #
+            # def fetched(ec, history):
+            #     self._log.info(history)
+            #     if ec is not None:
+            #         self._log.error("Error fetching history: %s" % ec)
+            #         return
+            #     self._fetched(history, '1EzD5Tj9fa5jqV1mCCBy7kW43TYEsJsZw6', finished_cb)
+            #
+            # #client.fetch_history('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', fetched)
 
 
         except Exception, e:

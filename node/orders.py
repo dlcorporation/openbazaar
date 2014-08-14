@@ -42,7 +42,7 @@ class Orders(object):
 
     def get_order(self, orderId):
 
-        _order = self._db.selectEntries("orders", {"order_id": orderId})[0]
+        _order = self._db.selectEntries("orders", "order_id = '%s'" % orderId)[0]
 
         offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
         index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
@@ -95,9 +95,30 @@ class Orders(object):
 
         return order
 
-    def get_orders(self, page=0):
-        orders = self._db.selectEntries("orders", {'market_id': self._market_id}, order_field="updated", order="DESC", limit=10, limit_offset=page*10)
-        return {"total": self._db.numEntries("orders", {'market_id': self._market_id}), "orders":orders}
+    def get_orders(self, page=0, merchant=None):
+
+        if merchant is None:
+            orders = self._db.selectEntries("orders", "market_id = '%s'" % self._market_id, order_field="updated", order="DESC", limit=10, limit_offset=page*10)
+            total_orders = self._db.numEntries("orders", "market_id = '%s'" % self._market_id)
+        else:
+            if merchant:
+                orders = self._db.selectEntries("orders", "market_id = '%s' and merchant = '%s'" % (self._market_id, self._transport._guid), order_field="updated", order="DESC", limit=10, limit_offset=page*10)
+                total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant = '%s'" % (self._market_id, self._transport._guid))
+            else:
+                orders = self._db.selectEntries("orders", "market_id = '%s' and merchant <> '%s'" % (self._market_id, self._transport._guid), order_field="updated", order="DESC", limit=10, limit_offset=page*10)
+                total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant <> '%s'" % (self._market_id, self._transport._guid))
+
+        for order in orders:
+            buyer = self._db.selectEntries("peers", "guid = '%s'" % order['buyer'])
+            if len(buyer) > 0:
+                order['buyer_nickname'] = buyer[0]['nickname']
+            merchant = self._db.selectEntries("peers", "guid = '%s'" % order['merchant'])
+            if len(merchant) > 0:
+                order['merchant_nickname'] = merchant[0]['nickname']
+
+
+
+        return {"total": total_orders, "orders":orders}
 
 
     # Create a new order
@@ -251,7 +272,7 @@ class Orders(object):
 
         # Save order locally in database
         order_id = random.randint(0, 1000000)
-        while self._db.numEntries("orders",{'id': order_id}) > 0:
+        while self._db.numEntries("orders","id = '%s'" % order_id) > 0:
             order_id = random.randint(0, 1000000)
 
         buyer = {}
@@ -319,7 +340,7 @@ class Orders(object):
 
         # Generate unique id for this bid
         order_id = random.randint(0, 1000000)
-        while self._db.numEntries("contracts",{'id': order_id}) > 0:
+        while self._db.numEntries("contracts","id = '%s'" % order_id) > 0:
             order_id = random.randint(0, 1000000)
 
         # Add to contract and sign
@@ -523,7 +544,7 @@ class Orders(object):
             state = 'Waiting for Payment'
 
             merchant_order_id = random.randint(0, 1000000)
-            while self._db.numEntries("orders",{'id': order_id}) > 0:
+            while self._db.numEntries("orders", "id = '%s'" % order_id) > 0:
                 merchant_order_id = random.randint(0, 1000000)
 
             buyer_id = str(bid_data_json['Buyer']['buyer_GUID'])+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
