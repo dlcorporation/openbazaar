@@ -99,32 +99,6 @@ class Market(object):
     def on_listing_results(self, results):
         self._log.debug('Listings %s' % results)
 
-    def import_contract(self, contract):
-
-        self._log.debug('Importing Contract: %s' % contract)
-
-        # Validate contract code
-        ob_contract = OBContract(self._transport)
-        ob_contract.raw_to_contract(contract['contract'])
-
-        contract_digest = hashlib.sha1(contract['contract']).hexdigest()
-        contract_hash = hashlib.new('ripemd160')
-        contract_hash.update(contract_digest)
-        contract_id = contract_hash.hexdigest()
-
-        timestamp = datetime.datetime.utcnow()
-
-        # States (seed, bid, doublesigned, triplesigned, cancelled, receipt)
-        contract_state = "seed"
-
-        # Store in DB
-        db.insertEntry("contracts",  {'contract': contract['contract'], 'timestamp': timestamp, 'state': 'seed'})
-
-        self._log.debug('New Contract ID: %s' % contract_id)
-
-
-
-
     def save_contract(self, msg):
 
         contract_id = random.randint(0, 1000000)
