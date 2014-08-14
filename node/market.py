@@ -1,33 +1,27 @@
 """
 This module manages all market related activities
 """
-
-import json
-import logging
-import hashlib
-import random
-from base64 import b64decode, b64encode
-
-from protocol import proto_page, query_page
-from reputation import Reputation
-from orders import Orders
-import protocol
-import lookup
-from db_store import Obdb
-from data_uri import DataURI
-from zmq.eventloop import ioloop
-import tornado
-import constants
-ioloop.install()
 from PIL import Image, ImageOps
 from StringIO import StringIO
-import datetime
-import traceback
-import gnupg
+from base64 import b64decode, b64encode
+from data_uri import DataURI
+from orders import Orders
+from protocol import proto_page, query_page
+from zmq.eventloop import ioloop
+ioloop.install()
 import ast
+import constants
+import datetime
+import gnupg
+import hashlib
+import json
+import logging
+import lookup
+import protocol
+import random
 import string
-import ws
-import time
+import tornado
+import traceback
 
 class Market(object):
 
