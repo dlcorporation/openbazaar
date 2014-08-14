@@ -40,7 +40,8 @@ class PeerConnection(object):
         self._stream = zmqstream.ZMQStream(self._socket, io_loop=ioloop.IOLoop.current())
 
     def cleanup_socket(self):
-        self._socket.close()
+        self._ctx.destroy()
+
 
     def send(self, data, callback):
         self.send_raw(json.dumps(data), callback)
