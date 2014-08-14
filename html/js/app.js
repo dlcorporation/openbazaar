@@ -679,9 +679,7 @@ angular.module('app')
           'seller': $scope.page.pubkey,
           'listingKey': $scope.newOrder.pubkey
       }
-      console.log(newOrder);
-      //$scope.newOrder.text = '';
-      //$scope.orders.push(newOrder);     // This doesn't really do much since it gets wiped away
+
       socket.send('order', newOrder);
       $scope.sentOrder = true;
 
@@ -764,6 +762,9 @@ angular.module('app')
     Notifier.success('Success', 'Arbiter removed successfully.');
   }
 
+  $scope.compose_message = function(size, myself, address, subject){
+       $scope.$broadcast("compose_message", { size: size, myself: myself, bm_address: address, subject: subject });
+  };
 
   $scope.clearDHTData = function() {
     socket.send('clear_dht_data', {});
@@ -1311,7 +1312,7 @@ $scope.BuyItemCtrl = function ($scope, $modal, $log) {
 
       modalInstance.result.then(function () {
 
-        $scope.showDashboardPanel('orders');
+        $scope.showDashboardPanel('orders_purchases');
 
         $('#pill-orders').addClass('active').siblings().removeClass('active').blur();
         $("#orderSuccessAlert").alert();
@@ -1429,15 +1430,27 @@ $scope.BuyItemInstanceCtrl = function ($scope, $modalInstance, myself, merchantP
 
 
 $scope.ComposeMessageCtrl = function ($scope, $modal, $log) {
-    $scope.compose = function (size, myself, my_address, msg) {
+
+
+    $scope.$on("compose_message", function (event, args) {
+       $scope.bm_address = args.bm_address;
+       $scope.size = args.size;
+       $scope.subject = args.subject;
+       $scope.myself = args.myself;
+
+       $scope.compose($scope.size, $scope.myself, $scope.bm_address, $scope.subject);
+    });
+
+
+    $scope.compose = function (size, myself, to_address, msg) {
 
       composeModal = $modal.open({
         templateUrl: 'composeMessage.html',
         controller: $scope.ComposeMessageInstanceCtrl,
         resolve: {
             myself: function() { return myself },
-            my_address: function() { return my_address },
-            msg: function() { return msg; },
+            to_address: function() { return to_address },
+            msg: function() { return msg },
         },
         size: size
       });
@@ -1515,9 +1528,10 @@ $scope.ViewMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_ad
     };
 };
 
-$scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, my_address, msg) {
+$scope.ComposeMessageInstanceCtrl = function ($scope, $modalInstance, myself, to_address, msg) {
+
     $scope.myself = myself;
-    $scope.my_address = my_address;
+    $scope.to_address = to_address;
     $scope.msg = msg;
 
     // Fill in form if msg is passed - reply mode
