@@ -3,6 +3,7 @@ import logging
 from twisted.internet import reactor
 
 import obelisk
+import pyelliptic as ec
 
 
 # Create new private key:
@@ -65,7 +66,8 @@ class Multisig:
                 return
             self._fetched(history, destination, finished_cb)
 
-        self.client.fetch_history(self.address, fetched)
+        self.client.fetch_history('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', fetched)
+        #self.client.fetch_history(self.address, fetched)
 
     #
     def _fetched(self, history, destination, finished_cb):
@@ -98,8 +100,11 @@ class Multisig:
     def sign_all_inputs(self, tx, secret):
         signatures = []
         key = obelisk.EllipticCurveKey()
+
         key.set_secret(secret)
+
         for i, input in enumerate(tx.inputs):
+            self._log.info(i)
             sighash = generate_signature_hash(tx, i, self.script)
             # Add sighash::all to end of signature.
             signature = key.sign(sighash) + "\x01"

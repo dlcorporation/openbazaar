@@ -292,7 +292,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _setup_settings(self):
 
-        self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})
+        self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)
         if len(self.settings) == 0:
             self.settings = None
         else:
@@ -380,7 +380,7 @@ class CryptoTransportLayer(TransportLayer):
                         self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
 
         # Connect to persisted peers
-        known_peers = self._db.selectEntries("peers", {"market_id": self._market_id})
+        known_peers = self._db.selectEntries("peers", "market_id = '%s'" % self._market_id)
         for known_peer in known_peers:
             new_peer = CryptoPeerConnection(self, known_peer['uri'])
             if not new_peer._connected:

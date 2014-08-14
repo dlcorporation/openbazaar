@@ -51,12 +51,6 @@ angular.module('app')
   $scope.myReviews = []
   $scope.sidebar = true
 
-
-
-
-
-
-
   $scope.createShout = function() {
      // launch a shout
      console.log($scope)
@@ -300,7 +294,7 @@ angular.module('app')
 
   $scope.orders_page_changed = function() {
     console.log($scope.orders_current_page)
-    var query = {'page': $scope.orders_current_page-1}
+    var query = {'page': $scope.orders_current_page-1, 'merchant':$scope.merchant}
     socket.send('query_orders', query)
 
   }
@@ -864,9 +858,13 @@ angular.module('app')
   		case 'reviews':
   			$scope.reviewsPanel = true;
   			break;
-  		case 'orders':
+  		case 'orders_purchases':
   			$scope.ordersPanel = true;
-  			$scope.queryMyOrder();
+  			$scope.queryMyOrder(0);
+  			break;
+  		case 'orders_sales':
+  			$scope.ordersPanel = true;
+  			$scope.queryMyOrder(1);
   			break;
         case 'arbitration':
             $scope.arbitrationPanel = true;
@@ -937,10 +935,10 @@ angular.module('app')
   }
 
 
-  $scope.queryMyOrder = function() {
+  $scope.queryMyOrder = function(merchant) {
     	// Query for orders
-    	var query = {'type': 'query_orders'}
-    	console.log('querying orders', query)
+    	var query = {'type': 'query_orders', 'merchant':merchant}
+    	$scope.merchant = merchant ? 1 : 0
     	socket.send('query_orders', query)
     	if (!$scope.$$phase) {
            $scope.$apply();
@@ -1088,7 +1086,7 @@ $scope.WelcomeModalCtrl = function ($scope, $modal, $log) {
     scope.modalOrder.state = 'Paid';
 
     // Refresh orders in background
-    scope.queryMyOrder();
+    scope.queryMyOrder(0);
 
     if (!$scope.$$phase) {
        $scope.$apply();
