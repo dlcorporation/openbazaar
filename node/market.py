@@ -1,27 +1,27 @@
 """
 This module manages all market related activities
 """
-from PIL import Image, ImageOps
 from StringIO import StringIO
-from base64 import b64decode, b64encode
-from data_uri import DataURI
-from orders import Orders
-from protocol import proto_page, query_page
-from zmq.eventloop import ioloop
-ioloop.install()
 import ast
-import constants
-import datetime
-import gnupg
+from base64 import b64decode, b64encode
 import hashlib
 import json
 import logging
-import lookup
-import protocol
 import random
 import string
-import tornado
 import traceback
+
+from PIL import Image, ImageOps
+import gnupg
+import tornado
+from zmq.eventloop import ioloop
+
+import constants
+from data_uri import DataURI
+from orders import Orders
+from protocol import proto_page, query_page
+
+ioloop.install()
 
 class Market(object):
 
@@ -494,33 +494,3 @@ class Market(object):
                 key, value[1].encode("hex") if value[1] is not None else value[1],
                 value[0].encode("hex") if value[0] is not None else value[0]))
         self._log.info("##################################")
-
-
-
-
-    def lookup(self, msg):
-
-        if self.query_ident is None:
-            self._log.info("Initializing identity query")
-            self.query_ident = lookup.QueryIdent()
-
-        nickname = str(msg["text"])
-        key = self.query_ident.lookup(nickname)
-        if key is None:
-            self._log.info("Key not found for this nickname")
-            return "Key not found for this nickname", None
-
-        self._log.info("Found key: %s " % key.encode("hex"))
-        if nickname in self._transport.nick_mapping:
-            self._log.info("Already have a cached mapping, just adding key there.")
-            response = {'nickname': nickname,
-                        'pubkey': self._transport.nick_mapping[nickname][1].encode('hex'),
-                        'signature': self._transport.nick_mapping[nickname][0].encode('hex'),
-                        'type': 'response_pubkey',
-                       }
-            self._transport.nick_mapping[nickname][0] = key
-            return None, response
-
-        self._transport.nick_mapping[nickname] = [key, None]
-
-        self._transport.send(protocol.negotiate_pubkey(nickname, key))
