@@ -86,8 +86,8 @@
                          <li><a href="/">Home</a></li>
                         <li class="dropdown"><a href="#orders" data-toggle="dropdown" class="dropdown-toggle">Orders <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href="#" ng-click="showDashboardPanel('orders_sales')"><span class="badge" style="color: #5bc0de;background-color: #fff;" ng-show="orders_new">{{orders_new}}</span> My Sales</a></li>
-                                <li><a href="#" ng-click="showDashboardPanel('orders_purchases')"><span class="badge" style="color: #5bc0de;background-color: #fff;" ng-show="orders_new">{{orders_new}}</span> My Purchases</a></li>
+                                <li><a href="#" ng-click="showDashboardPanel('orders_sales')">My Sales</a></li>
+                                <li><a href="#" ng-click="showDashboardPanel('orders_purchases')">My Purchases</a></li>
                             </ul>
                         </li>
                         <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
@@ -850,7 +850,9 @@
 
     <div role="alert" class="alert alert-warning">
         <div class="row">
-        <div class="col-sm-10">OpenBazaar uses <strong><a href="https://bitmessage.org/wiki/Main_Page" target="_blank">Bitmessage</a></strong> as our private messaging technology. This is your inbox where all messages from other network members will reside. Your Bitmessage address is <strong>{{settings.bitmessage}}</strong>
+        <div class="col-sm-10">OpenBazaar uses <strong><a href="https://bitmessage.org/wiki/Main_Page" target="_blank">Bitmessage</a></strong> as our private messaging technology. This is your inbox where all messages from other network members will reside.
+
+            <span ng-show="settings.bitmessage">Your Bitmessage address is <strong>{{settings.bitmessage}}</strong></span>
         </div>
         <div class="col-sm-2" style="text-align:right"><button class="btn btn-info" ng-click="compose('lg', myself, settings.bitmessage, null)"><span class="glyphicon glyphicon-pencil"/> Compose</button></div>
         </div>
@@ -929,7 +931,9 @@
                 </tr>
                 <tr ng-show="page.bitmessage">
                     <td width=170>Bitmessage Address</td>
-                    <td style="word-wrap:break-word">{{page.bitmessage}}</td>
+                    <td style="word-wrap:break-word">{{page.bitmessage}}
+                        <!--<button class="btn btn-info" ng-click="compose_message('lg', myself, page.bitmessage, null)">Send Message</button>-->
+                    </td>
                 </tr>
                 <tr>
                     <td width=170>Open Bazaar Public Key</td>
