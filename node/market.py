@@ -1,33 +1,27 @@
 """
 This module manages all market related activities
 """
-
-import json
-import logging
-import hashlib
-import random
-from base64 import b64decode, b64encode
-
-from protocol import proto_page, query_page
-from reputation import Reputation
-from orders import Orders
-import protocol
-import lookup
-from db_store import Obdb
-from data_uri import DataURI
-from zmq.eventloop import ioloop
-import tornado
-import constants
-ioloop.install()
 from PIL import Image, ImageOps
 from StringIO import StringIO
-import datetime
-import traceback
-import gnupg
+from base64 import b64decode, b64encode
+from data_uri import DataURI
+from orders import Orders
+from protocol import proto_page, query_page
+from zmq.eventloop import ioloop
+ioloop.install()
 import ast
+import constants
+import datetime
+import gnupg
+import hashlib
+import json
+import logging
+import lookup
+import protocol
+import random
 import string
-import ws
-import time
+import tornado
+import traceback
 
 class Market(object):
 
@@ -105,32 +99,6 @@ class Market(object):
 
     def on_listing_results(self, results):
         self._log.debug('Listings %s' % results)
-
-    def import_contract(self, contract):
-
-        self._log.debug('Importing Contract: %s' % contract)
-
-        # Validate contract code
-        ob_contract = OBContract(self._transport)
-        ob_contract.raw_to_contract(contract['contract'])
-
-        contract_digest = hashlib.sha1(contract['contract']).hexdigest()
-        contract_hash = hashlib.new('ripemd160')
-        contract_hash.update(contract_digest)
-        contract_id = contract_hash.hexdigest()
-
-        timestamp = datetime.datetime.utcnow()
-
-        # States (seed, bid, doublesigned, triplesigned, cancelled, receipt)
-        contract_state = "seed"
-
-        # Store in DB
-        db.insertEntry("contracts",  {'contract': contract['contract'], 'timestamp': timestamp, 'state': 'seed'})
-
-        self._log.debug('New Contract ID: %s' % contract_id)
-
-
-
 
     def save_contract(self, msg):
 
