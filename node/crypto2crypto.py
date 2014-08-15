@@ -44,7 +44,8 @@ class CryptoPeerConnection(PeerConnection):
                 if guid is not None:
                     self._guid = guid
                     self._sin = self.generate_sin(self._guid)
-                    callback(self)
+                    if callback is not None:
+                        callback(self)
                 else:
                     def cb(msg):
                         if msg:

@@ -113,6 +113,10 @@ class DHT(object):
             if new_peer._guid != '':
                 self._log.debug('[add_active_peer] Adding new peer %s' % str(peer_tuple))
                 self._transport.save_peer_to_db(peer_tuple)
+
+                for idx, peer2 in enumerate(self._activePeers):
+                    if peer2._guid == new_peer._guid:
+                        return
                 self._activePeers.append(new_peer)
                 self._routingTable.removeContact(new_peer._guid)
                 self._routingTable.addContact(new_peer)
