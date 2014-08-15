@@ -44,6 +44,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     mongo --eval "db = db.getSiblingDB('openbazaar')"
     pip install pyelliptic
     sudo rngd -r /dev/urandom
+    pip install miniupnpc
     /etc/init.d/tor restart
   SCRIPT
 
