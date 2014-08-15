@@ -85,9 +85,9 @@
                     <ul class="nav nav-pills">
                          <li><a href="/">Home</a></li>
                         <li class="dropdown"><a href="#orders" data-toggle="dropdown" class="dropdown-toggle">Orders <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#" ng-click="showDashboardPanel('orders_sales')">My Sales</a></li>
-                                <li><a href="#" ng-click="showDashboardPanel('orders_purchases')">My Purchases</a></li>
+                            <ul class="dropdown-menu" role="menu">
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#mysales" ng-click="showDashboardPanel('orders_sales')">My Sales</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#mypurchases" ng-click="showDashboardPanel('orders_purchases')">My Purchases</a></li>
                             </ul>
                         </li>
                         <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
@@ -119,7 +119,7 @@
 <div ng-show="dashboard" style="text-align:left;padding:10px;">
     <div class="dashboard-panel">
 
-        <div ng-show="myInfoPanel" class="animated fadeInLeft hidden-xs">
+        <div ng-show="myInfoPanel" class="animated fadeInLeft">
 
             <div class="jumbotron">
                 <h1 style="font-weight:130">Welcome</h1>
@@ -623,15 +623,53 @@
                     <div ng-show="Market.modalOrder.state == 'Need to Pay'" class="alert alert-warning" role="alert">
                         <div class="row">
 
-                        <div style="float:left;margin:10px;"><img src="{{Market.modalOrder.qrcode}}" width="150" height="150"/></div>
-                        <div style="margin:10px;">You need to send <strong>&#3647;{{Market.modalOrder.total_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.<br/><a href="bitcoin:{{Market.modalOrder.address}}?amount={{Market.modalOrder.total_price}}&message={{Market.modalOrder.item_title}}"><button type="button" class="btn btn-warning">Pay Now</button></a></div>
+                            <div style="float:left;margin:10px;"><img src="{{Market.modalOrder.qrcode}}" width="150" height="150"/></div>
+                            <div style="margin:10px;">You need to send <strong>&#3647;{{Market.modalOrder.total_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.
+
+
+                                <div ng-show="Market.modalOrder.state == 'Need to Pay'" id="payment_buttons2" style="margin-top:10px;">
+                                    <a href="bitcoin:{{Market.modalOrder.address}}?amount={{Market.modalOrder.total_price}}&message={{Market.modalOrder.item_title}}"><button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-share-alt"></span> Pay in your Wallet</button></a>
+                                    <button ng-click="markOrderPaid(orderId)" class="btn btn-info"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
+                                    <button ng-click="" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
+                                </div>
+
                             </div>
+                        </div>
                     </div>
+
+                    <div ng-show="Market.modalOrder.waitingForShipment"  class="alert alert-warning">
+                        <h3>Shipping & Payment</h3>
+                        <p style="padding:10px">This order has been paid for by the buyer. You should verify the funds have been sent and then ship the
+                        goods. Once you've done this you can enter your payment address and notify the buyer.</p>
+
+                        <div class="row" style="margin-top:10px;">
+                        <div class="col-sm-5 text-right" style="padding-top:5px">
+                            <strong>Where would you like payment sent to?</strong>
+                        </div>
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control text" placeholder="Enter a Bitcoin address"/>
+                        </div>
+                            </div>
+
+                         <div class="row" style="margin-top:10px;">
+                        <div class="col-sm-5 text-right" style="padding-top:5px">
+                        </div>
+                        <div class="col-sm-7">
+                            <button id="send-order-button" ng-click="markOrderShipped(orderId)" class="btn btn-info"><span class="glyphicon glyphicon-share"></span> Request Payment</button>
+                        </div>
+                             </div>
+
+                    </div>
+
+                    <button ng-show="Market.modalOrder.state == 'Shipped' && Market.modalOrder.merchant != settings.guid" id="send-order-button" ng-click="markOrderReceived(orderId)" class="btn btn-sm btn-info"><span class="glyphicon glyphicon-share"></span> Release Payment to Merchant</button>
+
+                    <button ng-show="Market.modalOrder.flagForArbitration" id="send-order-button" ng-click="flagOrderForArbitration(orderId)" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-flag"></span> Flag for Arbiter</button>
 
                     <!-- Nav tabs -->
 <ul class="nav nav-tabs" role="tablist">
   <li class="active"><a href="#order" role="tab" data-toggle="tab">Order</a></li>
   <li><a href="#contract-details" role="tab" data-toggle="tab">Contract Details</a></li>
+  <li><a href="#shipping-information" role="tab" data-toggle="tab">Shipping Information</a></li>
 </ul>
 
 <!-- Tab panes -->
@@ -675,41 +713,11 @@
                         </tr>
                     </table>
 
-                    <div ng-show="Market.modalOrder.state == 'Need to Pay'" id="payment_buttons2">
-
-                        <button ng-click="markOrderPaid(orderId)" class="btn btn-sm btn-info"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
-                        <button ng-click="" class="btn btn-sm btn-default"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
-                    </div>
 
 
 
-                    <div ng-show="Market.modalOrder.waitingForShipment"  class="alert alert-warning">
-                        <h3>Shipping & Payment</h3>
-                        <p style="padding:10px">This order has been paid for by the buyer. You should verify the funds have been sent and then ship the
-                        goods. Once you've done this you can enter your payment address and notify the buyer.</p>
 
-                        <div class="row" style="margin-top:10px;">
-                        <div class="col-sm-5 text-right" style="padding-top:5px">
-                            <strong>Where would you like payment sent to?</strong>
-                        </div>
-                        <div class="col-sm-7">
-                            <input type="text" class="form-control text" placeholder="Enter a Bitcoin address"/>
-                        </div>
-                            </div>
 
-                         <div class="row" style="margin-top:10px;">
-                        <div class="col-sm-5 text-right" style="padding-top:5px">
-                        </div>
-                        <div class="col-sm-7">
-                            <button id="send-order-button" ng-click="markOrderShipped(orderId)" class="btn btn-info"><span class="glyphicon glyphicon-share"></span> Request Payment</button>
-                        </div>
-                             </div>
-
-                    </div>
-
-                    <button ng-show="Market.modalOrder.state == 'Shipped' && Market.modalOrder.merchant != settings.guid" id="send-order-button" ng-click="markOrderReceived(orderId)" class="btn btn-sm btn-info"><span class="glyphicon glyphicon-share"></span> Release Payment to Merchant</button>
-
-                    <button ng-show="Market.modalOrder.flagForArbitration" id="send-order-button" ng-click="flagOrderForArbitration(orderId)" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-flag"></span> Flag for Arbiter</button>
 
 
 
@@ -742,6 +750,21 @@
 
 
   </div>
+
+    <div class="tab-pane" id="shipping-information" ng-show="Market.modalOrder.waitingForShipment">
+
+        <div style="padding:20px;">
+        <address>
+          <strong>Twitter, Inc.</strong><br>
+          795 Folsom Ave, Suite 600<br>
+          San Francisco, CA 94107<br>
+          <abbr title="Phone">P:</abbr> (123) 456-7890
+        </address>
+        </div>
+
+
+    </div>
+
 </div>
 
 

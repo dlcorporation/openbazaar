@@ -37,10 +37,10 @@ class CryptoPeerConnection(PeerConnection):
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
         if self.check_port():
-            self._log.debug('Peer is listening')
+
             if guid is not None:
                 self._guid = guid
-                self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
+                self._sin = self.generate_sin(self._guid)
                 callback(None)
             else:
                 def cb(msg):
@@ -50,11 +50,10 @@ class CryptoPeerConnection(PeerConnection):
                         msg = json.loads(msg)
                         self._guid = msg['senderGUID']
 
-                        self._sin = obelisk.EncodeBase58Check('\x0F\x02%s' + self._guid.decode('hex'))
+                        self._sin = self.generate_sin(self._guid)
                         self._pub = msg['pubkey']
                         self._nickname = msg['senderNick']
 
-                        self._log.debug('New Crypt Peer: %s %s %s %s' % (self._address, self._pub, self._guid, self._nickname))
                         if callback != None:
                             callback(msg)
                 try:
@@ -64,15 +63,17 @@ class CryptoPeerConnection(PeerConnection):
                                               'senderGUID':transport.guid,
                                               'senderNick':transport._nickname}), cb)
                 except:
-                    print 'Sending raw message failed'
+                    self._log.error('Hello message failed')
 
         else:
             self._log.error('Cannot reach this peer. Port may not be open.')
             self._connected = False
 
-
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
+
+    def generate_sin(self, guid):
+        return obelisk.EncodeBase58Check('\x0F\x02%s' + guid.decode('hex'))
 
     def check_port(self):
         try:
@@ -89,10 +90,14 @@ class CryptoPeerConnection(PeerConnection):
 
     def encrypt(self, data):
         try:
-            result = self._priv.encrypt(data, self._pub.decode('hex'))
-            return result
+            if self._pub is not None:
+                result = self._priv.encrypt(data, self._pub.decode('hex'))
+                return result
+            else:
+                self._log.error('Public Key is missing')
+                return False
         except:
-            self._log.error('Missing public key')
+            self._log.error('Encryption failed.')
 
 
     def send(self, data, callback=lambda msg: None):
@@ -391,8 +396,8 @@ class CryptoTransportLayer(TransportLayer):
 
         self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
 
-        if callback is not None:
-            callback()
+        # if callback is not None:
+        #     callback()
 
 
     def get_crypto_peer(self, guid, uri, pubkey=None, nickname=None):

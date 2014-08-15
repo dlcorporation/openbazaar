@@ -82,7 +82,6 @@ class Market(object):
         refreshCB.start()
 
 
-
     def load_page(self, welcome):
 
         nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
