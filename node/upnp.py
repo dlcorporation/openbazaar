@@ -15,19 +15,19 @@ class PortMapper(object):
     DEBUG = False # boolean
     upnp = None  # miniupnpc.UPnP
     OPEN_BAZAAR_DESCRIPTION='OpenBazaar Server'
-    NO_UPNP_DEVICE_AVAILABLE = False
+    UPNP_DEVICE_AVAILABLE = False
     
     def debug(self,*s):
         if PortMapper.DEBUG:
             print str(s)
 
-    def debugUpnpValues(self):
+    def debug_upnp_values(self):
         self.debug('discoverdelay', self.upnp.discoverdelay)
         self.debug('lanaddr', self.upnp.lanaddr)
         self.debug('multicastif', self.upnp.multicastif)
         self.debug('minissdpdsocket', self.upnp.minissdpdsocket)
         
-    def debugAddresses(self):
+    def debug_addresses(self):
         self.debug('local ip address :', self.upnp.lanaddr)
         self.debug('external ip address :', self.upnp.externalipaddress())
 
@@ -38,96 +38,102 @@ class PortMapper(object):
         self.upnp = miniupnpc.UPnP()
         
         self.debug('inital(default) values :')
-        self.debugUpnpValues()
+        self.debug_upnp_values()
         self.upnp.discoverdelay = 200;
         self.debug('Discovering... delay=%ums' % self.upnp.discoverdelay)
         self.debug(self.upnp.discover(), 'device(s) detected')
 
         try:
             self.upnp.selectigd()
+            self.UPNP_DEVICE_AVAILABLE = True
         except Exception, e:
             print 'Exception :', e
-            self.NO_UPNP_DEVICE_AVAILABLE = True
+            self.UPNP_DEVICE_AVAILABLE = False
             return
 
         # display information about the IGD and the internet connection
-        self.debugAddresses()
-        self.debug("Status Info:", self.getStatusInfo())
-        self.debug("Connection Type:",self.getConnectionType())
-        self.debugUpnpValues()
+        self.debug_addresses()
+        self.debug("Status Info:", self.get_status_info())
+        self.debug("Connection Type:",self.get_connection_type())
+        self.debug_upnp_values()
         
-    def getStatusInfo(self):
+    def get_status_info(self):
         return self.upnp.statusinfo()
     
-    def getConnectionType(self):
+    def get_connection_type(self):
         return self.upnp.connectiontype()
     
-    def addPortMapping(self, externalPort, internalPort, protocol='TCP', ipToBind=None):
+    def add_port_mapping(self, externalPort, internalPort, protocol='TCP', ipToBind=None):
         '''
         Valid protocol values are: 'TCP', 'UDP'
         Usually you'll pass externalPort and internalPort as the same number.
         '''
-        if self.NO_UPNP_DEVICE_AVAILABLE:
-            return
-
-        if protocol not in ('TCP','UDP'):
-            raise Exception('PortMapper.addPortMapping() invalid protocol exception \''+str(protocol)+'\'')
-        
-        if ipToBind==None:
-            ipToBind = self.upnp.lanaddr
-            self.debug("INFO: addPortMapping() -> No alternate ipToBind address passed, using default lan address (", self.upnp.lanaddr,")")
-        
-        result = self.upnp.addportmapping(externalPort,
-                                          protocol,
-                                          ipToBind,
-                                          internalPort,
-                                          PortMapper.OPEN_BAZAAR_DESCRIPTION + ' ('+protocol+')',
-                                          '')
-        self.debug("addPortMapping?:", result)
-        return result
-    
-    def deletePortMapping(self, port, protocol='TCP'):
-        if self.NO_UPNP_DEVICE_AVAILABLE:
-            return
-
         result = False
-        try:
-            result = self.upnp.deleteportmapping(port, protocol)
-            self.debug("PortMapper.deletePortMapping(%d,%s):" % (port, protocol))
-            self.debug(result)
-        except:
-            self.debug("Could not delete mapping on port",port,"protocol",protocol)
+
+        if self.UPNP_DEVICE_AVAILABLE:
+            if protocol not in ('TCP','UDP'):
+                raise Exception('PortMapper.add_port_mapping() invalid protocol exception \''+str(protocol)+'\'')
+            
+            if ipToBind==None:
+                ipToBind = self.upnp.lanaddr
+                self.debug("INFO: add_port_mapping() -> No alternate ipToBind address passed, using default lan address (", self.upnp.lanaddr,")")
+    
+            try:        
+                result = self.upnp.addportmapping(externalPort,
+                                                  protocol,
+                                                  ipToBind,
+                                                  internalPort,
+                                                  PortMapper.OPEN_BAZAAR_DESCRIPTION + ' ('+protocol+')',
+                                                  '')
+            except:
+                #ConflictInMappingEntry
+                result = False
+                
+            self.debug("add_port_mapping("+str(externalPort)+")?:", result)
         return result
     
-    def getMappingList(self):
-        if self.NO_UPNP_DEVICE_AVAILABLE:
-            return
-
+    def delete_port_mapping(self, port, protocol='TCP'):
+        result = False
+        
+        if self.UPNP_DEVICE_AVAILABLE:
+            try:
+                result = self.upnp.deleteportmapping(port, protocol)
+                self.debug("PortMapper.delete_port_mapping(%d,%s):" % (port, protocol))
+                self.debug(result)
+            except:
+                self.debug("Could not delete mapping on port",port,"protocol",protocol)
+                
+        return result
+    
+    def get_mapping_list(self):
         ''' Returns -> [PortMappingEntry]'''
-        i = 0
         mappings = []
-        while True:
-            p = self.upnp.getgenericportmapping(i)
-            if p==None:
-                break
-            (port, proto, (ihost,iport), desc, c, d, e) = p
-            mapping = PortMappingEntry(port, proto, ihost, iport,desc,e)
-            self.debug("port:",port, desc, ihost,"iport:", iport, "c",c,"d",d,"e",e)
-            i = i + 1
-            mappings.append(mapping) 
+        
+        if self.UPNP_DEVICE_AVAILABLE:
+            i = 0
+            while True:
+                p = self.upnp.getgenericportmapping(i)
+                if p==None:
+                    break
+                (port, proto, (ihost,iport), desc, c, d, e) = p
+                mapping = PortMappingEntry(port, proto, ihost, iport,desc,e)
+                self.debug("port:",port, desc, ihost,"iport:", iport, "c",c,"d",d,"e",e)
+                i = i + 1
+                mappings.append(mapping) 
+
         return mappings
     
-    def cleanMyMappings(self):
-        if self.NO_UPNP_DEVICE_AVAILABLE:
-            return
-
-        '''Delete previous OpenBazaar UPnP Port mappings if found.'''
-        mappings = mapper.getMappingList()
-        for m in mappings:
-            if m.description.startswith(PortMapper.OPEN_BAZAAR_DESCRIPTION):
-                self.debug('Found:',str(m))
-                self.deletePortMapping(m.port)
-                self.deletePortMapping(m.internalPort)
+    def clean_my_mappings(self):
+        if self.UPNP_DEVICE_AVAILABLE:
+            '''Delete previous OpenBazaar UPnP Port mappings if found.'''
+            mappings = self.get_mapping_list()
+            for m in mappings:
+                if m.description.startswith(PortMapper.OPEN_BAZAAR_DESCRIPTION):
+                    self.debug('delete_port_mapping -> Found:',str(m))
+                    try:
+                        self.delete_port_mapping(m.port)
+                    except:
+                        pass
 
 
 class PortMappingEntry:
@@ -154,14 +160,14 @@ if __name__=='__main__':
     PortMapper.DEBUG=True
     mapper = PortMapper()
     print "Adding mapping: External:12345, Internal:8888"
-    mapper.addPortMapping(12345,8888,'TCP')
-    mappings = mapper.getMappingList()
+    mapper.add_port_mapping(12345,8888,'TCP')
+    mappings = mapper.get_mapping_list()
     print len(mappings),"mappings"
     
-    mapper.cleanMyMappings()
+    mapper.clean_my_mappings()
     
     print "---- after deleting the mapping"
-    mappings = mapper.getMappingList()
+    mappings = mapper.get_mapping_list()
     print len(mappings),"mappings"
     
-    print mapper.debugUpnpValues()
+    print mapper.debug_upnp_values()
