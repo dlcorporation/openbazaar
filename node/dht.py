@@ -95,16 +95,22 @@ class DHT(object):
             # Found partial match
             if peer._address == uri or peer._guid == guid or peer._pub == pubkey:
                 self._log.info('[add_active_peer] Found stale data about this node, refreshing')
-                del self._activePeers[idx]
+
+                stale_peer = self._activePeers[idx]
+                stale_peer._address = uri
+                stale_peer._guid = guid
+                stale_peer._pub = pubkey
+                stale_peer._nickname = nickname
+
                 self._routingTable.removeContact(guid)
+                self._routingTable.addContact(stale_peer)
+                self._transport.save_peer_to_db(peer_tuple)
+
+                return
 
         def cb(new_peer):
-            add_it = True
-            for peer in self._activePeers:
-                if peer._guid == new_peer._guid:
-                    add_it = False
 
-            if add_it and new_peer._guid != '':
+            if new_peer._guid != '':
                 self._log.debug('[add_active_peer] Adding new peer %s' % str(peer_tuple))
                 self._transport.save_peer_to_db(peer_tuple)
                 self._activePeers.append(new_peer)
@@ -114,7 +120,7 @@ class DHT(object):
         new_peer = transport.get_crypto_peer(guid, uri, pubkey, nickname, callback=cb)
         self._log.info('Got here %s' % new_peer)
 
-
+        new_peer.send({'type':'ping'})
 
 
 
