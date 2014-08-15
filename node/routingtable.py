@@ -407,6 +407,10 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
         @type contact: kademlia.contact.Contact
         """
 
+        if not contact._guid:
+            self._log.error('No guid specified')
+            return
+
         if contact._guid == self._parentNodeID:
             self._log.info('Trying to add yourself. Leaving.')
             return
