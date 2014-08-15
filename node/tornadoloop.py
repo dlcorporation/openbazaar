@@ -12,6 +12,7 @@ import logging
 import signal
 from threading import Thread
 from twisted.internet import reactor
+import upnp
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -61,6 +62,25 @@ class MarketApplication(tornado.web.Application):
     def get_transport(self):
         return self.transport
 
+
+def setup_upnp_port_mapping(internal_port):
+    print "Setting up UPnP Port Map Entry..."
+    upnp.PortMapper.DEBUG=True
+    #TODO: Add some setting whether or not to use UPnP
+    #if Settings.get(Settings.USE_UPNP_PORT_MAPPINGS):
+    upnp_mapper = upnp.PortMapper()
+    #TODO: Add some setting whether or not to clean all previous port mappings left behind by us
+    #if Settings.get(Settings.CLEAN_UPNP_PORT_MAPPINGS_ON_START):
+    #    upnp_mapper.cleanMyMappings()
+    
+    #for now let's always clean mappings every time.
+    upnp_mapper.clean_my_mappings()
+    
+    result = upnp_mapper.add_port_mapping(12345, internal_port)
+            
+    print "UPnP Port Map configuration finished -> " + str(result)
+    return result
+
 def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_peers=[], seed_mode=0, dev_mode=False, log_level=None, database='db/ob.db'):
 
     logging.basicConfig(level=int(log_level),
@@ -85,9 +105,11 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
                                     dev_mode,
                                     database)
 
-
     error = True
     port = 8888
+    
+    setup_upnp_port_mapping(port)
+    
     while error and port < 8988:
         try:
             application.listen(port)
