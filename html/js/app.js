@@ -1,6 +1,9 @@
 angular.module('app', ['ui.bootstrap'])
 
-
+/**
+ * This directive is used for converting identicon tags
+ * to actual identicons in the HTML
+ */
 angular.module('app').directive('identicon', function() {
     return {
         restrict: 'E', // element
@@ -27,6 +30,10 @@ angular.module('app').directive('identicon', function() {
     }
 });
 
+/**
+ * This configuration item allows us to safely use the bitcoin:
+ * URI for applications that register that URI
+ */
 angular.module('app')
     .config([
         '$compileProvider',
@@ -36,25 +43,44 @@ angular.module('app')
         }
     ]);
 
-
-
-
+/**
+ * Market controller.
+ *
+ * @desc This controller is the main controller for the market.
+ * It contains all of the single page application logic.
+ * @param {!angular.Scope} $scope
+ * @constructor
+ */
 angular.module('app')
-    .controller('Market', ['$scope',
-        function($scope) {
+    .controller('Market', ['$scope', '$interval',
+        function($scope, $interval) {
 
-            $scope.newuser = true
-            $scope.page = false
-            $scope.dashboard = true
-            $scope.myInfoPanel = true
-            $scope.shouts = [];
+            $scope.newuser = true                   // Should show welcome screen?
+            $scope.page = false                     // Market page has been loaded
+            $scope.dashboard = true                 // Show dashboard
+            $scope.myInfoPanel = true               // Show information panel
+            $scope.shouts = [];                     // Shout messages
             $scope.newShout = ""
             $scope.searching = ""
             $scope.currentReviews = []
             $scope.myOrders = []
             $scope.myReviews = []
-            $scope.sidebar = true
+            $scope.sidebar = true                   // Show sidebar by default
+            $scope.peers = [];
+            $scope.reviews = {};
+            $scope.awaitingShop = null;
+            $scope.page_loading = null;
 
+            refresh_peers = function() {
+                socket.send('peers', {})
+            }
+
+            $interval(refresh_peers,60000,0,true)
+
+            /**
+             * Create a shout and send it to all connected peers
+             * Display it in the interface
+             */
             $scope.createShout = function() {
                 // launch a shout
                 console.log($scope)
@@ -69,27 +95,31 @@ angular.module('app')
                 $scope.newShout = '';
             }
 
-            $scope.peers = [];
-            $scope.reviews = {};
-
+            // Toggle the sidebar hidden/shown
             $scope.toggleSidebar = function() {
                 $scope.sidebar = ($scope.sidebar) ? false : true;
             }
 
+            // Hide the sidebar
             $scope.hideSidebar = function() {
                 $scope.sidebar = false;
             }
 
+            // Show the sidebar
             $scope.showSidebar = function() {
                 $scope.sidebar = true;
             }
 
-            $scope.awaitingShop = null;
-            $scope.page_loading = null;
-
+            /**
+             * Query the network for a merchant and then
+             * show the page
+             * @peer - GUID of page to load
+             */
             $scope.queryShop = function(peer) {
+
                 $scope.awaitingShop = peer.guid;
                 console.log('Querying for shop: ', peer);
+
                 var query = {
                     'type': 'query_page',
                     'findGUID': peer.guid
@@ -105,84 +135,47 @@ angular.module('app')
 
             }
 
-
-
-
-            // Open the websocket connection and handle messages
+            /**
+             * Open Websocket and then establish message handlers
+             * @msg - message from websocket to pass on to handler
+             */
             var socket = new Connection(function(msg) {
 
-                switch (msg.type) {
-
-                    case 'peer':
-                        $scope.add_peer(msg)
-                        break;
-                    case 'peers':
-                        $scope.update_peers(msg)
-                        break;
-                    case 'peer_remove':
-                        $scope.remove_peer(msg)
-                        break;
-                    case 'page':
-                        $scope.parse_page(msg)
-                        break;
-                    case 'myself':
-                        $scope.parse_myself(msg)
-                        break;
-                    case 'shout':
-                        $scope.parse_shout(msg)
-                        break;
-                    case 'order':
-                        $scope.parse_order(msg)
-                        break;
-                    case 'log_output':
-                        $scope.parse_log_output(msg)
-                        break;
-                    case 'store_contracts':
-                        $scope.parse_store_listings(msg)
-                        break;
-                    case 'store_contract':
-                        $scope.parse_store_contract(msg)
-                        break;
-                    case 'order_count':
-                        $scope.parse_order_count(msg)
-                        break;
-                    case 'myorders':
-                        $scope.parse_myorders(msg)
-                        break;
-                    case 'contracts':
-                        $scope.parse_contracts(msg)
-                        break;
-                    case 'messages':
-                        $scope.parse_messages(msg)
-                        break;
-                    case 'store_products':
-                        $scope.parse_store_products(msg)
-                        break;
-                    case 'new_listing':
-                        $scope.parse_new_listing(msg)
-                        break;
-                    case 'notaries':
-                        $scope.parse_notaries(msg)
-                        break;
-                    case 'global_search_result':
-                        $scope.parse_search_result(msg)
-                        break;
-                    case 'orderinfo':
-                        $scope.parse_orderinfo(msg)
-                        break;
-                    case 'reputation':
-                        console.log(msg);
-                        $scope.parse_reputation(msg)
-                        break;
-                    case 'proto_response_pubkey':
-                        $scope.parse_response_pubkey(msg)
-                        break;
-                    default:
-                        console.log("Unhandled message!", msg)
-                        break;
+                var handlers = {
+                    'peer': function(msg) { $scope.add_peer(msg) },
+                    'peers': function(msg) { $scope.update_peers(msg) },
+                    'peer_remove': function(msg) { $scope.remove_peer(msg) },
+                    'page': function(msg) { $scope.parse_page(msg) },
+                    'myself': function(msg) { $scope.parse_myself(msg) },
+                    'shout': function(msg) { $scope.parse_shout(msg) },
+                    'order': function(msg) { $scope.parse_order(msg) },
+                    'log_output': function(msg) { $scope.parse_log_output(msg) },
+                    'store_contracts': function(msg) { $scope.parse_store_listings(msg) },
+                    'store_contract': function(msg) { $scope.parse_store_contract(msg) },
+                    'order_count': function(msg) { $scope.parse_order_count(msg) },
+                    'myorders': function(msg) { $scope.parse_myorders(msg) },
+                    'contracts': function(msg) { $scope.parse_contracts(msg) },
+                    'messages': function(msg) { $scope.parse_messages(msg) },
+                    'store_products': function(msg) { $scope.parse_store_products(msg) },
+                    'new_listing': function(msg) { $scope.parse_new_listing(msg) },
+                    'notaries': function(msg) { $scope.parse_notaries(msg) },
+                    'global_search_result': function(msg) { $scope.parse_search_result(msg) },
+                    'orderinfo': function(msg) { $scope.parse_orderinfo(msg) },
+                    'reputation': function(msg) { $scope.parse_reputation(msg) },
+                    'proto_response_pubkey': function(msg) { $scope.parse_response_pubkey(msg) },
                 }
+
+                if(handlers[msg.type]) {
+                    handlers[msg.type](msg);
+                }
+
             })
 
+            /**
+             * [LEGACY] Adds review to a page
+             * @pubkey -
+             * @review -
+             */
             var add_review_to_page = function(pubkey, review) {
                 var found = false;
 
@@ -209,6 +202,10 @@ angular.module('app')
                 console.log($scope.reviews);
             }
 
+            /**
+             * Handles orders count message from the server
+             * @msg - Message from server
+             */
             $scope.parse_order_count = function(msg) {
                 console.log(msg)
                 $scope.orders_new = msg.count
@@ -217,8 +214,10 @@ angular.module('app')
                 }
             }
 
-
-
+            /**
+             * Send log line to GUI
+             * @msg - Message from server
+             */
             $scope.parse_log_output = function(msg) {
                 console.log(msg)
                 $scope.log_output += msg.line
@@ -229,6 +228,10 @@ angular.module('app')
 
             }
 
+            /**
+             * Load notaries array into the GUI
+             * @msg - Message from server
+             */
             $scope.parse_notaries = function(msg) {
                 $scope.trusted_notaries = msg.notaries
                 if (!$scope.$$phase) {
@@ -236,9 +239,11 @@ angular.module('app')
                 }
             }
 
+            /**
+             * Parse order message from server for modal
+             * @msg - Message from server
+             */
             $scope.parse_order = function(msg) {
-
-                console.log("Order update");
 
                 if ($scope.myOrders.hasOwnProperty(msg.id)) {
                     console.log("Updating order!")
@@ -247,14 +252,13 @@ angular.module('app')
                     $scope.myOrders[msg.id].notary = msg.notary
                     $scope.myOrders[msg.id].item_price = msg.item_price
                     $scope.myOrders[msg.id].shipping_price = msg.shipping_price
-                        //$scope.myOrders[msg.id].total_price = parseFloat(msg.item_price) + parseFloat(msg.shipping_price)
+                    //$scope.myOrders[msg.id].total_price = parseFloat(msg.item_price) + parseFloat(msg.shipping_price)
                     $scope.myOrders[msg.id].address = msg.address
                     $scope.myOrders[msg.id].buyer = msg.buyer
                     $scope.myOrders[msg.id].merchant = msg.merchant
                     $scope.myOrders[msg.id].note_for_merchant = msg.note_for_merchant
                     return;
                 } else {
-                    console.log(msg);
                     $scope.myOrders.push(msg);
                 }
                 if (!$scope.$$phase) {
@@ -263,6 +267,10 @@ angular.module('app')
                 }
             }
 
+            /**
+             * Parse order message from server for modal
+             * @msg - Message from server
+             */
             $scope.parse_orderinfo = function(msg) {
 
                 console.log("Order info retrieved");

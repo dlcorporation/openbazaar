@@ -42,8 +42,11 @@ class MarketApplication(tornado.web.Application):
             self.transport._dht._refreshNode()
             self.market.republish_contracts()
 
-        self.transport.join_network(seed_peers if seed_mode==0 else [], post_joined)
-        ioloop.PeriodicCallback(self.transport.join_network, 60000)
+        peers = seed_peers if seed_mode == 0 else []
+        self.transport.join_network(peers, post_joined)
+
+        join_network_loop = ioloop.PeriodicCallback(self.transport.join_network, 60000)
+        join_network_loop.start()
 
         Thread(target=reactor.run, args=(False,)).start()
 
