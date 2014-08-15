@@ -97,6 +97,13 @@ class DHT(object):
             else:
                 if peer._guid == guid or peer._address == uri:
                     self._log.debug('Partial Match')
+                    # Update peer
+                    peer._guid = guid
+                    peer._address = uri
+                    peer._pub = pubkey
+                    peer._nickname = nickname
+                    self._activePeers[idx] = peer
+
 
         self._log.debug('New Peer')
         new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
