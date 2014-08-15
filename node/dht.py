@@ -102,7 +102,8 @@ class DHT(object):
                 stale_peer._pub = pubkey
                 stale_peer._nickname = nickname
 
-                self._routingTable.removeContact(guid)
+                if guid:
+                    self._routingTable.removeContact(guid)
                 self._routingTable.addContact(stale_peer)
                 self._transport.save_peer_to_db(peer_tuple)
 
