@@ -226,7 +226,9 @@ class DHT(object):
                          "foundNodes": contactTriples,
                          "findID": findID})
 
-            if hasattr(new_peer, '_guid') and new_peer._guid is not '' and not self._routingTable.getContact(new_peer._guid):
+            old_peer = self._routingTable.getContact(new_peer._guid)
+            if old_peer is None or new_peer._address != old_peer._address:
+                self._routingTable.removeContact(new_peer._guid)
                 self._routingTable.addContact(new_peer)
 
     def on_findNodeResponse(self, transport, msg):
