@@ -45,20 +45,20 @@ class DHT(object):
         self.add_known_node((ip, port, seed_peer._guid, seed_peer._nickname))
 
         self._log.debug('Starting Seed Peer: %s' % seed_peer._nickname)
-        self.add_active_peer(self._transport, (seed_peer._pub,
-                                               seed_peer._address,
+        self.add_peer(self._transport, seed_peer._address,
+                                                seed_peer._pub,
                                                seed_peer._guid,
-                                               seed_peer._nickname))
+                                               seed_peer._nickname)
 
         self._iterativeFind(self._settings['guid'], self._knownNodes,
                             'findNode')
 
 
 
-    def find_active_peer(self, peer_tuple):
+    def find_active_peer(self, uri, pubkey=None, guid=None, nickname=None):
         found_peer = False
         for idx, peer in enumerate(self._activePeers):
-            if peer_tuple == (peer._guid, peer._address, peer._pub, peer._nickname):
+            if (guid, uri, pubkey, nickname) == (peer._guid, peer._address, peer._pub, peer._nickname):
                 found_peer = peer
         return found_peer
 
@@ -68,7 +68,7 @@ class DHT(object):
                 self._activePeers[idx].cleanup_socket()
                 del self._activePeers[idx]
 
-    def add_active_peer(self, transport, peer_tuple):
+    def add_peer(self, transport, uri, pubkey=None, guid=None, nickname=None):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
         peers list if it doesn't already reside there.
 
@@ -77,9 +77,11 @@ class DHT(object):
         """
 
         # Check if peer to add is yourself
-        if peer_tuple[2] == self._settings['guid']:
+        if guid == self._settings['guid']:
             self._log.error('[add_active_peer] Cannot add yourself')
             return
+
+        peer_tuple = (pubkey, uri, guid, nickname)
 
         # Refresh peer's data in case anything changed
         for idx, peer in enumerate(self._activePeers):
@@ -91,18 +93,12 @@ class DHT(object):
                 return
 
             # Found partial match
-            if active_peer_tuple[1] == peer_tuple[1] or active_peer_tuple[2] == peer_tuple[2] or active_peer_tuple[0] == peer_tuple[0]:
+            if peer._address == uri or peer._guid == guid or peer._pub == pubkey:
                 self._log.info('[add_active_peer] Found stale data about this node, refreshing')
-                self._activePeers[idx].cleanup_socket()
                 del self._activePeers[idx]
-                self._routingTable.removeContact(peer_tuple[2])
+                self._routingTable.removeContact(guid)
 
-        new_peer = transport.get_crypto_peer(peer_tuple[2],
-                                             peer_tuple[1],
-                                             peer_tuple[0],
-                                             peer_tuple[3])
-
-        new_peer._nickname = peer_tuple[3]
+        new_peer = transport.get_crypto_peer(guid, uri, pubkey, nickname)
 
         if new_peer.check_port():
 
@@ -119,9 +115,7 @@ class DHT(object):
                     self._routingTable.removeContact(new_peer._guid)
                     self._routingTable.addContact(new_peer)
 
-
-            new_peer.send({'type':'ping'}, cb)
-
+            #new_peer.send({'type':'ping'}, cb)
 
     def add_known_node(self, node):
         """ Accept a peer tuple and add it to known nodes list
@@ -270,7 +264,7 @@ class DHT(object):
                 # Add foundNode to active peers list and routing table
                 if foundNode[2] != self._transport._guid:
                     self._log.debug('Found a tuple %s' % foundNode)
-                    self.add_active_peer(self._transport, (foundNode[2], foundNode[1], foundNode[0], foundNode[3]))
+                    self.add_peer(self._transport, foundNode[1], foundNode[2], foundNode[0], foundNode[3])
 
                 for idx, search in enumerate(self._searches):
                     if search._findID == msg['findID']:
@@ -437,7 +431,7 @@ class DHT(object):
 
             if node_guid != self._settings['guid']:
                 self._log.debug('Adding new peer to active peers list: %s' % node)
-                self.add_active_peer(self._transport, (node_pubkey, node_uri, node_guid, node_nick))
+                self.add_peer(self._transport, node_uri, node_pubkey, node_guid, node_nick)
 
         self._log.debug('Short list after: %s' % search._shortlist)
 

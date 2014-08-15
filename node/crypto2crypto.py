@@ -377,22 +377,17 @@ class CryptoTransportLayer(TransportLayer):
         # Connect up through seed servers
         if seed_peers:
             for seed in seed_peers:
-
+                uri = 'tcp://%s:12345' % seed
                 if self._dev_mode and IP(seed).iptype() is 'PRIVATE':
-                    new_peer = CryptoPeerConnection(self, 'tcp://%s:12345' % seed)
-                    if not new_peer._connected:
-                        self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
+                    uri = 'tcp://%s:12345' % seed
+                    self._dht.add_peer(self, uri)
                 else:
-                    new_peer = CryptoPeerConnection(self, 'tcp://%s:12345' % seed)
-                    if not new_peer._connected:
-                        self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
+                    self._dht.add_peer(self, uri)
 
         # Connect to persisted peers
         known_peers = self._db.selectEntries("peers", "market_id = '%s'" % self._market_id)
         for known_peer in known_peers:
-            new_peer = CryptoPeerConnection(self, known_peer['uri'])
-            if not new_peer._connected:
-                    self._dht.add_known_node((new_peer._ip, new_peer._port, new_peer._guid, new_peer._nickname))
+            self._dht.add_peer(self, known_peer['uri'])
 
         self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
 
@@ -400,7 +395,7 @@ class CryptoTransportLayer(TransportLayer):
         #     callback()
 
 
-    def get_crypto_peer(self, guid, uri, pubkey=None, nickname=None):
+    def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None):
 
       if guid == self.guid:
         self._log.error('Cannot get CryptoPeerConnection for your own node')
@@ -430,7 +425,7 @@ class CryptoTransportLayer(TransportLayer):
 
         if not foundOutdatedPeer and peer_to_add._guid != self._guid:
             self._log.info('Adding crypto peer at %s' % peer_to_add._nickname)
-            self._dht.add_active_peer(self, (peer_to_add._pub, peer_to_add._address, peer_to_add._guid, peer_to_add._nickname))
+            self._dht.add_peer(self, peer_to_add._address, peer_to_add._pub, peer_to_add._guid, peer_to_add._nickname)
 
     # Return data array with details from the crypto file
     # TODO: This needs to be protected better; potentially encrypted file or DB
@@ -610,7 +605,7 @@ class CryptoTransportLayer(TransportLayer):
         nickname = msg.get('senderNick')
 
         self._dht.add_known_node((ip, port, guid, nickname))
-        self._dht.add_active_peer(self, (pubkey, uri, guid, nickname))
+        self._dht.add_peer(self, uri, pubkey, guid, nickname)
 
         self.trigger_callbacks(msg['type'], msg)
 
