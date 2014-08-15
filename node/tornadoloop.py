@@ -90,9 +90,9 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
 
     locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
 
-    #handler = logging.handlers.RotatingFileHandler(
-    #          log_file, maxBytes=20, backupCount=2)
-    #locallogger.addHandler(handler)
+    handler = logging.handlers.RotatingFileHandler(
+              log_file, maxBytes=50, backupCount=0)
+    locallogger.addHandler(handler)
 
     application = MarketApplication(my_market_ip,
                                     my_market_port,
