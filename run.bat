@@ -1,5 +1,4 @@
-﻿@echo off
-
+﻿﻿@echo off
 
 set "ip="
 for /f %%r in ('curl -s http://icanhazip.com') do (
@@ -8,4 +7,10 @@ for /f %%r in ('curl -s http://icanhazip.com') do (
 
 echo External IP: %ip%
 
-WinPython-64bit-2.7.6.4\python-2.7.6.amd64\python.exe Code\node\tornadoloop.py -p 12345 -s tcp://seed.openbazaar.org:12345 -l Code\logs\production.log -u 1 %ip%
+..\WinPython\python-2.7.6.amd64\scripts\pip install python-gnupg
+
+if exist db\ob.db goto dbexists
+..\WinPython\python-2.7.6.amd64\python node\setup_db.py db\ob.db
+
+:dbexists
+..\WinPython\python-2.7.6.amd64\python node\tornadoloop.py -p 12345 -l logs\production.log -u 1 %ip%
