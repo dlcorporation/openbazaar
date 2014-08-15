@@ -333,7 +333,7 @@ class CryptoTransportLayer(TransportLayer):
             if self._bitmessage_api is not None:
                 self._generate_new_bitmessage_address()
 
-            self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})[0]
+            self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)[0]
 
         self._log.debug('Retrieved Settings: \n%s', pformat(self.settings))
 
