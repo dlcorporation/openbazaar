@@ -55,6 +55,8 @@ class Market(object):
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
         self.settings = self._transport.settings
 
+        self.gpg = gnupg.GPG()
+
         welcome = True
 
         if self.settings:
@@ -100,87 +102,95 @@ class Market(object):
     def on_listing_results(self, results):
         self._log.debug('Listings %s' % results)
 
-    def save_contract(self, msg):
+    def process_contract_image(self, image):
+        uri = DataURI(img)
+        imageData = uri.data
+        #mime_type = uri.mimetype
+        charset = uri.charset
 
-        contract_id = random.randint(0, 1000000)
+        image = Image.open(StringIO(imageData))
+        croppedImage = ImageOps.fit(image, (200, 200), centering=(0.5, 0.5))
+        data = StringIO()
+        croppedImage.save(data, format='PNG')
+        new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
+        data.close()
 
-        # Initialize default values if not set
-        # if not msg.has_key("unit_price") or not msg['unit_price'] > 0:
-        #     msg['unit_price'] = 0
-        # if not msg.has_key("shipping_price") or not msg['shipping_price'] > 0:
-        #     msg['shipping_price'] = 0
-        # if not msg.has_key("item_quantity_available") or not msg['item_quantity_available'] > 0:
-        #     msg['item_quantity_available'] = 1
+        return new_uri
 
-        # Load gpg
-        gpg = gnupg.GPG()
+    def get_contract_id(self):
+        return random.randint(0, 1000000)
 
-        # Insert PGP Key
-        self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)[0]
-
-        self._log.debug('Settings %s' % self._transport.settings)
-        msg['Seller']['seller_PGP'] = gpg.export_keys(self._transport.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
-        msg['Seller']['seller_BTC_uncompressed_pubkey'] = self._transport.settings['pubkey']
-        msg['Seller']['seller_GUID'] = self._transport._guid
-
-        # Process and crop thumbs for images
-        if msg['Contract'].has_key('item_images'):
-            if msg['Contract']['item_images'].has_key('image1'):
-
-                img = msg['Contract']['item_images']['image1']
-
-                uri = DataURI(img)
-                imageData = uri.data
-                mime_type = uri.mimetype
-                charset = uri.charset
-
-                image = Image.open(StringIO(imageData))
-                croppedImage = ImageOps.fit(image, (200, 200), centering=(0.5, 0.5))
-                data = StringIO()
-                croppedImage.save(data, format='PNG')
-
-                new_uri = DataURI.make('image/png', charset=charset, base64=True, data=data.getvalue())
-
-                data.close()
-
-                msg['Contract']['item_images'] = new_uri
-
-        # TODO: replace default passphrase
-        json_string = json.dumps(msg, indent=0)
+    def linebreak_signing_data(self, data):
+        json_string = json.dumps(data, indent=0)
         seg_len = 52
         out_text = string.join(map(lambda x : json_string[x:x+seg_len],
            range(0, len(json_string), seg_len)), "\n")
-        signed_data = gpg.sign(out_text, passphrase='P@ssw0rd', keyid=self.settings.get('PGPPubkeyFingerprint'))
+        return out_text
 
-        # Save contract to DHT
-        contract_key = hashlib.sha1(str(signed_data)).hexdigest()
-
+    def generate_contract_key(self, signed_contract):
+        contract_hash = hashlib.sha1(str(signed_contract)).hexdigest()
         hash_value = hashlib.new('ripemd160')
-        hash_value.update(contract_key)
-        contract_key = hash_value.hexdigest()
+        hash_value.update(contract_hash)
+        return hash_value.hexdigest()
 
-        self._db.insertEntry("contracts", {"id": contract_id, "market_id": self._transport._market_id, "contract_body": json.dumps(msg), "signed_contract_body": str(signed_data), "state": "seed", "key": contract_key})
+    def save_contract_to_db(self, contract_id, body, signed_body, key):
+        self._db.insertEntry("contracts", {"id": contract_id,
+                                           "market_id": self._transport._market_id,
+                                           "contract_body": json.dumps(body),
+                                           "signed_contract_body": str(signed_body),
+                                           "state": "seed",
+                                           "key": key})
 
-        self._log.debug('New Contract Key: %s' % contract_key)
-
-        # Store listing
-        self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
-
-        self.update_listings_index()
-
-        # If keywords store them in the keyword index
-        keywords = msg['Contract']['item_keywords']
-        self._log.info('Keywords: %s' % keywords)
+    def update_keywords_on_network(self, key, keywords):
         for keyword in keywords:
 
             hash_value = hashlib.new('ripemd160')
             hash_value.update('keyword-%s' % keyword)
             keyword_key = hash_value.hexdigest()
 
-            self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':contract_key}), self._transport._guid)
+            self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':key}), self._transport._guid)
+
+
+    def save_contract(self, msg):
+
+        contract_id = self.get_contract_id()
+
+        # Refresh market settings
+        self.settings = self.get_settings()
+
+        msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
+        msg['Seller']['seller_BTC_uncompressed_pubkey'] = self.settings['pubkey']
+        msg['Seller']['seller_GUID'] = self.settings['guid']
+
+        # Process and crop thumbs for images
+        if msg['Contract'].has_key('item_images'):
+            if msg['Contract']['item_images'].has_key('image1'):
+
+                img = msg['Contract']['item_images']['image1']
+                new_uri = self.process_contract_image(img)
+                msg['Contract']['item_images'] = new_uri
+
+        # Line break the signing data
+        out_text = self.linebreak_signing_data(msg)
+
+        # Sign the contract
+        signed_data = self.gpg.sign(out_text, passphrase='P@ssw0rd', keyid=self.settings.get('PGPPubkeyFingerprint'))
+
+        # Save contract to DHT
+        contract_key = self.generate_contract_key(signed_data)
+
+        # Store contract in database
+        self.save_contract_to_db(contract_id, msg, signed_data, contract_key)
+
+        # Store listing
+        self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+        self.update_listings_index()
+
+        # If keywords are present
+        keywords = msg['Contract']['item_keywords']
+        self.update_keywords_on_network(contract_key, keywords)
 
     def republish_contracts(self):
-        #listings = self._db.contracts.find()
         listings = self._db.selectEntries("contracts")
         for listing in listings:
             self._transport._dht.iterativeStore(self._transport, listing['key'], listing.get('signed_contract_body'), self._transport._guid)
