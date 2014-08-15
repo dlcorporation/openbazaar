@@ -135,7 +135,10 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
         # not the main thread
         pass
 
-    tornado.ioloop.IOLoop.instance().start()
+    if not tornado.ioloop.IOLoop.instance():
+        ioloop.install()
+    else:
+        tornado.ioloop.IOLoop.instance().start()
 
 # Run this if executed directly
 if __name__ == "__main__":
