@@ -77,7 +77,8 @@ class CryptoPeerConnection(PeerConnection):
             else:
                 self._log.error('Cannot reach this peer. Port may not be open.')
                 self._connected = False
-                callback(self)
+                if callback != None:
+                    callback(self)
 
         Thread(target=initial_ping).start()
 
