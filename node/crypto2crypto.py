@@ -80,7 +80,7 @@ class CryptoPeerConnection(PeerConnection):
                 if callback != None:
                     callback(self)
 
-        Thread(target=initial_ping).start()
+        initial_ping()
 
 
     def __repr__(self):
