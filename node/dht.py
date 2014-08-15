@@ -112,7 +112,8 @@ class DHT(object):
             self._log.debug('New Peer')
             new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
             old_peer = self._routingTable.getContact(guid)
-            if old_peer._guid != new_peer._guid and old_peer._address != new_peer._address:
+
+            if old_peer is None or (old_peer._guid != new_peer._guid and old_peer._address != new_peer._address):
                 self._routingTable.addContact(new_peer)
             self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
             self._transport.save_peer_to_db(peer_tuple)
