@@ -68,6 +68,15 @@ class DHT(object):
                 self._activePeers[idx].cleanup_socket()
                 del self._activePeers[idx]
 
+    def connect_to_seed(self, hostname):
+        uri = 'tcp://%s:12345' % hostname
+
+
+    def add_seed(self,transport, uri):
+        new_peer = self._transport.get_crypto_peer(uri=uri)
+        self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
+
+
     def add_peer(self, transport, uri, pubkey=None, guid=None, nickname=None):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
         peers list if it doesn't already reside there.
@@ -76,58 +85,23 @@ class DHT(object):
         :param peer_tuple: PUG tuple so we can make a peer connection
         """
 
-        # Check if peer to add is yourself
-        if guid == self._settings['guid']:
-            self._log.error('[add_active_peer] Cannot add yourself')
-            return
-
         peer_tuple = (pubkey, uri, guid, nickname)
 
-        # Refresh peer's data in case anything changed
         for idx, peer in enumerate(self._activePeers):
 
             active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
 
             if active_peer_tuple == peer_tuple:
-                self._log.info('[add_active_peer] Already in active peer list')
+                self._log.info('Already in active peer list')
                 return
+            else:
+                if peer._guid == guid or peer._address == uri:
+                    self._log.debug('Partial Match')
 
-            # Found partial match
-            if peer._address == uri or peer._guid == guid or peer._pub == pubkey:
-                self._log.info('[add_active_peer] Found stale data about this node, refreshing')
-
-                stale_peer = self._activePeers[idx]
-                stale_peer._address = uri
-                stale_peer._guid = guid
-                stale_peer._pub = pubkey
-                stale_peer._nickname = nickname
-
-                if guid:
-                    self._routingTable.removeContact(guid)
-                    self._routingTable.addContact(stale_peer)
-                    self._transport.save_peer_to_db(peer_tuple)
-
-                return
-
-        def cb(new_peer):
-
-            if new_peer._guid != '':
-                self._log.debug('[add_active_peer] Adding new peer %s' % str(peer_tuple))
-                self._transport.save_peer_to_db(peer_tuple)
-
-                for idx, peer2 in enumerate(self._activePeers):
-                    if peer2._guid == new_peer._guid:
-                        return
-                self._activePeers.append(new_peer)
-                self._routingTable.removeContact(new_peer._guid)
-                self._routingTable.addContact(new_peer)
-
-        new_peer = transport.get_crypto_peer(guid, uri, pubkey, nickname, callback=cb)
-        self._log.info('Got here %s' % new_peer)
-
-        new_peer.send({'type':'ping'})
-
-
+        self._log.debug('New Peer')
+        new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
+        self._routingTable.addContact(new_peer)
+        self._transport.save_peer_to_db(peer_tuple)
 
     def add_known_node(self, node):
         """ Accept a peer tuple and add it to known nodes list

@@ -31,57 +31,43 @@ class CryptoPeerConnection(PeerConnection):
         self._nickname = nickname
         self._sin = sin
         self._connected = False
-        self._guid = ""
+        self._guid = guid
 
         PeerConnection.__init__(self, transport, address)
 
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
-        def initial_ping():
+        if self.check_port():
 
-            if self.check_port():
+            def cb(msg):
+                if msg:
 
-                if guid is not None:
-                    self._guid = guid
+                    self._log.debug('ALIVE PEER %s' % msg[0])
+                    msg = msg[0]
+                    msg = json.loads(msg)
+
+                    # Update Information
+                    self._guid = msg['senderGUID']
                     self._sin = self.generate_sin(self._guid)
-                    if callback is not None:
-                        callback(self)
-                else:
-                    def cb(msg):
-                        if msg:
+                    self._pub = msg['pubkey']
+                    self._nickname = msg['senderNick']
 
-                            self._peer_alive = True
-                            msg = msg[0]
-                            msg = json.loads(msg)
-                            self._guid = msg['senderGUID']
+                    self._peer_alive = True
 
-                            self._sin = self.generate_sin(self._guid)
-                            self._pub = msg['pubkey']
-                            self._nickname = msg['senderNick']
-
-                            self._log.info('self %s' % self)
-
-                            if callback != None:
-                                self._log.debug('SELF %s' % self)
-                                callback(self)
-                    try:
-                        self.send_raw(json.dumps({'type':'hello',
-                                                  'pubkey':transport.pubkey,
-                                                  'uri':transport._uri,
-                                                  'senderGUID':transport.guid,
-                                                  'senderNick':transport._nickname}), cb)
-                    except:
-                        self._log.error('Hello message failed')
+                    # Add this peer to active peers list
+                    for idx, peer in enumerate(self._transport._dht._activePeers):
+                        if peer._guid == guid or peer._address == address:
+                            self._transport._dht._activePeers[idx] = self
+                            return
+                    self._transport._dht._activePeers.append(self)
+                    self._transport._dht._routingTable.addContact(self)
 
 
-
-            else:
-                self._log.error('Cannot reach this peer. Port may not be open.')
-                self._connected = False
-                if callback != None:
-                    callback(self)
-
-        initial_ping()
+            self.send_raw(json.dumps({'type':'hello',
+                                      'pubkey':transport.pubkey,
+                                      'uri':transport._uri,
+                                      'senderGUID':transport.guid,
+                                      'senderNick':transport._nickname}), cb)
 
 
     def __repr__(self):
@@ -291,15 +277,15 @@ class CryptoTransportLayer(TransportLayer):
     def _ping(self, msg):
 
         self._log.info('Pinged %s ' % pformat(msg))
-
-        pinger = CryptoPeerConnection(self,msg['uri'], msg['pubkey'], msg['senderGUID'])
-        pinger.send_raw(json.dumps(
-            {"type": "hello_response",
-             "senderGUID": self.guid,
-             "uri": self._uri,
-             "senderNick": self._nickname,
-             "pubkey": self.pubkey,
-            }))
+        #
+        # pinger = CryptoPeerConnection(self,msg['uri'], msg['pubkey'], msg['senderGUID'])
+        # pinger.send_raw(json.dumps(
+        #     {"type": "hello_response",
+        #      "senderGUID": self.guid,
+        #      "uri": self._uri,
+        #      "senderNick": self._nickname,
+        #      "pubkey": self.pubkey,
+        #     }))
 
 
     def _storeValue(self, msg):
@@ -390,15 +376,19 @@ class CryptoTransportLayer(TransportLayer):
 
     def join_network(self, seed_peers=None, callback=lambda msg: None):
 
+        self._log.info('Joining network')
         # Connect up through seed servers
         if seed_peers:
             for seed in seed_peers:
                 uri = 'tcp://%s:12345' % seed
+
+                #self._dht.connect_to_seed(seed)
+
                 if self._dev_mode and IP(seed).iptype() is 'PRIVATE':
-                    uri = 'tcp://%s:12345' % seed
-                    self._dht.add_peer(self, uri)
+
+                    self._dht.add_seed(self, uri)
                 else:
-                    self._dht.add_peer(self, uri)
+                    self._dht.add_seed(self, uri)
 
         # Connect to persisted peers
         known_peers = self._db.selectEntries("peers", "market_id = '%s'" % self._market_id)
@@ -621,6 +611,8 @@ class CryptoTransportLayer(TransportLayer):
         nickname = msg.get('senderNick')
 
         self._dht.add_known_node((ip, port, guid, nickname))
+        self._log.info('ON MESSAGE %s' % msg)
+
         self._dht.add_peer(self, uri, pubkey, guid, nickname)
 
         self.trigger_callbacks(msg['type'], msg)
