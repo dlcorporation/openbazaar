@@ -208,7 +208,7 @@ class Market(object):
     def republish_listing(self, msg):
 
         listing_id = msg.get('productID')
-        listing = self._db.selectEntries("products", {"id": listing_id})
+        listing = self._db.selectEntries("products", "id = '%s'" % listing_id)
         if listing:
             listing = listing[0]
         else:
@@ -270,7 +270,7 @@ class Market(object):
 
     def remove_from_keyword_indexes(self, contract_id):
 
-        contract = self._db.selectEntries("contracts", {"id": contract_id})[0]
+        contract = self._db.selectEntries("contracts", "id = '%s'" % contract_id)[0]
         contract_key = contract['key']
 
         contract = json.loads(contract['contract_body'])

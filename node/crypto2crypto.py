@@ -445,7 +445,7 @@ class CryptoTransportLayer(TransportLayer):
     def get_profile(self):
         peers = {}
 
-        self.settings = self._db.selectEntries("settings", {"market_id":self._market_id})[0]
+        self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)[0]
 
         for uri, peer in self._peers.iteritems():
             if peer._pub:

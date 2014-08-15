@@ -35,7 +35,7 @@ class TestDbOperations(unittest.TestCase):
         db.insertEntry("reviews", review_to_store)
 
         # Try to retrieve the record we just added based on the pubkey
-        retrieved_review = db.selectEntries("reviews", {"pubkey":"123"})
+        retrieved_review = db.selectEntries("reviews", "pubkey = '123'")
 
         # The above statement will return a list with all the retrieved records as dictionaries
         self.assertEqual(len(retrieved_review), 1)
