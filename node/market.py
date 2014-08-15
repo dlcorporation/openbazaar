@@ -69,7 +69,6 @@ class Market(object):
         self._transport.add_callback('query_page', self.on_query_page)
         self._transport.add_callback('query_listings', self.on_query_listings)
         self._transport.add_callback('page', self.on_page)
-
         self._transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
         self._transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
@@ -103,7 +102,7 @@ class Market(object):
         self._log.debug('Listings %s' % results)
 
     def process_contract_image(self, image):
-        uri = DataURI(img)
+        uri = DataURI(image)
         imageData = uri.data
         #mime_type = uri.mimetype
         charset = uri.charset
