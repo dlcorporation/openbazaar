@@ -15,6 +15,7 @@ class PortMapper(object):
     DEBUG = False # boolean
     upnp = None  # miniupnpc.UPnP
     OPEN_BAZAAR_DESCRIPTION='OpenBazaar Server'
+    NO_UPNP_DEVICE_AVAILABLE = False
     
     def debug(self,*s):
         if PortMapper.DEBUG:
@@ -46,8 +47,8 @@ class PortMapper(object):
             self.upnp.selectigd()
         except Exception, e:
             print 'Exception :', e
-            import sys
-            sys.exit(1)
+            self.NO_UPNP_DEVICE_AVAILABLE = True
+            return
 
         # display information about the IGD and the internet connection
         self.debugAddresses()
@@ -66,6 +67,9 @@ class PortMapper(object):
         Valid protocol values are: 'TCP', 'UDP'
         Usually you'll pass externalPort and internalPort as the same number.
         '''
+        if self.NO_UPNP_DEVICE_AVAILABLE:
+            return
+
         if protocol not in ('TCP','UDP'):
             raise Exception('PortMapper.addPortMapping() invalid protocol exception \''+str(protocol)+'\'')
         
@@ -83,6 +87,9 @@ class PortMapper(object):
         return result
     
     def deletePortMapping(self, port, protocol='TCP'):
+        if self.NO_UPNP_DEVICE_AVAILABLE:
+            return
+
         result = False
         try:
             result = self.upnp.deleteportmapping(port, protocol)
@@ -93,6 +100,9 @@ class PortMapper(object):
         return result
     
     def getMappingList(self):
+        if self.NO_UPNP_DEVICE_AVAILABLE:
+            return
+
         ''' Returns -> [PortMappingEntry]'''
         i = 0
         mappings = []
@@ -108,6 +118,9 @@ class PortMapper(object):
         return mappings
     
     def cleanMyMappings(self):
+        if self.NO_UPNP_DEVICE_AVAILABLE:
+            return
+
         '''Delete previous OpenBazaar UPnP Port mappings if found.'''
         mappings = mapper.getMappingList()
         for m in mappings:

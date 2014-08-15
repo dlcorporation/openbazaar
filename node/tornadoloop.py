@@ -76,8 +76,9 @@ def setup_upnp_port_mapping(internal_port):
     if upnp.PortMapper.DEBUG:
         print "UPnP Port Map entries found on local gateway:"
         mapEntries = upnp_mapper.getMappingList()
-        for e in mapEntries:
-            print str(e)
+        if mapEntries is not None:
+            for e in mapEntries:
+                print str(e)
             
     print "UPnP Port Map configuration finished."
 
