@@ -233,7 +233,8 @@ class CryptoTransportLayer(TransportLayer):
         #if len(results) > 0:
         #    self._db.updateEntries("peers", {"id":results[0]['id']}, {"market_id":self._market_id,"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
         #else:
-        self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname, "market_id":self._market_id})
+        if guid is not None:
+            self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname, "market_id":self._market_id})
 
 
 

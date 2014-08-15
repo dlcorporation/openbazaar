@@ -75,7 +75,7 @@ angular.module('app')
                 socket.send('peers', {})
             }
 
-            $interval(refresh_peers,60000,0,true)
+            //$interval(refresh_peers,60000,0,true)
 
             /**
              * Create a shout and send it to all connected peers
