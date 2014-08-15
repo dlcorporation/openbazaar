@@ -84,33 +84,35 @@ class DHT(object):
         :param transport: (CryptoTransportLayer) so we can get a new CryptoPeer
         :param peer_tuple: PUG tuple so we can make a peer connection
         """
+        if uri and pubkey is not None and guid is not None and nickname is not None:
 
-        peer_tuple = (pubkey, uri, guid, nickname)
+            peer_tuple = (pubkey, uri, guid, nickname)
 
-        for idx, peer in enumerate(self._activePeers):
+            for idx, peer in enumerate(self._activePeers):
 
-            active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
+                active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
 
-            if active_peer_tuple == peer_tuple:
-                self._log.info('Already in active peer list')
-                return
-            else:
-                if peer._guid == guid or peer._address == uri:
-                    self._log.debug('Partial Match')
-                    # Update peer
-                    peer._guid = guid
-                    peer._address = uri
-                    peer._pub = pubkey
-                    peer._nickname = nickname
-                    self._activePeers[idx] = peer
-                    self._routingTable.removeContact(guid)
-                    self._routingTable.addContact(guid)
+                if active_peer_tuple == peer_tuple:
+                    self._log.info('Already in active peer list')
+                    return
+                else:
+                    if peer._guid == guid or peer._address == uri:
+                        self._log.debug('Partial Match')
+                        # Update peer
+                        peer._guid = guid
+                        peer._address = uri
+                        peer._pub = pubkey
+                        peer._nickname = nickname
+                        self._activePeers[idx] = peer
+                        self._routingTable.removeContact(guid)
+                        self._routingTable.addContact(peer)
+                        return
 
 
-        self._log.debug('New Peer')
-        new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
-        self._routingTable.addContact(new_peer)
-        self._transport.save_peer_to_db(peer_tuple)
+            self._log.debug('New Peer')
+            new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
+            self._routingTable.addContact(new_peer)
+            self._transport.save_peer_to_db(peer_tuple)
 
     def add_known_node(self, node):
         """ Accept a peer tuple and add it to known nodes list
