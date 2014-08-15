@@ -103,6 +103,8 @@ class DHT(object):
                     peer._pub = pubkey
                     peer._nickname = nickname
                     self._activePeers[idx] = peer
+                    self._routingTable.removeContact(guid)
+                    self._routingTable.addContact(guid)
 
 
         self._log.debug('New Peer')
