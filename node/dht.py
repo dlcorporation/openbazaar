@@ -104,8 +104,8 @@ class DHT(object):
 
                 if guid:
                     self._routingTable.removeContact(guid)
-                self._routingTable.addContact(stale_peer)
-                self._transport.save_peer_to_db(peer_tuple)
+                    self._routingTable.addContact(stale_peer)
+                    self._transport.save_peer_to_db(peer_tuple)
 
                 return
 
