@@ -98,24 +98,25 @@ class DHT(object):
                 del self._activePeers[idx]
                 self._routingTable.removeContact(guid)
 
-        new_peer = transport.get_crypto_peer(guid, uri, pubkey, nickname)
+        def cb(new_peer):
+            add_it = True
+            for peer in self._activePeers:
+                if peer._guid == new_peer._guid:
+                    add_it = False
 
-        if new_peer.check_port():
+            if add_it and new_peer._guid != '':
+                self._log.debug('[add_active_peer] Adding new peer %s' % str(peer_tuple))
+                self._transport.save_peer_to_db(peer_tuple)
+                self._activePeers.append(new_peer)
+                self._routingTable.removeContact(new_peer._guid)
+                self._routingTable.addContact(new_peer)
 
-            def cb(msg):
-                add_it = True
-                for peer in self._activePeers:
-                    if peer._guid == new_peer._guid:
-                        add_it = False
+        new_peer = transport.get_crypto_peer(guid, uri, pubkey, nickname, callback=cb)
+        self._log.info('Got here %s' % new_peer)
 
-                if add_it and new_peer._guid != '':
-                    self._log.debug('[add_active_peer] Adding new peer %s' % str(peer_tuple))
-                    self._transport.save_peer_to_db(peer_tuple)
-                    self._activePeers.append(new_peer)
-                    self._routingTable.removeContact(new_peer._guid)
-                    self._routingTable.addContact(new_peer)
 
-            #new_peer.send({'type':'ping'}, cb)
+
+
 
     def add_known_node(self, node):
         """ Accept a peer tuple and add it to known nodes list

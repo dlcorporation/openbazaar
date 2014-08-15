@@ -16,6 +16,7 @@ import requests
 import socket
 import traceback
 import zlib
+from threading import Thread
 
 ioloop.install()
 
@@ -36,38 +37,50 @@ class CryptoPeerConnection(PeerConnection):
 
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
-        if self.check_port():
+        def initial_ping():
 
-            if guid is not None:
-                self._guid = guid
-                self._sin = self.generate_sin(self._guid)
-                callback(None)
+            if self.check_port():
+
+                if guid is not None:
+                    self._guid = guid
+                    self._sin = self.generate_sin(self._guid)
+                    callback(self)
+                else:
+                    def cb(msg):
+                        if msg:
+
+                            self._peer_alive = True
+                            msg = msg[0]
+                            msg = json.loads(msg)
+                            self._guid = msg['senderGUID']
+
+                            self._sin = self.generate_sin(self._guid)
+                            self._pub = msg['pubkey']
+                            self._nickname = msg['senderNick']
+
+                            self._log.info('self %s' % self)
+
+                            if callback != None:
+                                self._log.debug('SELF %s' % self)
+                                callback(self)
+                    try:
+                        self.send_raw(json.dumps({'type':'hello',
+                                                  'pubkey':transport.pubkey,
+                                                  'uri':transport._uri,
+                                                  'senderGUID':transport.guid,
+                                                  'senderNick':transport._nickname}), cb)
+                    except:
+                        self._log.error('Hello message failed')
+
+
+
             else:
-                def cb(msg):
-                    if msg:
-                        self._peer_alive = True
-                        msg = msg[0]
-                        msg = json.loads(msg)
-                        self._guid = msg['senderGUID']
+                self._log.error('Cannot reach this peer. Port may not be open.')
+                self._connected = False
+                callback(self)
 
-                        self._sin = self.generate_sin(self._guid)
-                        self._pub = msg['pubkey']
-                        self._nickname = msg['senderNick']
+        Thread(target=initial_ping).start()
 
-                        if callback != None:
-                            callback(msg)
-                try:
-                    self.send_raw(json.dumps({'type':'hello',
-                                              'pubkey':transport.pubkey,
-                                              'uri':transport._uri,
-                                              'senderGUID':transport.guid,
-                                              'senderNick':transport._nickname}), cb)
-                except:
-                    self._log.error('Hello message failed')
-
-        else:
-            self._log.error('Cannot reach this peer. Port may not be open.')
-            self._connected = False
 
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
@@ -395,7 +408,7 @@ class CryptoTransportLayer(TransportLayer):
         #     callback()
 
 
-    def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None):
+    def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None, callback=None):
 
       if guid == self.guid:
         self._log.error('Cannot get CryptoPeerConnection for your own node')
@@ -403,8 +416,8 @@ class CryptoTransportLayer(TransportLayer):
 
       self._log.debug('Getting CryptoPeerConnection\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' % (guid, uri, pubkey, nickname))
 
-      peer = CryptoPeerConnection(self, uri, pubkey, guid=guid, nickname=nickname)
-      return peer
+      return CryptoPeerConnection(self, uri, pubkey, guid=guid, nickname=nickname, callback=callback)
+
 
     def addCryptoPeer(self, peer_to_add):
 
