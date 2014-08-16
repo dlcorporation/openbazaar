@@ -1181,6 +1181,7 @@ angular.module('app')
 
                     scope.modalOrder.state = 'Shipped';
                     scope.modalOrder.waitingForShipment = false;
+                    scope.queryMyOrder(1);
 
                     if (!$scope.$$phase) {
                         $scope.$apply();
@@ -1195,6 +1196,7 @@ angular.module('app')
                     })
 
                     scope.modalOrder.state = 'Completed';
+                    scope.queryMyOrder(0);
 
                     if (!$scope.$$phase) {
                         $scope.$apply();

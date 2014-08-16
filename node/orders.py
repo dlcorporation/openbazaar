@@ -83,6 +83,7 @@ class Orders(object):
                  "merchant": _order['merchant'] if _order.has_key("merchant") else "",
                  "item_price": _order['item_price'] if _order.has_key("item_price") else "",
                  "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
+                 "shipping_address": _order['shipping_address'] if _order.has_key("shipping_address") else "",
                  "total_price": total_price,
                  "notary": notary,
                  "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
@@ -480,7 +481,8 @@ class Orders(object):
         buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
 
         self._db.updateEntries("orders", {'buyer_order_id': buyer_order_id}, {'state':Orders.State.BUYER_PAID,
-                     "updated": time.time()})
+                                                                              'shipping_address': json.dumps(msg['shipping_address']),
+                                                                              "updated": time.time()})
 
     def handle_shipped_order(self, msg):
         self._log.info('Entering Shipped Order handling')

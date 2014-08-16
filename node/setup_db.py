@@ -72,6 +72,7 @@ def setup_db(db_path):
                         "buyer_order_id TEXT, " \
                         "notary TEXT, " \
                         "payment_address TEXT, " \
+                        "shipping_address TEXT, " \
                         "buyer TEXT, " \
                         "merchant TEXT, " \
                         "note_for_merchant TEXT, " \

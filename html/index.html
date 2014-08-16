@@ -518,10 +518,10 @@
             <h4>Acting as an Notary</h4>
             <p>If you want to act as a notary check the box below.</p>
 
-            <div class="form-group">
+            <div class="checkbox">
 
-                <label for="inputNotary" class="col-sm-3 control-label">Make me a notary</label>
-                <input type="checkbox" id="inputNotary" class="col-sm-9" ng-model="settings.notary" value="1" />
+                <label for="inputNotary" class="control-label"><input type="checkbox" id="inputNotary" ng-model="settings.notary" value="1" /> Make me a notary</label>
+
 
             </div>
 
@@ -644,7 +644,7 @@
 
                         <div class="row" style="margin-top:10px;">
                         <div class="col-sm-5 text-right" style="padding-top:5px">
-                            <strong>Where would you like payment sent to?</strong>
+                            <strong>Where would you like payment sent to? {{Market.modalOrder}}</strong>
                         </div>
                         <div class="col-sm-7">
                             <input type="text" class="form-control text" ng-model="Market.modalOrder.paymentAddress" placeholder="Enter a Bitcoin address"/>
