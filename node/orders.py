@@ -83,7 +83,7 @@ class Orders(object):
                  "merchant": _order['merchant'] if _order.has_key("merchant") else "",
                  "item_price": _order['item_price'] if _order.has_key("item_price") else "",
                  "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
-                 "shipping_address": json.loads(_order['shipping_address']) if _order['shipping_address'] is not '' else "",
+                 "shipping_address": _order['shipping_address'] if _order['shipping_address'] is not "" else "",
                  "total_price": total_price,
                  "notary": notary,
                  "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
