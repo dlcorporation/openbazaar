@@ -11,7 +11,7 @@
                 You don't have any notaries trusted. Please add one before you purchase contracts or you are putting yourself at risk.
             </div>
 
-    <div id="purchase_step1" ng-show="!order.step2">
+    <div id="purchase_step1" ng-show="!order.step2 && !order.confirmation">
 
     <table class="table table-striped" style="margin-bottom:0">
         <tr>
@@ -94,15 +94,39 @@
 
         </div>
 
+        <div id="purchase_confirmation" ng-show="order.confirmation" >
+
+
+            <h4>Order Confirmation</h4>
+
+            <p>Your order has been submitted. What happens next?
+                <ul>
+                    <li>Notary receives and ensures contract is valid</li>
+                    <li>Merchant receives order from notary</li>
+                    <li>You receive a notification to pay up</li>
+                </ul>
+
+            </p>
+
+            <!--<div class="form-group row">-->
+                <!--<div class="col-sm-6">-->
+                    <!--<label for="arbiter">Arbiter</label>-->
+                    <!--<select id="arbiter" ng-model="order.arbiter" ng-options="arbiter for arbiter in arbiters" class="form-control col-sm-4"></select>-->
+                <!--</div>-->
+            <!--</div>-->
+
+        </div>
+
 
      </form>
 
 </div>
 
 <div class="modal-footer">
-    <a class="btn btn-default" ng-show="!order.step2" ng-click="cancel()" type="cancel">Cancel</a>
-    <a class="btn btn-success" ng-show="!order.step2" ng-click="gotoStep2()" type="submit">Next</a>
+    <a class="btn btn-default" ng-show="!order.step2 && !order.confirmation" ng-click="cancel()" type="cancel">Cancel</a>
+    <a class="btn btn-success" ng-show="!order.step2 && !order.confirmation" ng-click="gotoStep2()" type="submit">Next</a>
     <a class="btn btn-default" ng-show="order.step2" ng-click="gotoStep1()" type="submit">Back</a>
     <a class="btn btn-success" ng-show="order.step2" ng-click="submitOrder()" type="submit">Submit Order</a>
+    <a class="btn btn-success" ng-show="order.confirmation" ng-click="closeConfirmation()" type="submit">Go to Orders</a>
 
 </div>

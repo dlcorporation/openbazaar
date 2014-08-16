@@ -1114,12 +1114,7 @@ angular.module('app')
                 };
             };
 
-
-
-
             $scope.ViewOrderCtrl = function($scope, $modal, $log) {
-
-
 
                 $scope.open = function(size, orderId, settings) {
 
@@ -1426,6 +1421,9 @@ angular.module('app')
                             },
                             guid: function() {
                                 return guid
+                            },
+                            scope: function() {
+                                return $scope
                             }
                         },
                         size: size
@@ -1454,7 +1452,8 @@ angular.module('app')
                 notaries,
                 arbiters,
                 btc_pubkey,
-                guid) {
+                guid,
+                scope) {
 
 
                 console.log(productTitle, productPrice, productDescription, productImageData, rawContract, notaries, arbiters, btc_pubkey, guid);
@@ -1468,10 +1467,9 @@ angular.module('app')
                 $scope.productQuantity = 1;
                 $scope.rawContract = rawContract;
                 $scope.guid = guid;
-
                 $scope.arbiters = arbiters;
-
                 $scope.notaries = []
+
                 jQuery.each(notaries, function(key, value) {
                     notary = value
                     console.log(value.guid + ' ' + guid)
@@ -1483,8 +1481,6 @@ angular.module('app')
                     }
                 })
                 console.log($scope.notaries)
-
-
 
                 $scope.key = key;
 
@@ -1521,7 +1517,6 @@ angular.module('app')
                     }
                 }
 
-
                 $scope.order = {
                     message: '',
                     tx: '',
@@ -1538,6 +1533,9 @@ angular.module('app')
                 $scope.submitOrder = function() {
 
                     $scope.creatingOrder = false;
+                    $scope.order.step2 = '';
+                    $scope.order.step1 = '';
+                    $scope.order.confirmation = true;
 
                     var newOrder = {
                         'message': $scope.order.message,
@@ -1554,9 +1552,18 @@ angular.module('app')
                     console.log(newOrder);
                     socket.send('order', newOrder);
                     $scope.sentOrder = true;
+                    scope.queryMyOrder(0);
 
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+
+
+
+                }
+
+                $scope.closeConfirmation = function() {
                     $modalInstance.close();
-
                 }
 
 
