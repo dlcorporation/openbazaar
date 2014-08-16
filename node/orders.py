@@ -144,7 +144,8 @@ class Orders(object):
         del order['item_title']
 
         order['state'] = Orders.State.SHIPPED
-        self._db.updateEntries("orders", {"order_id": order_id, "payment_address":payment_address}, order)
+        order['payment_address'] = payment_address
+        self._db.updateEntries("orders", {"order_id": order_id}, order)
 
         order['type'] = 'order'
         order['payment_address'] = payment_address
