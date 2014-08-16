@@ -1,26 +1,24 @@
+from multisig import Multisig
 import threading
-from twisted.internet import reactor
 import json
 import random
 import logging
 
-import tornado.websocket
-from zmq.eventloop import ioloop
-
-import tornado.platform.twisted
 import subprocess
-
 import protocol
 import pycountry
 import gnupg
 import obelisk
-from multisig import Multisig
+
+import tornado.websocket
+from zmq.eventloop import ioloop
+from twisted.internet import reactor
 
 ioloop.install()
 
 
 class ProtocolHandler:
-    def __init__(self, transport, market, handler, db):
+    def __init__(self, transport, market, handler, db, loop_instance):
         self._market = market
         self._transport = transport
         self._handler = handler
@@ -79,7 +77,8 @@ class ProtocolHandler:
 
         self._timeouts = []
 
-        self.loop = ioloop.IOLoop.instance()
+        #unused for now, wipe it if you want later.
+        self.loop = loop_instance
 
         self._log = logging.getLogger(
             '[%s] %s' % (self._transport._market_id, self.__class__.__name__)
@@ -722,9 +721,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     listen_lock = threading.Lock()
 
     def initialize(self, transport, market, db):
+        self._loop = tornado.ioloop.IOLoop.instance()
         self._log = logging.getLogger(self.__class__.__name__)
         self._log.info("Initialize websockethandler")
-        self._app_handler = ProtocolHandler(transport, market, self, db)
+        self._app_handler = ProtocolHandler(transport, market, self, db, self._loop)
         self.market = market
         self._transport = transport
 
@@ -784,13 +784,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             #       response, exc_info=True)
 
     def queue_response(self, response):
-        ioloop = tornado.ioloop.IOLoop.instance()
-
         def send_response(*args):
             self._send_response(response)
 
         try:
             # calling write_message or the socket is not thread safe
-            ioloop.current().add_callback(send_response)
+            self._loop.current().add_callback(send_response)
         except:
             logging.error("Error adding callback", exc_info=True)

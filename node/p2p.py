@@ -106,11 +106,21 @@ class TransportLayer(object):
         self.socket = self.ctx.socket(zmq.REP)
 
         if network_util.is_loopback_addr(self._ip):
-            # we are in local test mode so bind that socket on the
-            # specified IP
-            self.socket.bind(self._uri)
+            try:
+                # we are in local test mode so bind that socket on the
+                # specified IP
+                self.socket.bind(self._uri)
+            except Exception as e:
+                error_message = "\n\nTransportLayer.listen() error!!!: Could not bind socket to " + self._uri
+                error_message += " (" + str(e) + ")"
+                import platform
+                if platform.system() == 'Darwin':
+                    error_message += "\n\nPerhaps you have not added a loopback alias yet.\nTry this on your terminal and restart OpenBazaar in development mode again:\n\n\t$ sudo ifconfig lo0 alias 127.0.0.2\n\n"
+                raise Exception(error_message)
+
         else:
             self.socket.bind('tcp://*:%s' % self._port)
+            
 
         self.stream = zmqstream.ZMQStream(self.socket, io_loop=ioloop.IOLoop.current())
 
