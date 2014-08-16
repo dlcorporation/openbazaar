@@ -291,7 +291,7 @@ class ProtocolHandler:
         order = self._market.orders.get_order(msg['orderId'])
 
         # Send to exchange partner
-        self._market.orders.ship_order(order, msg['orderId'])
+        self._market.orders.ship_order(order, msg['orderId'], msg['paymentAddress'])
 
     def client_release_payment(self, socket_handler, msg):
         self._log.info('Releasing payment to Merchant %s' % msg)

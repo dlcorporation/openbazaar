@@ -1160,10 +1160,10 @@ angular.module('app')
                         orderId: orderId
                     })
 
-                    scope.modalOrder.state = 'Paid';
+                    $scope.modalOrder.state = 'Paid';
 
                     // Refresh orders in background
-                    scope.queryMyOrder(0);
+                    $scope.queryMyOrder(0);
 
                     if (!$scope.$$phase) {
                         $scope.$apply();
@@ -1175,11 +1175,12 @@ angular.module('app')
                 $scope.markOrderShipped = function(orderId) {
 
                     socket.send("ship_order", {
-                        orderId: orderId
+                        orderId: orderId,
+                        paymentAddress: scope.modalOrder.paymentAddress
                     })
 
-                    scope.modalOrder.state = 'Shipped';
-                    scope.modalOrder.waitingForShipment = false;
+                    $scope.modalOrder.state = 'Shipped';
+                    $scope.modalOrder.waitingForShipment = false;
 
                     if (!$scope.$$phase) {
                         $scope.$apply();
@@ -1192,7 +1193,7 @@ angular.module('app')
                     socket.send("release_payment", {
                         orderId: orderId
                     })
-                    scope.modalOrder.state = 'Completed';
+                    $scope.modalOrder.state = 'Completed';
 
                     if (!$scope.$$phase) {
                         $scope.$apply();

@@ -135,7 +135,7 @@ class Orders(object):
 
         self._db.insertEntry("orders", new_order)
 
-    def ship_order(self, order, order_id):
+    def ship_order(self, order, order_id, payment_address):
         self._log.info('Shipping order')
 
         del order['qrcode']
@@ -144,9 +144,10 @@ class Orders(object):
         del order['item_title']
 
         order['state'] = Orders.State.SHIPPED
-        self._db.updateEntries("orders", {"order_id": order_id}, order)
+        self._db.updateEntries("orders", {"order_id": order_id, "payment_address":payment_address}, order)
 
         order['type'] = 'order'
+        order['payment_address'] = payment_address
 
         # Find Seller Data in Contract
         offer_data = ''.join(order['signed_contract_body'].split('\n')[8:])
@@ -495,7 +496,9 @@ class Orders(object):
         bid_data_json = json.loads(bid_data_json)
 
         self._db.updateEntries("orders", {'order_id': bid_data_json['Buyer']['buyer_order_id']}, {'state':Orders.State.SHIPPED,
-                     "updated": time.time()})
+                     "updated": time.time(), "payment_address":msg['payment_address']})
+
+        
 
 
     def handle_notarized_order(self, msg):
