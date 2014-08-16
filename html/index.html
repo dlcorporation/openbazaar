@@ -134,7 +134,7 @@
                     <li>Encrypted messaging and chat</li>
                 </ul>
                 </p>
-                <p style="margin-top:40px;">Want to help us change the world by contributing to our project? Visit us at <a href="https://github.com/OpenBazaar/OpenBazaar" target="_blank">https://github.com/OpenBazaar/OpenBazaar</a></p>
+                <p style="margin-top:40px;word-wrap:break-word;break-word:break-all">Want to help us change the world by contributing to our project? Visit us at <a href="https://github.com/OpenBazaar/OpenBazaar" target="_blank">https://github.com/OpenBazaar/OpenBazaar</a></p>
 
 
             </div>
@@ -949,21 +949,21 @@
 
             <table class="table table-bordered table-striped" style="font-size:14px;width:100%;table-layout:fixed">
                 <tr ng-show="page.email">
-                    <td width=170>Email Address</td>
+                    <td class="col-xs-3">Email Address</td>
                     <td style="word-wrap:break-word"><a href="mailto:{{page.email}}">{{page.email}}</a></td>
                 </tr>
                 <tr ng-show="page.bitmessage">
-                    <td width=170>Bitmessage Address</td>
+                    <td class="col-xs-3">Bitmessage Address</td>
                     <td style="word-wrap:break-word">{{page.bitmessage}}
                         <!--<button class="btn btn-info" ng-click="compose_message('lg', myself, page.bitmessage, null)">Send Message</button>-->
                     </td>
                 </tr>
                 <tr>
-                    <td width=170>Open Bazaar Public Key</td>
+                    <td class="col-xs-3">Open Bazaar Public Key</td>
                     <td style="word-wrap:break-word">{{page.pubkey}}</td>
                 </tr>
                 <tr ng-show="page.PGPPubKey">
-                    <td width=170>PGP Key</td>
+                    <td class="col-xs-3">PGP Key</td>
                     <td style="word-wrap:break-word;font-size:10px;"><pre>{{page.PGPPubKey}}</pre></td>
                 </tr>
             </table>
@@ -1020,7 +1020,7 @@
             </div>
 
 
-            <div class="div-listing col-sm-4" style="padding:5px" ng-repeat="listing in store_listings">
+            <div class="div-listing col-sm-4 col-xs-6" style="padding:5px" ng-repeat="listing in store_listings">
 
                 <a href="#" ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_description, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, trusted_notaries, settings.trustedArbiters, settings.pubkey, listing.contract_body.Seller.seller_GUID)"><img class="img-thumbnail" src="{{listing.contract_body.Contract.item_images}}" width="100%"/></a>
                         <h4 style="margin-bottom:0"><a href="#" ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_description, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, trusted_notaries, settings.trustedArbiters, settings.pubkey, listing.contract_body.Seller.seller_GUID)" class="trim-info">{{listing.contract_body.Contract.item_title}}</a></h4>
@@ -1134,13 +1134,12 @@
     </div>
 </div>
 </div>
-<div id="sidebar" ng-show="sidebar" class="shoutbox-area col-sm-4" style="margin-top:20px;">
-
+<div id="sidebar" ng-show="sidebar" class="shoutbox-area col-sm-4" style="margin-top:20px;" >
     <table class="peers-table no-hover" style="margin-top:20px;">
         <tbody>
         <tr>
-            <td width="40"><identicon icon-size="50" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
-            <td style="font-size:13px;"><span title="{{myself.pubkey}}"><strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong><br>
+            <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
+            <td style="font-size:13px;word-wrap:break-word;word-break:break-all"><span title="{{myself.pubkey}}"><strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong><br>
                 <span style="font-style:italic;">{{myself.nickname ? myself.nickname : myself.sin}}
                     <div ng-show="myself.uri">{{myself.uri}}</div>
                     </span></span>
@@ -1159,8 +1158,8 @@
         <table id="favorite-peers" class="peers-table table-hover">
             <tbody>
             <tr ng-repeat="peer in peers" ng-click="queryShop(peer)">
-                <td width="40"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
-                <td style="font-size:13px;"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
+                <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
+                <td style="font-size:13px;word-wrap:break-word;word-break:break-all"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
                   <span style="font-style:italic;">{{peer.nickname ? peer.nickname : peer.sin}}
                     <div ng-show="peer.uri">{{peer.uri}}</div>
                     </span></span></td>
