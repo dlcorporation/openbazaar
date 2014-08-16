@@ -498,7 +498,7 @@ class Orders(object):
         self._db.updateEntries("orders", {'order_id': bid_data_json['Buyer']['buyer_order_id']}, {'state':Orders.State.SHIPPED,
                      "updated": time.time(), "payment_address":msg['payment_address']})
 
-        
+
 
 
     def handle_notarized_order(self, msg):
