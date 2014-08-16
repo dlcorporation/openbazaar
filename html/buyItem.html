@@ -77,7 +77,7 @@
 
             <div class="form-group row" ng-show="!!notaries.length">
                 <div class="col-sm-12">
-                <label for="notary">Notary</label>
+                <label for="notary">Choose an online notary:</label>
 
                 <select id="notary" ng-model="order.notary" ng-options="notary.guid as notary.nickname+' ('+notary.guid+')' for notary in notaries" class="form-control col-sm-12"></select>
                 </div>
@@ -124,7 +124,8 @@
 
 <div class="modal-footer">
     <a class="btn btn-default" ng-show="!order.step2 && !order.confirmation" ng-click="cancel()" type="cancel">Cancel</a>
-    <a class="btn btn-success" ng-show="!order.step2 && !order.confirmation" ng-click="gotoStep2()" type="submit">Next</a>
+    <a class="btn btn-success" ng-show="!order.step2 && !order.confirmation
+    " ng-click="gotoStep2()" type="submit">Next</a>
     <a class="btn btn-default" ng-show="order.step2" ng-click="gotoStep1()" type="submit">Back</a>
     <a class="btn btn-success" ng-show="order.step2" ng-click="submitOrder()" type="submit">Submit Order</a>
     <a class="btn btn-success" ng-show="order.confirmation" ng-click="closeConfirmation()" type="submit">Go to Orders</a>
