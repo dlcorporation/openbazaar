@@ -420,29 +420,65 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
 
         bucketIndex = self._kbucketIndex(contact._guid)
 
-        try:
-            self._buckets[bucketIndex].addContact(contact)
-        except kbucket.BucketFull:
-            # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
-            if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
-                self._splitBucket(bucketIndex)
-                # Retry the insertion attempt
-                self.addContact(contact)
-            else:
-                # We can't split the k-bucket
-                # NOTE: This implementation follows section 4.1 of the 13 page version
-                # of the Kademlia paper (optimized contact accounting without PINGs
-                # - results in much less network traffic, at the expense of some memory)
+        old_contact = self._buckets[bucketIndex].getContact(contact)
 
-                # Put the new contact in our replacement cache for the corresponding k-bucket (or update it's position if it exists already)
-                if not self._replacementCache.has_key(bucketIndex):
-                    self._replacementCache[bucketIndex] = []
-                if contact in self._replacementCache[bucketIndex]:
-                    self._replacementCache[bucketIndex].remove(contact)
-                #TODO: Using k to limit the size of the contact replacement cache - maybe define a separate value for this in constants.py?
-                elif len(self._replacementCache) >= constants.k:
-                    self._replacementCache.pop(0)
-                self._replacementCache[bucketIndex].append(contact)
+        if not old_contact:
+
+            try:
+                self._buckets[bucketIndex].addContact(contact)
+            except kbucket.BucketFull:
+                # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
+                if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
+                    self._splitBucket(bucketIndex)
+                    # Retry the insertion attempt
+                    self.addContact(contact)
+                else:
+                    # We can't split the k-bucket
+                    # NOTE: This implementation follows section 4.1 of the 13 page version
+                    # of the Kademlia paper (optimized contact accounting without PINGs
+                    # - results in much less network traffic, at the expense of some memory)
+
+                    # Put the new contact in our replacement cache for the corresponding k-bucket (or update it's position if it exists already)
+                    if not self._replacementCache.has_key(bucketIndex):
+                        self._replacementCache[bucketIndex] = []
+                    if contact in self._replacementCache[bucketIndex]:
+                        self._replacementCache[bucketIndex].remove(contact)
+                    #TODO: Using k to limit the size of the contact replacement cache - maybe define a separate value for this in constants.py?
+                    elif len(self._replacementCache) >= constants.k:
+                        self._replacementCache.pop(0)
+                    self._replacementCache[bucketIndex].append(contact)
+
+        else:
+            if old_contact._address != contact._address:
+
+                self._log.info('Remove contact')
+                self.removeContact(contact._guid)
+
+                try:
+                    self._buckets[bucketIndex].addContact(contact)
+                except kbucket.BucketFull:
+                    # The bucket is full; see if it can be split (by checking if its range includes the host node's id)
+                    if self._buckets[bucketIndex].keyInRange(self._parentNodeID):
+                        self._splitBucket(bucketIndex)
+                        # Retry the insertion attempt
+                        self.addContact(contact)
+                    else:
+                        # We can't split the k-bucket
+                        # NOTE: This implementation follows section 4.1 of the 13 page version
+                        # of the Kademlia paper (optimized contact accounting without PINGs
+                        # - results in much less network traffic, at the expense of some memory)
+
+                        # Put the new contact in our replacement cache for the corresponding k-bucket (or update it's position if it exists already)
+                        if not self._replacementCache.has_key(bucketIndex):
+                            self._replacementCache[bucketIndex] = []
+                        if contact in self._replacementCache[bucketIndex]:
+                            self._replacementCache[bucketIndex].remove(contact)
+                        #TODO: Using k to limit the size of the contact replacement cache - maybe define a separate value for this in constants.py?
+                        elif len(self._replacementCache) >= constants.k:
+                            self._replacementCache.pop(0)
+                        self._replacementCache[bucketIndex].append(contact)
+
+
 
     def removeContact(self, contactID):
         """ Remove the contact with the specified node ID from the routing
