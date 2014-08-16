@@ -225,7 +225,7 @@ class Market(object):
                     nickname = ""
 
                 notaries.append({"guid":guid, "nickname": nickname})
-                
+
         return notaries
 
     def republish_listing(self, msg):
