@@ -1167,7 +1167,7 @@ angular.module('app')
                         orderId: orderId
                     })
 
-                    ecope.modalOrder.state = 'Paid';
+                    scope.modalOrder.state = 'Paid';
 
                     // Refresh orders in background
                     scope.queryMyOrder(0);
