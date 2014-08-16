@@ -224,7 +224,8 @@ class Market(object):
                 else:
                     nickname = ""
 
-                notaries.append({"guid":guid, "nickname": nickname})
+                if peer is not None and peer.check_port():
+                    notaries.append({"guid":guid, "nickname": nickname})
 
         return notaries
 
