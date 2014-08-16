@@ -754,6 +754,13 @@ angular.module('app')
             $scope.sendOrder = function(order) {
                 order.state = 'Sent'
                 socket.send('order', order);
+
+                scope.queryMyOrder(0);
+
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+
             }
 
             $scope.cancelOrder = function(order) {
@@ -1160,7 +1167,7 @@ angular.module('app')
                         orderId: orderId
                     })
 
-                    scope.modalOrder.state = 'Paid';
+                    ecope.modalOrder.state = 'Paid';
 
                     // Refresh orders in background
                     scope.queryMyOrder(0);

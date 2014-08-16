@@ -120,6 +120,7 @@ def setup_db(db_path):
                         "country TEXT, " \
                         "countryCode TEXT, " \
                         "welcome TEXT, " \
+                        "recipient_name TEXT, " \
                         "arbiter BOOLEAN, " \
                         "arbiterDescription TEXT, "\
                         "trustedArbiters TEXT, " \
