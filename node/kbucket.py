@@ -42,6 +42,7 @@ class KBucket(object):
             if contact._guid == old_contact._guid:
                 found = True
                 foundId = idx
+                break
 
         if found:
             # Move the existing contact to the end of the list
