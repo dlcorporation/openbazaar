@@ -214,16 +214,18 @@ class Market(object):
         self.settings = self.get_settings()
         notary_guids = self.settings['notaries']
         for guid in notary_guids:
-            self._log.debug(guid)
 
-            peer = self._dht._routingTable.getContact(guid)
-            if peer and hasattr(peer, '_nickname'):
-                nickname = peer._nickname
-            else:
-                nickname = ""
+            if guid is not None:
+                self._log.debug(guid)
 
-            notaries.append({"guid":guid, "nickname": nickname})
-        self._log.debug(notaries)
+                peer = self._dht._routingTable.getContact(guid)
+                if peer and hasattr(peer, '_nickname'):
+                    nickname = peer._nickname
+                else:
+                    nickname = ""
+
+                notaries.append({"guid":guid, "nickname": nickname})
+                
         return notaries
 
     def republish_listing(self, msg):
