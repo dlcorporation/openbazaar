@@ -1,32 +1,18 @@
+from multisig import Multisig
 import threading
-from twisted.internet import reactor
 import json
-import ast
 import random
 import logging
-
-import tornado.websocket
-from zmq.eventloop import ioloop
-from zmq.eventloop.ioloop import PeriodicCallback
-
-import tornado.platform.twisted
-from twisted.internet import reactor
 import subprocess
-
 import protocol
 import pycountry
 import gnupg
-import pprint
-from db_store import Obdb
-import time
 import obelisk
-from multisig import Multisig, Escrow
-from threading import Thread
+import tornado.websocket
+from zmq.eventloop import ioloop
 from twisted.internet import reactor
 
 ioloop.install()
-
-
 
 class ProtocolHandler:
     def __init__(self, transport, market, handler, db):
