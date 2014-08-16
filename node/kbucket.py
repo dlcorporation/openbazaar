@@ -36,10 +36,17 @@ class KBucket(object):
         @param contact: The contact to add
         @type contact: p2p.PeerConnection
         """
-        if contact in self._contacts:
+        found = False
+
+        for idx, old_contact in enumerate(self._contacts):
+            if contact._guid == old_contact._guid:
+                found = True
+                foundId = idx
+
+        if found:
             # Move the existing contact to the end of the list
             # - using the new contact to allow add-on data (e.g. optimization-specific stuff) to be updated as well
-            self._contacts.remove(contact)
+            del self._contacts[foundId]
             self._contacts.append(contact)
         elif len(self._contacts) < constants.k:
             self._contacts.append(contact)
@@ -49,6 +56,7 @@ class KBucket(object):
     def getContact(self, contactID):
         """ Get the contact specified node ID"""
         self._log.debug('[getContact] %s' % contactID)
+        self._log.debug('contacts %s' % self._contacts)
         for contact in self._contacts:
           if contact._guid == contactID:
             self._log.debug('[getContact] Found %s' % contact)
