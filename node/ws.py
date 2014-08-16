@@ -280,6 +280,8 @@ class ProtocolHandler:
         # Update order in mongo
         order = self._market.orders.get_order(msg['orderId'])
 
+        order['shipping_address'] = self._market.shipping_address()
+
         # Send to exchange partner
         self._market.orders.pay_order(order, msg['orderId'])
 

@@ -188,6 +188,18 @@ class Market(object):
         keywords = msg['Contract']['item_keywords']
         self.update_keywords_on_network(contract_key, keywords)
 
+    def shipping_address(self):
+        settings = self.get_settings()
+        shipping_address = {"street1": settings['street1'],
+                            "street2": settings['street2'],
+                            "city": settings['city'],
+                            "stateRegion": settings['stateRegion'],
+                            "stateProvinceRegion": settings['stateProvinceRegion'],
+                            "zip": settings['zip'],
+                            "country": settings['country'],
+                            "countryCode": settings['countryCode']}
+        return shipping_address
+
     def republish_contracts(self):
         listings = self._db.selectEntries("contracts")
         for listing in listings:
