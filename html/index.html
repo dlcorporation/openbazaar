@@ -314,6 +314,12 @@
         <div class="alert alert-warning">This information will be encrypted and only be sent to your seller when you have marked your order for payment</div>
 
         <div class="form-group">
+            <label for="inputRecipient" class="col-sm-3 control-label">Recipient Name</label>
+            <div class="col-sm-9">
+                <input ng-model="settings.recipient_name" class="form-control" id="inputRecipient" placeholder="Name visible on your package"/>
+            </div>
+        </div>
+        <div class="form-group">
             <label for="inputStreet1" class="col-sm-3 control-label">Street 1</label>
             <div class="col-sm-9">
                 <input ng-model="settings.street1" class="form-control" id="inputStreet1" placeholder="123 Bitcoin Ave."/>
@@ -644,7 +650,7 @@
 
                         <div class="row" style="margin-top:10px;">
                         <div class="col-sm-5 text-right" style="padding-top:5px">
-                            <strong>Where would you like payment sent to? {{Market.modalOrder}}</strong>
+                            <strong>Where would you like payment sent to? </strong>
                         </div>
                         <div class="col-sm-7">
                             <input type="text" class="form-control text" ng-model="Market.modalOrder.paymentAddress" placeholder="Enter a Bitcoin address"/>
@@ -714,14 +720,6 @@
                     </table>
 
 
-
-
-
-
-
-
-
-
   </div>
   <div class="tab-pane" id="contract-details">
 
@@ -755,10 +753,10 @@
 
         <div style="padding:20px;">
         <address>
-          <strong>Twitter, Inc.</strong><br>
-          795 Folsom Ave, Suite 600<br>
-          San Francisco, CA 94107<br>
-          <abbr title="Phone">P:</abbr> (123) 456-7890
+          <span ng-show="Market.modalOrder.shipping_address.recipient_name"><strong>{{Market.modalOrder.shipping_address.recipient_name}}</strong><br></span>
+          <span ng-show="Market.modalOrder.shipping_address.street1">{{Market.modalOrder.shipping_address.street1}}<br></span>
+          <span ng-show="Market.modalOrder.shipping_address.street2">{{Market.modalOrder.shipping_address.street2}}<br></span>
+          <span ng-show="Market.modalOrder.shipping_address.city">{{Market.modalOrder.shipping_address.city}}, </span>{{Market.modalOrder.shipping_address.stateRegion}} {{Market.modalOrder.shipping_address.zip}}
         </address>
         </div>
 

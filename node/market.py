@@ -190,7 +190,8 @@ class Market(object):
 
     def shipping_address(self):
         settings = self.get_settings()
-        shipping_address = {"street1": settings['street1'],
+        shipping_address = {"recipient_name": settings['recipient_name'],
+                            "street1": settings['street1'],
                             "street2": settings['street2'],
                             "city": settings['city'],
                             "stateRegion": settings['stateRegion'],
