@@ -510,7 +510,9 @@ class ProtocolHandler:
         self._log.info('Found Contracts: %s' % type(results))
         self._log.info(results)
 
+
         if len(results):
+            if isinstance(results[0], str):
             # data = results['data']
             # contracts = data['contracts']
             # signature = results['signature']
@@ -520,13 +522,13 @@ class ProtocolHandler:
             # self._transport._myself.
 
             # Go get listing metadata and then send it to the GUI
-            for contract in results['listings']:
-                self._transport._dht.iterativeFindValue(
-                    contract,
-                    callback=lambda msg, key=contract: self.on_global_search_value(
-                        msg, key
+                for contract in results['listings']:
+                    self._transport._dht.iterativeFindValue(
+                        contract,
+                        callback=lambda msg, key=contract: self.on_global_search_value(
+                            msg, key
+                        )
                     )
-                )
 
                 #self.send_to_client(None, { "type": "store_products", "products": listings } )
 
