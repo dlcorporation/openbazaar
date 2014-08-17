@@ -26,9 +26,10 @@ class PeerConnection(object):
 
     def create_socket(self):
         self._log.info('Creating Socket')
-        self._socket = self._ctx.socket(zmq.REQ)
-        self._socket.setsockopt(zmq.LINGER, 0)
+        socket = self._ctx.socket(zmq.REQ)
+        socket.setsockopt(zmq.LINGER, 0)
         # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
+        return socket
 
     def cleanup_context(self):
         self._ctx.destroy()
@@ -44,11 +45,10 @@ class PeerConnection(object):
         compressed_data = zlib.compress(serialized,9)
 
         try:
-
-            self.create_socket()
-            self._socket.connect(self._address)
-            self._stream = zmqstream.ZMQStream(self._socket, io_loop=ioloop.IOLoop.current())
-            self._stream.send(compressed_data)
+            socket = self.create_socket()
+            socket.connect(self._address)
+            stream = zmqstream.ZMQStream(socket, io_loop=ioloop.IOLoop.current())
+            stream.send(compressed_data)
 
             def cb(msg):
                 response = json.loads(msg[0])
@@ -63,10 +63,10 @@ class PeerConnection(object):
                     self._log.debug('%s' % msg)
                     callback(msg)
 
-                self._stream.close()
-                self.cleanup_socket()
+                stream.close()
+                socket.close()
 
-            self._stream.on_recv(cb)
+            stream.on_recv(cb)
 
         except Exception,e :
             self._log.error(e)
