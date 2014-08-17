@@ -170,74 +170,72 @@ class DHT(object):
         assert uri is not None
         assert pubkey is not None
 
-        new_peer = self.find_active_peer((guid, uri, pubkey, nick))
-        if not new_peer:
-            self._log.info('Creating new crypto peer connection')
-            new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nick)
+        new_peer = self._routingTable.getContact(guid)
 
-        if guid == self._transport.guid:
-            return
+        if msg['findValue'] is True:
+            if key in self._dataStore and self._dataStore[key] is not None:
 
-        if not new_peer:
-            return
+                # Found key in local data store
+                new_peer.send(
+                    {"type": "findNodeResponse",
+                     "senderGUID": self._transport.guid,
+                     "uri": self._transport._uri,
+                     "pubkey": self._transport.pubkey,
+                     "foundKey": self._dataStore[key],
+                     "senderNick": self._transport._nickname,
+                     "findID": findID})
+            else:
+                self._log.info('Did not find a key: %s' % key)
+                contacts = self.close_nodes(key, guid)
+                self._log.info('Sending found nodes to: %s' % guid)
+
+                new_peer.send(
+                    {"type": "findNodeResponse",
+                     "senderGUID": self._transport.guid,
+                     "senderNick": self._transport._nickname,
+                     "uri": self._transport._uri,
+                     "pubkey": self._transport.pubkey,
+                     "foundNodes": contacts,
+                     "findID": findID})
 
         else:
+            # Search for contact in routing table
+            foundContact = self._routingTable.getContact(key)
 
-            if msg['findValue'] is True:
-                if key in self._dataStore and self._dataStore[key] is not None:
-
-                    # Found key in local data store
-                    new_peer.send(
-                        {"type": "findNodeResponse",
-                         "senderGUID": self._transport.guid,
-                         "uri": self._transport._uri,
-                         "pubkey": self._transport.pubkey,
-                         "foundKey": self._dataStore[key],
-                         "senderNick": self._transport._nickname,
-                         "findID": findID})
-                else:
-                    self._log.info('Did not find a key: %s' % key)
-
+            if foundContact:
+                self._log.info('Found the node')
+                foundNode = (foundContact._guid,
+                             foundContact._address,
+                             foundContact._pub)
+                new_peer.send(
+                    {"type": "findNodeResponse",
+                     "senderGUID": self._transport.guid,
+                     "senderNick": self._transport._nickname,
+                     "uri": self._transport._uri,
+                     "pubkey": self._transport.pubkey,
+                     "foundNode": foundNode,
+                     "findID": findID})
             else:
-                # Search for contact in routing table
-                foundContact = self._routingTable.getContact(key)
 
-                if foundContact:
-                    self._log.info('Found the node')
-                    foundNode = (foundContact._guid,
-                                 foundContact._address,
-                                 foundContact._pub)
-                    new_peer.send(
-                        {"type": "findNodeResponse",
-                         "senderGUID": self._transport.guid,
-                         "senderNick": self._transport._nickname,
-                         "uri": self._transport._uri,
-                         "pubkey": self._transport.pubkey,
-                         "foundNode": foundNode,
-                         "findID": findID})
-                else:
-                    contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
-                    contactTriples = []
-                    for contact in contacts:
-                        contactTriples.append((contact._guid, contact._address, contact._pub, contact._nickname))
+                contacts = self.close_nodes(key, guid)
+                self._log.info('Sending found nodes to: %s' % guid)
 
-                    contactTriples = self.dedupe(contactTriples)
-                    self._log.debug('Contact Triples: %s' % contactTriples)
-                    self._log.info('Sending found nodes to: %s' % guid)
+                new_peer.send(
+                    {"type": "findNodeResponse",
+                     "senderGUID": self._transport.guid,
+                     "senderNick": self._transport._nickname,
+                     "uri": self._transport._uri,
+                     "pubkey": self._transport.pubkey,
+                     "foundNodes": contacts,
+                     "findID": findID})
 
-                    new_peer.send(
-                        {"type": "findNodeResponse",
-                         "senderGUID": self._transport.guid,
-                         "senderNick": self._transport._nickname,
-                         "uri": self._transport._uri,
-                         "pubkey": self._transport.pubkey,
-                         "foundNodes": contactTriples,
-                         "findID": findID})
+    def close_nodes(self, key, guid):
+        contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
+        contactTriples = []
+        for contact in contacts:
+            contactTriples.append((contact._guid, contact._address, contact._pub, contact._nickname))
 
-            old_peer = self._routingTable.getContact(new_peer._guid)
-            if old_peer is None or new_peer._address != old_peer._address:
-                self._routingTable.removeContact(new_peer._guid)
-                self._routingTable.addContact(new_peer)
+        return self.dedupe(contactTriples)
 
     def on_findNodeResponse(self, transport, msg):
 
