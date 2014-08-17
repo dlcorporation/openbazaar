@@ -32,12 +32,11 @@ class PeerConnection(object):
         self.create_socket()
 
     def create_socket(self):
+        self._log.info('Creating Socket')
         self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REQ)
         self._socket.setsockopt(zmq.LINGER, 0)
         # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
-        self._socket.connect(self._address)
-        self._stream = zmqstream.ZMQStream(self._socket, io_loop=ioloop.IOLoop.current())
 
     def cleanup_socket(self):
         self._ctx.destroy()
@@ -50,22 +49,35 @@ class PeerConnection(object):
 
         compressed_data = zlib.compress(serialized,9)
 
-        self._stream.send(compressed_data)
+        try:
+            self._socket = self._ctx.socket(zmq.REQ)
+            self._socket.connect(self._address)
+            self._stream = zmqstream.ZMQStream(self._socket, io_loop=ioloop.IOLoop.current())
 
-        def cb(msg):
-            response = json.loads(msg[0])
-            self._log.debug('[send_raw] %s' % pformat(response))
+            self._stream.send(compressed_data)
 
-            # Update active peer info
+            def cb(msg):
+                response = json.loads(msg[0])
+                self._log.debug('[send_raw] %s' % pformat(response))
 
-            if response.has_key('senderNick') and response['senderNick'] != self._nickname:
-                self._nickname = response['senderNick']
+                # Update active peer info
 
-            if callback is not None:
-                self._log.debug('%s' % msg)
-                callback(msg)
+                if response.has_key('senderNick') and response['senderNick'] != self._nickname:
+                    self._nickname = response['senderNick']
 
-        self._stream.on_recv(cb)
+                if callback is not None:
+                    self._log.debug('%s' % msg)
+                    callback(msg)
+
+                self._stream.close(0)
+                self._socket.close(0)
+
+            self._stream.on_recv(cb)
+
+        except Exception,e :
+            self._log.error(e)
+
+
 
 # Transport layer manages a list of peers
 class TransportLayer(object):
