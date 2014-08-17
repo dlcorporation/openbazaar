@@ -229,6 +229,11 @@ class DHT(object):
                      "foundNodes": contacts,
                      "findID": findID})
 
+        if new_peer is None or new_peer._address != uri:
+            new_peer._address = uri
+            self._routingTable.removeContact(new_peer._guid)
+            self._routingTable.addContact(new_peer)
+
     def close_nodes(self, key, guid):
         contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
         contactTriples = []
