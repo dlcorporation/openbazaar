@@ -45,9 +45,9 @@ class PeerConnection(object):
         compressed_data = zlib.compress(serialized,9)
 
         try:
-            socket = self.create_socket()
-            socket.connect(self._address)
-            stream = zmqstream.ZMQStream(socket, io_loop=ioloop.IOLoop.current())
+            s = self.create_socket()
+            s.connect(self._address)
+            stream = zmqstream.ZMQStream(s, io_loop=ioloop.IOLoop.current())
             stream.send(compressed_data)
 
             def cb(msg):
@@ -62,9 +62,8 @@ class PeerConnection(object):
                 if callback is not None:
                     self._log.debug('%s' % msg)
                     callback(msg)
-
-                stream.close()
-                socket.close()
+                stream.close(0)
+                s.close(0)
 
             stream.on_recv(cb)
 
