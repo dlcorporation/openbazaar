@@ -28,11 +28,7 @@ class PeerConnection(object):
         self._log.info('Creating Socket')
         self._socket = self._ctx.socket(zmq.REQ)
         self._socket.setsockopt(zmq.LINGER, 0)
-
-        self._socket = self._ctx.socket(zmq.REQ)
         self._socket.connect(self._address)
-
-
         # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
 
     def cleanup_context(self):
