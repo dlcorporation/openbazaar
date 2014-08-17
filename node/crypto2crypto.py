@@ -58,9 +58,12 @@ class CryptoPeerConnection(PeerConnection):
                     for idx, peer in enumerate(self._transport._dht._activePeers):
                         if peer._guid == guid or peer._address == address:
                             self._transport._dht._activePeers[idx] = self
+                            self._transport._dht.add_peer(self._address, self._pub, self._guid, self._nickname)
                             return
+
                     self._transport._dht._activePeers.append(self)
                     self._transport._dht._routingTable.addContact(self)
+
 
 
             self.send_raw(json.dumps({'type':'hello',
