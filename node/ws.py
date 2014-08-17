@@ -512,7 +512,7 @@ class ProtocolHandler:
 
 
         if len(results):
-            if isinstance(results[0], str):
+            if 'listings' in results:
             # data = results['data']
             # contracts = data['contracts']
             # signature = results['signature']
