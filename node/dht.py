@@ -780,6 +780,10 @@ class DHT(object):
         # Sort short list again
         if len(new_search._shortlist) > 1:
           self._log.info('Short List: %s' % new_search._shortlist)
+
+          # Remove dupes
+          new_search._shortlist = self.dedupe(new_search._shortlist)
+
           new_search._shortlist.sort(lambda firstNode, secondNode, targetKey=new_search._key: cmp(
               self._routingTable.distance(firstNode[2], targetKey),
               self._routingTable.distance(secondNode[2], targetKey)))
