@@ -50,7 +50,7 @@ class PeerConnection(object):
             stream = zmqstream.ZMQStream(s, io_loop=ioloop.IOLoop.current())
             stream.send(compressed_data)
 
-            def cb(msg):
+            def cb(stream, msg):
                 response = json.loads(msg[0])
                 self._log.debug('[send_raw] %s' % pformat(response))
 
@@ -63,9 +63,10 @@ class PeerConnection(object):
                     self._log.debug('%s' % msg)
                     callback(msg)
                 stream.close(0)
-                s.close(0)
 
-            stream.on_recv(cb)
+
+            stream.on_recv_stream(cb)
+
 
         except Exception,e :
             self._log.error(e)
