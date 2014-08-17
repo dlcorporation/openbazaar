@@ -65,7 +65,7 @@ class DHT(object):
     def remove_active_peer(self, uri):
         for idx, peer in enumerate(self._activePeers):
             if uri == peer._address:
-                self._activePeers[idx].cleanup_socket()
+                self._activePeers[idx].cleanup_context()
                 del self._activePeers[idx]
 
     def connect_to_seed(self, hostname):
