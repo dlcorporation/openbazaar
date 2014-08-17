@@ -61,7 +61,7 @@ class PeerConnection(object):
                     self._log.debug('%s' % msg)
                     callback(msg)
 
-                self._stream.close(0)
+                self._stream.close()
                 self._socket.close(0)
 
             self._stream.on_recv(cb)
