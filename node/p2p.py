@@ -21,18 +21,25 @@ class PeerConnection(object):
         self._nickname = ""
         self._responses_received = {}
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
+        self._ctx = zmq.Context()
         self.create_socket()
 
     def create_socket(self):
         self._log.info('Creating Socket')
-        self._ctx = zmq.Context()
         self._socket = self._ctx.socket(zmq.REQ)
         self._socket.setsockopt(zmq.LINGER, 0)
+
+        self._socket = self._ctx.socket(zmq.REQ)
+        self._socket.connect(self._address)
+
+
         # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
 
-    def cleanup_socket(self):
+    def cleanup_context(self):
         self._ctx.destroy()
 
+    def cleanup_socket(self):
+        self._socket.close(0)
 
     def send(self, data, callback):
         self.send_raw(json.dumps(data), callback)
@@ -42,8 +49,7 @@ class PeerConnection(object):
         compressed_data = zlib.compress(serialized,9)
 
         try:
-            self._socket = self._ctx.socket(zmq.REQ)
-            self._socket.connect(self._address)
+
             self._stream = zmqstream.ZMQStream(self._socket, io_loop=ioloop.IOLoop.current())
 
             self._stream.send(compressed_data)
@@ -62,7 +68,7 @@ class PeerConnection(object):
                     callback(msg)
 
                 self._stream.close()
-                self._socket.close(0)
+                self.cleanup_socket()
 
             self._stream.on_recv(cb)
 
