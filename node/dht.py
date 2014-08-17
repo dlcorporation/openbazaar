@@ -93,6 +93,14 @@ class DHT(object):
                 active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
 
                 if active_peer_tuple == peer_tuple:
+
+                    old_peer = self._routingTable.getContact(guid)
+
+                    if old_peer and (old_peer._address != uri or old_peer._pub != pubkey):
+                        self._routingTable.removeContact(guid)
+                        self._routingTable.addContact(peer)
+
+
                     self._log.info('Already in active peer list')
                     return
                 else:
@@ -111,7 +119,7 @@ class DHT(object):
 
             self._log.debug('New Peer')
             new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
-            old_peer = self._routingTable.getContact(guid)
+
 
             self._routingTable.removeContact(new_peer._guid)
             self._routingTable.addContact(new_peer)
@@ -317,7 +325,8 @@ class DHT(object):
                 self._log.debug('Find Node Response - Active Probes After: %s' % search._active_probes)
 
                 # Add this to already contacted list
-                search._already_contacted.append(search_tuple)
+                if search_tuple not in search._already_contacted:
+                    search._already_contacted.append(search_tuple)
                 self._log.debug('Already Contacted: %s' % search._already_contacted)
 
                 # If we added more to shortlist then keep searching
@@ -326,7 +335,8 @@ class DHT(object):
                     self._searchIteration(search)
                 else:
                     self._log.info('Shortlist is empty')
-                    search._callback(search._shortlist)
+                    if search._callback is not None:
+                        search._callback(search._shortlist)
 
 
 
