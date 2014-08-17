@@ -1,24 +1,16 @@
+from collections import defaultdict
+from pprint import pformat
+from protocol import goodbye, hello_request
+from urlparse import urlparse
+from zmq.eventloop import ioloop, zmqstream
+ioloop.install() #Gubatron: is this necessary here again, saw it in ws.py?
+
 import json
 import logging
-from collections import defaultdict
-import traceback
-from multiprocessing import Process, Queue
-from threading import Thread
-from random import randint
-
-from zmq.eventloop import ioloop, zmqstream
-import zmq
-
-ioloop.install()
-import tornado
-import zlib
-from protocol import goodbye, hello_request
 import network_util
-from urlparse import urlparse
-import sys, time, random
-from ws import ProtocolHandler
-from pprint import pformat
-
+import traceback
+import zlib
+import zmq
 
 class PeerConnection(object):
     def __init__(self, transport, address):
