@@ -22,7 +22,7 @@ class PeerConnection(object):
         self._responses_received = {}
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
         self._ctx = zmq.Context()
-        self.create_socket()
+
 
     def create_socket(self):
         self._log.info('Creating Socket')
@@ -47,6 +47,7 @@ class PeerConnection(object):
         try:
             s = self.create_socket()
             s.connect(self._address)
+
             stream = zmqstream.ZMQStream(s, io_loop=ioloop.IOLoop.current())
             stream.send(compressed_data)
 
@@ -62,7 +63,7 @@ class PeerConnection(object):
                 if callback is not None:
                     self._log.debug('%s' % msg)
                     callback(msg)
-                stream.close(0)
+                stream.close()
 
 
             stream.on_recv_stream(cb)
