@@ -241,7 +241,6 @@ class ProtocolHandler:
 
         self._log.info("Querying for Contracts")
 
-        # Query mongo for products
         page = msg['page'] if 'page' in msg else 0
         contracts = self._market.get_contracts(page)
 
@@ -279,37 +278,25 @@ class ProtocolHandler:
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
-
-        # Query mongo for order
         order = self._market.orders.get_order(msg['orderId'])
-
         self.send_to_client(None, {"type": "orderinfo", "order": order})
 
     def client_update_settings(self, socket_handler, msg):
         self._log.info("Updating settings: %s" % msg)
-
         self.send_to_client(None, {"type": "settings", "values": msg})
-
-        # Update settings in mongo
         self._market.save_settings(msg['settings'])
 
     def client_create_contract(self, socket_handler, contract):
         self._log.info("New Contract: %s" % contract)
-
-        # Update settings in mongo
         self._market.save_contract(contract)
 
     def client_remove_contract(self, socket_handler, msg):
         self._log.info("Remove contract: %s" % msg)
-
-        # Update settings in mongo
         self._market.remove_contract(msg)
 
     def client_pay_order(self, socket_handler, msg):
 
         self._log.info("Marking Order as Paid: %s" % msg)
-
-        # Update order in mongo
         order = self._market.orders.get_order(msg['orderId'])
 
         order['shipping_address'] = self._market.shipping_address()
@@ -458,7 +445,6 @@ class ProtocolHandler:
 
         self._log.info("Querying for Contracts %s" % msg)
 
-        # Query mongo for products
         self._transport._dht.find_listings_by_keyword(
             self._transport,
             msg['key'],
