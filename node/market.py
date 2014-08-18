@@ -44,24 +44,14 @@ class Market(object):
         self._peers = self._dht.getActivePeers()
         self._db = db
         self.orders = Orders(transport, self._market_id, db)
-
-        # Legacy for now
         self.pages = {}
-        self.welcome = False
         self.mypage = None
         self.signature = None
         self._nickname = ""
-
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
         self.settings = self._transport.settings
 
         self.gpg = gnupg.GPG()
-
-        welcome = True
-
-        if self.settings:
-            if  'welcome' in self.settings.keys() and self.settings['welcome']:
-                welcome = False
 
         # Register callbacks for incoming events
         self._transport.add_callback('query_myorders', self.on_query_myorders)
@@ -72,7 +62,7 @@ class Market(object):
         self._transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
         self._transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
 
-        self.load_page(welcome)
+        self.load_page()
 
         # Periodically refresh buckets
         loop = tornado.ioloop.IOLoop.instance()
@@ -82,17 +72,13 @@ class Market(object):
         refreshCB.start()
 
 
-    def load_page(self, welcome):
-
+    def load_page(self):
         nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
-        store_description = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
-
+        #store_description = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
         self._nickname = nickname
 
-        if welcome:
-            self._db.updateEntries("settings", {'market_id': self._transport._market_id}, {"welcome":"noshow"})
-        else:
-            self.welcome = False
+    def disable_welcome_screen(self):
+        self._db.updateEntries("settings", {'market_id': self._transport._market_id}, {"welcome":"disable"})
 
     def private_key(self):
         return self.settings['privkey']
