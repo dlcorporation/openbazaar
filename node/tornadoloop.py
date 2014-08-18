@@ -86,7 +86,19 @@ class MarketApplication(tornado.web.Application):
             print "Cleaning UPnP Port Mapping -> ", self.upnp_mapper.clean_my_mappings()
 
 
-def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, bm_pass=None, bm_port=None, seed_peers=[], seed_mode=0, dev_mode=False, log_level=None, database='db/ob.db'):
+def start_node(my_market_ip,
+               my_market_port,
+               log_file,
+               market_id,
+               bm_user=None,
+               bm_pass=None,
+               bm_port=None,
+               seed_peers=[],
+               seed_mode=0,
+               dev_mode=False,
+               log_level=None,
+               database='db/ob.db',
+               disable_upnp=False):
 
     logging.basicConfig(level=int(log_level),
                         format='%(asctime)s - %(name)s -  \
@@ -120,7 +132,10 @@ def start_node(my_market_ip, my_market_port, log_file, market_id, bm_user=None, 
         except:
             port += 1
 
-    application.setup_upnp_port_mapping(port)
+    if not disable_upnp:
+        application.setup_upnp_port_mapping(port)
+    else:
+        print "Disabling upnp setup"
 
     locallogger.info("Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, port))
     print "Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, port)
@@ -161,7 +176,8 @@ if __name__ == "__main__":
     parser.add_argument("--bmpass", default='password', help="Bitmessage instance pass")
     parser.add_argument("--bmport", default='8442', help="Bitmessage instance RPC port")
     parser.add_argument("--log_level", default=10, help="Numeric value for logging level")
+    parser.add_argument("--disable_upnp", action='store_true')
     args = parser.parse_args()
     start_node(args.my_market_ip,
                args.my_market_port, args.log_file, args.market_id,
-               args.bmuser, args.bmpass, args.bmport, args.seed_peers, args.seed_mode, args.dev_mode, args.log_level, args.database)
+               args.bmuser, args.bmpass, args.bmport, args.seed_peers, args.seed_mode, args.dev_mode, args.log_level, args.database, args.disable_upnp)

@@ -19,6 +19,7 @@ OPTIONS:
   -b    Bitmessage API password
   -c    Bitmessage API port
   -u    Market ID
+  -j    Disable upnp
 EOF
 }
 
@@ -61,7 +62,7 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hp:l:dn:a:b:c:u:oi:" OPTION
+while getopts "hp:l:dn:a:b:c:u:oi:j" OPTION
 do
      case ${OPTION} in
          h)
@@ -98,6 +99,9 @@ do
          i)
              SERVER_IP=$OPTARG
              ;;
+         j)
+             DISABLE_UPNP=1
+             ;;
          ?)
              usage
              exit
@@ -117,6 +121,13 @@ if [ ! -d "$DBDIR" ]; then
   mkdir $DBDIR
 fi
 
+if [ "$DISABLE_UPNP" == 1 ]; then
+    echo "Disabling upnp"
+    DISABLE_UPNP="--disable_upnp"
+else
+    DISABLE_UPNP=""
+fi
+
 if [ "$SEED_MODE" == 1 ]; then
     echo "Seed Mode $SERVER_IP"
 
@@ -126,7 +137,7 @@ if [ "$SEED_MODE" == 1 ]; then
        wait
     fi
 
-    $PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
+    $PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT $DISABLE_UPNP -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
 
 elif [ "$DEVELOPMENT" == 0 ]; then
     echo "Production Mode"
@@ -138,7 +149,7 @@ elif [ "$DEVELOPMENT" == 0 ]; then
        wait
     fi
 
-	$PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
+	$PYTHON node/tornadoloop.py $SERVER_IP -p $SERVER_PORT $DISABLE_UPNP --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
 
 else
 	# Primary Market - No SEED_URI specified
@@ -151,7 +162,7 @@ else
        wait
     fi
 
-	$PYTHON node/tornadoloop.py 127.0.0.1 --database db/ob-dev.db -s 1 --bmuser $BM_USERNAME -d --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 --log_level $LOG_LEVEL &
+	$PYTHON node/tornadoloop.py 127.0.0.1 $DISABLE_UPNP --database db/ob-dev.db -s 1 --bmuser $BM_USERNAME -d --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 --log_level $LOG_LEVEL &
     ((NODES=NODES+1))
     i=2
     while [[ $i -le $NODES ]]
