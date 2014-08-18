@@ -31,10 +31,9 @@
 
 <body ng-controller="Market as market" ng-init="">
 
-<div ng-show="warningMessage" class="alert alert-warning"></div>
 
-<div ng-if="myself.settings.welcome == ''">
-    <div ng-controller="WelcomeModalCtrl" ng-init="open('lg','static')">
+<div ng-show="settings.welcome">
+    <div ng-controller="WelcomeModalCtrl">
         <script type="text/ng-template" id="myModalContent.html">
 
             <div class="modal-header">
@@ -42,8 +41,20 @@
             </div>
 
             <div class="modal-body"  style="text-align:left;">
-                <p style="font-size:110%">This seems to be your first time starting the application. You can proceed to the settings screen to fill in important information about your marketplace.</p>
-                <p> This is a placeholder for additional starting information</p>
+                <p style="font-size:110%">
+                    <div role="alert" class="alert alert-danger">
+                        <strong>Stop and read this!</strong>
+                    </div>
+
+                    OpenBazaar is still in beta. This means a few things for users:
+                    <ul>
+                        <li>You are not anonymous on the OpenBazaar network. Your IP is tied to contracts you sell, buy, or notarize.</li>
+                        <li>The settings, layout, and functionality of client will change over time. We'll do our best to make sure you will keep your existing data but major changes might be incompatible and you may need to update your store information and contracts periodically.</li>
+                        <li>Transactions might fail for technical reasons, and the OpenBazaar dev team is not responsible for any lost Bitcoin or product issues. In early beta we recommend smaller transactions and/or using the testnet.</li>
+                        <li>There will be bugs. Submit a bug report in the <a href="http://forum.openbazaar.org">forums</a> or on Reddit, and please be patient.</li>
+                    </ul>
+
+                </p>
             </div>
 
             <div class="modal-footer">

@@ -66,6 +66,7 @@ class ProtocolHandler:
             "release_payment": self.client_release_payment,
             "remove_contract": self.client_remove_contract,
             "generate_secret": self.client_generate_secret,
+            "welcome_dismissed": self.client_welcome_dismissed,
             "republish_contracts": self.client_republish_contracts,
             "import_raw_contract": self.client_import_raw_contract,
             "create_contract": self.client_create_contract,
@@ -159,6 +160,9 @@ class ProtocolHandler:
     def client_peers(self, socket_handler, msg):
         self._log.info("Peers command")
         self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+
+    def client_welcome_dismissed(self, socket_handler, msg):
+        self._market.disable_welcome_screen()
 
     def client_check_order_count(self, socket_handler, msg):
         self._log.debug('Checking order count')

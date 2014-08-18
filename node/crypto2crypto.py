@@ -305,7 +305,7 @@ class CryptoTransportLayer(TransportLayer):
         self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)
         if len(self.settings) == 0:
             self.settings = None
-            self._db.insertEntry("settings", {"market_id": self._market_id})
+            self._db.insertEntry("settings", {"market_id": self._market_id, "welcome":"enable"})
         else:
             self.settings = self.settings[0]
 

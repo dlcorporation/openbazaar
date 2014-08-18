@@ -1,4 +1,4 @@
-angular.module('app', ['ui.bootstrap'])
+var app = angular.module('app', ['ui.bootstrap'])
 
 /**
  * This directive is used for converting identicon tags
@@ -1050,8 +1050,6 @@ angular.module('app')
 
             }
 
-
-
             $('ul.nav.nav-pills li a').click(function() {
                 $(this).parent().addClass('active').siblings().removeClass('active').blur();
             });
@@ -1059,11 +1057,21 @@ angular.module('app')
 
 
             // Modal Code
-            $scope.WelcomeModalCtrl = function($scope, $modal, $log) {
+            $scope.WelcomeModalCtrl = function($scope, $modal, $log, $rootScope) {
 
+                // Listen for changes to settings and if welcome is empty then show the welcome modal
+                $scope.$watch('settings', function () {
+                    console.log('settings',$scope.settings)
+                    if ($scope.settings.welcome == "enable") {
+                        $scope.open('lg','static');
+                    } else {
+                        return;
+                    }
 
+                    /*Else process your data*/
+                });
 
-                $scope.open = function(size, backdrop) {
+                $scope.open = function(size, backdrop, scope) {
 
                     backdrop = backdrop ? backdrop : true;
 
@@ -1087,7 +1095,6 @@ angular.module('app')
 
                 }
 
-
             };
 
             // Please note that $modalInstance represents a modal window (instance) dependency.
@@ -1103,9 +1110,8 @@ angular.module('app')
 
                 $scope.welcome = settings.welcome;
 
-
-
                 $scope.ok = function() {
+                    socket.send('welcome_dismissed', {});
                     $modalInstance.dismiss('cancel');
                 };
 
