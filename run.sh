@@ -37,6 +37,7 @@ DBFILE=ob.db
 DEVELOPMENT=0
 SEED_URI='seed.openbazaar.org seed2.openbazaar.org'
 LOG_FILE=production.log
+DISABLE_PNP=0
 
 # CRITICAL   50
 # ERROR      40
