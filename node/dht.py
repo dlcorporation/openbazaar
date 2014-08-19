@@ -97,7 +97,6 @@ class DHT(object):
                         self._routingTable.removeContact(guid)
                         self._routingTable.addContact(peer)
 
-
                     self._log.info('Already in active peer list')
                     return
                 else:
@@ -158,7 +157,7 @@ class DHT(object):
         findID = msg['findID']
         uri = msg['uri']
         pubkey = msg['pubkey']
-        #nick = msg['senderNick']
+        # nick = msg['senderNick']
 
         assert guid is not None and guid != self._transport.guid
         assert key is not None
@@ -242,7 +241,7 @@ class DHT(object):
 
     def on_findNodeResponse(self, transport, msg):
 
-        #self._log.info('Received a findNode Response: %s' % msg)
+        # self._log.info('Received a findNode Response: %s' % msg)
 
         # Update pubkey if necessary - happens for seed server
         # localPeer = next((peer for peer in self._activePeers if peer._guid == msg['senderGUID']), None)
@@ -291,7 +290,7 @@ class DHT(object):
             else:
 
                 # Add any close nodes found to the shortlist
-                #self.extendShortlist(transport, msg['findID'], msg['foundNodes'])
+                # self.extendShortlist(transport, msg['findID'], msg['foundNodes'])
 
                 foundSearch = False
                 search = ""
@@ -460,7 +459,7 @@ class DHT(object):
 
         if peer:
             if peer.check_port():
-                peer.send({'type':'query_listings', 'key':key})
+                peer.send({'type': 'query_listings', 'key': key})
                 return
 
         # Check cache in DHT if peer not available
@@ -513,8 +512,10 @@ class DHT(object):
 
         # Find appropriate storage nodes and save key value
         if value_to_store:
-            self.iterativeFindNode(key, lambda msg, findKey=key, value=value_to_store, originalPublisherID=originalPublisherID,
-                                           age=age: self.storeKeyValue(msg, findKey, value, originalPublisherID, age))
+            self.iterativeFindNode(key, lambda msg, findKey=key, value=value_to_store,
+                                               originalPublisherID=originalPublisherID,
+                                               age=age: self.storeKeyValue(msg, findKey, value, originalPublisherID,
+                                                                           age))
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
@@ -583,7 +584,6 @@ class DHT(object):
 
         except Exception, e:
             self._log.debug('Value is not a JSON array: %s' % e)
-
 
         now = int(time.time())
         originallyPublished = now - age
@@ -754,22 +754,22 @@ class DHT(object):
             self._routingTable.distance(secondNode._guid, targetKey)))
 
         # while len(self._pendingIterationCalls):
-        #   del self._pendingIterationCalls[0]
+        # del self._pendingIterationCalls[0]
 
         # TODO: Put this in the callback
         # if new_search._key in new_search._find_value_result:
-        #     return new_search._find_value_result
+        # return new_search._find_value_result
         # elif len(new_search._shortlist) and findValue is False:
         #
-        #     # If you have more k amount of nodes in your shortlist then stop
-        #     # or ...
-        #     if (len(new_search._shortlist) >= constants.k) or (
-        #                     new_search._shortlist[0] == new_search._previous_closest_node and len(
-        #                     new_search._active_probes) ==
-        #                 new_search._slowNodeCount[0]):
-        #         if new_search._callback is not None:
-        #             new_search._callback(new_search._shortlist)
-        #         return
+        # # If you have more k amount of nodes in your shortlist then stop
+        # # or ...
+        # if (len(new_search._shortlist) >= constants.k) or (
+        # new_search._shortlist[0] == new_search._previous_closest_node and len(
+        # new_search._active_probes) ==
+        # new_search._slowNodeCount[0]):
+        # if new_search._callback is not None:
+        # new_search._callback(new_search._shortlist)
+        # return
 
         # Update closest node
         if len(self._activePeers):
