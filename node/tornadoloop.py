@@ -71,13 +71,13 @@ class MarketApplication(tornado.web.Application):
         #TODO: Add some setting whether or not to clean all previous port mappings left behind by us
         #if Settings.get(Settings.CLEAN_UPNP_PORT_MAPPINGS_ON_START):
         #    upnp_mapper.cleanMyMappings()
-        
+
         #for now let's always clean mappings every time.
         self.upnp_mapper.clean_my_mappings()
         result = self.upnp_mapper.add_port_mapping(12345, internal_port)
         print "UPnP Port Map configuration finished ("+str(internal_port)+" -> 12345) => " + str(result)
         return result
-    
+
     def cleanup_upnp_port_mapping(self):
         if self.upnp_mapper != None:
             print "Cleaning UPnP Port Mapping -> ", self.upnp_mapper.clean_my_mappings()
@@ -121,7 +121,7 @@ def start_node(my_market_ip,
 
     error = True
     port = 8888
-    
+
     while error and port < 8988:
         try:
             application.listen(port)

@@ -131,7 +131,7 @@ class TransportLayer(object):
 
         else:
             self.socket.bind('tcp://*:%s' % self._port)
-            
+
 
         self.stream = zmqstream.ZMQStream(self.socket, io_loop=ioloop.IOLoop.current())
 
