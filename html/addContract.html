@@ -29,17 +29,14 @@
                     <div class="col-sm-3">
                         <div class="fileinput fileinput-new" data-provides="fileinput">
                             <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="border:none;background-image:url('img/no-photo.png');background-size:150px 150px; background-repeat: no-repeat;background-position:center;width: 200px; height: 150px;"></div>
-                            <div>
-                                <span class="btn btn-default btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="contract.productImage" name="..."></span>
+                            <div class="text-center">
+                                <span class="btn btn-info btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="contract.productImage" name="..."></span>
                                 <a href="#" class="btn btn-info fileinput-exists" data-dismiss="fileinput">Remove</a>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-sm-9">
-
-
-
                         <div class="form-group">
                             <label for="inputProductTitle">Product Name</label>
                             <input type="text" required ng-model="contract.productTitle" class="form-control" id="inputProductTitle" name="inputProductTitle" placeholder="Product title"/>

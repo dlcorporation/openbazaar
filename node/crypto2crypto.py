@@ -7,7 +7,8 @@ from urlparse import urlparse
 from zmq.eventloop import ioloop
 from zmq.eventloop.ioloop import PeriodicCallback
 import gnupg
-import hashlib, xmlrpclib
+import hashlib
+import xmlrpclib
 import json
 import logging
 import obelisk
@@ -16,13 +17,14 @@ import requests
 import socket
 import traceback
 import zlib
-from threading import Thread
 
 ioloop.install()
 
+
 class CryptoPeerConnection(PeerConnection):
 
-    def __init__(self, transport, address, pub=None, guid=None, nickname=None, sin=None, callback=lambda msg: None):
+    def __init__(self, transport, address, pub=None, guid=None, nickname=None,
+                 sin=None, callback=lambda msg: None):
 
         self._priv = transport._myself
         self._pub = pub
@@ -58,17 +60,17 @@ class CryptoPeerConnection(PeerConnection):
                     for idx, peer in enumerate(self._transport._dht._activePeers):
                         if peer._guid == guid or peer._address == address:
                             self._transport._dht._activePeers[idx] = self
+                            self._transport._dht.add_peer(self._address, self._pub, self._guid, self._nickname)
                             return
+
                     self._transport._dht._activePeers.append(self)
                     self._transport._dht._routingTable.addContact(self)
 
-
-            self.send_raw(json.dumps({'type':'hello',
-                                      'pubkey':transport.pubkey,
-                                      'uri':transport._uri,
-                                      'senderGUID':transport.guid,
-                                      'senderNick':transport._nickname}), cb)
-
+            self.send_raw(json.dumps({'type': 'hello',
+                                      'pubkey': transport.pubkey,
+                                      'uri': transport._uri,
+                                      'senderGUID': transport.guid,
+                                      'senderNick': transport._nickname}), cb)
 
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
@@ -78,7 +80,7 @@ class CryptoPeerConnection(PeerConnection):
 
     def check_port(self):
         try:
-            s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(1)
             s.connect((self._ip, self._port))
             s.close()
@@ -99,7 +101,6 @@ class CryptoPeerConnection(PeerConnection):
                 return False
         except:
             self._log.error('Encryption failed.')
-
 
     def send(self, data, callback=lambda msg: None):
 
@@ -143,7 +144,8 @@ class CryptoPeerConnection(PeerConnection):
 
 class CryptoTransportLayer(TransportLayer):
 
-    def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False):
+    def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None,
+                 bm_port=None, seed_mode=0, dev_mode=False):
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
         requests_log = logging.getLogger("requests")
@@ -169,15 +171,18 @@ class CryptoTransportLayer(TransportLayer):
 
         self._dht = DHT(self, market_id, self.settings, self._db)
 
-        self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
+        self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'),
+                              privkey=self.secret.decode('hex'),
+                              curve='secp256k1')
 
-        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid, self._nickname)
+        TransportLayer.__init__(self, market_id, my_ip, my_port, 
+                                self.guid, self._nickname)
 
         # Set up callbacks
-        self.add_callback('hello', self._ping)
-        self.add_callback('findNode', self._findNode)
-        self.add_callback('findNodeResponse', self._findNodeResponse)
-        self.add_callback('store', self._storeValue)
+        self.add_callbacks([('hello', self._ping),
+                            ('findNode', self._find_node),
+                            ('findNodeResponse', self._find_node_response),
+                            ('store', self._store_value)])
 
         self.listen(self.pubkey)
 
@@ -262,16 +267,16 @@ class CryptoTransportLayer(TransportLayer):
     def get_guid(self):
         return self._guid
 
-    def getDHT(self):
+    def get_dht(self):
         return self._dht
 
-    def getBitmessageAPI(self):
+    def get_bitmessage_api(self):
         return self._bitmessage_api
 
-    def getMarketID(self):
+    def get_market_id(self):
         return self._market_id
 
-    def getMyself(self):
+    def get_myself(self):
         return self._myself
 
     def _ping(self, msg):
@@ -288,13 +293,13 @@ class CryptoTransportLayer(TransportLayer):
         #     }))
 
 
-    def _storeValue(self, msg):
+    def _store_value(self, msg):
         self._dht._on_storeValue(msg)
 
-    def _findNode(self, msg):
+    def _find_node(self, msg):
         self._dht.on_find_node(msg)
 
-    def _findNodeResponse(self, msg):
+    def _find_node_response(self, msg):
         self._dht.on_findNodeResponse(self, msg)
 
     def _setup_settings(self):
@@ -302,7 +307,7 @@ class CryptoTransportLayer(TransportLayer):
         self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)
         if len(self.settings) == 0:
             self.settings = None
-            self._db.insertEntry("settings", {"market_id": self._market_id})
+            self._db.insertEntry("settings", {"market_id": self._market_id, "welcome":"enable"})
         else:
             self.settings = self.settings[0]
 

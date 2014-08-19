@@ -38,41 +38,31 @@ class Market(object):
 
         # Current
         self._transport = transport
-        self._dht = transport.getDHT()
-        self._market_id = transport.getMarketID()
-        self._myself = transport.getMyself()
+        self._dht = transport.get_dht()
+        self._market_id = transport.get_market_id()
+        self._myself = transport.get_myself()
         self._peers = self._dht.getActivePeers()
         self._db = db
         self.orders = Orders(transport, self._market_id, db)
-
-        # Legacy for now
         self.pages = {}
-        self.welcome = False
         self.mypage = None
         self.signature = None
         self._nickname = ""
-
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
         self.settings = self._transport.settings
 
         self.gpg = gnupg.GPG()
 
-        welcome = True
-
-        if self.settings:
-            if  'welcome' in self.settings.keys() and self.settings['welcome']:
-                welcome = False
-
         # Register callbacks for incoming events
-        self._transport.add_callback('query_myorders', self.on_query_myorders)
-        self._transport.add_callback('peer', self.on_peer)
-        self._transport.add_callback('query_page', self.on_query_page)
-        self._transport.add_callback('query_listings', self.on_query_listings)
-        self._transport.add_callback('page', self.on_page)
-        self._transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
-        self._transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
+        self._transport.add_callbacks([('query_myorders', self.on_query_myorders),
+                                       ('peer', self.on_peer),
+                                       ('query_page', self.on_query_page),
+                                       ('query_listings', self.on_query_listings),
+                                       ('page', self.on_page),
+                                       ('negotiate_pubkey', self.on_negotiate_pubkey),
+                                       ('proto_response_pubkey', self.on_response_pubkey)])
 
-        self.load_page(welcome)
+        self.load_page()
 
         # Periodically refresh buckets
         loop = tornado.ioloop.IOLoop.instance()
@@ -82,17 +72,13 @@ class Market(object):
         refreshCB.start()
 
 
-    def load_page(self, welcome):
-
+    def load_page(self):
         nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
-        store_description = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
-
+        #store_description = self.settings['storeDescription'] if self.settings.has_key("storeDescription") else ""
         self._nickname = nickname
 
-        if welcome:
-            self._db.updateEntries("settings", {'market_id': self._transport._market_id}, {"welcome":"noshow"})
-        else:
-            self.welcome = False
+    def disable_welcome_screen(self):
+        self._db.updateEntries("settings", {'market_id': self._transport._market_id}, {"welcome":"disable"})
 
     def private_key(self):
         return self.settings['privkey']
@@ -140,8 +126,9 @@ class Market(object):
                                            "key": key})
 
     def update_keywords_on_network(self, key, keywords):
-        for keyword in keywords:
 
+        for keyword in keywords:
+            keyword = keyword.upper()
             hash_value = hashlib.new('ripemd160')
             hash_value.update('keyword-%s' % keyword)
             keyword_key = hash_value.hexdigest()
@@ -214,16 +201,19 @@ class Market(object):
         self.settings = self.get_settings()
         notary_guids = self.settings['notaries']
         for guid in notary_guids:
-            self._log.debug(guid)
 
-            peer = self._dht._routingTable.getContact(guid)
-            if peer and hasattr(peer, '_nickname'):
-                nickname = peer._nickname
-            else:
-                nickname = ""
+            if guid is not None:
+                self._log.debug(guid)
 
-            notaries.append({"guid":guid, "nickname": nickname})
-        self._log.debug(notaries)
+                peer = self._dht._routingTable.getContact(guid)
+                if peer and hasattr(peer, '_nickname'):
+                    nickname = peer._nickname
+                else:
+                    nickname = ""
+
+                if peer is not None and peer.check_port():
+                    notaries.append({"guid":guid, "nickname": nickname})
+
         return notaries
 
     def republish_listing(self, msg):

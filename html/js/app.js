@@ -1,4 +1,4 @@
-angular.module('app', ['ui.bootstrap'])
+var app = angular.module('app', ['ui.bootstrap'])
 
 /**
  * This directive is used for converting identicon tags
@@ -582,6 +582,7 @@ angular.module('app')
                 contract_data = msg.data;
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
+                contract_data.nickname = msg.nickname;
                 $scope.store_listings.push(contract_data)
                 $scope.store_listings = jQuery.unique($scope.store_listings);
                 $.each($scope.store_listings, function(index, contract) {
@@ -600,7 +601,7 @@ angular.module('app')
             $scope.parse_store_listings = function(msg) {
 
                 contracts = msg.products
-                console.log(contracts[0])
+
                 $scope.store_listings = []
                 $.each(contracts, function(key, value) {
                     console.log('value', value)
@@ -646,10 +647,11 @@ angular.module('app')
 
             $scope.search_results = [];
             $scope.parse_search_result = function(msg) {
-                console.log(msg.data);
+                console.log(msg);
                 contract_data = msg.data;
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
+                contract_data.nickname = msg.nickname;
                 $scope.search_results.push(contract_data)
                 $scope.search_results = jQuery.unique($scope.search_results);
                 $.each($scope.search_results, function(index, contract) {
@@ -660,8 +662,6 @@ angular.module('app')
                 });
 
                 console.log('Search Results', $scope.search_results)
-                $scope.showDashboardPanel('search');
-
 
                 if (!$scope.$$phase) {
                     $scope.$apply();
@@ -683,6 +683,7 @@ angular.module('app')
                 $scope.awaitingShop = $scope.search;
                 socket.send('search', query)
                 $scope.search = ""
+                $scope.showDashboardPanel('search');
             }
 
             $scope.settings = {
@@ -1050,8 +1051,6 @@ angular.module('app')
 
             }
 
-
-
             $('ul.nav.nav-pills li a').click(function() {
                 $(this).parent().addClass('active').siblings().removeClass('active').blur();
             });
@@ -1059,11 +1058,21 @@ angular.module('app')
 
 
             // Modal Code
-            $scope.WelcomeModalCtrl = function($scope, $modal, $log) {
+            $scope.WelcomeModalCtrl = function($scope, $modal, $log, $rootScope) {
 
+                // Listen for changes to settings and if welcome is empty then show the welcome modal
+                $scope.$watch('settings', function () {
+                    console.log('settings',$scope.settings)
+                    if ($scope.settings.welcome == "enable") {
+                        $scope.open('lg','static');
+                    } else {
+                        return;
+                    }
 
+                    /*Else process your data*/
+                });
 
-                $scope.open = function(size, backdrop) {
+                $scope.open = function(size, backdrop, scope) {
 
                     backdrop = backdrop ? backdrop : true;
 
@@ -1087,7 +1096,6 @@ angular.module('app')
 
                 }
 
-
             };
 
             // Please note that $modalInstance represents a modal window (instance) dependency.
@@ -1103,9 +1111,8 @@ angular.module('app')
 
                 $scope.welcome = settings.welcome;
 
-
-
                 $scope.ok = function() {
+                    socket.send('welcome_dismissed', {});
                     $modalInstance.dismiss('cancel');
                 };
 
@@ -1114,12 +1121,7 @@ angular.module('app')
                 };
             };
 
-
-
-
             $scope.ViewOrderCtrl = function($scope, $modal, $log) {
-
-
 
                 $scope.open = function(size, orderId, settings) {
 
@@ -1426,6 +1428,9 @@ angular.module('app')
                             },
                             guid: function() {
                                 return guid
+                            },
+                            scope: function() {
+                                return $scope
                             }
                         },
                         size: size
@@ -1454,7 +1459,8 @@ angular.module('app')
                 notaries,
                 arbiters,
                 btc_pubkey,
-                guid) {
+                guid,
+                scope) {
 
 
                 console.log(productTitle, productPrice, productDescription, productImageData, rawContract, notaries, arbiters, btc_pubkey, guid);
@@ -1468,10 +1474,9 @@ angular.module('app')
                 $scope.productQuantity = 1;
                 $scope.rawContract = rawContract;
                 $scope.guid = guid;
-
                 $scope.arbiters = arbiters;
-
                 $scope.notaries = []
+
                 jQuery.each(notaries, function(key, value) {
                     notary = value
                     console.log(value.guid + ' ' + guid)
@@ -1483,8 +1488,6 @@ angular.module('app')
                     }
                 })
                 console.log($scope.notaries)
-
-
 
                 $scope.key = key;
 
@@ -1521,7 +1524,6 @@ angular.module('app')
                     }
                 }
 
-
                 $scope.order = {
                     message: '',
                     tx: '',
@@ -1538,6 +1540,9 @@ angular.module('app')
                 $scope.submitOrder = function() {
 
                     $scope.creatingOrder = false;
+                    $scope.order.step2 = '';
+                    $scope.order.step1 = '';
+                    $scope.order.confirmation = true;
 
                     var newOrder = {
                         'message': $scope.order.message,
@@ -1554,9 +1559,18 @@ angular.module('app')
                     console.log(newOrder);
                     socket.send('order', newOrder);
                     $scope.sentOrder = true;
+                    scope.queryMyOrder(0);
 
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+
+
+
+                }
+
+                $scope.closeConfirmation = function() {
                     $modalInstance.close();
-
                 }
 
 
