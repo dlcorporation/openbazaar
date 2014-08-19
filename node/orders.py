@@ -24,7 +24,7 @@ class Orders(object):
         RECEIVED = 'received'
         SHIPPED = 'Shipped'
         WAITING_FOR_PAYMENT = 'Waiting for Payment'
-        
+
     def __init__(self, transport, market_id, db):
 
         self._transport = transport
@@ -47,10 +47,10 @@ class Orders(object):
         offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
         index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
 
-        if _order['state'] in (Orders.State.NEED_TO_PAY, 
-                               Orders.State.NOTARIZED, 
+        if _order['state'] in (Orders.State.NEED_TO_PAY,
+                               Orders.State.NOTARIZED,
                                Orders.State.WAITING_FOR_PAYMENT,
-                               Orders.State.PAID, 
+                               Orders.State.PAID,
                                Orders.State.BUYER_PAID,
                                Orders.State.SHIPPED):
             offer_data_json = offer_data[0:index_of_seller_signature-4]
