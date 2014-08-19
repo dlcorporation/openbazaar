@@ -24,24 +24,12 @@ class ProtocolHandler:
         self._db = db
 
         # register on transport events to forward..
-        self._transport.add_callback(
-            'peer', self.on_node_peer
-        )
-        self._transport.add_callback(
-            'peer_remove', self.on_node_remove_peer
-        )
-        self._transport.add_callback(
-            'node_page', self.on_node_page
-        )
-        self._transport.add_callback(
-            'listing_results', self.on_listing_results
-        )
-        self._transport.add_callback(
-            'listing_result', self.on_listing_result
-        )
-        self._transport.add_callback(
-            'all', self.on_node_message
-        )
+        self._transport.add_callbacks([('peer', self.on_node_peer),
+                                       ('peer_remove', self.on_node_remove_peer),
+                                       ('node_page', self.on_node_page),
+                                       ('listing_results', self.on_listing_results),
+                                       ('listing_result', self.on_listing_result),
+                                       ('all', self.on_node_message)])
 
         # handlers from events coming from websocket, we shouldnt need this
         self._handlers = {

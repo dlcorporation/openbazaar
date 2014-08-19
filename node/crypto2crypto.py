@@ -177,10 +177,10 @@ class CryptoTransportLayer(TransportLayer):
         TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid, self._nickname)
 
         # Set up callbacks
-        self.add_callback('hello', self._ping)
-        self.add_callback('findNode', self._findNode)
-        self.add_callback('findNodeResponse', self._findNodeResponse)
-        self.add_callback('store', self._storeValue)
+        self.add_callbacks([('hello', self._ping),
+                            ('findNode', self._findNode),
+                            ('findNodeResponse', self._findNodeResponse),
+                            ('store', self._storeValue)])
 
         self.listen(self.pubkey)
 
