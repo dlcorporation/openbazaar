@@ -447,7 +447,7 @@ class ProtocolHandler:
 
         self._transport._dht.find_listings_by_keyword(
             self._transport,
-            msg['key'],
+            msg['key'].upper(),
             callback=self.on_find_products
         )
 
@@ -470,11 +470,12 @@ class ProtocolHandler:
 
         self._log.info(results)
 
-        if 'type' in results and results['type'] == 'listing_results':
-            self._log.debug('Results: %s ' % results['contracts'])
+        if 'type' not in results:
             return
+        else:
+            self._log.debug('Results: %s ' % results['contracts'])
 
-        if len(results):
+        if len(results) > 0 and 'data' in results:
 
             data = results['data']
             contracts = data['contracts']
@@ -499,7 +500,6 @@ class ProtocolHandler:
 
         self._log.info('Found Contracts: %s' % type(results))
         self._log.info(results)
-
 
         if len(results):
             if 'listings' in results:
@@ -557,6 +557,7 @@ class ProtocolHandler:
 
                 v = gpg.verify(results)
                 if v:
+
                     self.send_to_client(None, {
                         "type": "new_listing",
                         "data": contract_data_json,
@@ -602,11 +603,21 @@ class ProtocolHandler:
 
                 v = gpg.verify(results)
                 if v:
+
+                    contract_guid = contract_data_json.get('Seller').get('seller_GUID')
+                    self._log.info('my guid %s' % self._transport._nickname)
+                    if contract_guid == self._transport._guid:
+                        nickname = self._transport._nickname
+                    else:
+                        peer = self._transport._dht._routingTable.getContact(contract_guid)
+                        nickname = peer._nickname if peer is not None else ""
+
                     self.send_to_client(None, {
                         "type": "global_search_result",
                         "data": contract_data_json,
                         "key": key,
-                        "rawContract": results
+                        "rawContract": results,
+                        "nickname": nickname
                     })
                 else:
                     self._log.error('Could not verify signature of contract.')
