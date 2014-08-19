@@ -184,10 +184,10 @@ class CryptoTransportLayer(TransportLayer):
             self.start_ip_address_checker(seed_mode, dev_mode)
         
     def setup_callbacks(self):
-        self.add_callback('hello', self._ping)
-        self.add_callback('findNode', self._findNode)
-        self.add_callback('findNodeResponse', self._findNodeResponse)
-        self.add_callback('store', self._storeValue)
+        self.add_callbacks([('hello', self._ping),
+                            ('findNode', self._findNode),
+                            ('findNodeResponse', self._findNodeResponse),
+                            ('store', self._storeValue)])
 
     def start_ip_address_checker(self):
         '''Checks for possible public IP change'''

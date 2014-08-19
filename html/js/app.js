@@ -582,6 +582,7 @@ angular.module('app')
                 contract_data = msg.data;
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
+                contract_data.nickname = msg.nickname;
                 $scope.store_listings.push(contract_data)
                 $scope.store_listings = jQuery.unique($scope.store_listings);
                 $.each($scope.store_listings, function(index, contract) {
@@ -600,7 +601,7 @@ angular.module('app')
             $scope.parse_store_listings = function(msg) {
 
                 contracts = msg.products
-                console.log(contracts[0])
+
                 $scope.store_listings = []
                 $.each(contracts, function(key, value) {
                     console.log('value', value)
@@ -646,10 +647,11 @@ angular.module('app')
 
             $scope.search_results = [];
             $scope.parse_search_result = function(msg) {
-                console.log(msg.data);
+                console.log(msg);
                 contract_data = msg.data;
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
+                contract_data.nickname = msg.nickname;
                 $scope.search_results.push(contract_data)
                 $scope.search_results = jQuery.unique($scope.search_results);
                 $.each($scope.search_results, function(index, contract) {
@@ -660,8 +662,6 @@ angular.module('app')
                 });
 
                 console.log('Search Results', $scope.search_results)
-                $scope.showDashboardPanel('search');
-
 
                 if (!$scope.$$phase) {
                     $scope.$apply();
@@ -683,6 +683,7 @@ angular.module('app')
                 $scope.awaitingShop = $scope.search;
                 socket.send('search', query)
                 $scope.search = ""
+                $scope.showDashboardPanel('search');
             }
 
             $scope.settings = {

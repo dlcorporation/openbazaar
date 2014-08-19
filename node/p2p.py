@@ -89,6 +89,10 @@ class TransportLayer(object):
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
+    def add_callbacks(self, callbacks):
+        for section, callback in callbacks:
+            self.add_callback(section, callback)
+
     def add_callback(self, section, callback):
         self._callbacks[section].append(callback)
 
@@ -126,7 +130,7 @@ class TransportLayer(object):
 
         else:
             self.socket.bind('tcp://*:%s' % self._port)
-            
+
 
         self.stream = zmqstream.ZMQStream(self.socket, io_loop=ioloop.IOLoop.current())
 

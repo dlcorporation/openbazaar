@@ -54,13 +54,13 @@ class Market(object):
         self.gpg = gnupg.GPG()
 
         # Register callbacks for incoming events
-        self._transport.add_callback('query_myorders', self.on_query_myorders)
-        self._transport.add_callback('peer', self.on_peer)
-        self._transport.add_callback('query_page', self.on_query_page)
-        self._transport.add_callback('query_listings', self.on_query_listings)
-        self._transport.add_callback('page', self.on_page)
-        self._transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
-        self._transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
+        self._transport.add_callbacks([('query_myorders', self.on_query_myorders),
+                                       ('peer', self.on_peer),
+                                       ('query_page', self.on_query_page),
+                                       ('query_listings', self.on_query_listings),
+                                       ('page', self.on_page),
+                                       ('negotiate_pubkey', self.on_negotiate_pubkey),
+                                       ('proto_response_pubkey', self.on_response_pubkey)])
 
         self.load_page()
 
@@ -126,8 +126,9 @@ class Market(object):
                                            "key": key})
 
     def update_keywords_on_network(self, key, keywords):
-        for keyword in keywords:
 
+        for keyword in keywords:
+            keyword = keyword.upper()
             hash_value = hashlib.new('ripemd160')
             hash_value.update('keyword-%s' % keyword)
             keyword_key = hash_value.hexdigest()
