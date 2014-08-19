@@ -23,7 +23,6 @@ class PeerConnection(object):
         self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
         self._ctx = zmq.Context()
 
-
     def create_socket(self):
         self._log.info('Creating Socket')
         socket = self._ctx.socket(zmq.REQ)
@@ -71,7 +70,7 @@ class PeerConnection(object):
 
         except Exception,e :
             self._log.error(e)
-
+            #shouldn't we raise the exception here???? I think not doing this could cause buggy behavior on top
 
 
 # Transport layer manages a list of peers

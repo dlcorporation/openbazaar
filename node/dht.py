@@ -71,9 +71,20 @@ class DHT(object):
     def connect_to_seed(hostname):
         uri = 'tcp://%s:12345' % hostname
 
+    #I don't think this logic should be here. We should have some sort of PeerManager object
+    #and use the DHT side by side to store whatever we need to store, I'm guessing you want to store
+    #information about peers for rendevouz through dht? or stuff related to contracts themselves or about stores??
+    #so far it seems you are using the dht for peer management purposes... but still I'll do what I think is a needed fix in this
+    #method which seems to be adding _knownNodes even if it cannot connect to them.
     def add_seed(self, transport, uri):
         new_peer = self._transport.get_crypto_peer(uri=uri)
-        self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
+
+        def start_handshake_cb():
+          self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
+
+        #now that we've broken down this logic, it becomes useful for a callback, in this case, what we do here when the peer is alive
+        #we add it to known nodes on the above callback.
+        new_peer.start_handshake(start_handshake_cb)
 
     def add_peer(self, transport, uri, pubkey=None, guid=None, nickname=None):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
