@@ -54,13 +54,13 @@ class Market(object):
         self.gpg = gnupg.GPG()
 
         # Register callbacks for incoming events
-        self._transport.add_callback([('query_myorders', self.on_query_myorders),
-                                      ('peer', self.on_peer),
-                                      ('query_page', self.on_query_page),
-                                      ('query_listings', self.on_query_listings),
-                                      ('page', self.on_page),
-                                      ('negotiate_pubkey', self.on_negotiate_pubkey),
-                                      ('proto_response_pubkey', self.on_response_pubkey)])
+        self._transport.add_callbacks([('query_myorders', self.on_query_myorders),
+                                       ('peer', self.on_peer),
+                                       ('query_page', self.on_query_page),
+                                       ('query_listings', self.on_query_listings),
+                                       ('page', self.on_page),
+                                       ('negotiate_pubkey', self.on_negotiate_pubkey),
+                                       ('proto_response_pubkey', self.on_response_pubkey)])
 
         self.load_page()
 
