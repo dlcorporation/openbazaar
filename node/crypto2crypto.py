@@ -147,7 +147,6 @@ class CryptoPeerConnection(PeerConnection):
 
 
 class CryptoTransportLayer(TransportLayer):
-
     def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False):
 
         self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
@@ -172,46 +171,47 @@ class CryptoTransportLayer(TransportLayer):
         # Set up
         self._setup_settings()
 
-        self._dht = DHT(self, market_id, self.settings, self._db)
+        self._dht = DHT(self, self._market_id, self.settings, self._db)
 
         self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
 
         TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid, self._nickname)
 
-        # Set up callbacks
+        self.setup_callbacks()
+        self.listen(self.pubkey)
+        
+        if seed_mode == 0 and not dev_mode:
+            self.start_ip_address_checker(seed_mode, dev_mode)
+        
+    def setup_callbacks(self):
         self.add_callback('hello', self._ping)
         self.add_callback('findNode', self._findNode)
         self.add_callback('findNodeResponse', self._findNodeResponse)
         self.add_callback('store', self._storeValue)
 
-        self.listen(self.pubkey)
+    def start_ip_address_checker(self):
+        '''Checks for possible public IP change'''
+        self.caller = PeriodicCallback(self._ip_updater_periodic_callback, 5000, ioloop.IOLoop.instance())
+        self.caller.start()
 
+    def _ip_updater_periodic_callback(self):
+        try:
+            r = requests.get('https://icanhazip.com')
 
-        def cb():
+            if r and hasattr(r,'text'):
+                ip = r.text
+                ip = ip.strip(' \t\n\r')
+                if ip != self._ip:
+                    self._ip = ip
+                    self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+                    self.stream.close()
+                    self.listen(self.pubkey)
 
-            try:
-                r = requests.get('https://icanhazip.com')
-
-                if r and hasattr(r,'text'):
-                    ip = r.text
-                    ip = ip.strip(' \t\n\r')
-                    if ip != self._ip:
-                        self._ip = ip
-                        self._uri = 'tcp://%s:%s' % (self._ip, self._port)
-                        self.stream.close()
-                        self.listen(self.pubkey)
-
-                        self._dht._iterativeFind(self._guid, [], 'findNode')
-
-                else:
-                    self._log.error('Could not get ip')
-            except Exception, e:
-                self._log.error('[Requests] error: %s' % e)
-
-        if seed_mode == 0 and not dev_mode:
-            # Check IP periodically for changes
-            self.caller = PeriodicCallback(cb, 5000, ioloop.IOLoop.instance())
-            self.caller.start()
+                    self._dht._iterativeFind(self._guid, [], 'findNode')
+            else:
+                self._log.error('Could not get IP')
+        except Exception, e:
+            self._log.error('[Requests] error: %s' % e)
 
     def save_peer_to_db(self, peer_tuple):
         pubkey = peer_tuple[0]
@@ -226,8 +226,6 @@ class CryptoTransportLayer(TransportLayer):
         #else:
         if guid is not None:
             self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname, "market_id":self._market_id})
-
-
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
