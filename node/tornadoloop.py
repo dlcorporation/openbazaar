@@ -45,9 +45,6 @@ class MarketApplication(tornado.web.Application):
         peers = seed_peers if seed_mode == 0 else []
         self.transport.join_network(peers)
 
-        join_network_loop = ioloop.PeriodicCallback(self.transport.join_network, 60000)
-        join_network_loop.start()
-
         Thread(target=reactor.run, args=(False,)).start()
 
         handlers = [
