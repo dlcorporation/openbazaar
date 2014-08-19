@@ -37,7 +37,7 @@ class CryptoPeerConnection(PeerConnection):
 
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
-    def start_handshake(self, cb=None):
+    def start_handshake(self, handshake_cb=None):
         if self.check_port():
 
             def cb(msg):
@@ -65,8 +65,8 @@ class CryptoPeerConnection(PeerConnection):
                     self._transport._dht._activePeers.append(self)
                     self._transport._dht._routingTable.addContact(self)
                     
-                    if cb is not None:
-                        cb()
+                    if handshake_cb is not None:
+                        handshake_cb()
 
             self.send_raw(json.dumps({'type':'hello',
                                       'pubkey':self.pub,
