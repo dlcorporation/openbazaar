@@ -37,7 +37,7 @@ DBFILE=ob.db
 DEVELOPMENT=0
 SEED_URI='seed.openbazaar.org seed2.openbazaar.org'
 LOG_FILE=production.log
-DISABLE_PNP=0
+DISABLE_UPNP=1
 
 # CRITICAL   50
 # ERROR      40
@@ -48,8 +48,8 @@ DISABLE_PNP=0
 LOG_LEVEL=10
 
 NODES=3
-BM_USERNAME=username
-BM_PASSWORD=password
+BM_USERNAME=brian
+BM_PASSWORD=P@ssw0rd
 BM_PORT=8442
 
 # Tor Information
@@ -175,7 +175,7 @@ else
            $PYTHON node/setup_db.py db/ob-dev-$i.db
            wait
         fi
-	    $PYTHON node/tornadoloop.py 127.0.0.$i --database db/ob-dev-$i.db -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL &
+	    $PYTHON node/tornadoloop.py 127.0.0.$i $DISABLE_UPNP --database db/ob-dev-$i.db -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL &
 	    ((i=i+1))
     done
 fi
