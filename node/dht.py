@@ -691,7 +691,6 @@ class DHT(object):
         self._iterativeFind(key, callback=callback)
 
     def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
-
         """
         - Create a new DHTSearch object and add the key and call back to it
         - Add the search to our search queue (self._searches)
@@ -699,7 +698,6 @@ class DHT(object):
         -
 
         """
-
         # Create a new search object
         new_search = DHTSearch(self._market_id, key, call, callback=callback)
         self._searches.append(new_search)
