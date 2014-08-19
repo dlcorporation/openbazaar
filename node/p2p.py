@@ -3,7 +3,7 @@ from pprint import pformat
 from protocol import goodbye, hello_request
 from urlparse import urlparse
 from zmq.eventloop import ioloop, zmqstream
-ioloop.install() #Gubatron: is this necessary here again, saw it in ws.py?
+ioloop.install()  # Gubatron: is this necessary here again, saw it in ws.py?
 
 import json
 import logging
@@ -11,6 +11,7 @@ import network_util
 import traceback
 import zlib
 import zmq
+
 
 class PeerConnection(object):
     def __init__(self, transport, address):
@@ -20,9 +21,10 @@ class PeerConnection(object):
         self._address = address
         self._nickname = ""
         self._responses_received = {}
-        self._log = logging.getLogger('[%s] %s' % (self._transport._market_id, self.__class__.__name__))
+        self._log = logging.getLogger(
+            '[%s] %s' % (self._transport._market_id, self.__class__.__name__)
+        )
         self._ctx = zmq.Context()
-
 
     def create_socket(self):
         self._log.info('Creating Socket')
@@ -42,7 +44,7 @@ class PeerConnection(object):
 
     def send_raw(self, serialized, callback=lambda msg: None):
 
-        compressed_data = zlib.compress(serialized,9)
+        compressed_data = zlib.compress(serialized, 9)
 
         try:
             s = self.create_socket()
@@ -57,7 +59,8 @@ class PeerConnection(object):
 
                 # Update active peer info
 
-                if response.has_key('senderNick') and response['senderNick'] != self._nickname:
+                if 'senderNick' in response and\
+                   response['senderNick'] != self._nickname:
                     self._nickname = response['senderNick']
 
                 if callback is not None:
@@ -65,13 +68,9 @@ class PeerConnection(object):
                     callback(msg)
                 stream.close()
 
-
             stream.on_recv_stream(cb)
-
-
-        except Exception,e :
+        except Exception as e:
             self._log.error(e)
-
 
 
 # Transport layer manages a list of peers
@@ -88,7 +87,9 @@ class TransportLayer(object):
         self._nickname = nickname
         self._uri = 'tcp://%s:%s' % (self._ip, self._port)
 
-        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
+        self._log = logging.getLogger(
+            '[%s] %s' % (market_id, self.__class__.__name__)
+        )
 
     def add_callbacks(self, callbacks):
         for section, callback in callbacks:
@@ -122,23 +123,37 @@ class TransportLayer(object):
                 # specified IP
                 self.socket.bind(self._uri)
             except Exception as e:
-                error_message = "\n\nTransportLayer.listen() error!!!: Could not bind socket to " + self._uri
+                error_message = "\n\nTransportLayer.listen() error!!!: "
+                error_message += "Could not bind socket to " + self._uri
                 error_message += " (" + str(e) + ")"
                 import platform
                 if platform.system() == 'Darwin':
-                    error_message += "\n\nPerhaps you have not added a loopback alias yet.\nTry this on your terminal and restart OpenBazaar in development mode again:\n\n\t$ sudo ifconfig lo0 alias 127.0.0.2\n\n"
+                    error_message += "\n\nPerhaps you have not added a "\
+                                     "loopback alias yet.\n"
+                    error_message += "Try this on your terminal and restart "\
+                                     "OpenBazaar in development mode again:\n"
+                    error_message += "\n\t$ sudo ifconfig lo0 alias 127.0.0.2"
+                    error_message += "\n\n"
                 raise Exception(error_message)
 
         else:
             self.socket.bind('tcp://*:%s' % self._port)
 
-
-        self.stream = zmqstream.ZMQStream(self.socket, io_loop=ioloop.IOLoop.current())
+        self.stream = zmqstream.ZMQStream(
+            self.socket, io_loop=ioloop.IOLoop.current()
+        )
 
         def handle_recv(message):
             for msg in message:
                 self._on_raw_message(msg)
-            self.stream.send(json.dumps({'type': 'ok', 'senderGUID': self._guid, 'pubkey': pubkey, 'senderNick':self._nickname}))
+            self.stream.send(
+                json.dumps({
+                    'type': 'ok',
+                    'senderGUID': self._guid,
+                    'pubkey': pubkey,
+                    'senderNick': self._nickname
+                })
+            )
 
         self.stream.on_recv(handle_recv)
 
@@ -160,8 +175,6 @@ class TransportLayer(object):
 
         self._log.info('Removed')
 
-
-
         # try:
         # del self._peers[uri]
         # msg = {
@@ -173,7 +186,6 @@ class TransportLayer(object):
         # except KeyError:
         #     self._log.info("Peer %s was already removed", uri)
 
-
     def send(self, data, send_to=None, callback=lambda msg: None):
 
         self._log.info("Outgoing Data: %s %s" % (data, send_to))
@@ -182,7 +194,9 @@ class TransportLayer(object):
         # Directed message
         if send_to is not None:
             peer = self._dht._routingTable.getContact(send_to)
-            # self._log.debug('%s %s %s' % (peer._guid, peer._address, peer._pub))
+            # self._log.debug(
+            #     '%s %s %s' % (peer._guid, peer._address, peer._pub)
+            # )
             peer.send(data, callback=callback)
             return
 
@@ -223,7 +237,6 @@ class TransportLayer(object):
         # self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
         if msg['type'] != 'ok':
             self.trigger_callbacks(msg['type'], msg)
-
 
     def _on_raw_message(self, serialized):
         self._log.info("connected " + str(len(serialized)))
