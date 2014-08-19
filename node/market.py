@@ -38,9 +38,9 @@ class Market(object):
 
         # Current
         self._transport = transport
-        self._dht = transport.getDHT()
-        self._market_id = transport.getMarketID()
-        self._myself = transport.getMyself()
+        self._dht = transport.get_dht()
+        self._market_id = transport.get_market_id()
+        self._myself = transport.get_myself()
         self._peers = self._dht.getActivePeers()
         self._db = db
         self.orders = Orders(transport, self._market_id, db)
@@ -54,13 +54,13 @@ class Market(object):
         self.gpg = gnupg.GPG()
 
         # Register callbacks for incoming events
-        self._transport.add_callback('query_myorders', self.on_query_myorders)
-        self._transport.add_callback('peer', self.on_peer)
-        self._transport.add_callback('query_page', self.on_query_page)
-        self._transport.add_callback('query_listings', self.on_query_listings)
-        self._transport.add_callback('page', self.on_page)
-        self._transport.add_callback('negotiate_pubkey', self.on_negotiate_pubkey)
-        self._transport.add_callback('proto_response_pubkey', self.on_response_pubkey)
+        self._transport.add_callbacks([('query_myorders', self.on_query_myorders),
+                                       ('peer', self.on_peer),
+                                       ('query_page', self.on_query_page),
+                                       ('query_listings', self.on_query_listings),
+                                       ('page', self.on_page),
+                                       ('negotiate_pubkey', self.on_negotiate_pubkey),
+                                       ('proto_response_pubkey', self.on_response_pubkey)])
 
         self.load_page()
 

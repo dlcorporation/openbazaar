@@ -24,24 +24,14 @@ class ProtocolHandler:
         self._db = db
 
         # register on transport events to forward..
-        self._transport.add_callback(
-            'peer', self.on_node_peer
-        )
-        self._transport.add_callback(
-            'peer_remove', self.on_node_remove_peer
-        )
-        self._transport.add_callback(
-            'node_page', self.on_node_page
-        )
-        self._transport.add_callback(
-            'listing_results', self.on_listing_results
-        )
-        self._transport.add_callback(
-            'listing_result', self.on_listing_result
-        )
-        self._transport.add_callback(
-            'all', self.on_node_message
-        )
+        self._transport.add_callbacks([
+            ('peer', self.on_node_peer),
+            ('peer_remove', self.on_node_remove_peer),
+            ('node_page', self.on_node_page),
+            ('listing_results', self.on_listing_results),
+            ('listing_result', self.on_listing_result),
+            ('all', self.on_node_message)
+        ])
 
         # handlers from events coming from websocket, we shouldnt need this
         self._handlers = {
@@ -193,7 +183,10 @@ class ProtocolHandler:
             # except ValueError:
             #     self._log.error('Cannot find that query id')
             # if not success:
-            #     self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
+            #     self.send_to_client(None, {
+            #         "type": "peers",
+            #         "peers": self.get_peers()
+            #     })
 
         self._market.query_page(
             findGUID,
@@ -211,7 +204,10 @@ class ProtocolHandler:
 
                 self.refresh_peers()
 
-        #self.loop.add_timeout(time.time() + .5, lambda query_id=query_id: unreachable_market(query_id))
+        # self.loop.add_timeout(
+        #     time.time() + .5,
+        #     lambda query_id=query_id: unreachable_market(query_id)
+        # )
 
     def client_query_orders(self, socket_handler=None, msg=None):
 
@@ -272,7 +268,8 @@ class ProtocolHandler:
 
     def client_import_raw_contract(self, socket_handler, contract):
         self._log.info(
-            "Importing New Contract (NOT IMPLEMENTED! TODO: Market.import_contract(contract)"
+            "Importing New Contract "\
+            "(NOT IMPLEMENTED! TODO: Market.import_contract(contract)"
         )
         #self._market.import_contract(contract)
 
@@ -337,7 +334,8 @@ class ProtocolHandler:
         end_of_bid_index = offer_data.find(
             '- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data)
         )
-        bid_data_json = "{"+offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = "{"
+        bid_data_json += offer_data[bid_data_index:end_of_bid_index]
         bid_data_json = json.loads(bid_data_json)
 
         # Find Notary Data in Contract
@@ -347,7 +345,8 @@ class ProtocolHandler:
         end_of_notary_index = offer_data.find(
             '-----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data)
         )
-        notary_data_json = "{" + offer_data[notary_data_index:end_of_notary_index]
+        notary_data_json = "{"
+        notary_data_json += offer_data[notary_data_index:end_of_notary_index]
         notary_data_json = json.loads(notary_data_json)
         self._log.info('Notary Data: %s' % notary_data_json)
 
@@ -356,10 +355,18 @@ class ProtocolHandler:
                 'tcp://obelisk.openbazaar.org:9091'
             )
 
+            seller = offer_data_json['Seller']
+            buyer = bid_data_json['Buyer']
+            notary = notary_data_json['Notary']
+
+            seller_key = seller['seller_BTC_uncompressed_pubkey']
+            buyer_key = buyer['buyer_BTC_uncompressed_pubkey']
+            notary_key = notary['notary_BTC_uncompressed_pubkey']
+
             pubkeys = [
-                offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'].decode('hex'),
-                bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
-                notary_data_json['Notary']['notary_BTC_uncompressed_pubkey'].decode('hex')
+                seller_key.decode('hex'),
+                buyer_key.decode('hex'),
+                notary_key.decode('hex')
             ]
 
             multisig = Multisig(client, 2, pubkeys)
@@ -400,16 +407,19 @@ class ProtocolHandler:
             # def finished_cb(msg):
             #     self._log.info('tx %s' % msg)
             #
-            # #multisig.create_unsigned_transaction('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', finished_cb)
+            # addr = '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt'
+            # #multisig.create_unsigned_transaction(addr, finished_cb)
             #
             # def fetched(ec, history):
             #     self._log.info(history)
             #     if ec is not None:
             #         self._log.error("Error fetching history: %s" % ec)
             #         return
-            #     self._fetched(history, '1EzD5Tj9fa5jqV1mCCBy7kW43TYEsJsZw6', finished_cb)
+            #     addr = '1EzD5Tj9fa5jqV1mCCBy7kW43TYEsJsZw6'
+            #     self._fetched(history, addr, finished_cb)
             #
-            # #client.fetch_history('16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt', fetched)
+            # addr = '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt'
+            # #client.fetch_history(addr, fetched)
         except Exception, e:
             self._log.error('%s' % e)
 
@@ -494,7 +504,10 @@ class ProtocolHandler:
                     )
                 )
 
-                #self.send_to_client(None, { "type": "store_products", "products": listings } )
+                # self.send_to_client(None, {
+                #     "type": "store_products",
+                #     "products": listings
+                # })
 
     def on_find_products(self, results):
 
@@ -520,7 +533,10 @@ class ProtocolHandler:
                         )
                     )
 
-                #self.send_to_client(None, { "type": "store_products", "products": listings } )
+                # self.send_to_client(None, {
+                #     "type": "store_products",
+                #     "products": listings
+                # })
 
     def client_shout(self, socket_handler, msg):
         msg['uri'] = self._transport._uri
@@ -551,7 +567,8 @@ class ProtocolHandler:
 
             try:
                 contract_data_json = json.loads(contract_data_json)
-                seller_pubkey = contract_data_json.get('Seller').get('seller_PGP')
+                seller = contract_data_json.get('Seller')
+                seller_pubkey = seller.get('seller_PGP')
 
                 gpg.import_keys(seller_pubkey)
 
@@ -604,12 +621,14 @@ class ProtocolHandler:
                 v = gpg.verify(results)
                 if v:
 
-                    contract_guid = contract_data_json.get('Seller').get('seller_GUID')
+                    seller = contract_data_json.get('Seller')
+                    contract_guid = seller.get('seller_GUID')
                     self._log.info('my guid %s' % self._transport._nickname)
                     if contract_guid == self._transport._guid:
                         nickname = self._transport._nickname
                     else:
-                        peer = self._transport._dht._routingTable.getContact(contract_guid)
+                        routing_table = self._transport._dht._routingTable
+                        peer = routing_table.getContact(contract_guid)
                         nickname = peer._nickname if peer is not None else ""
 
                     self.send_to_client(None, {
@@ -726,7 +745,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._loop = tornado.ioloop.IOLoop.instance()
         self._log = logging.getLogger(self.__class__.__name__)
         self._log.info("Initialize websockethandler")
-        self._app_handler = ProtocolHandler(transport, market, self, db, self._loop)
+        self._app_handler = ProtocolHandler(
+            transport, market, self, db, self._loop
+        )
         self.market = market
         self._transport = transport
 
