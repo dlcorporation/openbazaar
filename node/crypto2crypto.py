@@ -37,6 +37,7 @@ class CryptoPeerConnection(PeerConnection):
 
         self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
 
+    def start_handshake(self, cb=None):
         if self.check_port():
 
             def cb(msg):
@@ -56,22 +57,23 @@ class CryptoPeerConnection(PeerConnection):
 
                     # Add this peer to active peers list
                     for idx, peer in enumerate(self._transport._dht._activePeers):
-                        if peer._guid == guid or peer._address == address:
+                        if peer._guid == self._guid or peer._address == self.address:
                             self._transport._dht._activePeers[idx] = self
                             self._transport._dht.add_peer(self._address, self._pub, self._guid, self._nickname)
                             return
 
                     self._transport._dht._activePeers.append(self)
                     self._transport._dht._routingTable.addContact(self)
-
-
+                    
+                    if cb is not None:
+                        cb()
 
             self.send_raw(json.dumps({'type':'hello',
-                                      'pubkey':transport.pubkey,
-                                      'uri':transport._uri,
-                                      'senderGUID':transport.guid,
-                                      'senderNick':transport._nickname}), cb)
-
+                                      'pubkey':self.pub,
+                                      'uri':self.transport._uri,
+                                      'senderGUID':self._guid,
+                                      'senderNick':self._nickname}), cb)
+        
 
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
@@ -403,7 +405,8 @@ class CryptoTransportLayer(TransportLayer):
         # if callback is not None:
         #     callback()
 
-
+    #@gubatron: TODO: This probably should not be here, looks like a static factory method, which right now seems to be called from the wrong place.
+    #to much interdependence between dht and transport/peers layer.
     def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None, callback=None):
 
       if guid == self.guid:
