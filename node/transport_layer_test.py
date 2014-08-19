@@ -6,6 +6,7 @@ import mock
 from p2p import TransportLayer
 import protocol
 
+
 # Test the callback features of the TransportLayer class
 class TestTransportLayerCallbacks(unittest.TestCase):
     one_called = False
@@ -50,13 +51,16 @@ class TestTransportLayerCallbacks(unittest.TestCase):
         self.tl.trigger_callbacks('all', None)
         self._assert_called(False, False, True)
 
+
 class TestTransportLayerMessageHandling(unittest.TestCase):
     def setUp(self):
         self.tl = TransportLayer(1, 'localhost', None, 1)
 
     # The ok message should not trigger any callbacks
     def test_on_message_ok(self):
-        self.tl.trigger_callbacks = mock.MagicMock(side_effect=AssertionError())
+        self.tl.trigger_callbacks = mock.MagicMock(
+            side_effect=AssertionError()
+        )
         self.tl._on_message(protocol.ok())
 
     # Any non-ok message should cause trigger_callbacks to be called with
@@ -82,12 +86,19 @@ class TestTransportLayerMessageHandling(unittest.TestCase):
 
     # A hello message with a uri should result in a new peer
     def test_on_raw_message_hello_with_uri(self):
-        request = protocol.hello_request({ 'uri': 'tcp://localhost:12345' })
+        request = protocol.hello_request({
+            'uri': 'tcp://localhost:12345'
+        })
         self.tl._on_raw_message([json.dumps(request)])
         self.assertEqual(1, len(self.tl._peers))
+
 
 class TestTransportLayerProfile(unittest.TestCase):
     def test_get_profile(self):
         tl = TransportLayer(1, '1.1.1.1', 12345, 1)
-        self.assertEqual(tl.get_profile(),
-                protocol.hello_request({ 'uri': 'tcp://1.1.1.1:12345' }))
+        self.assertEqual(
+            tl.get_profile(),
+            protocol.hello_request({
+                'uri': 'tcp://1.1.1.1:12345'
+            })
+        )
