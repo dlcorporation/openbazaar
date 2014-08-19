@@ -1,4 +1,5 @@
-import sys, argparse
+import sys
+import argparse
 import tornado.web
 
 from zmq.eventloop import ioloop
@@ -14,27 +15,28 @@ from threading import Thread
 from twisted.internet import reactor
 import upnp
 
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.redirect("/html/index.html")
 
-class MarketApplication(tornado.web.Application):
 
+class MarketApplication(tornado.web.Application):
     def __init__(self, market_ip, market_port, market_id=1,
-                    bm_user=None, bm_pass=None, bm_port=None, seed_peers=[],
-                    seed_mode=0, dev_mode=False, db_path='db/ob.db'):
+                 bm_user=None, bm_pass=None, bm_port=None, seed_peers=[],
+                 seed_mode=0, dev_mode=False, db_path='db/ob.db'):
 
         db = Obdb(db_path)
 
         self.transport = CryptoTransportLayer(market_ip,
-                                               market_port,
-                                               market_id,
-                                               db,
-                                               bm_user,
-                                               bm_pass,
-                                               bm_port,
-                                               seed_mode,
-                                               dev_mode)
+                                              market_port,
+                                              market_id,
+                                              db,
+                                              bm_user,
+                                              bm_pass,
+                                              bm_port,
+                                              seed_mode,
+                                              dev_mode)
 
         self.market = Market(self.transport, db)
 
@@ -62,25 +64,28 @@ class MarketApplication(tornado.web.Application):
     def get_transport(self):
         return self.transport
 
-    def setup_upnp_port_mapping(self,internal_port):
-        upnp.PortMapper.DEBUG=False
+    def setup_upnp_port_mapping(self, internal_port):
+        upnp.PortMapper.DEBUG = False
         print "Setting up UPnP Port Map Entry..."
-        #TODO: Add some setting whether or not to use UPnP
-        #if Settings.get(Settings.USE_UPNP_PORT_MAPPINGS):
+        # TODO: Add some setting whether or not to use UPnP
+        # if Settings.get(Settings.USE_UPNP_PORT_MAPPINGS):
         self.upnp_mapper = upnp.PortMapper()
-        #TODO: Add some setting whether or not to clean all previous port mappings left behind by us
-        #if Settings.get(Settings.CLEAN_UPNP_PORT_MAPPINGS_ON_START):
+        # TODO: Add some setting whether or not to clean all previous port
+        # mappings left behind by us
+        # if Settings.get(Settings.CLEAN_UPNP_PORT_MAPPINGS_ON_START):
         #    upnp_mapper.cleanMyMappings()
-        
-        #for now let's always clean mappings every time.
+
+        # for now let's always clean mappings every time.
         self.upnp_mapper.clean_my_mappings()
         result = self.upnp_mapper.add_port_mapping(12345, internal_port)
-        print "UPnP Port Map configuration finished ("+str(internal_port)+" -> 12345) => " + str(result)
+        print ("UPnP Port Map configuration finished (%s -> 12345) => %s" %
+               (str(internal_port), str(result)))
         return result
-    
+
     def cleanup_upnp_port_mapping(self):
-        if self.upnp_mapper != None:
-            print "Cleaning UPnP Port Mapping -> ", self.upnp_mapper.clean_my_mappings()
+        if self.upnp_mapper is not None:
+            print "Cleaning UPnP Port Mapping -> ", \
+                self.upnp_mapper.clean_my_mappings()
 
 
 def start_node(my_market_ip,
@@ -104,8 +109,9 @@ def start_node(my_market_ip,
 
     locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
 
-    handler = logging.handlers.RotatingFileHandler(
-              log_file, maxBytes=50, backupCount=0)
+    handler = logging.handlers.RotatingFileHandler(log_file,
+                                                   maxBytes=50,
+                                                   backupCount=0)
     locallogger.addHandler(handler)
 
     application = MarketApplication(my_market_ip,
@@ -121,7 +127,7 @@ def start_node(my_market_ip,
 
     error = True
     port = 8888
-    
+
     while error and port < 8988:
         try:
             application.listen(port)
@@ -134,7 +140,8 @@ def start_node(my_market_ip,
     else:
         print "Disabling upnp setup"
 
-    locallogger.info("Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, port))
+    locallogger.info("Started OpenBazaar Web App at http://%s:%s" %
+                     (my_market_ip, port))
     print "Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, port)
 
     # handle shutdown
@@ -142,7 +149,7 @@ def start_node(my_market_ip,
         locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
         locallogger.info("Received TERMINATE, exiting...")
 
-        #application.get_transport().broadcast_goodbye()
+        # application.get_transport().broadcast_goodbye()
         application.cleanup_upnp_port_mapping()
         application.market.p.kill()
 
@@ -162,19 +169,41 @@ def start_node(my_market_ip,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("my_market_ip")
-    parser.add_argument("-p", "--my_market_port", type=int, default=12345)
-    parser.add_argument("-l", "--log_file", default='logs/production.log')
-    parser.add_argument("-u", "--market_id", default=1)
-    parser.add_argument("-S", "--seed_peers", nargs='*', default=[])
-    parser.add_argument("-s", "--seed_mode", default=0)
-    parser.add_argument("-d", "--dev_mode", action='store_true')
-    parser.add_argument("--database", default='db/ob.db', help="Database filename")
-    parser.add_argument("--bmuser", default='username', help="Bitmessage instance user")
-    parser.add_argument("--bmpass", default='password', help="Bitmessage instance pass")
-    parser.add_argument("--bmport", default='8442', help="Bitmessage instance RPC port")
-    parser.add_argument("--log_level", default=10, help="Numeric value for logging level")
-    parser.add_argument("--disable_upnp", action='store_true')
+    parser.add_argument("-p", "--my_market_port",
+                        type=int, default=12345)
+    parser.add_argument("-l", "--log_file",
+                        default='logs/production.log')
+    parser.add_argument("-u", "--market_id",
+                        default=1)
+    parser.add_argument("-S", "--seed_peers",
+                        nargs='*', default=[])
+    parser.add_argument("-s", "--seed_mode",
+                        default=0)
+    parser.add_argument("-d", "--dev_mode",
+                        action='store_true')
+    parser.add_argument("--database",
+                        default='db/ob.db', help="Database filename")
+    parser.add_argument("--bmuser",
+                        default='username', help="Bitmessage instance user")
+    parser.add_argument("--bmpass",
+                        default='password', help="Bitmessage instance pass")
+    parser.add_argument("--bmport",
+                        default='8442', help="Bitmessage instance RPC port")
+    parser.add_argument("--log_level",
+                        default=10, help="Numeric value for logging level")
+    parser.add_argument("--disable_upnp",
+                        action='store_true')
     args = parser.parse_args()
     start_node(args.my_market_ip,
-               args.my_market_port, args.log_file, args.market_id,
-               args.bmuser, args.bmpass, args.bmport, args.seed_peers, args.seed_mode, args.dev_mode, args.log_level, args.database, args.disable_upnp)
+               args.my_market_port,
+               args.log_file,
+               args.market_id,
+               args.bmuser,
+               args.bmpass,
+               args.bmport,
+               args.seed_peers,
+               args.seed_mode,
+               args.dev_mode,
+               args.log_level,
+               args.database,
+               args.disable_upnp)
