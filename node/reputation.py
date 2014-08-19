@@ -106,6 +106,8 @@ if __name__ == '__main__':
         _myself = ECC(curve='secp256k1')
         def add_callback(self, section, cb):
             pass
+        def add_callbacks(self, section, cb):
+            pass
         @staticmethod
         def send(msg):
             print 'sending', msg

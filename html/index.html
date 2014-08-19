@@ -163,12 +163,12 @@
             <h3>Contracts</h3>
         </div>
 
-    <div class="row" style="margin-bottom:0px;" >
+    <div class="row" style="margin-bottom:0px;margin-top:10px;" >
          <ul class="nav nav-pills" style="float:right;margin-top:10px;margin-right:20px;">
-            <li class="active" ><a href="#all">All</a></li>
-            <li><a href="#fixedPrice">Fixed Price</a></li>
-            <li><a href="#auctions">Auctions</a></li>
-            <li><a href="#reviews">Lending</a></li>
+            <!--<li class="active" ><a href="#all">All</a></li>-->
+            <!--<li><a href="#fixedPrice">Fixed Price</a></li>-->
+            <!--<li><a href="#auctions">Auctions</a></li>-->
+            <!--<li><a href="#reviews">Lending</a></li>-->
             <li style="padding-left:10px;"><button class="btn btn-info" ng-click="open('lg')">Add Contract</button></li>
             <li style="padding-left:10px;"><button type="button" class="btn btn-info" ng-click="republishContracts()"><span class="glyphicon glyphicon-upload"></span> Republish</button></li>
         </ul>
@@ -233,9 +233,13 @@
 
     <h4>Search Results</h4>
 
-    <div class="alert alert-warning" role="alert">The following results were found on the network.</div>
+    <div ng-show="search_results.length == 0" class="alert alert-info" role="alert">
+        <div >No results found yet for <strong>{{searching}}</strong>.</div>
+    </div>
 
-    <table class="table table-striped table-bordered" style="margin-top:0px;">
+
+
+    <table ng-show="search_results.length > 0" class="table table-striped table-bordered" style="margin-top:30px;">
         <tr>
             <th colspan=2>Contract</th>
             <th width=50>Quantity</th>
@@ -247,16 +251,21 @@
             <td width=100 style="border-right:none;"><img ng-show="contract.Contract.item_images" src="{{contract.Contract.item_images}}" alt="" class="img-thumbnail" width=100 height=100></td>
             <td  style="border-left:none;"><a href="#"><span style="font-size:20px;">{{contract.Contract.item_title}}</span></a>
                 <br/>
-                <p>{{contract.Contract.item_desc}}</p>
-                <strong>Merchant:</strong> <a href="#">{{contract.Seller.seller_GUID}}</a><br/>
-                <strong>Condition:</strong> {{contract.Contract.item_condition}}
+                <p style="padding:10px 0">{{contract.Contract.item_desc | limitTo:500}}</p>
+                <div style="padding:3px 0">
+                    <span class="glyphicon glyphicon-tags"></span> <strong>Tags:</strong>
+                </div>
+                <div style="padding:3px 0">
+                    <span class="glyphicon glyphicon-user"></span> <strong ng-show="contract.nickname || contract.Seller.seller_GUID">Sold by:</strong> <a href="#">{{contract.nickname ? contract.nickname : contract.Seller.seller_GUID}}</a></div>
+                <br/>
+                <!--<strong>Condition:</strong> {{contract.Contract.item_condition}}-->
             </td>
             <td width=50><span style="font-size:20px;">{{contract.Contract.item_quantity}}</span></td>
             <td width=50><span style="font-size:20px;">&#3647;{{contract.Contract.item_price}}</span></td>
             <td width=100 align="center">
                 <div class="listing-button">
                     <button type="button" class="btn btn-success btn-sm" ng-click="">
-                        <span class="glyphicon glyphicon-shopping-cart"></span> Buy
+                        <span class="glyphicon glyphicon-shopping-cart"></span> View
                     </button>
                 </div>
             </td>
