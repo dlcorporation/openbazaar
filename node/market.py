@@ -126,8 +126,9 @@ class Market(object):
                                            "key": key})
 
     def update_keywords_on_network(self, key, keywords):
-        for keyword in keywords:
 
+        for keyword in keywords:
+            keyword = keyword.upper()
             hash_value = hashlib.new('ripemd160')
             hash_value.update('keyword-%s' % keyword)
             keyword_key = hash_value.hexdigest()
