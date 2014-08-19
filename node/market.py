@@ -444,6 +444,7 @@ class Market(object):
         #self._log.info(base64.b64encode(self.settings['storeDescription']))
 
         new_peer = self._transport.get_crypto_peer(peer['senderGUID'], peer['uri'], pubkey=peer['pubkey'], nickname=peer['senderNick'])
+        new_peer.start_handshake()
 
         new_peer.send(proto_page(self._transport._uri,
                                         self._transport.pubkey,
