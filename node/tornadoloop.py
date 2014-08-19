@@ -75,7 +75,7 @@ class MarketApplication(tornado.web.Application):
         # if Settings.get(Settings.CLEAN_UPNP_PORT_MAPPINGS_ON_START):
         #    upnp_mapper.cleanMyMappings()
 
-        #for now let's always clean mappings every time.
+        # for now let's always clean mappings every time.
         self.upnp_mapper.clean_my_mappings()
         result = self.upnp_mapper.add_port_mapping(12345, internal_port)
         print ("UPnP Port Map configuration finished (%s -> 12345) => %s" %
@@ -84,7 +84,8 @@ class MarketApplication(tornado.web.Application):
 
     def cleanup_upnp_port_mapping(self):
         if self.upnp_mapper is not None:
-            print "Cleaning UPnP Port Mapping -> ", self.upnp_mapper.clean_my_mappings()
+            print "Cleaning UPnP Port Mapping -> ", \
+                self.upnp_mapper.clean_my_mappings()
 
 
 def start_node(my_market_ip,
@@ -148,7 +149,7 @@ def start_node(my_market_ip,
         locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
         locallogger.info("Received TERMINATE, exiting...")
 
-        #application.get_transport().broadcast_goodbye()
+        # application.get_transport().broadcast_goodbye()
         application.cleanup_upnp_port_mapping()
         application.market.p.kill()
 
