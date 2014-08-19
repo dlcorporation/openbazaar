@@ -6,8 +6,9 @@
 #
 # The docstrings in this module contain epytext markup; API documentation
 # may be created by processing this file with epydoc: http://epydoc.sf.net
+
 from os import path, remove
-import sqlite3
+from pysqlcipher import dbapi2 as sqlite
 import sys
 
 import constants
@@ -20,9 +21,13 @@ DB_PATH = constants.DB_PATH
 
 def setup_db(db_path):
     if not path.isfile(db_path):
-        con = sqlite3.connect(db_path)
+        con = sqlite.connect(db_path)
         with con:
             cur = con.cursor()
+
+            # Use PRAGMA key to encrypt / decrypt database.
+            cur.execute("PRAGMA key = 'passphrase';")
+
             cur.execute("CREATE TABLE markets("
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                         "key TEXT, "
