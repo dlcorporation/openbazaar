@@ -26,7 +26,7 @@ def setup_db(db_path):
             cur = con.cursor()
 
             # Use PRAGMA key to encrypt / decrypt database.
-            cur.execute("PRAGMA key = 'passphrase';")
+            cur.execute("PRAGMA key = 'passphrase';") # TODO: Get passphrase from user.
 
             cur.execute("CREATE TABLE markets("
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, "

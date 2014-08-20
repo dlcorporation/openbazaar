@@ -29,7 +29,7 @@ class Obdb():
 
         # Use PRAGMA key to encrypt / decrypt database.
         cur = self.con.cursor()
-        cur.execute("PRAGMA key = 'passphrase';")
+        cur.execute("PRAGMA key = 'passphrase';") # TODO: Get passphrase from user.
 
     def _disconnectFromDb(self):
         """ Close the db connection
