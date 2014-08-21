@@ -71,7 +71,8 @@ class DHT(object):
         new_peer = self._transport.get_crypto_peer(uri=uri)
 
         def start_handshake_cb():
-            self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port,
+            self._knownNodes.append((urlparse(uri).hostname,
+                                     urlparse(uri).port,
                                      new_peer._guid))
 
         new_peer.start_handshake(start_handshake_cb)
