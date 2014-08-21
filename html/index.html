@@ -102,7 +102,6 @@
                                 <li role="presentation"><a role="menuitem" tabindex="-1" href="#mypurchases" ng-click="showDashboardPanel('orders_purchases')">My Purchases</a></li>
                             </ul>
                         </li>
-                        <li><a href="#reviews" ng-click="showDashboardPanel('reviews')">Reviews</a></li>
                         <li><a href="#catalog" ng-click="showDashboardPanel('productCatalog')">Contracts</a></li>
                         <li class="dropdown"><a href="#arbitration" data-toggle="dropdown" class="dropdown-toggle">Arbitration <b class="caret"></b></a>
                             <ul class="dropdown-menu">
@@ -168,7 +167,6 @@
             <!--<li class="active" ><a href="#all">All</a></li>-->
             <!--<li><a href="#fixedPrice">Fixed Price</a></li>-->
             <!--<li><a href="#auctions">Auctions</a></li>-->
-            <!--<li><a href="#reviews">Lending</a></li>-->
             <li style="padding-left:10px;"><button class="btn btn-info" ng-click="open('lg')">Add Contract</button></li>
             <li style="padding-left:10px;"><button type="button" class="btn btn-info" ng-click="republishContracts()"><span class="glyphicon glyphicon-upload"></span> Republish</button></li>
         </ul>
@@ -299,10 +297,6 @@
     <form id="profile-form" role="form" class="form-horizontal">
 
         <h4>Store Details</h4>
-
-        <div class="form-group">
-            <label for="reputation" />
-        </div>
 
         <div class="form-group">
             <label for="inputNickname" class="col-sm-3 control-label">Nickname</label>
@@ -866,18 +860,6 @@
 
 </div>
 
-<!-- Reviews -->
-<div ng-show="reviewsPanel" class="animated fadeInLeft">
-
-    <h3>Reviews</h3>
-
-    <div class="alert alert-warning" role="alert">This is where all of your reviews will reside. Empty right now isn't it?</div>
-
-    <div ng-repeat="review in myself.reputation">
-        [{{review.rating}}] {{review.text}}
-    </div>
-</div>
-
 <div ng-show="arbitrationPanel" class="animated fadeInLeft">
 
     <h3>Arbitration</h3>
@@ -958,7 +940,6 @@
         <ul id="store-tabs" class="nav nav-pills" style="background-color:#ccc;border-bottom:1px solid #aaa;padding:5px;">
             <li class="active" ng-click="showStorePanel('storeInfo')"><a href="#storeInfo">Info</a></li>
             <li ng-click="showStorePanel('storeProducts')"><a href="#storeProducts">Products</a></li>
-            <li><a href="#storeReviews" ng-click="showStorePanel('storeReviews')">Reviews</a></li>
             <li ng-show="page.arbiter || page.notary"><a href="#storeArbiter" ng-click="showStorePanel('storeArbiter')">Services</a></li>
         </ul>
     </div>
@@ -1096,64 +1077,6 @@
             </div>
 
         </div>
-
-        <!-- Reviews -->
-        <div ng-show="storeReviewsPanel"  class="animated fadeIn">
-
-
-            <div ng-repeat="review in currentReviews.slice().reverse()" style="padding:3px;background-color:#333;margin-bottom:5px;">
-                <table>
-                    <tr>
-                        <td><identicon icon-size="50" hash="review.pubkey" title="{{review.pubkey}}"></identicon></td>
-                        <td>
-                            <div style="word-wrap:break-word;width:600px;font-size:14px;">
-                                <span style="color:#999;"><em>{{review.pubkey}}</em></span>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-
-                <div>
-                    <table>
-                        <tr>
-                            <td width="60" valign="top" style="font-size:200%">{{review.rating}}</td>
-                            <td>"{{review.text}}"</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <p>No reviews yet.</p>
-
-            <form>
-                <div style="margin:20px 0px">
-                    <h4>Add a Review</h4><select class="form-control" type="number" ng-model="review.rating" placeholder="Rating" style="width:10%;">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                </select>
-
-                    <div style="margin-top:5px">
-                        <textarea class="form-control" ng-model="review.text" cols="50" id="new-review" name="comment" placeholder="Enter your review here..." rows="5"></textarea>
-                    </div>
-                    <a class="btn btn-default navbar-btn" ng-click="addReview()" type="submit">Submit</a>
-                </div>
-
-            </form>
-
-        </div>
-
-
-
-
-
     </div>
 </div>
 </div>
