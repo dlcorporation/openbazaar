@@ -426,18 +426,6 @@ angular.module('app')
                 }
             }
 
-            // Peer information has arrived
-            $scope.parse_reputation = function(msg) {
-
-                console.log('Parsing reputation', msg.reviews)
-                msg.reviews.forEach(function(review) {
-                    add_review_to_page(review.subject, review);
-                });
-                if (!$scope.$$phase) {
-                    $scope.$apply();
-                }
-            }
-
             $scope.parse_page = function(msg) {
 
                 $scope.page_loading = null
@@ -510,34 +498,6 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
-
-            $scope.review = {
-                rating: 5,
-                text: ""
-            }
-            $scope.addReview = function() {
-
-                var query = {
-                    'type': 'review',
-                    'pubkey': $scope.page.pubkey,
-                    'text': $scope.review.text,
-                    'rating': parseInt($scope.review.rating)
-                }
-                socket.send('review', query)
-
-                // store in appropriate format (its different than push format :P)
-                add_review_to_page($scope.page.pubkey, {
-                    type: 'review',
-                    'pubkey': $scope.myself.pubkey,
-                    'subject': $scope.page.pubkey,
-                    'rating': query.rating,
-                    text: query.text
-                })
-
-                $scope.review.rating = 5;
-                $scope.review.text = '';
-                $scope.showReviewForm = false;
             }
 
             // My information has arrived
