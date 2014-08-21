@@ -85,7 +85,11 @@ class Orders(object):
                 shipping_price = _order['shipping_price'] if _order['shipping_price'] != '' else 0
             else:
                 shipping_price = 0
-            total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
+
+            try:
+                total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
+            except Exception, e:
+                self._log.error('Probably not a number %s' % e)
 
         # Generate QR code
         qr = self.get_qr_code(offer_data_json['Contract']['item_title'], _order['address'], total_price)
