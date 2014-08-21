@@ -86,6 +86,7 @@ class Orders(object):
                  "shipping_address": _order['shipping_address'] if _order.has_key('shipping_address') and _order['shipping_address'] is not "" else "",
                  "total_price": total_price,
                  "notary": notary,
+                 "payment_address": _order['payment_address'] if _order.has_key('payment_address') and _order['payment_address'] is not "" else "",
                  "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
                  "qrcode": 'data:image/png;base64,'+qr,
                  "item_title": offer_data_json['Contract']['item_title'],
@@ -499,9 +500,6 @@ class Orders(object):
 
         self._db.updateEntries("orders", {'order_id': bid_data_json['Buyer']['buyer_order_id']}, {'state':Orders.State.SHIPPED,
                      "updated": time.time(), "payment_address":msg['payment_address']})
-
-
-
 
     def handle_notarized_order(self, msg):
         self._log.info(msg['rawContract'])

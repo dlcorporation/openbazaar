@@ -688,7 +688,12 @@
 
                     </div>
 
-                    <button ng-show="Market.modalOrder.state == 'Shipped' && Market.modalOrder.merchant != settings.guid" id="send-order-button" ng-click="markOrderReceived(orderId)" class="btn btn-sm btn-info"><span class="glyphicon glyphicon-share"></span> Release Payment to Merchant</button>
+                    <div class="alert alert-warning" role="alert">
+
+                        <p style="margin:5px 0">Once you've received your order and are satisfied please release your payment to the seller.</p>
+
+                        <button ng-show="Market.modalOrder.state == 'Shipped' && Market.modalOrder.merchant != settings.guid" id="send-order-button" ng-click="markOrderReceived(orderId)" class="btn btn-sm btn-info"><span class="glyphicon glyphicon-share"></span> Release Payment to Merchant</button>
+                    </div>
 
                     <button ng-show="Market.modalOrder.flagForArbitration" id="send-order-button" ng-click="flagOrderForArbitration(orderId)" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-flag"></span> Flag for Arbiter</button>
 

@@ -371,7 +371,7 @@ class ProtocolHandler:
 
             multisig = Multisig(client, 2, pubkeys)
 
-            def cb(ec, history):
+            def cb(ec, history, order):
 
                 # Debug
                 self._log.info('%s %s' % (ec, history))
@@ -384,7 +384,7 @@ class ProtocolHandler:
                 # Create unsigned transaction
                 unspent = [row[:4] for row in history if row[4] is None]
                 tx = multisig._build_actual_tx(
-                    unspent, '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt'
+                    unspent, order['payment_address']
                 )
                 self._log.info(tx.serialize().encode("hex"))
 
@@ -400,7 +400,7 @@ class ProtocolHandler:
                 })
 
             def get_history():
-                client.fetch_history(multisig.address, cb)
+                client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
 
             reactor.callFromThread(get_history)
 
