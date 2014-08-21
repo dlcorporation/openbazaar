@@ -88,14 +88,11 @@ class CryptoPeerConnection(PeerConnection):
     def check_port(self):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1)
-            print "CryptoPeerConnection.check_port on", self._ip, self._port
+            s.settimeout(5)
             s.connect((self._ip, self._port))
             s.close()
-            print "Success!"
             return True
         except:
-            print "Fail!"
             return False
 
     def sign(self, data):
