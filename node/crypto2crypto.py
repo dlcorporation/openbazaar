@@ -42,7 +42,6 @@ class CryptoPeerConnection(PeerConnection):
 
     def start_handshake(self, handshake_cb=None):
         if self.check_port():
-
             def cb(msg):
                 if msg:
 
@@ -62,21 +61,23 @@ class CryptoPeerConnection(PeerConnection):
                     for idx, peer in enumerate(self._transport._dht._activePeers):
                         if peer._guid == self._guid or peer._address == self.address:
                             self._transport._dht._activePeers[idx] = self
-                            self._transport._dht.add_peer(self._address, self._pub, self._guid, self._nickname)
+                            self._transport._dht.add_peer(self._address,
+                                                          self._pub, self._guid,
+                                                          self._nickname)
                             return
 
                     self._transport._dht._activePeers.append(self)
                     self._transport._dht._routingTable.addContact(self)
-                    
+
                     if handshake_cb is not None:
                         handshake_cb()
 
-            self.send_raw(json.dumps({'type':'hello',
-                                      'pubkey':self.pub,
-                                      'uri':self.transport._uri,
-                                      'senderGUID':self._guid,
-                                      'senderNick':self._nickname}), cb)
-        
+            self.send_raw(json.dumps({'type': 'hello',
+                                      'pubkey': self._pub,
+                                      'uri': self._transport._uri,
+                                      'senderGUID': self._transport.guid,
+                                      'senderNick': self._transport._nickname}), cb)
+
 
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
@@ -86,12 +87,15 @@ class CryptoPeerConnection(PeerConnection):
 
     def check_port(self):
         try:
-            s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(1)
+            print "CryptoPeerConnection.check_port on", self._ip, self._port
             s.connect((self._ip, self._port))
             s.close()
+            print "Success!"
             return True
         except:
+            print "Fail!"
             return False
 
     def sign(self, data):
@@ -107,7 +111,6 @@ class CryptoPeerConnection(PeerConnection):
                 return False
         except:
             self._log.error('Encryption failed.')
-
 
     def send(self, data, callback=lambda msg: None):
 
@@ -137,7 +140,7 @@ class CryptoPeerConnection(PeerConnection):
                             self._log.error('Cannot reach this peer to send raw')
                     else:
                         self._log.error('Data was empty')
-                except Exception, e:
+                except Exception:
                     self._log.error("Was not able to encode empty data: %e")
         else:
             self._log.error('Cannot send to peer')
@@ -150,9 +153,12 @@ class CryptoPeerConnection(PeerConnection):
 
 
 class CryptoTransportLayer(TransportLayer):
-    def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None, bm_port=None, seed_mode=0, dev_mode=False):
 
-        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
+    def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None,
+                 bm_port=None, seed_mode=0, dev_mode=False):
+
+        self._log = logging.getLogger('[%s] %s' % (market_id,
+                                                   self.__class__.__name__))
         requests_log = logging.getLogger("requests")
         requests_log.setLevel(logging.WARNING)
 
@@ -176,21 +182,24 @@ class CryptoTransportLayer(TransportLayer):
 
         self._dht = DHT(self, self._market_id, self.settings, self._db)
 
-        self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'), privkey=self.secret.decode('hex'), curve='secp256k1')
+        self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'),
+                              privkey=self.secret.decode('hex'),
+                              curve='secp256k1')
 
-        TransportLayer.__init__(self, market_id, my_ip, my_port, self.guid, self._nickname)
+        TransportLayer.__init__(self, market_id, my_ip, my_port,
+                                self.guid, self._nickname)
 
         self.setup_callbacks()
         self.listen(self.pubkey)
-        
+
         if seed_mode == 0 and not dev_mode:
-            self.start_ip_address_checker(seed_mode, dev_mode)
-        
+            self.start_ip_address_checker()
+
     def setup_callbacks(self):
         self.add_callbacks([('hello', self._ping),
-                            ('findNode', self._findNode),
-                            ('findNodeResponse', self._findNodeResponse),
-                            ('store', self._storeValue)])
+                            ('findNode', self._find_node),
+                            ('findNodeResponse', self._find_node_response),
+                            ('store', self._store_value)])
 
     def start_ip_address_checker(self):
         '''Checks for possible public IP change'''
@@ -268,16 +277,16 @@ class CryptoTransportLayer(TransportLayer):
     def get_guid(self):
         return self._guid
 
-    def getDHT(self):
+    def get_dht(self):
         return self._dht
 
-    def getBitmessageAPI(self):
+    def get_bitmessage_api(self):
         return self._bitmessage_api
 
-    def getMarketID(self):
+    def get_market_id(self):
         return self._market_id
 
-    def getMyself(self):
+    def get_myself(self):
         return self._myself
 
     def _ping(self, msg):
@@ -294,13 +303,13 @@ class CryptoTransportLayer(TransportLayer):
         #     }))
 
 
-    def _storeValue(self, msg):
+    def _store_value(self, msg):
         self._dht._on_storeValue(msg)
 
-    def _findNode(self, msg):
+    def _find_node(self, msg):
         self._dht.on_find_node(msg)
 
-    def _findNodeResponse(self, msg):
+    def _find_node_response(self, msg):
         self._dht.on_findNodeResponse(self, msg)
 
     def _setup_settings(self):
@@ -388,8 +397,6 @@ class CryptoTransportLayer(TransportLayer):
             for seed in seed_peers:
                 uri = 'tcp://%s:12345' % seed
 
-                #self._dht.connect_to_seed(seed)
-
                 if self._dev_mode and IP(seed).iptype() is 'PRIVATE':
 
                     self._dht.add_seed(self, uri)
@@ -406,17 +413,16 @@ class CryptoTransportLayer(TransportLayer):
         # if callback is not None:
         #     callback()
 
-    #@gubatron: TODO: This probably should not be here, looks like a static factory method, which right now seems to be called from the wrong place.
-    #to much interdependence between dht and transport/peers layer.
-    def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None, callback=None):
+    def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None, 
+                        callback=None):
+        if guid == self.guid:
+            self._log.error('Cannot get CryptoPeerConnection for your own node')
+            return
 
-      if guid == self.guid:
-        self._log.error('Cannot get CryptoPeerConnection for your own node')
-        return
+        self._log.debug('Getting CryptoPeerConnection\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' % (guid, uri, pubkey, nickname))
 
-      self._log.debug('Getting CryptoPeerConnection\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' % (guid, uri, pubkey, nickname))
-
-      return CryptoPeerConnection(self, uri, pubkey, guid=guid, nickname=nickname, callback=callback)
+        return CryptoPeerConnection(self, uri, pubkey, guid=guid, 
+                                    nickname=nickname, callback=callback)
 
 
     def addCryptoPeer(self, peer_to_add):

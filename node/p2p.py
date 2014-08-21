@@ -207,9 +207,9 @@ class TransportLayer(object):
                 try:
                     data['senderGUID'] = self._guid
                     data['pubkey'] = self.pubkey
-                    #if peer._pub:
+                    # if peer._pub:
                     #    peer.send(data, callback)
-                    #else:
+                    # else:
                     print 'test %s' % peer
 
                     def cb(msg):

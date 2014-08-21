@@ -64,7 +64,7 @@ class MarketApplication(tornado.web.Application):
     def get_transport(self):
         return self.transport
 
-    def setup_upnp_port_mapping(self, internal_port):
+    def setup_upnp_port_mappings(self, http_port, p2p_port):
         upnp.PortMapper.DEBUG = False
         print "Setting up UPnP Port Map Entry..."
         # TODO: Add some setting whether or not to use UPnP
@@ -77,14 +77,30 @@ class MarketApplication(tornado.web.Application):
 
         # for now let's always clean mappings every time.
         self.upnp_mapper.clean_my_mappings()
-        result = self.upnp_mapper.add_port_mapping(12345, internal_port)
-        print ("UPnP Port Map configuration finished (%s -> 12345) => %s" %
-               (str(internal_port), str(result)))
-        return result
+        result_http_port_mapping = self.upnp_mapper.add_port_mapping(http_port,
+                                                                     http_port)
+        print ("UPnP HTTP Port Map configuration done (%s -> %s) => %s" %
+               (str(http_port), str(http_port), str(result_http_port_mapping)))
+
+        result_tcp_p2p_mapping = self.upnp_mapper.add_port_mapping(p2p_port,
+                                                                   p2p_port)
+        print ("UPnP TCP P2P Port Map configuration done (%s -> %s) => %s" %
+               (str(p2p_port), str(p2p_port), str(result_tcp_p2p_mapping)))
+
+        result_udp_p2p_mapping = self.upnp_mapper.add_port_mapping(p2p_port,
+                                                                   p2p_port,
+                                                                   'UDP')
+        print ("UPnP UDP P2P Port Map configuration done (%s -> %s) => %s" %
+               (str(p2p_port), str(p2p_port), str(result_udp_p2p_mapping)))
+
+        return result_http_port_mapping and \
+            result_tcp_p2p_mapping and \
+            result_udp_p2p_mapping
 
     def cleanup_upnp_port_mapping(self):
         if self.upnp_mapper is not None:
-            print "Cleaning UPnP Port Mapping -> ", self.upnp_mapper.clean_my_mappings()
+            print "Cleaning UPnP Port Mapping -> ", \
+                self.upnp_mapper.clean_my_mappings()
 
 
 def start_node(my_market_ip,
@@ -125,30 +141,31 @@ def start_node(my_market_ip,
                                     database)
 
     error = True
-    port = 8888
+    http_port = 8888
+    p2p_port = 12345
 
-    while error and port < 8988:
+    while error and http_port < 8988:
         try:
-            application.listen(port)
+            application.listen(http_port)
             error = False
         except:
-            port += 1
+            http_port += 1
 
     if not disable_upnp:
-        application.setup_upnp_port_mapping(port)
+        application.setup_upnp_port_mappings(http_port, p2p_port)
     else:
         print "Disabling upnp setup"
 
     locallogger.info("Started OpenBazaar Web App at http://%s:%s" %
-                     (my_market_ip, port))
-    print "Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, port)
+                     (my_market_ip, http_port))
+    print "Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, http_port)
 
     # handle shutdown
     def shutdown(x, y):
         locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
         locallogger.info("Received TERMINATE, exiting...")
 
-        #application.get_transport().broadcast_goodbye()
+        # application.get_transport().broadcast_goodbye()
         application.cleanup_upnp_port_mapping()
         application.market.p.kill()
 
