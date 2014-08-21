@@ -75,7 +75,7 @@ class MarketApplication(tornado.web.Application):
         # if Settings.get(Settings.CLEAN_UPNP_PORT_MAPPINGS_ON_START):
         #    upnp_mapper.cleanMyMappings()
 
-        #for now let's always clean mappings every time.
+        # for now let's always clean mappings every time.
         self.upnp_mapper.clean_my_mappings()
         result = self.upnp_mapper.add_port_mapping(12345, internal_port)
         print ("UPnP Port Map configuration finished (%s -> 12345) => %s" %
