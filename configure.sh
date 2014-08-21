@@ -22,42 +22,39 @@ function installMac {
 
   #pre-requisites
   brew install wget gpg
-  brew install autoenv
   brew install openssl
   brew link openssl --force
   sudo easy_install pip
 
-  #virtualenv
-  sudo pip install virtualenv
-  sudo pip install virtualenvwrapper
-  mkdir ~/.virtualenvs
- 
   #python libraries
   pip install -r --upgrade requirements.txt
 
   #install sqlite3 from brew and manually link it as brew won't link this for us.
   brew install sqlite3
   SQLITE3_LAST_VERSION=`ls -1t /usr/local/Cellar/sqlite | head -1`
-  echo ln -s /usr/local/Cellar/sqlite/${SQLITE3_LAST_VERSION}/bin/sqlite3 /usr/local/bin/sqlite3
+  ln -s /usr/local/Cellar/sqlite/${SQLITE3_LAST_VERSION}/bin/sqlite3 /usr/local/bin/sqlite3
 
-  clear
+  doneMessage
+}
 
-  echo "To finish the OpenBazaar installation copy the following 2 lines towards the end of your ~/.bash_profile"
-  echo ""
-  echo "export WORKON_HOME=~/.virtualenvs" 
-  echo "source /usr/local/bin/virtualenvwrapper.sh"
-  echo ""
-  echo "After you're done type the following command"
-  echo ""
-  echo "mkvirtualenv open_bazaar"
-  echo ""
-  echo ""
-  echo "type './run.sh' to start your OpenBazaar servent instance."
+function doneMessage {
+echo ""
+echo "OpenBazaar configuration finished."
+echo "type './run.sh' to start your OpenBazaar servent instance."
+echo ""
+echo "(You can tail -f logs at logs/production.log or logs/development.log)"
+echo ""
+echo ""
 }
 
 
 function installUbuntu {
-  print "installUbuntu not implemented."
+  sudo apt-get update
+  sudo apt-get install python-pip
+  sudo apt-get install python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
+  sudo pip install -r requirements.txt
+
+  doneMessage
 }
 
 if [[ $OSTYPE == darwin* ]] ; then
@@ -65,5 +62,4 @@ if [[ $OSTYPE == darwin* ]] ; then
 elif [[ $OSTYPE == linux-gnu ]]; then
   installUbuntu
 fi
-
 
