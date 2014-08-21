@@ -40,14 +40,11 @@ class Orders(object):
 
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
 
-    def get_order(self, orderId):
-
-        _order = self._db.selectEntries("orders", "order_id = '%s'" % orderId)[0]
-
-        offer_data = ''.join(_order['signed_contract_body'].split('\n')[8:])
+    def get_offer_json(self, raw_contract, state):
+        offer_data = ''.join(raw_contract.split('\n')[8:])
         index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
 
-        if _order['state'] in (Orders.State.NEED_TO_PAY,
+        if state in (Orders.State.NEED_TO_PAY,
                                Orders.State.NOTARIZED,
                                Orders.State.WAITING_FOR_PAYMENT,
                                Orders.State.PAID,
@@ -55,23 +52,43 @@ class Orders(object):
                                Orders.State.SHIPPED):
             offer_data_json = offer_data[0:index_of_seller_signature-4]
             offer_data_json = json.loads(str(offer_data_json))
-            if _order.has_key("shipping_price"):
-                shipping_price = _order['shipping_price'] if _order['shipping_price'] != '' else 0
-            else:
-                shipping_price = 0
-            total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
         else:
             offer_data_json = '{"Seller": {'+offer_data[0:index_of_seller_signature-2]
-            self._log.info(offer_data_json)
-            total_price = ""
             offer_data_json = json.loads(str(offer_data_json))
 
-        qr_url = urllib.urlencode({"url":offer_data_json['Contract']['item_title']})
-        qr = qrcode.make("bitcoin:"+_order['address']+"?amount="+str(total_price)+"&message="+qr_url)
+        return offer_data_json
+
+    def get_qr_code(self, item_title, address, total):
+        qr_url = urllib.urlencode({"url":item_title})
+        qr = qrcode.make("bitcoin:"+address+"?amount="+str(total)+"&message="+qr_url)
         output = StringIO.StringIO()
         qr.save(output, "PNG")
         qr = output.getvalue().encode("base64")
         output.close()
+        return qr
+
+    def get_order(self, orderId):
+
+        _order = self._db.selectEntries("orders", "order_id = '%s'" % orderId)[0]
+        total_price = 0
+
+        offer_data_json = self.get_offer_json(_order['signed_contract_body'], _order['state'])
+
+        if _order['state'] in (Orders.State.NEED_TO_PAY,
+                               Orders.State.NOTARIZED,
+                               Orders.State.WAITING_FOR_PAYMENT,
+                               Orders.State.PAID,
+                               Orders.State.BUYER_PAID,
+                               Orders.State.SHIPPED):
+
+            if 'shipping_price' in _order:
+                shipping_price = _order['shipping_price'] if _order['shipping_price'] != '' else 0
+            else:
+                shipping_price = 0
+            total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
+
+        # Generate QR code
+        qr = self.get_qr_code(offer_data_json['Contract']['item_title'], _order['address'], total_price)
 
         notary = self._transport._guid if _order['state'] == Orders.State.NOTARIZED else ""
 
@@ -81,6 +98,7 @@ class Orders(object):
                  "address": _order['address'] if _order.has_key("address") else "",
                  "buyer": _order['buyer'] if _order.has_key("buyer") else "",
                  "merchant": _order['merchant'] if _order.has_key("merchant") else "",
+                 "order_id": _order['order_id'],
                  "item_price": _order['item_price'] if _order.has_key("item_price") else "",
                  "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
                  "shipping_address": _order['shipping_address'] if _order.has_key('shipping_address') and _order['shipping_address'] is not "" else "",
@@ -93,21 +111,44 @@ class Orders(object):
                  "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
                  "note_for_merchant":  _order['note_for_merchant'] if _order.has_key("note_for_merchant") else "",
                  "updated": _order['updated'] if _order.has_key("updated") else ""}
-        # orders.append(_order)
 
         return order
 
     def get_orders(self, page=0, merchant=None):
 
+        orders = []
+
         if merchant is None:
-            orders = self._db.selectEntries("orders", "market_id = '%s'" % self._market_id, order_field="updated", order="DESC", limit=10, limit_offset=page*10)
+            order_ids = self._db.selectEntries("orders", "market_id = '%s'" % self._market_id,
+                                            order_field="updated",
+                                            order="DESC",
+                                            limit=10,
+                                            limit_offset=page*10,
+                                            select_fields=['order_id'])
+            for result in order_ids:
+                order = self.get_order(result['order_id'])
+                orders.append(order)
+
             total_orders = self._db.numEntries("orders", "market_id = '%s'" % self._market_id)
         else:
             if merchant:
-                orders = self._db.selectEntries("orders", "market_id = '%s' and merchant = '%s'" % (self._market_id, self._transport._guid), order_field="updated", order="DESC", limit=10, limit_offset=page*10)
+                order_ids = self._db.selectEntries("orders",
+                                                "market_id = '%s' and merchant = '%s'" % (self._market_id, self._transport._guid),
+                                                order_field="updated",
+                                                order="DESC",
+                                                limit=10,
+                                                limit_offset=page*10,
+                                                select_fields=['order_id'])
+                for result in order_ids:
+                    order = self.get_order(result['order_id'])
+                    orders.append(order)
                 total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant = '%s'" % (self._market_id, self._transport._guid))
             else:
-                orders = self._db.selectEntries("orders", "market_id = '%s' and merchant <> '%s'" % (self._market_id, self._transport._guid), order_field="updated", order="DESC", limit=10, limit_offset=page*10)
+                order_ids = self._db.selectEntries("orders", "market_id = '%s' and merchant <> '%s'" % (self._market_id, self._transport._guid), order_field="updated", order="DESC", limit=10, limit_offset=page*10)
+                for result in order_ids:
+                    order = self.get_order(result['order_id'])
+                    orders.append(order)
+
                 total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant <> '%s'" % (self._market_id, self._transport._guid))
 
         for order in orders:
@@ -117,8 +158,6 @@ class Orders(object):
             merchant = self._db.selectEntries("peers", "guid = '%s'" % order['merchant'])
             if len(merchant) > 0:
                 order['merchant_nickname'] = merchant[0]['nickname']
-
-
 
         return {"total": total_orders, "orders":orders}
 

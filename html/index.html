@@ -816,6 +816,7 @@
                         <th><input type="checkbox"/></th>
                         <th>Order</th>
                         <th>Date</th>
+                        <th>Purchase</th>
                         <th ng-show="merchant">Buyer</th>
                         <th ng-show="!merchant">Merchant</th>
                         <th>Status</th>
@@ -825,8 +826,15 @@
                         <td width=20><input type="checkbox"/></td>
                         <td width=70><a href="" ng-click="open('lg', order.order_id, settings)">{{order.order_id}}</a></td>
                         <td width=136>{{order.updated * 1000 | date: 'short'}}</td>
-
-                        <td ng-show="merchant" style="word-break:break-all">
+                        <td>
+                            <div class="pull-left" style="margin-right:10px;">
+                                <img src="{{order.item_image}}" width="50"/>
+                            </div>
+                            <div style="word-break:word-wrap">
+                                {{order.item_title}}
+                            </div>
+                        </td>
+                        <td width="200" ng-show="merchant" style="word-break:break-all">
                             <div class="col-sm-1" style="padding-top:0">
                             <identicon icon-size="50" hash="order.buyer" title="{{order.buyer}}"></identicon>
                                 </div>
@@ -836,11 +844,11 @@
                         </td>
 
 
-                        <td ng-show="!merchant" style="word-break:break-all">
-                            <div class="col-sm-1" style="padding-top:0">
-                            <identicon icon-size="50" hash="order.merchant" title="{{order.merchant}}"></identicon>
-                                </div>
-                            <div class="col-sm-11" style="padding-top:0">
+                        <td width="425" ng-show="!merchant" style="word-break:break-all">
+                            <div class="col-sm-2" style="padding-top:0;width:50px;">
+                                <identicon icon-size="50" hash="order.merchant" title="{{order.merchant}}"></identicon>
+                            </div>
+                            <div class="col-sm-10" style="padding-top:0">
                                 <div ng-show="order.merchant_nickname" style="margin-top:5px;font-weight:bold;">{{order.merchant_nickname}}</div> {{order.merchant}}
                             </div>
                         </td>
