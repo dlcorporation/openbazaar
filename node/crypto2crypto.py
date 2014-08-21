@@ -81,7 +81,7 @@ class CryptoPeerConnection(PeerConnection):
     def check_port(self):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1)
+            s.settimeout(5)
             s.connect((self._ip, self._port))
             s.close()
             return True
