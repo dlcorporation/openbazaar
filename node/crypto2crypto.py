@@ -7,7 +7,8 @@ from urlparse import urlparse
 from zmq.eventloop import ioloop
 from zmq.eventloop.ioloop import PeriodicCallback
 import gnupg
-import hashlib, xmlrpclib
+import hashlib
+import xmlrpclib
 import json
 import logging
 import obelisk
@@ -16,13 +17,14 @@ import requests
 import socket
 import traceback
 import zlib
-from threading import Thread
 
 ioloop.install()
 
+
 class CryptoPeerConnection(PeerConnection):
 
-    def __init__(self, transport, address, pub=None, guid=None, nickname=None, sin=None, callback=lambda msg: None):
+    def __init__(self, transport, address, pub=None, guid=None, nickname=None,
+                 sin=None, callback=lambda msg: None):
 
         self._priv = transport._myself
         self._pub = pub
@@ -35,7 +37,8 @@ class CryptoPeerConnection(PeerConnection):
 
         PeerConnection.__init__(self, transport, address)
 
-        self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
+        self._log = logging.getLogger('[%s] %s' % (transport._market_id,
+                                                   self.__class__.__name__))
 
     def start_handshake(self, handshake_cb=None):
         if self.check_port():
