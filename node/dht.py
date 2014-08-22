@@ -131,7 +131,8 @@ class DHT(object):
                 self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
                 self._transport.save_peer_to_db(peer_tuple)
 
-            new_peer.start_handshake(handshake_cb=cb)
+            if new_peer.check_port():
+                new_peer.start_handshake(handshake_cb=cb)
 
         else:
             self._log.debug('Missing peer attributes')
