@@ -40,9 +40,9 @@ function installMac {
 function doneMessage {
 echo ""
 echo "OpenBazaar configuration finished."
-echo "type './run.sh' to start your OpenBazaar servent instance."
+echo "type './run.sh; tail -f logs/production.log' to start your OpenBazaar servent instance and monitor logging output."
 echo ""
-echo "(You can tail -f logs at logs/production.log or logs/development.log)"
+echo ""
 echo ""
 echo ""
 }
