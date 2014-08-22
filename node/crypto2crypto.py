@@ -16,6 +16,7 @@ import pyelliptic as ec
 import requests
 import socket
 import traceback
+from threading import Thread
 import zlib
 
 ioloop.install()
@@ -61,8 +62,10 @@ class CryptoPeerConnection(PeerConnection):
                     for idx, peer in enumerate(self._transport._dht._activePeers):
                         if peer._guid == self._guid or peer._address == self._address:
                             self._transport._dht._activePeers[idx] = self
-                            self._transport._dht.add_peer(self._address,
-                                                          self._pub, self._guid,
+                            self._transport._dht.add_peer(self._transport,
+                                                          self._address,
+                                                          self._pub,
+                                                          self._guid,
                                                           self._nickname)
                             return
 
@@ -433,7 +436,8 @@ class CryptoTransportLayer(TransportLayer):
 
     def connect_to_peers(self, known_peers):
         for known_peer in known_peers:
-            self._dht.add_peer(self, known_peer)
+            t = Thread(target=self._dht.add_peer, args=(self, known_peer,))
+            t.start()
 
     def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None, 
                         callback=None):
