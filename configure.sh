@@ -1,5 +1,20 @@
 #!/bin/bash
 
+#
+# configure.sh - Setup your OpenBazaar development environment in one step.
+#
+# If you are a Ubuntu or MacOSX user, you can try executing this script
+# and you already checked out the OpenBazaar sourcecode from the git repository
+# you can try configuring/installing OpenBazaar by simply executing this script
+# instead of following the build instructions in the OpenBazaar Wiki 
+# https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions
+# 
+# This script will only get better as its tested on more development environments
+# if you can't modify it to make it better, please open an issue with a full
+# error report at https://github.com/OpenBazaar/OpenBazaar/issues/new
+#
+#
+
 function installMac {
   #is brew installed?
   which -s brew
