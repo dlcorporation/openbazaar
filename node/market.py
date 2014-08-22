@@ -180,15 +180,15 @@ class Market(object):
 
     def shipping_address(self):
         settings = self.get_settings()
-        shipping_address = {"recipient_name": settings['recipient_name'],
-                            "street1": settings['street1'],
-                            "street2": settings['street2'],
-                            "city": settings['city'],
-                            "stateRegion": settings['stateRegion'],
-                            "stateProvinceRegion": settings['stateProvinceRegion'],
-                            "zip": settings['zip'],
-                            "country": settings['country'],
-                            "countryCode": settings['countryCode']}
+        shipping_address = {"recipient_name": settings.get('recipient_name'),
+                            "street1": settings.get('street1'),
+                            "street2": settings.get('street2'),
+                            "city": settings.get('city'),
+                            "stateRegion": settings.get('stateRegion'),
+                            "stateProvinceRegion": settings.get('stateProvinceRegion'),
+                            "zip": settings.get('zip'),
+                            "country": settings.get('country'),
+                            "countryCode": settings.get('countryCode')}
         return shipping_address
 
     def republish_contracts(self):
