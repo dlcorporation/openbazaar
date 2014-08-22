@@ -73,7 +73,7 @@ class CryptoPeerConnection(PeerConnection):
                         handshake_cb()
 
             self.send_raw(json.dumps({'type': 'hello',
-                                      'pubkey': self._pub,
+                                      'pubkey': self._transport.pubkey,
                                       'uri': self._transport._uri,
                                       'senderGUID': self._transport.guid,
                                       'senderNick': self._transport._nickname}), cb)
@@ -394,29 +394,46 @@ class CryptoTransportLayer(TransportLayer):
       self._db.updateEntries("settings", {"market_id": self._market_id}, {"bitmessage":self.bitmessage})
 
 
-    def join_network(self, seed_peers=None, callback=lambda msg: None):
+    def join_network(self, seed_peers=[], callback=lambda msg: None):
 
         self._log.info('Joining network')
+
+        known_peers = []
+
         # Connect up through seed servers
-        if seed_peers:
-            for seed in seed_peers:
-                uri = 'tcp://%s:12345' % seed
-
-                if self._dev_mode and IP(seed).iptype() is 'PRIVATE':
-
-                    self._dht.add_seed(self, uri)
-                else:
-                    self._dht.add_seed(self, uri)
+        for idx, seed in enumerate(seed_peers):
+            seed_peers[idx] = "tcp://%s:12345" % seed
 
         # Connect to persisted peers
-        known_peers = self._db.selectEntries("peers", "market_id = '%s'" % self._market_id)
-        for known_peer in known_peers:
-            self._dht.add_peer(self, known_peer['uri'])
+        db_peers = self.get_past_peers()
 
+        known_peers = list(set(seed_peers)) + list(set(db_peers))
+
+        print 'known_peers', known_peers
+
+        self.connect_to_peers(known_peers)
+
+        # Populate routing table by searching for self
+        if len(known_peers) > 0:
+            self.search_for_my_node()
+
+        if callback is not None:
+             callback('Joined')
+
+    def get_past_peers(self):
+        peers = []
+        result = self._db.selectEntries("peers", "market_id = '%s'" % self._market_id)
+        for peer in result:
+            peers.append(peer['uri'])
+        return peers
+
+
+    def search_for_my_node(self):
         self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
 
-        # if callback is not None:
-        #     callback()
+    def connect_to_peers(self, known_peers):
+        for known_peer in known_peers:
+            self._dht.add_peer(self, known_peer)
 
     def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None, 
                         callback=None):

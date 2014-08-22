@@ -9,7 +9,6 @@ import os
 import routingtable
 import time
 
-
 class DHT(object):
     def __init__(self, transport, market_id, settings, db_connection):
 
@@ -68,12 +67,15 @@ class DHT(object):
                 del self._activePeers[idx]
 
     def add_seed(self, transport, uri):
+
         new_peer = self._transport.get_crypto_peer(uri=uri)
+        self._log.debug(new_peer)
 
         def start_handshake_cb():
             self._knownNodes.append((urlparse(uri).hostname,
                                      urlparse(uri).port,
                                      new_peer._guid))
+            self._log.debug('Known Nodes: %s' % self._knownNodes)
 
         new_peer.start_handshake(start_handshake_cb)
 
@@ -83,9 +85,12 @@ class DHT(object):
 
         :param transport: (CryptoTransportLayer) so we can get a new CryptoPeer
         """
-        if uri and pubkey is not None and guid is not None and nickname is not None:
 
-            peer_tuple = (pubkey, uri, guid, nickname)
+        assert(uri)
+
+        if uri is not None:
+
+            peer_tuple = (uri, pubkey, guid, nickname)
 
             for idx, peer in enumerate(self._activePeers):
 
@@ -116,13 +121,20 @@ class DHT(object):
                         return
 
             self._log.debug('New Peer')
-            new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
-            new_peer.start_handshake()
 
-            self._routingTable.removeContact(new_peer._guid)
-            self._routingTable.addContact(new_peer)
-            self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
-            self._transport.save_peer_to_db(peer_tuple)
+            new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
+
+            def cb():
+                self._log.debug('Back from handshake')
+                self._routingTable.removeContact(new_peer._guid)
+                self._routingTable.addContact(new_peer)
+                self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
+                self._transport.save_peer_to_db(peer_tuple)
+
+            new_peer.start_handshake(handshake_cb=cb)
+
+        else:
+            self._log.debug('Missing peer attributes')
 
     def add_known_node(self, node):
         """ Accept a peer tuple and add it to known nodes list
