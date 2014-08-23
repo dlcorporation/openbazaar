@@ -7,8 +7,8 @@
 # The docstrings in this module contain epytext markup; API documentation
 # may be created by processing this file with epydoc: http://epydoc.sf.net
 
-import sqlite3
 import logging
+from pysqlcipher import dbapi2 as sqlite
 
 class Obdb():
     """ Interface for db storage. Serves as segregation of the persistence layer
@@ -22,10 +22,14 @@ class Obdb():
     def _connectToDb(self):
         """ Opens a db connection
         """
-        self.con = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
-        sqlite3.register_adapter(bool, int)
-        sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
+        self.con = sqlite.connect(self.db_path, detect_types=sqlite.PARSE_DECLTYPES)
+        sqlite.register_adapter(bool, int)
+        sqlite.register_converter("BOOLEAN", lambda v: bool(int(v)))
         self.con.row_factory = self._dictFactory
+
+        # Use PRAGMA key to encrypt / decrypt database.
+        cur = self.con.cursor()
+        cur.execute("PRAGMA key = 'passphrase';") # TODO: Get passphrase from user.
 
     def _disconnectFromDb(self):
         """ Close the db connection
