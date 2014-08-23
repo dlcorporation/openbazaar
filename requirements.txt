@@ -17,3 +17,4 @@ tornado==4.0.1
 websocket-client==0.16.0
 wsgiref==0.1.2
 zope.interface==4.1.1
+pysqlcipher==2.6.3
