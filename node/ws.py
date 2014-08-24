@@ -486,7 +486,7 @@ class ProtocolHandler:
         self._log.info('Found Contracts: %s' % type(results))
         self._log.info(results)
 
-        if type(results[0]) == str:
+        if len(results) > 0 and type(results[0]) == str:
             results = json.loads(results[0])
 
         self._log.info(results)
