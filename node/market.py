@@ -191,33 +191,71 @@ class Market(object):
                             "countryCode": settings.get('countryCode')}
         return shipping_address
 
+    def add_trusted_notary(self, guid, nickname=""):
+        self._log.debug('%s %s' % (guid, nickname))
+        notaries = self.settings.get('notaries')
+        print notaries
+        if notaries == "":
+            notaries = []
+        else:
+            notaries = json.loads(notaries)
+
+        for idx, notary in enumerate(notaries):
+            self._log.info(notary)
+            if notary.get('guid') == guid:
+                if notary.get('nickname') != nickname:
+                    notary['nickname'] = nickname
+                    notary['idx'] = notary
+                    self.settings['notaries'] = notaries
+                return
+
+        notaries.append({"guid":guid, "nickname":nickname})
+        self.settings['notaries'] = json.dumps(notaries)
+
+        self._db.updateEntries("settings", {'market_id': self._transport._market_id}, self.settings)
+
+
     def republish_contracts(self):
         listings = self._db.selectEntries("contracts")
         for listing in listings:
             self._transport._dht.iterativeStore(self._transport, listing['key'], listing.get('signed_contract_body'), self._transport._guid)
         self.update_listings_index()
 
-    def get_notaries(self):
+    def get_notaries(self, online_only=False):
         self._log.debug('Getting notaries')
 
         notaries = []
-        self.settings = self.get_settings()
+
         notary_guids = self.settings['notaries']
+
         for guid in notary_guids:
+            if Market.valid_guid(guid):
+                self._log.info('MARKET GUID %s' % guid)
 
-            if guid is not None:
-                self._log.debug(guid)
+                if online_only:
+                    peer = self._dht._routingTable.getContact(guid)
 
-                peer = self._dht._routingTable.getContact(guid)
-                if peer and hasattr(peer, '_nickname'):
-                    nickname = peer._nickname
+                    if peer and hasattr(peer, '_nickname'):
+                        nickname = peer._nickname
+                    else:
+                        nickname = ""
+
+                    if peer is not None and peer.check_port():
+                        notaries.append({"guid":guid, "nickname": nickname})
                 else:
-                    nickname = ""
+                    notaries.append({"guid":guid})
 
-                if peer is not None and peer.check_port():
-                    notaries.append({"guid":guid, "nickname": nickname})
-
+        self._log.debug('NOTARIES: %s' % notaries)
         return notaries
+
+    @staticmethod
+    def valid_guid(guid):
+        if len(guid) == 40 and int(guid, 16):
+            return True
+        else:
+            return False
+
+
 
     def republish_listing(self, msg):
 
@@ -406,7 +444,6 @@ class Market(object):
 
         settings['notaries'] = ast.literal_eval(settings['notaries']) if settings['notaries'] != "" else []
         settings['trustedArbiters'] = ast.literal_eval(settings['trustedArbiters']) if settings['trustedArbiters'] != "" else []
-
         settings['privkey'] = settings['secret'][8:] if 'secret' in settings else ""
 
         self._log.info('SETTINGS: %s' % settings)
