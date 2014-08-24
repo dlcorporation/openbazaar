@@ -68,130 +68,139 @@
     </div>
 </div>
 
-<div class="container">
-    <!-- Header -->
-    <div class="col-sm-12 clearfix" style="border-bottom:1px solid #bbb;padding:5px 0;">
-    <div id="header">
+<div class="container" style="min-height: 100%;">
 
-        <!-- Logo -->
-        <div class="col-sm-4 col-xs-12" >
-            <a href="#/dashboard"><img src="img/logo_header.png" class="img-responsive" style="max-height:100px;" /></a>
-        </div>
+    <div style="overflow:auto; padding-bottom:100px">
 
-        <!-- Search and Navigation -->
-        <div class="col-sm-8 col-xs-12 search-area">
+        <!-- Header -->
+        <div class="col-sm-12 clearfix" style="border-bottom:1px solid #bbb;padding:5px 0;">
+        <div id="header">
 
-			<div class="" style="padding-right:0">
-                    <form class="search-form2 form-inline" name="search" action="#/search" method="get">
-                        <div class="text-right" style="padding-right:0">
-                            <input class="form-control" size="60" name="searchterm" type="text" placeholder="Search for markets or products...">
-                            <input class="btn btn-primary" type="submit" value="Search">
-                        </div>
-                    </form>
+            <!-- Logo -->
+            <div class="col-sm-4 col-xs-12" >
+                <a href="#/dashboard"><img src="img/logo_header.png" class="img-responsive" style="max-height:100px;" /></a>
             </div>
 
-            <div class="row col-sm-12" style="padding-right:0">
-                <div id="header-navigation">
-                    <ul class="nav nav-pills">
-                         <li><a href="#/dashboard">Home</a></li>
-                        <li class="dropdown"><a href="#orders" data-toggle="dropdown" class="dropdown-toggle">Orders <b class="caret"></b></a>
-                            <ul class="dropdown-menu" role="menu">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#/orders/sales">My Sales</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#/orders/purchases">My Purchases</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="#/contracts">Contracts</a></li>
-                        <li class="dropdown"><a href="#arbitration" data-toggle="dropdown" class="dropdown-toggle">Arbitration <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#" data-ng-click="showDashboardPanel('arbitration')">My Cases</a></li>
-                                <li><a href="#">Find Arbiters/Notaries</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="#messages" data-ng-click="showDashboardPanel('messages')">Messages <span data-ng-show="BMMessages" class="badge pull-right">1</span></a></li>
-                        <li><a href="#settings">Settings</a></li>
-                        <li><identicon icon-size="30" hash="myself.guid" title="{{myself.guid}}" ></identicon></li>
-                    </ul>
+            <!-- Search and Navigation -->
+            <div class="col-sm-8 col-xs-12 search-area">
+
+                <div class="" style="padding-right:0">
+                        <form class="search-form2 form-inline" name="search" action="#/search" method="get">
+                            <div class="text-right" style="padding-right:0">
+                                <input class="form-control" size="60" name="searchterm" type="text" placeholder="Search for markets or products...">
+                                <input class="btn btn-primary" type="submit" value="Search">
+                            </div>
+                        </form>
+                </div>
+
+                <div class="row col-sm-12" style="padding-right:0">
+                    <div id="header-navigation">
+                        <ul class="nav nav-pills">
+                             <li><a href="#/dashboard">Home</a></li>
+                            <li class="dropdown"><a href="#orders" data-toggle="dropdown" class="dropdown-toggle">Orders <b class="caret"></b></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#/orders/sales">My Sales</a></li>
+                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#/orders/purchases">My Purchases</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#/contracts">Contracts</a></li>
+                            <li class="dropdown"><a href="#arbitration" data-toggle="dropdown" class="dropdown-toggle">Arbitration <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#" data-ng-click="showDashboardPanel('arbitration')">My Cases</a></li>
+                                    <li><a href="#">Find Arbiters/Notaries</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="#messages" data-ng-click="showDashboardPanel('messages')">Messages <span data-ng-show="BMMessages" class="badge pull-right">1</span></a></li>
+                            <li><a href="#settings">Settings</a></li>
+                            <li><identicon icon-size="30" hash="myself.guid" title="{{myself.guid}}" ></identicon></li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        </div>
+
+        <div class="row">
+        <div id="dashboard-container" class="{{sidebar ? 'col-sm-8' : 'col-sm-12'}}">
+
+            <div data-ng-show="dashboard" style="text-align:left">
+
+                <div class="dashboard-panel">
+                    <div data-ng-view></div>
 
                 </div>
             </div>
         </div>
 
 
-    </div>
-    </div>
+        <div id="sidebar" data-ng-show="sidebar" class="shoutbox-area col-sm-4" style="margin-top:20px;" >
 
+                <table class="peers-table no-hover" style="margin-top:20px;">
 
-
-<div class="row">
-    <div id="dashboard-container" class="{{sidebar ? 'col-sm-8' : 'col-sm-12'}}">
-
-        <div data-ng-show="dashboard" style="text-align:left">
-
-            <div class="dashboard-panel">
-                <div data-ng-view></div>
-
-            </div>
-        </div>
-    </div>
-
-
-    <div id="sidebar" data-ng-show="sidebar" class="shoutbox-area col-sm-4" style="margin-top:20px;" >
-
-            <table class="peers-table no-hover" style="margin-top:20px;">
-
-        <tbody>
-        <tr>
-            <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
-            <td style="font-size:14px;word-wrap:break-word;word-break:break-all"><span title="{{myself.pubkey}}"><strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong><br>
-                <span style="font-style:italic;font-size:12px">{{myself.nickname ? myself.nickname : myself.sin}}
-                    <!--<div data-ng-show="myself.uri">{{myself.uri}}</div>-->
-                    </span></span>
-            </td>
-
-
-        </tr>
-        </tbody>
-    </table>
-
-    <h3>Connected Markets</h3>
-
-    <div data-ng-show="peers.length < 1">There are no stores connected to you.</div>
-
-    <div class="peers-area" >
-        <table id="favorite-peers" class="peers-table table-hover">
             <tbody>
-            <tr data-ng-repeat="peer in peers" data-ng-click="go('/user/'+peer.guid)">
-                <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
-                <td style="font-size:14px;word-wrap:break-word;word-break:break-all"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
-                  <span style="font-style:italic;font-size:12px">{{peer.nickname ? peer.nickname : peer.sin}}
-                    <!--<div data-ng-show="peer.uri">{{peer.uri}}</div>-->
-                    </span></span></td>
+            <tr>
+                <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
+                <td style="font-size:14px;word-wrap:break-word;word-break:break-all"><span title="{{myself.pubkey}}"><strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong><br>
+                    <span style="font-style:italic;font-size:12px">{{myself.nickname ? myself.nickname : myself.sin}}
+                        <!--<div data-ng-show="myself.uri">{{myself.uri}}</div>-->
+                        </span></span>
+                </td>
+
+
             </tr>
             </tbody>
         </table>
-    </div>
+
+        <h3>Connected Markets</h3>
+
+        <div data-ng-show="peers.length < 1">There are no stores connected to you.</div>
+
+        <div class="peers-area" >
+            <table id="favorite-peers" class="peers-table table-hover">
+                <tbody>
+                <tr data-ng-repeat="peer in peers" data-ng-click="go('/user/'+peer.guid)">
+                    <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
+                    <td style="font-size:14px;word-wrap:break-word;word-break:break-all"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
+                      <span style="font-style:italic;font-size:12px">{{peer.nickname ? peer.nickname : peer.sin}}
+                        <!--<div data-ng-show="peer.uri">{{peer.uri}}</div>-->
+                        </span></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
 
 
-    <div style="width:100%">
-        <h3>Chat Stream</h3>
+        <div style="width:100%">
+            <h3>Chat Stream</h3>
 
 
-        <form class="form" data-ng-submit="createShout(newShout)">
-            <input class="shout-input form-control" type="text" data-ng-model="newShout" placeholder="Type a message">
-        </form>
+            <form class="form" data-ng-submit="createShout(newShout)">
+                <input class="shout-input form-control" type="text" data-ng-model="newShout" placeholder="Type a message">
+            </form>
 
-        <div class="shout-chats">
-            <div data-ng-repeat="shout in shouts.slice().reverse()" style="padding-bottom:5px;">
-                <div><identicon icon-size="25" hash="shout.senderGUID" title="{{shout.senderGUID}}" style="float:left;margin-right:10px;"></identicon></div><div>{{shout.text}}</div>
+            <div class="shout-chats">
+                <div data-ng-repeat="shout in shouts.slice().reverse()" style="padding-bottom:5px;">
+                    <div><identicon icon-size="25" hash="shout.senderGUID" title="{{shout.senderGUID}}" style="float:left;margin-right:10px;"></identicon></div><div>{{shout.text}}</div>
+                </div>
             </div>
         </div>
+
+        </div>
+
     </div>
 
     </div>
 
 </div>
 
-    </div>
+
+<div class="navbar navbar-fixed-bottom">
+    <strong>OpenBazaar</strong> &middot; <a href="https://openbazaar.org" target="_blank">Website</a> &middot; <a href="https://blog.openbazaar.org" target="_blank">Blog</a> &middot;
+    <a href="http://forum.openbazaar.org" target="_blank">Forum</a> &middot; <a href="bitcoin:16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt?label=OpenBazaar%20Donation">16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt</a>
+</div>
 </body>
 </html>
