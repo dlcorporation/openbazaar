@@ -14,6 +14,7 @@
         <li id="settings-arbiter"><a href="#/settings/arbiter">Arbiter</a></li>
         <li id="settings-notary"><a href="#/settings/notary">Notary</a></li>
         <li id="settings-advanced"><a href="#/settings/advanced">Advanced</a></li>
+        <li id="settings-backup"><a href="#/settings/backup">Backup</a></li>
     </ul>
 
 </div>
@@ -289,7 +290,6 @@
     </form>
 
     <form id="advanced-form" role="form" class="form-horizontal">
-
         <h4>Advanced</h4>
 
         <div class="form-group">
@@ -327,9 +327,27 @@
         <h4>Log</h4>
         <div id="log_output" style="white-space:pre;height:600px;overflow:scroll;" class="col-sm-12 well">{{log_output}}</div>
         </div>
-
-
     </form>
+    
+    <form id="backup-form" role="form" class="form-horizontal">
+        <h4>Backup Management</h4>
+
+        <div class="form-group">
+			<span class="col-xs-2"></span><button id="createBackupButton" class="btn btn-info col-sm-7" data-ng-click="createBackup()">Create New Backup</button>
+        </div>
+
+        <div style="margin:20px 0">
+	        <h4>Restore Previous Backup</h4>
+			<!-- Gubatron: mock data how I think this should be - no clue yet as to 
+			     how to load this from the server using angular at this point,
+			     plus I've not implemented the backend querying functionality yet
+			     (should be trivial to implement) -->	
+	        <div>
+	        	<div><a class="col-sm-8" href="/html/backups/openbazaar-2014-Aug-23-22-15-20.tar.gz">openbazaar-2014-Aug-23-22-15-20.tar.gz</a> <a href="#" data-ng-click="restoreBackup('openbazaar-2014-Aug-23-22-15-20.tar.gz')">Restore</a> &nbsp;&nbsp; <a href="#" data-ng-click="deleteBackup('openbazaar-2014-Aug-23-22-15-20.tar.gz')">Delete</a></div>
+	        	<div><a class="col-sm-8" href="/html/backups/openbazaar-2014-Aug-23-02-37-56.tar.gz">openbazaar-2014-Aug-23-02-37-56.tar.gz</a> <a href="#" data-ng-click="restoreBackup('openbazaar-2014-Aug-23-02-37-56.tar.gz')">Restore</a> &nbsp;&nbsp; <a href="#" data-ng-click="deleteBackup('openbazaar-2014-Aug-23-02-37-56.tar.gz')">Delete</a></div>
+	        </div>
+        </div>
+    </form>    
 
 </div>
 

@@ -718,7 +718,6 @@ obControllers
                 $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
 
                 switch($scope.path) {
-
                     case "/settings/keys":
                         $('#keys-form').show();
                         $('#keys-form').siblings().hide();
@@ -745,6 +744,11 @@ obControllers
                         $('#advanced-form').siblings().hide();
                         $('#settings-advanced').addClass('active');
                         break;
+                    case "/settings/backup":
+                    	$('#backup-form').show()
+                    	$('#backup-form').siblings().hide()
+                    	$('#settings-backup').addClass('active');
+                    	break;
                     default:
                         $('#profile-form').show();
                         $('#profile-form').siblings().hide();
