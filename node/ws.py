@@ -12,6 +12,7 @@ import obelisk
 import tornado.websocket
 from zmq.eventloop import ioloop
 from twisted.internet import reactor
+import trust
 
 ioloop.install()
 
@@ -84,6 +85,8 @@ class ProtocolHandler:
         settings = self._market.get_settings()
         # globalTrust = trust.getTrust(self._transport.guid)
 
+        # print(trust.get(self._transport.guid))
+
         message = {
             'type': 'myself',
             'pubkey': self._transport._myself.get_pubkey().encode('hex'),
@@ -96,7 +99,20 @@ class ProtocolHandler:
             # 'globalTrust': globalTrust
         }
 
+        print('Sending opening')
         self.send_to_client(None, message)
+
+        # def found_unspent(amount_in_satoshis):
+
+        def found_unspent(amount):
+            print("found_unspent")
+            self.send_to_client(None, {
+                'type': 'burn_info_available',
+                'amount': amount
+            })
+
+        print("getting unspent")
+        trust.get_unspent('1pjz1PLVPohgESKWQrJhQp1TGUKHJmTzV', found_unspent)
 
     def client_read_log(self, socket_handler, msg):
         self._market.p = subprocess.Popen(

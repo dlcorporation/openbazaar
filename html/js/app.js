@@ -161,8 +161,8 @@ angular.module('app')
                     'notaries': function(msg) { $scope.parse_notaries(msg) },
                     'global_search_result': function(msg) { $scope.parse_search_result(msg) },
                     'orderinfo': function(msg) { $scope.parse_orderinfo(msg) },
-                    'reputation': function(msg) { $scope.parse_reputation(msg) },
                     'proto_response_pubkey': function(msg) { $scope.parse_response_pubkey(msg) },
+                    'burn_info_available': function(msg) { $scope.parse_burn_info(msg) },
                 }
 
                 if(handlers[msg.type]) {
@@ -424,6 +424,11 @@ angular.module('app')
 
                     $scope.$apply();
                 }
+            }
+
+            $scope.parse_burn_info = function(msg) {
+                console.log('Burn info available!');
+                console.log(msg);
             }
 
             $scope.parse_page = function(msg) {

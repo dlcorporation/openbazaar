@@ -20,6 +20,7 @@ import constants
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
+import trust
 
 ioloop.install()
 
@@ -403,6 +404,8 @@ class Market(object):
         settings['trustedArbiters'] = ast.literal_eval(settings['trustedArbiters']) if settings['trustedArbiters'] != "" else []
 
         settings['privkey'] = settings['secret'][8:] if settings.has_key("secret") else ""
+
+        settings['burnAddr'] = trust.burnaddr_from_guid(self._transport.guid)
 
         self._log.info('SETTINGS: %s' % settings)
 
