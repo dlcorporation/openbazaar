@@ -312,18 +312,24 @@
             </div>
         </div>
 
-        <h4>Trust</h4>
+        <h4>Reputation Pledge</h4>
 
-        <p>Your trust is determined by investing money into your OpenBazaar market.</p>
+        <div class="alert alert-warning">Buyers trust stores with reputation pledges more than stores without. <a href="https://blog.openbazaar.org/proof-of-burn-and-reputation-pledges/">Learn more</a>.</div>
 
         <div class="form-group">
+            <label for="burnAmount" class="col-sm-3 control-label">Your pledge</label>
             <div class="col-sm-9">
-                <p>Your investment: <span>฿0.0</span></p>
+                <div class="input-group">
+                    <span class="input-group-addon">฿</span>
+                    <input id="burnAmount" ng-model="settings.burnAmount" class="form-control" disabled="disabled" placeholder="Reading from blockchain..." />
+                </div>
+            </div>
+        </div>
 
-                <p>Your investment is not redeemable.</p>
-                <p>Invest in your market by burning bitcoins to this address: <span></span></p>
-
-                Burn Addr: <span ng-bind="settings.burnAddr">...</span>
+        <div class="form-group">
+            <label for="burnAddr" class="col-sm-3 control-label">Proof-of-burn address</label>
+            <div class="col-sm-9">
+                <input id="burnAddr" ng-model="settings.burnAddr" class="form-control" disabled="disabled" placeholder="Loading..." />
             </div>
         </div>
 

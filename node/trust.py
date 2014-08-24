@@ -59,12 +59,14 @@ def get_unspent(addr, callback):
         unspent = obelisk.select_outputs(unspent, 10000)
 
         if unspent is None:
-            return 0
+            callback(0)
+            return
 
         points = unspent.points
 
         if len(points) != 1:
-            return 0
+            callback(0)
+            return
 
         point = points[0]
         value = point.value

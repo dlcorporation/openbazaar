@@ -102,17 +102,20 @@ class ProtocolHandler:
         print('Sending opening')
         self.send_to_client(None, message)
 
+        burnAddr = trust.burnaddr_from_guid(self._transport.guid)
         # def found_unspent(amount_in_satoshis):
 
         def found_unspent(amount):
             print("found_unspent")
             self.send_to_client(None, {
                 'type': 'burn_info_available',
-                'amount': amount
+                'amount': amount,
+                'addr': burnAddr
             })
 
         print("getting unspent")
-        trust.get_unspent('1pjz1PLVPohgESKWQrJhQp1TGUKHJmTzV', found_unspent)
+
+        trust.get_unspent(burnAddr, found_unspent)
 
     def client_read_log(self, socket_handler, msg):
         self._market.p = subprocess.Popen(
