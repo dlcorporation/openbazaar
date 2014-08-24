@@ -23,8 +23,8 @@ from protocol import proto_page, query_page
 
 ioloop.install()
 
-class Market(object):
 
+class Market(object):
     def __init__(self, transport, db):
 
         """This class manages the active market for the application
@@ -139,7 +139,10 @@ class Market(object):
             hash_value.update('keyword-%s' % keyword)
             keyword_key = hash_value.hexdigest()
 
-            self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':key}), self._transport._guid)
+            self._transport._dht.iterativeStore(self._transport,
+                                                keyword_key,
+                                                json.dumps({'keyword_index_add':key}),
+                                                self._transport._guid)
 
     def save_contract(self, msg):
         contract_id = self.get_contract_id()
@@ -162,7 +165,9 @@ class Market(object):
         out_text = self.linebreak_signing_data(msg)
 
         # Sign the contract
-        signed_data = self.gpg.sign(out_text, passphrase='P@ssw0rd', keyid=self.settings.get('PGPPubkeyFingerprint'))
+        signed_data = self.gpg.sign(out_text,
+                                    passphrase='P@ssw0rd',
+                                    keyid=self.settings.get('PGPPubkeyFingerprint'))
 
         # Save contract to DHT
         contract_key = self.generate_contract_key(signed_data)
@@ -171,7 +176,10 @@ class Market(object):
         self.save_contract_to_db(contract_id, msg, signed_data, contract_key)
 
         # Store listing
-        self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+        self._transport._dht.iterativeStore(self._transport,
+                                            contract_key,
+                                            str(signed_data),
+                                            self._transport._guid)
         self.update_listings_index()
 
         # If keywords are present
@@ -200,7 +208,7 @@ class Market(object):
         else:
             notaries = json.loads(notaries)
 
-        for idx, notary in enumerate(notaries):
+        for notary in notaries:
             self._log.info(notary)
             if notary.get('guid') == guid:
                 if notary.get('nickname') != nickname:
@@ -209,16 +217,20 @@ class Market(object):
                     self.settings['notaries'] = notaries
                 return
 
-        notaries.append({"guid":guid, "nickname":nickname})
+        notaries.append({"guid": guid, "nickname": nickname})
         self.settings['notaries'] = json.dumps(notaries)
 
-        self._db.updateEntries("settings", {'market_id': self._transport._market_id}, self.settings)
-
+        self._db.updateEntries("settings",
+                               {'market_id': self._transport._market_id},
+                               self.settings)
 
     def republish_contracts(self):
         listings = self._db.selectEntries("contracts")
         for listing in listings:
-            self._transport._dht.iterativeStore(self._transport, listing['key'], listing.get('signed_contract_body'), self._transport._guid)
+            self._transport._dht.iterativeStore(self._transport,
+                                                listing['key'],
+                                                listing.get('signed_contract_body'),
+                                                self._transport._guid)
         self.update_listings_index()
 
     def get_notaries(self, online_only=False):
@@ -241,21 +253,16 @@ class Market(object):
                         nickname = ""
 
                     if peer is not None and peer.check_port():
-                        notaries.append({"guid":guid, "nickname": nickname})
+                        notaries.append({"guid": guid, "nickname": nickname})
                 else:
-                    notaries.append({"guid":guid})
+                    notaries.append({"guid": guid})
 
         self._log.debug('NOTARIES: %s' % notaries)
         return notaries
 
     @staticmethod
     def valid_guid(guid):
-        if len(guid) == 40 and int(guid, 16):
-            return True
-        else:
-            return False
-
-
+        return len(guid) == 40 and int(guid, 16)
 
     def republish_listing(self, msg):
 
@@ -268,7 +275,10 @@ class Market(object):
 
         listing_key = listing['key']
 
-        self._transport._dht.iterativeStore(self._transport, listing_key, listing.get('signed_contract_body'), self._transport._guid)
+        self._transport._dht.iterativeStore(self._transport,
+                                            listing_key,
+                                            listing.get('signed_contract_body'),
+                                            self._transport._guid)
         self.update_listings_index()
 
         # If keywords store them in the keyword index
@@ -306,12 +316,13 @@ class Market(object):
                            'contracts': my_contracts})
         signature = self._myself.sign(data_string).encode('hex')
 
-        value = {'signature': signature, 
+        value = {'signature': signature,
                  'data': {'guid': self._transport._guid,
                           'contracts': my_contracts}}
 
         # Pass off to thread to keep GUI snappy
-        self._transport._dht.iterativeStore(self._transport, contract_index_key,
+        self._transport._dht.iterativeStore(self._transport,
+                                            contract_index_key,
                                             value, self._transport._guid)
 
     def remove_contract(self, msg):
@@ -324,7 +335,6 @@ class Market(object):
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
-
         contract = self._db.selectEntries("contracts", "id = '%s'" % contract_id)[0]
         contract_key = contract['key']
 
@@ -332,14 +342,15 @@ class Market(object):
         contract_keywords = contract['Contract']['item_keywords']
 
         for keyword in contract_keywords:
-
             # Remove keyword from index
-
             hash_value = hashlib.new('ripemd160')
             hash_value.update('keyword-%s' % keyword)
             keyword_key = hash_value.hexdigest()
 
-            self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_remove':contract_key}), self._transport._guid)
+            self._transport._dht.iterativeStore(self._transport,
+                                                keyword_key,
+                                                json.dumps({'keyword_index_remove': contract_key}),
+                                                self._transport._guid)
 
     def get_messages(self):
         self._log.info("Listing messages for market: %s" % self._transport._market_id)
@@ -369,7 +380,8 @@ class Market(object):
             subject = b64encode(msg['subject'])
             body = b64encode(msg['body'])
             result = self._transport._bitmessage_api.sendMessage(msg['to'],
-                settings['bitmessage'], subject, body)
+                                                                 settings['bitmessage'],
+                                                                 subject, body)
             self._log.info("Send message result: {}".format(result))
             return {}
         except Exception as e:
@@ -379,16 +391,14 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
-        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id, limit=10, limit_offset=(page*10))
+        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id, 
+                                           limit=10, 
+                                           limit_offset=(page*10))
         my_contracts = []
-
         for contract in contracts:
-
             try:
                 contract_body = json.loads(u"%s" % contract['contract_body'])
-
                 item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
-
                 my_contracts.append({"key": contract['key'] if 'key' in contract else "",
                                      "id": contract['id'] if 'id' in contract else "",
                                      "item_images": contract_body.get('Contract').get('item_images'),
@@ -403,10 +413,10 @@ class Market(object):
             except:
                 self._log.error('Problem loading the contract body JSON')
 
-        return {"contracts": my_contracts, "page": page, "total_contracts":self._db.numEntries("contracts")}
+        return {"contracts": my_contracts, "page": page, 
+                "total_contracts": self._db.numEntries("contracts")}
 
     # SETTINGS
-
     def save_settings(self, msg):
         self._log.debug("Settings to save %s" % msg)
 
@@ -468,7 +478,6 @@ class Market(object):
 
 
     def on_page(self, page):
-
         #pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
         sin = page.get('sin')
