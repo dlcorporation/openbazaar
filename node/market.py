@@ -203,7 +203,7 @@ class Market(object):
         self._log.debug('%s %s' % (guid, nickname))
         notaries = self.settings.get('notaries')
         print notaries
-        if notaries == "":
+        if notaries == "" or notaries != []:
             notaries = []
         else:
             notaries = json.loads(notaries)
