@@ -4,10 +4,9 @@ function Connection(onMessage) {
   var websocket = new WebSocket(socket_uri);
 
   websocket.onopen = function(evt) {
-   console.log("open!", evt)
-   self.websocket.send(JSON.stringify({"id":42, "command":"check_order_count", "params":{}}))
-   //self.websocket.send(JSON.stringify({"id":42, "command":"read_log", "params":{}}))
-   //window.setInterval(self.websocket.send(JSON.stringify({"id":42, "command":"check_order_count", "params":{}})) , 60000);
+    self.websocket.send(JSON.stringify({"id":42, "command":"load_page", "params":{}}))
+    self.websocket.send(JSON.stringify({"id":42, "command":"check_order_count", "params":{}}))
+    //self.websocket.send(JSON.stringify({"id":42, "command":"read_log", "params":{}}))
   }
 
   websocket.onclose = function(evt) {
