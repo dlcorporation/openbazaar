@@ -33,13 +33,13 @@
     </table>
 
 
-    <div class="row">
-        <div class="form-group col-sm-12">
-            <label for="inputBitcoinPubkey">Bitcoin Public Key:</label>
-            <p>This public key will be used for refunds in multisignature transactions. <a href="http://www.reddit.com/r/Bitcoin/comments/1wvph2/what_is_the_difference_between_an_address_and_a/" target="_blank">What's a public key?</a></p>
-            <textarea rows="2" ng-model="order.btc_pubkey" class="form-control" id="inputBitcoinPubkey" placeholder="Enter a valid public key; not an address"></textarea>
-        </div>
-    </div>
+    <!--<div class="row">-->
+        <!--<div class="form-group col-sm-12">-->
+            <!--<label for="inputBitcoinPubkey">Bitcoin Public Key:</label>-->
+            <!--<p>This public key will be used for refunds in multisignature transactions. <a href="http://www.reddit.com/r/Bitcoin/comments/1wvph2/what_is_the_difference_between_an_address_and_a/" target="_blank">What's a public key?</a></p>-->
+            <!--<textarea rows="2" ng-model="order.btc_pubkey" class="form-control" id="inputBitcoinPubkey" placeholder="Enter a valid public key; not an address"></textarea>-->
+        <!--</div>-->
+    <!--</div>-->
 
 
       <div class="row">
@@ -125,9 +125,9 @@
 <div class="modal-footer">
     <a class="btn btn-default" ng-show="!order.step2 && !order.confirmation" ng-click="cancel()" type="cancel">Cancel</a>
     <a class="btn btn-success" ng-show="!order.step2 && !order.confirmation
-    " ng-click="gotoStep2()" type="submit">Next</a>
-    <a class="btn btn-default" ng-show="order.step2" ng-click="gotoStep1()" type="submit">Back</a>
-    <a class="btn btn-success" ng-show="order.step2" ng-click="submitOrder()" type="submit">Submit Order</a>
-    <a class="btn btn-success" ng-show="order.confirmation" ng-click="closeConfirmation()" type="submit">Go to Orders</a>
+    " ng-click="gotoStep2()" type="button">Next</a>
+    <a class="btn btn-default" ng-show="order.step2" ng-click="gotoStep1()" type="button">Back</a>
+    <a class="btn btn-success" ng-show="order.step2" ng-click="submitOrder()" type="button">Submit Order</a>
+    <a class="btn btn-success" ng-show="order.confirmation" ng-click="closeConfirmation()" type="button">Go to Orders</a>
 
 </div>
