@@ -51,7 +51,7 @@ class Orders(object):
             offer_data_json = offer_data[0:sig_index]
             return json.loads(offer_data_json)
 
-        if state in [Orders.State.WAITING_FOR_PAYMENT, Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY, Orders.State.PAID]:
+        if state in [Orders.State.WAITING_FOR_PAYMENT, Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY, Orders.State.PAID, Orders.State.BUYER_PAID]:
             start_line = 8
         else:
             start_line = 4
