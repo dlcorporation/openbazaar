@@ -622,7 +622,7 @@ class Orders(object):
         # Generate multi-sig address
         multisig = Multisig(None, 2, [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'].decode('hex'),
                                       bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
-                                      notary_data_json[g]['notary_BTC_uncompressed_pubkey'].decode('hex')])
+                                      notary_data_json['Notary']['notary_BTC_uncompressed_pubkey'].decode('hex')])
         multisig_address = multisig.address
 
         seller_GUID = offer_data_json['Seller']['seller_GUID']
