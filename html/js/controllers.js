@@ -782,14 +782,12 @@ obControllers
 
             $scope.removeNotary = function(notaryGUID) {
 
-                // Dedupe notary GUIDs
-                var uniqueNotaries = $scope.settings.notaries;
-                $.each($scope.settings.notaries, function(i, el) {
-                    if (el == notaryGUID) uniqueNotaries.splice(i, 1);
-                });
+                $('#notary_'+notaryGUID).parent().hide();
+                socket.send('remove_trusted_notary', { 'type': 'remove_trusted_notary',
+                    'guid': notaryGUID
+                    }
+                );
 
-                $scope.settings.notaries = uniqueNotaries;
-                $scope.saveSettings(false);
                 Notifier.success('Success', 'Notary removed successfully.');
 
                 $scope.getNotaries();

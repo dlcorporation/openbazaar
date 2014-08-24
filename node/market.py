@@ -220,6 +220,24 @@ class Market(object):
         notaries.append({"guid": guid, "nickname": nickname})
         self.settings['notaries'] = json.dumps(notaries)
 
+        print self.settings
+
+        self._db.updateEntries("settings",
+                               {'market_id': self._transport._market_id},
+                               self.settings)
+
+    def remove_trusted_notary(self, guid):
+
+        notaries = self.settings.get('notaries')
+        notaries = ast.literal_eval(notaries)
+
+        for idx, notary in enumerate(notaries):
+
+            if notary.get('guid') == guid:
+                del notaries[idx]
+
+        self.settings['notaries'] = json.dumps(notaries)
+
         self._db.updateEntries("settings",
                                {'market_id': self._transport._market_id},
                                self.settings)
