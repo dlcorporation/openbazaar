@@ -702,6 +702,7 @@ obControllers
             $scope.$emit('sidebar', false);
 
 
+
             /**
              * Open Websocket and then establish message handlers
              * @msg - message from websocket to pass on to handler
@@ -778,7 +779,9 @@ obControllers
                 );
 
                 Notifier.success('Success', 'Notary added successfully.');
-
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
 
             }
 
@@ -793,6 +796,10 @@ obControllers
                 Notifier.success('Success', 'Notary removed successfully.');
 
                 $scope.getNotaries();
+
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
             }
 
             $scope.getNotaries = function() {
