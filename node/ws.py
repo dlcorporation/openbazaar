@@ -82,6 +82,7 @@ class ProtocolHandler:
             countryCodes.append({"code": country.alpha2, "name": country.name})
 
         settings = self._market.get_settings()
+        # globalTrust = trust.getTrust(self._transport.guid)
 
         message = {
             'type': 'myself',
@@ -92,7 +93,7 @@ class ProtocolHandler:
             'sin': self._transport.sin,
             'uri': self._transport._uri,
             'countryCodes': countryCodes,
-            'reputation': []  # self._transport.reputation.get_my_reputation()
+            # 'globalTrust': globalTrust
         }
 
         self.send_to_client(None, message)
