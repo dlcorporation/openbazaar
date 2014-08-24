@@ -33,9 +33,10 @@ function Connection(onMessage) {
         "params": msg
     };
 
-    var message = JSON.stringify(request);    
+    var message = JSON.stringify(request);
+    console.log('Connection.send ->')
+    console.log(message)
     self.websocket.send(message);
-
   }
 
 

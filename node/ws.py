@@ -12,6 +12,7 @@ import obelisk
 import tornado.websocket
 from zmq.eventloop import ioloop
 from twisted.internet import reactor
+from backuptool import BackupTool
 
 ioloop.install()
 
@@ -65,6 +66,7 @@ class ProtocolHandler:
             "clear_dht_data": self.client_clear_dht_data,
             "clear_peers_data": self.client_clear_peers_data,
             "read_log": self.client_read_log,
+            "create_backup" : self.client_create_backup,
         }
 
         self._timeouts = []
@@ -480,6 +482,30 @@ class ProtocolHandler:
             msg['key'],
             callback=self.on_find_products_by_store
         )
+
+    def client_create_backup(self):
+        """Currently hardcoded for testing: need to find out Installation path.
+        Talk to team about right location for backup files
+        they might have to be somewhere outside the installation path
+        as some OSes might not allow the modification of the installation folder
+        e.g. MacOS won't allow for changes if the .app has been signed.
+        and all files created by the app, have to be outside, usually at 
+        ~/Library/Application Support/OpenBazaar/backups ??
+        """
+        self._log.info('Received request for new Backup to be created.')        
+        def on_backup_done(backupPath):
+            self._log.info('Backup sucessfully created at', backupPath)
+            self.send_ok()
+            #TODO: self.send_to_client(None, json.{'Backup created successfully!')
+        
+        def on_backup_error(errorMessage):
+            self._log.info('Backup error:', errorMessage)
+            #TODO:self.send_to_client(error, result)
+            
+        BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar", 
+                          "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
+                           on_backup_done,
+                           on_backup_error)
 
     def on_find_products_by_store(self, results):
 
