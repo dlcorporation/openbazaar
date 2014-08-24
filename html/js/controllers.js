@@ -139,8 +139,6 @@ obControllers
 
             $scope.ViewOrderCtrl = function($scope, $modal, $log) {
 
-
-
                 $scope.open = function(size, orderId, settings) {
 
                     // Send socket a request for order info

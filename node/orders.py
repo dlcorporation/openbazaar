@@ -14,6 +14,7 @@ import urllib
 class Orders(object):
     class State:
         '''Enum inner class. Python introduces enums in Python 3.0, but this should be good enough'''
+        SENT = 'Sent'
         ACCEPTED = 'accepted'
         BID = 'bid'
         BUYER_PAID = 'Buyer Paid'
@@ -41,8 +42,21 @@ class Orders(object):
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
 
     def get_offer_json(self, raw_contract, state):
-        offer_data = ''.join(raw_contract.split('\n')[8:])
+
+        if state == Orders.State.SENT:
+            offer_data = ''.join(raw_contract.split('\n')[5:])
+            sig_index = offer_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+            offer_data_json = offer_data[0:sig_index]
+            return json.loads(offer_data_json)
+
+        if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
+            start_line = 8
+        else:
+            start_line = 6
+
+        offer_data = ''.join(raw_contract.split('\n')[start_line:])
         index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+
 
         if state in (Orders.State.NEED_TO_PAY,
                                Orders.State.NOTARIZED,
@@ -57,6 +71,28 @@ class Orders(object):
             offer_data_json = json.loads(str(offer_data_json))
 
         return offer_data_json
+
+    def get_notary_json(self, raw_contract, state):
+
+        if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
+            start_line = 8
+        else:
+            start_line = 6
+        offer_data = ''.join(raw_contract.split('\n')[start_line:])
+        index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+
+        # Find Buyer Data in Contract
+        bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
+        end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+
+        # Find Notary Data in Contract
+        notary_data_index = offer_data.find('"Notary"', end_of_bid_index, len(offer_data))
+        end_of_notary_index = offer_data.find('-----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data))
+        notary_data_json = "{" + offer_data[notary_data_index:end_of_notary_index]
+
+        notary_data_json = json.loads(notary_data_json)
+
+        return notary_data_json
 
     def get_qr_code(self, item_title, address, total):
         qr_url = urllib.urlencode({"url":item_title})
@@ -73,6 +109,12 @@ class Orders(object):
         total_price = 0
 
         offer_data_json = self.get_offer_json(_order['signed_contract_body'], _order['state'])
+
+        if _order['state'] != Orders.State.SENT:
+            notary_json = self.get_notary_json(_order['signed_contract_body'], _order['state'])
+            notary = notary_json['Notary']['notary_GUID']
+        else:
+            notary = ""
 
         if _order['state'] in (Orders.State.NEED_TO_PAY,
                                Orders.State.NOTARIZED,
@@ -93,8 +135,6 @@ class Orders(object):
 
         # Generate QR code
         qr = self.get_qr_code(offer_data_json['Contract']['item_title'], _order['address'], total_price)
-
-        notary = self._transport._guid if _order['state'] == Orders.State.NOTARIZED else ""
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -291,6 +331,8 @@ class Orders(object):
                 order_to_notary['type'] = 'order'
                 order_to_notary['rawContract'] = contract
                 order_to_notary['state'] = Orders.State.BID
+
+                self._log.info('Sending order to %s' % notary)
 
                 # Send order to notary for approval
                 self._transport.send(order_to_notary, notary)
@@ -573,7 +615,7 @@ class Orders(object):
         # Generate multi-sig address
         multisig = Multisig(None, 2, [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'].decode('hex'),
                                       bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
-                                      notary_data_json['Notary']['notary_BTC_uncompressed_pubkey'].decode('hex')])
+                                      notary_data_json[g]['notary_BTC_uncompressed_pubkey'].decode('hex')])
         multisig_address = multisig.address
 
         seller_GUID = offer_data_json['Seller']['seller_GUID']
