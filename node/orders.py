@@ -43,6 +43,8 @@ class Orders(object):
 
     def get_offer_json(self, raw_contract, state):
 
+        print state
+
         if state == Orders.State.SENT:
             offer_data = ''.join(raw_contract.split('\n')[5:])
             sig_index = offer_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
@@ -55,8 +57,8 @@ class Orders(object):
             start_line = 4
 
         offer_data = ''.join(raw_contract.split('\n')[start_line:])
-        
-        if state == Orders.State.NOTARIZED:
+
+        if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
             index_of_seller_signature = offer_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
         else:
             index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
