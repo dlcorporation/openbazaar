@@ -412,6 +412,7 @@ obControllers
                     }
                 );
 
+                Notifier.success('Success', 'Notary added successfully.');
 
             }
 
@@ -783,6 +784,7 @@ obControllers
                 );
 
                 Notifier.success('Success', 'Notary added successfully.');
+
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
