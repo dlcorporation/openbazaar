@@ -49,21 +49,22 @@ class Orders(object):
             offer_data_json = offer_data[0:sig_index]
             return json.loads(offer_data_json)
 
-        if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
+        if state in [Orders.State.WAITING_FOR_PAYMENT, Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
             start_line = 8
         else:
-            start_line = 6
+            start_line = 4
 
         offer_data = ''.join(raw_contract.split('\n')[start_line:])
         index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
 
-
         if state in (Orders.State.NEED_TO_PAY,
                                Orders.State.NOTARIZED,
-                               Orders.State.WAITING_FOR_PAYMENT,
                                Orders.State.PAID,
                                Orders.State.BUYER_PAID,
                                Orders.State.SHIPPED):
+            offer_data_json = offer_data[0:index_of_seller_signature-2]
+            offer_data_json = json.loads(offer_data_json)
+        elif state == Orders.State.WAITING_FOR_PAYMENT:
             offer_data_json = offer_data[0:index_of_seller_signature-4]
             offer_data_json = json.loads(str(offer_data_json))
         else:
