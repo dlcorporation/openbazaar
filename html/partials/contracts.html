@@ -1,10 +1,73 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+<!-- Product Catalog -->
+    <div data-ng-show="contractsPanel" class="animated fadeInLeft">
 
-</body>
-</html>
+    <div data-ng-controller="ProductModal" >
+
+        <div class="col-sm-3">
+            <h3>Contracts</h3>
+        </div>
+
+    <div class="row" style="margin-bottom:0px;margin-top:10px;" >
+         <ul class="nav nav-pills" style="float:right;margin-top:10px;margin-right:20px;">
+            <!--<li class="active" ><a href="#all">All</a></li>-->
+            <!--<li><a href="#fixedPrice">Fixed Price</a></li>-->
+            <!--<li><a href="#auctions">Auctions</a></li>-->
+            <!--<li><a href="#reviews">Lending</a></li>-->
+            <li style="padding-left:10px;"><button class="btn btn-info" data-ng-click="open('lg')">Add Contract</button></li>
+            <li style="padding-left:10px;"><button type="button" class="btn btn-info" data-ng-click="republishContracts()"><span class="glyphicon glyphicon-upload"></span> Republish</button></li>
+        </ul>
+    </div>
+
+
+
+        <div style="text-align:right" data-ng-show="total_contracts.length > 0">
+
+        <pagination total-items="total_contracts" num-pages="contracts_pages" data-ng-change="contracts_page_changed()" data-ng-model="contracts_current_page" max-size="4" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" boundary-links="true"></pagination>
+            </div>
+
+    <div>
+
+        <table data-ng-show="total_contracts > 0" class="table table-striped table-bordered contract-table" style="margin-top:0px;">
+            <tr>
+                <th><input type="checkbox"/></th>
+                <th colspan=2>Product</th>
+                <th width=50>Quantity</th>
+                <th width=75>Price</th>
+                <th></th>
+            </tr>
+            <tr data-ng-repeat="contract in contracts">
+                <td width=15><input type="checkbox"/></td>
+                <td width=100 style="border-right:none;"><img data-ng-show="contract.item_images" src="{{contract.item_images}}" alt="" class="img-thumbnail" width=100 height=100></td>
+                <td  style="border-left:none;">
+                    <a href="#">{{contract.item_title}}</a>
+                    <div class="contract-description">{{contract.item_desc}}</div>
+                    <div style="font-size:14px">
+                        <strong>Condition:</strong> {{contract.item_condition}}
+                    </div>
+
+                    <div style="display:none;">
+                        <pre style="height:200px;text-overflow:auto;font-size:12px;">{{contract.signed_contract_body}}</pre></span>
+                    </div>
+
+                </td>
+                <td width=50>{{contract.item_quantity_available}}</td>
+                <td width=50>&#3647;{{contract.unit_price}}</td>
+                <td width=100 align="center">
+                    <div class="listing-button">
+                        <button type="button" class="btn btn-default btn-sm" data-ng-click="removeContract(contract.id)">
+                            <span class="glyphicon glyphicon-trash"></span> Remove
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+    </div>
+
+    <div class="col-sm-12" data-ng-show="total_contracts == 0">
+        <p>There are no listings for your marketplace.</p>
+    </div>
+
+</div>
