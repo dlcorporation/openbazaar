@@ -35,6 +35,7 @@ class ProtocolHandler:
 
         # handlers from events coming from websocket, we shouldnt need this
         self._handlers = {
+            "load_page": self.client_load_page,
             "connect": self.client_connect,
             "peers": self.client_peers,
             "query_page": self.client_query_page,
@@ -43,6 +44,7 @@ class ProtocolHandler:
             "search": self.client_query_network_for_products,
             "shout": self.client_shout,
             "get_notaries": self.client_get_notaries,
+            "add_trusted_notary": self.client_add_trusted_notary,
             "query_store_products": self.client_query_store_products,
             "check_order_count": self.client_check_order_count,
             "query_orders": self.client_query_orders,
@@ -125,9 +127,18 @@ class ProtocolHandler:
             "contract": msg
         })
 
+    def client_load_page(self, socket_handler, msg):
+        self.send_to_client(None, {"type":"load_page"})
+
+    def client_add_trusted_notary(self, socket_handler, msg):
+        self._log.info('Adding trusted notary %s' % msg)
+        self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
+        #self.send_to_client(None, {"type":"load_page"})
+
     def client_get_notaries(self, socket_handler, msg):
         self._log.debug('Retrieving notaries')
         notaries = self._market.get_notaries()
+        self._log.debug('Getting notaries %s' % notaries)
         self.send_to_client(None, {
             "type": "notaries",
             "notaries": notaries
