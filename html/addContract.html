@@ -6,7 +6,7 @@
 
     <ul class="nav nav-pills">
       <li class="active"><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-fixed').show();$('#add-product-fixed').siblings().hide();">Fixed Price</a></li>
-      <li><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-auction').show();$('#add-product-auction').siblings().hide();">Auction</a></li>
+      <!--<li><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-auction').show();$('#add-product-auction').siblings().hide();">Auction</a></li>-->
       <li><a href="#" onclick="$(this).parent().addClass('active');$(this).parent().siblings().removeClass('active');$('#add-product-import').show();$('#add-product-import').siblings().hide();">Import Contract</a></li>
     </ul>
 
@@ -20,30 +20,31 @@
                 <textarea rows="10" class="form-control" ng-model="contract.rawText"></textarea>
             </div>
 
-            <div id="add-product-fixed" class="col-sm-12">
+            <div id="add-product-fixed" class="col-sm-12" style="margin-top:20px">
+
+                <div class="alert alert-info">Fields in red are required.</div>
 
 
-
-                    <div class="alert alert-warning" ng-show="newContractForm.inputProductTitle.$invalid || newContractForm.inputProductPrice.$invalid">Please enter a <strong>product name</strong> and <strong>price</strong>.</div>
                     <div class="row">
-                    <div class="col-sm-3">
-                        <div class="fileinput fileinput-new" data-provides="fileinput">
-                            <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="border:none;background-image:url('img/no-photo.png');background-size:150px 150px; background-repeat: no-repeat;background-position:center;width: 200px; height: 150px;"></div>
-                            <div class="text-center">
-                                <span class="btn btn-info btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="contract.productImage" name="..."></span>
-                                <a href="#" class="btn btn-info fileinput-exists" data-dismiss="fileinput">Remove</a>
+                        <div class="col-sm-3">
+                            <div class="fileinput fileinput-new" data-provides="fileinput">
+                                <div class="fileinput-preview thumbnail" data-trigger="fileinput" style="border:none;background-image:url('img/no-photo.png');background-size:150px 150px; background-repeat: no-repeat;background-position:center;width: 200px; height: 150px;"></div>
+                                <div class="text-center">
+                                    <span class="btn btn-info btn-file"><span class="fileinput-new">Select image</span><span class="fileinput-exists">Change</span><input type="file" id="inputProductImage" class="form-control" ng-model="contract.productImage" name="..."></span>
+                                    <a href="#" class="btn btn-info fileinput-exists" data-dismiss="fileinput">Remove</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="col-sm-9">
-                        <div class="form-group">
-                            <label for="inputProductTitle">Product Name</label>
-                            <input type="text" required ng-model="contract.productTitle" class="form-control" id="inputProductTitle" name="inputProductTitle" placeholder="Product title"/>
-                        </div>
+                        <div class="col-sm-9">
 
-                        <div class="form-group">
-                            <textarea class="form-control" ng-model="contract.productDescription" id="inputProductDescription" name="inputProductDescription" placeholder="Enter a description" rows="5"></textarea>
+                            <div class="form-group {{newContractForm.inputProductTitle.$invalid ? 'has-error' : ''}}">
+                                <label class="control-label" for="inputProductTitle">Product Name</label>
+                                <input type="text" required ng-model="contract.productTitle" class="form-control" id="inputProductTitle" name="inputProductTitle" placeholder="Product title"/>
+                            </div>
+
+                        <div class="form-group  {{newContractForm.inputProductDescription.$invalid ? 'has-error' : ''}}">
+                            <textarea required class="form-control" ng-model="contract.productDescription" id="inputProductDescription" name="inputProductDescription" placeholder="Enter a description" rows="5"></textarea>
                         </div>
 
                     </div>
@@ -52,15 +53,16 @@
 
                     <div class="row">
                         <div class="col-sm-2">
-                            <div class="form-group">
-                                <label for="inputProductPrice">Price (&#3647;)</label>
-                                <input required type="text" min="0" class="form-control" ng-model="contract.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0.01"/>
+                            <div class="form-group {{newContractForm.inputProductPrice.$invalid ? 'has-error' : ''}}">
+                                <label class="control-label" for="inputProductPrice">Price (&#3647;)</label>
+                                <number-only-input input-value="contract.productPrice" input-name="inputProductPrice" />
+                                <!--<input required type="text" min="0" class="form-control" ng-model="contract.productPrice" id="inputProductPrice" name="inputProductPrice" placeholder="0.01"/>-->
                             </div>
                         </div>
                         <div class="col-sm-2">
                             <div class="form-group">
                                 <label for="inputProductShippingPrice">Shipping (&#3647;)</label>
-                                <input type="text" class="form-control" ng-model="contract.productShippingPrice" id="inputProductShippingPrice" placeholder="0" value="0"/>
+                                <input type="text" class="form-control" min="0" ng-model="contract.productShippingPrice" id="inputProductShippingPrice" placeholder="0" value="0"/>
                             </div>
                         </div>
                         <div class="col-sm-2">
@@ -85,28 +87,25 @@
                         </div>
                     </div>
 
-                    <div class="row"></div>
-                    <div class="col-sm-12">
+
+                    <div>
                         <div class="form-group">
                             <label for="inputProductKeywords">Keywords</label>
                             <input type="text" class="form-control" ng-model="contract.productKeywords" id="inputProductKeywords" name="inputProductKeywords" placeholder="Comma separated keywords that describe the item. Used for searching."/>
                         </div>
                     </div>
 
-                    </div>
-
-                    <div class="col-sm-12">
-                        <a href="#" ng-click="toggleItemAdvanced()"><span class="caret"></span> Advanced Details</a>
-
-                        <div ng-show="itemAdvancedDetails" style="padding:10px 0;">
-                            <p>Wouldn't you like to see more details here?</p>
-                        </div>
 
 
-                    </div>
+                    <!--<div class="col-sm-12">-->
+                        <!--<a href="#" ng-click="toggleItemAdvanced()"><span class="caret"></span> Advanced Details</a>-->
+
+                        <!--<div ng-show="itemAdvancedDetails" style="padding:10px 0;">-->
+                            <!--<p>Wouldn't you like to see more details here?</p>-->
+                        <!--</div>-->
 
 
-
+                    <!--</div>-->
 
             </div>
 

@@ -9,7 +9,6 @@ import os
 import routingtable
 import time
 
-
 class DHT(object):
     def __init__(self, transport, market_id, settings, db_connection):
 
@@ -67,13 +66,18 @@ class DHT(object):
                 self._activePeers[idx].cleanup_context()
                 del self._activePeers[idx]
 
-    @staticmethod
-    def connect_to_seed(hostname):
-        uri = 'tcp://%s:12345' % hostname
-
     def add_seed(self, transport, uri):
+
         new_peer = self._transport.get_crypto_peer(uri=uri)
-        self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
+        self._log.debug(new_peer)
+
+        def start_handshake_cb():
+            self._knownNodes.append((urlparse(uri).hostname,
+                                     urlparse(uri).port,
+                                     new_peer._guid))
+            self._log.debug('Known Nodes: %s' % self._knownNodes)
+
+        new_peer.start_handshake(start_handshake_cb)
 
     def add_peer(self, transport, uri, pubkey=None, guid=None, nickname=None):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
@@ -81,9 +85,12 @@ class DHT(object):
 
         :param transport: (CryptoTransportLayer) so we can get a new CryptoPeer
         """
-        if uri and pubkey is not None and guid is not None and nickname is not None:
 
-            peer_tuple = (pubkey, uri, guid, nickname)
+        assert(uri)
+
+        if uri is not None:
+
+            peer_tuple = (uri, pubkey, guid, nickname)
 
             for idx, peer in enumerate(self._activePeers):
 
@@ -114,12 +121,21 @@ class DHT(object):
                         return
 
             self._log.debug('New Peer')
+
             new_peer = self._transport.get_crypto_peer(guid, uri, pubkey, nickname)
 
-            self._routingTable.removeContact(new_peer._guid)
-            self._routingTable.addContact(new_peer)
-            self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
-            self._transport.save_peer_to_db(peer_tuple)
+            def cb():
+                self._log.debug('Back from handshake')
+                self._routingTable.removeContact(new_peer._guid)
+                self._routingTable.addContact(new_peer)
+                self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
+                self._transport.save_peer_to_db(peer_tuple)
+
+            if new_peer.check_port():
+                new_peer.start_handshake(handshake_cb=cb)
+
+        else:
+            self._log.debug('Missing peer attributes')
 
     def add_known_node(self, node):
         """ Accept a peer tuple and add it to known nodes list
@@ -603,6 +619,7 @@ class DHT(object):
 
             if not peer:
                 peer = self._transport.get_crypto_peer(guid, uri)
+                peer.start_handshake()
 
             peer.send(proto_store(key, value, originalPublisherID, age))
 
@@ -682,7 +699,6 @@ class DHT(object):
         self._iterativeFind(key, callback=callback)
 
     def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
-
         """
         - Create a new DHTSearch object and add the key and call back to it
         - Add the search to our search queue (self._searches)
@@ -690,7 +706,6 @@ class DHT(object):
         -
 
         """
-
         # Create a new search object
         new_search = DHTSearch(self._market_id, key, call, callback=callback)
         self._searches.append(new_search)

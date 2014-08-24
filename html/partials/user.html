@@ -1,0 +1,230 @@
+<div data-ng-show="page_loading" style="margin-top:40px;padding:0 20px">
+
+     <h3><img src="img/ajax-loader.gif" width="50"/> Loading merchant...</h3>
+
+</div>
+<div data-ng-show="page">
+
+    <div>
+        <h2><identicon icon-size="64" hash="page.senderGUID" title="{{page.senderGUID}}"></identicon> {{page.nickname ? page.nickname : "No nickname"}}</h2>
+
+
+
+        <ul id="store-tabs" class="nav nav-pills" style="background-color:#ccc;border-bottom:1px solid #aaa;padding:5px;">
+            <li class="{{storeInfoPanel ? 'active' : ''}}"><a href="#/user/{{guid}}">Info</a></li>
+            <li class="{{storeProductsPanel ? 'active' : ''}}"><a href="#/user/{{guid}}/products">Products</a></li>
+            <!--<li><a href="#storeReviews" data-ng-click="showStorePanel('storeReviews')">Reviews</a></li>-->
+            <li data-ng-show="page.arbiter || page.notary" class="{{storeServicesPanel ? 'active' : ''}}"><a href="#/user/{{guid}}/services">Services</a></li>
+        </ul>
+    </div>
+
+    <div class="panel-bod3y" data-ng-show="page" style="border-top:0px solid #ddd;margin-top:10px;padding:10px 5px;" >
+
+
+        <div data-ng-show="storeInfoPanel" class="animated fadeIn">
+
+            <p data-ng-show="page.text" id="page-content" class="lead"></p>
+
+            <table class="table table-bordered table-striped" style="font-size:14px;width:100%;table-layout:fixed">
+                <tr data-ng-show="page.email">
+                    <td class="col-xs-3">Email Address</td>
+                    <td style="word-wrap:break-word"><a href="mailto:{{page.email}}">{{page.email}}</a></td>
+                </tr>
+                <tr data-ng-show="page.bitmessage">
+                    <td class="col-xs-3">Bitmessage Address</td>
+                    <td style="word-wrap:break-word">{{page.bitmessage}}
+                        <!--<button class="btn btn-info" data-ng-click="compose_message('lg', myself, page.bitmessage, null)">Send Message</button>-->
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-xs-3">Open Bazaar Public Key</td>
+                    <td style="word-wrap:break-word">{{page.pubkey}}</td>
+                </tr>
+                <tr data-ng-show="page.PGPPubKey">
+                    <td class="col-xs-3">PGP Key</td>
+                    <td style="word-wrap:break-word;"><pre style="font-size:12px;">{{page.PGPPubKey}}</pre></td>
+                </tr>
+            </table>
+
+
+
+        </div>
+
+        <div data-ng-show="storeServicesPanel" class="animated fadeIn">
+
+            <div data-ng-show="page.arbiter"  class="panel panel-info">
+                <div class="panel-heading">
+                    <div class="panel-title"><strong>Arbitration Services</strong>
+                        <div class="pull-right" style="margin-top:-6px">
+                            <button type="button" class="btn btn-info btn" data-ng-click="addArbiter(page.senderGUID)"><span class="glyphicon glyphicon-saved"></span>  Make Trusted Arbiter</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div data-ng-show="page.arbiter_description">
+                        <p>{{page.arbiter_description}}</p>
+                    </div>
+
+                    <div data-ng-show="!page.arbiter_description">
+                        <p>This individual has not described their arbitration services.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div data-ng-show="page.notary"  class="panel panel-info">
+                <div class="panel-heading">
+                    <div class="panel-title"><strong>Notary Services</strong>
+                        <div class="pull-right" style="margin-top:-6px">
+                            <button data-ng-show="page.notary" type="button" class="btn btn-info btn {{page.isTrustedNotary ? 'disabled' : ''}}"  data-ng-click="addNotary(page.senderGUID, page.nickname)"><span class="glyphicon glyphicon-saved"></span> Make Trusted Notary</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div data-ng-show="page.notary_description">
+                        <p>{{page.notary_description}}</p>
+                    </div>
+
+                    <div data-ng-show="!page.notary_description">
+                        <p>This individual has not described their notary services.</p>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <!--<div class="panel panel-info">-->
+                <!--<div class="panel-heading">-->
+                    <!--<div class="panel-title"><strong>Precedents</strong></div>-->
+                <!--</div>-->
+                <!--<div class="panel-body">-->
+                    <!--No precedents established yet.-->
+                <!--</div>-->
+            <!--</div>-->
+
+
+
+        </div>
+
+        <!-- Store Products -->
+        <div data-ng-show="storeProductsPanel"  class="animated fadeIn">
+
+            <div data-ng-controller="BuyItemCtrl">
+
+            <div id="listing-loader">
+                 <div style="margin-bottom:10px"><img src="img/ajax-loader.gif" width="25"/> Looking for contracts...</div>
+            </div>
+
+            <div class="div-listing col-sm-4 col-xs-6" style="padding:5px" data-ng-repeat="listing in store_listings">
+
+                <a href="" data-ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_desc, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, trusted_notaries, settings.trustedArbiters, settings.pubkey, listing.contract_body.Seller.seller_GUID)"><img class="img-thumbnail" src="{{listing.contract_body.Contract.item_images}}" width="100%"/></a>
+                        <h4 style="margin-bottom:0"><a href="" data-ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_description, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, trusted_notaries, settings.trustedArbiters, settings.pubkey, listing.contract_body.Seller.seller_GUID)" class="trim-info">{{listing.contract_body.Contract.item_title}}</a></h4>
+                        <span style="font-size:16px;">&#3647;{{listing.contract_body.Contract.item_price}}</span>
+            </div>
+
+
+
+            <form data-ng-show="creatingOrder">
+                Text: <input class="form-control" type="text" data-ng-model="newOrder.text" placeholder="Friendly message"> <a class="btn btn-primary navbar-btn" data-ng-click="createOrder()" type="submit">Order</a> <a class="btn btn-warning navbar-btn" data-ng-click="creatingOrder=false" type="cancel">Cancel</a>
+            </form>
+
+            </div>
+
+        </div>
+
+        <!-- Store Orders -->
+        <div data-ng-show="storeOrdersPanel" class="animated bounceInLeft">
+
+            <h3 data-ng-show="Object.keys(myOrders).length">Orders</h3>
+
+            <div class='panel-body' data-ng-repeat="(orderId, order) in myOrders" data-ng-show="order.seller == page.pubkey || order.seller == myself.pubkey">
+
+                <table cellpadding="5" cellspacing="5" width="100%">
+                    <tr>
+                        <th>ID</th>
+                        <th>State</th>
+                        <th>Description of Order</th>
+                    </tr>
+                    <tr>
+                        <td>{{order.id}}</td>
+                        <td>{{order.state}}</td>
+                        <td>{{order.text}}</td>
+                    </tr>
+                </table>
+
+                <br/>
+
+                <form data-ng-show="order && (order.state == 'accepted' || order.state == 'new') && order.buyer == myself.pubkey">
+                    Pay to: {{order.address}}<BR>Tx: <input class="form-control" type="text" data-ng-model="newOrder.tx" placeholder="Transaction with the spend"> <a class="btn btn-primary navbar-btn" data-ng-click="payOrder(order)" type="submit">Payed</a> <a class="btn btn-warning navbar-btn" data-ng-click="cancelOrder(order)" type="cancel">Cancel</a>
+                </form><!-- Sent -->
+
+                <form data-ng-show="order && order.state == 'payed' && order.seller == myself.pubkey">
+                    <a class="btn btn-primary navbar-btn" data-ng-click="sendOrder(order)" type="submit">Sent</a>
+                </form><!-- Received -->
+
+                <form data-ng-show="order && order.state == 'sent' && order.buyer == myself.pubkey">
+                    <a class="btn btn-primary navbar-btn" data-ng-click="receiveOrder(order)" type="submit">Received</a>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Reviews -->
+        <div data-ng-show="storeReviewsPanel"  class="animated fadeIn">
+
+
+            <div data-ng-repeat="review in currentReviews.slice().reverse()" style="padding:3px;background-color:#333;margin-bottom:5px;">
+                <table>
+                    <tr>
+                        <td><identicon icon-size="50" hash="review.pubkey" title="{{review.pubkey}}"></identicon></td>
+                        <td>
+                            <div style="word-wrap:break-word;width:600px;font-size:14px;">
+                                <span style="color:#999;"><em>{{review.pubkey}}</em></span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div>
+                    <table>
+                        <tr>
+                            <td width="60" valign="top" style="font-size:200%">{{review.rating}}</td>
+                            <td>"{{review.text}}"</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <p>No reviews yet.</p>
+
+            <form>
+                <div style="margin:20px 0px">
+                    <h4>Add a Review</h4><select class="form-control" type="number" data-ng-model="review.rating" placeholder="Rating" style="width:10%;">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+
+                    <div style="margin-top:5px">
+                        <textarea class="form-control" data-ng-model="review.text" cols="50" id="new-review" name="comment" placeholder="Enter your review here..." rows="5"></textarea>
+                    </div>
+                    <a class="btn btn-default navbar-btn" data-ng-click="addReview()" type="submit">Submit</a>
+                </div>
+
+            </form>
+
+        </div>
+
+
+
+
+
+    </div>
+</div>

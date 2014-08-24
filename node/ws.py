@@ -36,6 +36,7 @@ class ProtocolHandler:
 
         # handlers from events coming from websocket, we shouldnt need this
         self._handlers = {
+            "load_page": self.client_load_page,
             "connect": self.client_connect,
             "peers": self.client_peers,
             "query_page": self.client_query_page,
@@ -44,6 +45,8 @@ class ProtocolHandler:
             "search": self.client_query_network_for_products,
             "shout": self.client_shout,
             "get_notaries": self.client_get_notaries,
+            "add_trusted_notary": self.client_add_trusted_notary,
+            "remove_trusted_notary": self.client_remove_trusted_notary,
             "query_store_products": self.client_query_store_products,
             "check_order_count": self.client_check_order_count,
             "query_orders": self.client_query_orders,
@@ -145,9 +148,22 @@ class ProtocolHandler:
             "contract": msg
         })
 
+    def client_load_page(self, socket_handler, msg):
+        self.send_to_client(None, {"type":"load_page"})
+
+    def client_add_trusted_notary(self, socket_handler, msg):
+        self._log.info('Adding trusted notary %s' % msg)
+        self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
+        #self.send_to_client(None, {"type":"load_page"})
+
+    def client_remove_trusted_notary(self, socket_handler, msg):
+        self._log.info('Removing trusted notary %s' % msg)
+        self._market.remove_trusted_notary(msg.get('guid'))
+
     def client_get_notaries(self, socket_handler, msg):
         self._log.debug('Retrieving notaries')
         notaries = self._market.get_notaries()
+        self._log.debug('Getting notaries %s' % notaries)
         self.send_to_client(None, {
             "type": "notaries",
             "notaries": notaries
@@ -196,7 +212,7 @@ class ProtocolHandler:
         self._timeouts.append(query_id)
 
         def cb(msg, query_id):
-            self._log.info('Received a query page response: %s' % msg)
+            self._log.info('Received a query page response: %s' % query_id)
 
             # try:
             #     self._timeouts.remove(query_id)
@@ -391,7 +407,7 @@ class ProtocolHandler:
 
             multisig = Multisig(client, 2, pubkeys)
 
-            def cb(ec, history):
+            def cb(ec, history, order):
 
                 # Debug
                 self._log.info('%s %s' % (ec, history))
@@ -404,7 +420,7 @@ class ProtocolHandler:
                 # Create unsigned transaction
                 unspent = [row[:4] for row in history if row[4] is None]
                 tx = multisig._build_actual_tx(
-                    unspent, '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt'
+                    unspent, order['payment_address']
                 )
                 self._log.info(tx.serialize().encode("hex"))
 
@@ -420,7 +436,7 @@ class ProtocolHandler:
                 })
 
             def get_history():
-                client.fetch_history(multisig.address, cb)
+                client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
 
             reactor.callFromThread(get_history)
 
@@ -495,7 +511,7 @@ class ProtocolHandler:
         self._log.info('Found Contracts: %s' % type(results))
         self._log.info(results)
 
-        if type(results[0]) == str:
+        if len(results) > 0 and type(results[0]) == str:
             results = json.loads(results[0])
 
         self._log.info(results)

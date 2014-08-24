@@ -16,6 +16,7 @@ import pyelliptic as ec
 import requests
 import socket
 import traceback
+from threading import Thread
 import zlib
 
 ioloop.install()
@@ -37,10 +38,11 @@ class CryptoPeerConnection(PeerConnection):
 
         PeerConnection.__init__(self, transport, address)
 
-        self._log = logging.getLogger('[%s] %s' % (transport._market_id, self.__class__.__name__))
+        self._log = logging.getLogger('[%s] %s' % (transport._market_id,
+                                                   self.__class__.__name__))
 
+    def start_handshake(self, handshake_cb=None):
         if self.check_port():
-
             def cb(msg):
                 if msg:
 
@@ -58,19 +60,27 @@ class CryptoPeerConnection(PeerConnection):
 
                     # Add this peer to active peers list
                     for idx, peer in enumerate(self._transport._dht._activePeers):
-                        if peer._guid == guid or peer._address == address:
+                        if peer._guid == self._guid or peer._address == self._address:
                             self._transport._dht._activePeers[idx] = self
-                            self._transport._dht.add_peer(self._address, self._pub, self._guid, self._nickname)
+                            self._transport._dht.add_peer(self._transport,
+                                                          self._address,
+                                                          self._pub,
+                                                          self._guid,
+                                                          self._nickname)
                             return
 
                     self._transport._dht._activePeers.append(self)
                     self._transport._dht._routingTable.addContact(self)
 
+                    if handshake_cb is not None:
+                        handshake_cb()
+
             self.send_raw(json.dumps({'type': 'hello',
-                                      'pubkey': transport.pubkey,
-                                      'uri': transport._uri,
-                                      'senderGUID': transport.guid,
-                                      'senderNick': transport._nickname}), cb)
+                                      'pubkey': self._transport.pubkey,
+                                      'uri': self._transport._uri,
+                                      'senderGUID': self._transport.guid,
+                                      'senderNick': self._transport._nickname}), cb)
+
 
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
@@ -81,7 +91,7 @@ class CryptoPeerConnection(PeerConnection):
     def check_port(self):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1)
+            s.settimeout(5)
             s.connect((self._ip, self._port))
             s.close()
             return True
@@ -130,7 +140,7 @@ class CryptoPeerConnection(PeerConnection):
                             self._log.error('Cannot reach this peer to send raw')
                     else:
                         self._log.error('Data was empty')
-                except Exception, e:
+                except Exception:
                     self._log.error("Was not able to encode empty data: %e")
         else:
             self._log.error('Cannot send to peer')
@@ -147,7 +157,8 @@ class CryptoTransportLayer(TransportLayer):
     def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None,
                  bm_port=None, seed_mode=0, dev_mode=False):
 
-        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
+        self._log = logging.getLogger('[%s] %s' % (market_id,
+                                                   self.__class__.__name__))
         requests_log = logging.getLogger("requests")
         requests_log.setLevel(logging.WARNING)
 
@@ -169,49 +180,50 @@ class CryptoTransportLayer(TransportLayer):
         # Set up
         self._setup_settings()
 
-        self._dht = DHT(self, market_id, self.settings, self._db)
+        self._dht = DHT(self, self._market_id, self.settings, self._db)
 
         self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'),
                               privkey=self.secret.decode('hex'),
                               curve='secp256k1')
 
-        TransportLayer.__init__(self, market_id, my_ip, my_port, 
+        TransportLayer.__init__(self, market_id, my_ip, my_port,
                                 self.guid, self._nickname)
 
-        # Set up callbacks
+        self.setup_callbacks()
+        self.listen(self.pubkey)
+
+        if seed_mode == 0 and not dev_mode:
+            self.start_ip_address_checker()
+
+    def setup_callbacks(self):
         self.add_callbacks([('hello', self._ping),
                             ('findNode', self._find_node),
                             ('findNodeResponse', self._find_node_response),
                             ('store', self._store_value)])
 
-        self.listen(self.pubkey)
+    def start_ip_address_checker(self):
+        '''Checks for possible public IP change'''
+        self.caller = PeriodicCallback(self._ip_updater_periodic_callback, 5000, ioloop.IOLoop.instance())
+        self.caller.start()
 
+    def _ip_updater_periodic_callback(self):
+        try:
+            r = requests.get('https://icanhazip.com')
 
-        def cb():
+            if r and hasattr(r,'text'):
+                ip = r.text
+                ip = ip.strip(' \t\n\r')
+                if ip != self._ip:
+                    self._ip = ip
+                    self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+                    self.stream.close()
+                    self.listen(self.pubkey)
 
-            try:
-                r = requests.get('https://icanhazip.com')
-
-                if r and hasattr(r,'text'):
-                    ip = r.text
-                    ip = ip.strip(' \t\n\r')
-                    if ip != self._ip:
-                        self._ip = ip
-                        self._uri = 'tcp://%s:%s' % (self._ip, self._port)
-                        self.stream.close()
-                        self.listen(self.pubkey)
-
-                        self._dht._iterativeFind(self._guid, [], 'findNode')
-
-                else:
-                    self._log.error('Could not get ip')
-            except Exception, e:
-                self._log.error('[Requests] error: %s' % e)
-
-        if seed_mode == 0 and not dev_mode:
-            # Check IP periodically for changes
-            self.caller = PeriodicCallback(cb, 5000, ioloop.IOLoop.instance())
-            self.caller.start()
+                    self._dht._iterativeFind(self._guid, [], 'findNode')
+            else:
+                self._log.error('Could not get IP')
+        except Exception, e:
+            self._log.error('[Requests] error: %s' % e)
 
     def save_peer_to_db(self, peer_tuple):
         pubkey = peer_tuple[0]
@@ -226,8 +238,6 @@ class CryptoTransportLayer(TransportLayer):
         #else:
         if guid is not None:
             self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname, "market_id":self._market_id})
-
-
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -316,14 +326,22 @@ class CryptoTransportLayer(TransportLayer):
             try:
                 self._log.info('Generating PGP keypair. This may take several minutes...')
                 gpg = gnupg.GPG()
-                input_data = gpg.gen_key_input(key_type="RSA", key_length=2048, name_comment="Autogenerated by Open Bazaar", passphrase="P@ssw0rd")
+                input_data = gpg.gen_key_input(key_type="RSA", 
+                                               key_length=2048,
+                                               name_email='gfy@gfy.com',
+                                               name_comment="Autogenerated by Open Bazaar", 
+                                               passphrase="P@ssw0rd")
+                assert input_data is not None
                 key = gpg.gen_key(input_data)
+                assert key is not None
+
                 pubkey_text = gpg.export_keys(key.fingerprint)
                 pgp_dict = {"PGPPubKey":pubkey_text, "PGPPubkeyFingerprint": key.fingerprint}
                 self._db.updateEntries("settings", {"market_id": self._market_id}, pgp_dict)
                 if self.settings:
                     self.settings.update(pgp_dict)
 
+                self._log.info('PGP keypair generated.')
             except Exception, e:
                 self._log.error("Encountered a problem with GPG: %s" % e)
 
@@ -379,42 +397,58 @@ class CryptoTransportLayer(TransportLayer):
       self._db.updateEntries("settings", {"market_id": self._market_id}, {"bitmessage":self.bitmessage})
 
 
-    def join_network(self, seed_peers=None, callback=lambda msg: None):
+    def join_network(self, seed_peers=[], callback=lambda msg: None):
 
         self._log.info('Joining network')
+
+        known_peers = []
+
         # Connect up through seed servers
-        if seed_peers:
-            for seed in seed_peers:
-                uri = 'tcp://%s:12345' % seed
-
-                #self._dht.connect_to_seed(seed)
-
-                if self._dev_mode and IP(seed).iptype() is 'PRIVATE':
-
-                    self._dht.add_seed(self, uri)
-                else:
-                    self._dht.add_seed(self, uri)
+        for idx, seed in enumerate(seed_peers):
+            seed_peers[idx] = "tcp://%s:12345" % seed
 
         # Connect to persisted peers
-        known_peers = self._db.selectEntries("peers", "market_id = '%s'" % self._market_id)
-        for known_peer in known_peers:
-            self._dht.add_peer(self, known_peer['uri'])
+        db_peers = self.get_past_peers()
 
+        known_peers = list(set(seed_peers)) + list(set(db_peers))
+
+        print 'known_peers', known_peers
+
+        self.connect_to_peers(known_peers)
+
+        # Populate routing table by searching for self
+        if len(known_peers) > 0:
+            self.search_for_my_node()
+
+        if callback is not None:
+             callback('Joined')
+
+    def get_past_peers(self):
+        peers = []
+        result = self._db.selectEntries("peers", "market_id = '%s'" % self._market_id)
+        for peer in result:
+            peers.append(peer['uri'])
+        return peers
+
+
+    def search_for_my_node(self):
         self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
 
-        # if callback is not None:
-        #     callback()
+    def connect_to_peers(self, known_peers):
+        for known_peer in known_peers:
+            t = Thread(target=self._dht.add_peer, args=(self, known_peer,))
+            t.start()
 
+    def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None, 
+                        callback=None):
+        if guid == self.guid:
+            self._log.error('Cannot get CryptoPeerConnection for your own node')
+            return
 
-    def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None, callback=None):
+        self._log.debug('Getting CryptoPeerConnection\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' % (guid, uri, pubkey, nickname))
 
-      if guid == self.guid:
-        self._log.error('Cannot get CryptoPeerConnection for your own node')
-        return
-
-      self._log.debug('Getting CryptoPeerConnection\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' % (guid, uri, pubkey, nickname))
-
-      return CryptoPeerConnection(self, uri, pubkey, guid=guid, nickname=nickname, callback=callback)
+        return CryptoPeerConnection(self, uri, pubkey, guid=guid, 
+                                    nickname=nickname, callback=callback)
 
 
     def addCryptoPeer(self, peer_to_add):

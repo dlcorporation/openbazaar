@@ -1,0 +1,362 @@
+<!-- Settings -->
+<div data-ng-show="settingsPanel" class="animated fadeInLeft">
+
+<h3>Settings</h3>
+
+
+<div id="settings-container">
+<div class="col-sm-2">
+
+    <ul class="nav nav-pills nav-stacked">
+        <li id="settings-storeinfo"><a href="#/settings/storeinfo">Store Info</a></li>
+        <li id="settings-keys"><a href="#/settings/keys">Keys</a></li>
+        <li id="settings-communication"><a href="#/settings/communication">Communication</a></li>
+        <li id="settings-arbiter"><a href="#/settings/arbiter">Arbiter</a></li>
+        <li id="settings-notary"><a href="#/settings/notary">Notary</a></li>
+        <li id="settings-advanced"><a href="#/settings/advanced">Advanced</a></li>
+    </ul>
+
+</div>
+<div id="settings-content" class="col-sm-10" style="">
+
+    <form id="profile-form" role="form" class="form-horizontal">
+
+        <h4>Store Details</h4>
+
+        <div class="form-group">
+            <label for="inputNickname" class="col-sm-3 control-label">Nickname</label>
+            <div class="col-sm-9">
+                <input data-ng-model="settings.nickname" class="form-control" id="inputNickname" placeholder="Nickname">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputStoreDescription" class="col-sm-3 control-label">Store Description</label>
+            <div class="col-sm-9">
+                <textarea data-ng-model="settings.storeDescription" class="form-control" id="inputStoreDescription" rows="5" placeholder="Enter a short description about your store"></textarea>
+            </div>
+        </div>
+
+        <h4>Reputation Pledge</h4>
+
+        <div class="alert alert-warning">Buyers trust stores with reputation pledges more than stores without. <a href="https://blog.openbazaar.org/proof-of-burn-and-reputation-pledges/">Learn more</a>.</div>
+
+        <div class="form-group">
+            <label for="burnAmount" class="col-sm-3 control-label">Your pledge</label>
+            <div class="col-sm-9">
+                <div class="input-group">
+                    <span class="input-group-addon">฿</span>
+                    <input id="burnAmount" ng-model="settings.burnAmount" class="form-control" disabled="disabled" placeholder="Reading from blockchain..." />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="burnAddr" class="col-sm-3 control-label">Proof-of-burn address</label>
+            <div class="col-sm-9">
+                <input id="burnAddr" ng-model="settings.burnAddr" class="form-control" disabled="disabled" placeholder="Loading..." />
+            </div>
+        </div>
+
+        <h4>Password</h4>
+        <div class="alert alert-warning">This password will protect your keys and prevent others from accessing your store.</div>
+
+        <div class="form-group">
+            <label for="inputPassword" class="col-sm-3 control-label">Password</label>
+            <div class="col-sm-9">
+                <input class="form-control" id="inputPassword" type="password">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputConfirmPassword" class="col-sm-3 control-label">Confirm Password</label>
+            <div class="col-sm-9">
+                <input class="form-control" id="inputConfirmPassword" type="password">
+            </div>
+        </div>
+
+        <h4>Shipping Information</h4>
+        <div class="alert alert-warning">This information will be encrypted and only be sent to your seller when you have marked your order for payment</div>
+
+        <div class="form-group">
+            <label for="inputRecipient" class="col-sm-3 control-label">Recipient Name</label>
+            <div class="col-sm-9">
+                <input data-ng-model="settings.recipient_name" class="form-control" id="inputRecipient" placeholder="Name visible on your package"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputStreet1" class="col-sm-3 control-label">Street 1</label>
+            <div class="col-sm-9">
+                <input data-ng-model="settings.street1" class="form-control" id="inputStreet1" placeholder="123 Bitcoin Ave."/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputStreet2" class="col-sm-3 control-label">Street 2</label>
+            <div class="col-sm-9">
+                <input data-ng-model="settings.street2" class="form-control" id="inputStreet2" placeholder=""/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputCity" class="col-sm-3 control-label">City</label>
+            <div class="col-sm-5">
+                <input data-ng-model="settings.city" class="form-control" id="inputCity" placeholder=""/>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label for="inputStateRegion" class="col-sm-3 control-label">State/Province/Region</label>
+            <div class="col-sm-9">
+                <input data-ng-model="settings.stateRegion" class="form-control" id="inputStateRegion" placeholder=""/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputZip" class="col-sm-3 control-label">Zip</label>
+            <div class="col-sm-2">
+                <input data-ng-model="settings.zip" class="form-control" id="inputZip" placeholder=""/>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label for="inputCountry" class="col-sm-3 control-label">Country</label>
+            <div class="col-sm-7">
+                <select class="form-control" data-ng-model="settings.countryCode" data-ng-options="country.code as country.name for country in myself.countryCodes">
+
+                </select>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-9" style="text-align:right">
+                <button type="submit" class="btn btn-default" data-ng-click="saveSettings()">Save</button>
+            </div>
+        </div>
+
+
+    </form>
+
+    <!-- Keys Form -->
+    <form id="keys-form" role="form" class="form-horizontal" style="display:none;">
+
+        <h4>OpenBazaar Keys</h4>
+
+        <div class="form-group">
+            <label for="inputPubkey" class="col-sm-3 control-label">Public Key</label>
+            <div class="col-sm-9" style="word-break:break-all">
+                {{myself.pubkey}}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputSecret" class="col-sm-3 control-label">Private Key</label>
+            <div class="col-sm-9">
+                <input data-ng-model="settings.privkey" class="form-control" id="inputSecret" placeholder="" readonly>
+                <!--<a href="#" data-ng-click="generateNewSecret()">Generate a new secret</a>-->
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputPGPPubkey" class="col-sm-3 control-label">PGP Public Key</label>
+            <div class="col-sm-9">
+                <textarea class="form-control" data-ng-model="settings.PGPPubKey" id="inputPGPPubkey" rows="20" style="font-size:12px;" placeholder="Copy-paste your PGP public key here"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-9" style="text-align:right">
+                <button type="submit" class="btn btn-default" data-ng-click="saveSettings()">Save</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Communication Form -->
+    <form id="communication-form" role="form" class="form-horizontal">
+
+        <h4>Communication Info</h4>
+
+        <div class="form-group">
+            <label for="inputEmail" class="col-sm-3 control-label">Email</label>
+            <div class="col-sm-9">
+                <input type="email" data-ng-model="settings.email" class="form-control" id="inputEmail" placeholder="Email">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputBitmessageAddress" class="col-sm-3 control-label">Bitmessage Address</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" data-ng-model="settings.bitmessage" id="inputBitmessageAddress" placeholder="Bitmessage address">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-9" style="text-align:right">
+                <button type="submit" class="btn btn-default" data-ng-click="saveSettings()">Save</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Arbitration Form -->
+    <form id="arbiter-form" role="form" class="form-horizontal">
+
+        <h4>Trusted Arbiters</h4>
+        <p>The addresses below are your trusted arbiters for transactions. You will be able to choose one at time of purchase.<br/><br/></p>
+
+        <div class="form-group">
+
+            <input type="hidden" data-ng-model="settings.trustedArbiters" />
+            <div class="col-sm-12">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="inputArbiterGUID" placeholder="Enter an arbiter's OB guid">
+                        <span class="input-group-btn">
+                          <button class="btn btn-default" type="button" data-ng-click="addArbiter()">Add</button>
+                        </span>
+                </div>
+                <table class="table table-striped" style="margin-top:10px;padding:0">
+                    <tr data-ng-repeat="arbiter in settings.trustedArbiters" id="arbiter_{{arbiter}}" style="word-break:break-all"><td width=20>
+                        <button type="button" class="btn btn-default btn-sm" data-ng-click="removeArbiter(arbiter)">
+                            <span class="glyphicon glyphicon-trash" style="color:black"></span>
+                        </button></td><td>{{arbiter}}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="alert alert-warning" role="alert">Offering arbitration services is an important service to the OpenBazaar community. It ensures
+        that disputes get resolved in a responsible and informed way. If you want to act as an arbiter fill out the form below and you will be
+        available to the community at large to serve in that capacity.</div>
+
+        <h4>Acting as an Arbiter</h4>
+        <p>If you are interested in acting as a trusted arbiter on the network you can set it up here.</p>
+
+        <div class="form-group">
+
+            <label for="inputArbiter" class="col-sm-3 control-label">Make me an arbiter</label>
+            <input type="checkbox" id="inputArbiter" class="col-sm-9" data-ng-model="settings.arbiter" value="1" />
+
+        </div>
+
+        <div class="form-group">
+            <label for="inputArbiterDescription" class="col-sm-3 control-label">Experience & Services</label>
+            <div class="col-sm-9">
+                <textarea rows='6' type="text" class="form-control" data-ng-model="settings.arbiterDescription" id="inputArbiterDescription" placeholder="Enter a short description of your services and experience"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-9" style="text-align:right">
+                <button type="submit" class="btn btn-default" data-ng-click="saveSettings()">Save</button>
+            </div>
+        </div>
+
+    </form>
+
+    <!-- Notary Form -->
+    <form id="notary-form" role="form" class="form-horizontal">
+
+        <div >
+
+            <h4>Trusted Notaries</h4>
+            <p>The addresses below are notaries used during transactions. <button type="button" class="btn btn-primary btn-sm" data-ng-click="">
+                            <span class="glyphicon glyphicon-search"></span> Find Notary
+                        </button></p>
+
+            <div class="form-group">
+
+                <input type="hidden" data-ng-model="settings.notaries" />
+                <div class="col-sm-12">
+                    <div class="input-group">
+                        <input type="text" class="form-control" data-ng-model="newNotary" id="inputNotaryGUID" placeholder="Enter an notary's OB guid">
+                            <span class="input-group-btn">
+                              <button class="btn btn-default" type="button" data-ng-click="addNotary(newNotary)">Add</button>
+                            </span>
+                    </div>
+                    <table class="table table-striped table-bordered" style="margin-top:10px;padding:0">
+                        <tr data-ng-repeat="notary in settings.notaries" id="notary_{{notary.guid}}" style="word-break:break-all"><td width=20 style="vertical-align:middle">
+                            <button type="button" class="btn btn-danger btn-sm" data-ng-click="removeNotary(notary.guid)">
+                                <span class="glyphicon glyphicon-trash"></span>
+                            </button></td><td><strong>{{notary.nickname}}</strong> ({{notary.guid}})</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            {{trusted_notaries}}
+
+            <h4>Acting as an Notary</h4>
+            <p>If you want to act as a notary check the box below.</p>
+
+            <div class="checkbox">
+
+                <label for="inputNotary" class="control-label"><input type="checkbox" id="inputNotary" data-ng-model="settings.notary" value="1" /> Make me a notary</label>
+
+
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-9" style="text-align:right">
+                    <button type="submit" class="btn btn-default" data-ng-click="saveSettings()">Save</button>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+
+    <form id="advanced-form" role="form" class="form-horizontal">
+
+        <h4>Advanced</h4>
+
+        <div class="form-group">
+            <label for="inputTestnet" class="col-sm-3 control-label">Use Testnet</label>
+            <input type="checkbox" id="inputTestnet" class="col-sm-9" data-ng-model="settings.testnet" value="1" />
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-3 text-right">
+            <label for="inputObelisk" class="control-label">Obelisk Server</label>
+                </div>
+            <div class="col-sm-5">
+            <input type="text" id="inputObelisk" class="form-control text" data-ng-model="settings.obelisk" placeholder="tcp://85.25.198.97:8081" />
+            </div>
+        </div>
+
+         <div class="form-group">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-5" style="padding:0">
+                <button type="submit" class="btn btn-default" data-ng-click="saveSettings()">Save</button>
+            </div>
+        </div>
+
+        <div style="margin:20px 0">
+        <h4>Developer Tools</h4>
+
+        <div>
+            <button class="btn btn-info" data-ng-click="clearDHTData()">Clear Cache</button>
+            <button class="btn btn-info" data-ng-click="clearPeers()">Clear Peers</button>
+            <button class="btn btn-info" data-ng-click="restartServer()">Restart Server</button>
+        </div>
+        </div>
+
+        <div style="margin:20px 0">
+        <h4>Log</h4>
+        <div id="log_output" style="white-space:pre;height:600px;overflow:scroll;" class="col-sm-12 well">{{log_output}}</div>
+        </div>
+
+
+    </form>
+
+</div>
+
+<br clear="both"/>
+
+</div>
+
+
+</div>

@@ -26,7 +26,6 @@
     config.container.css("position", "fixed");
     config.container.css("z-index", 9999);
     config.container.css(config.position[0], "12px");
-    console.log('container',$('#header').position());
     config.container.css(config.position[1], ($('#header').position().left+$('#header').outerWidth()-100)+'px');
     $("body").append(config.container);
   });

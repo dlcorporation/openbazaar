@@ -7,8 +7,8 @@
 # The docstrings in this module contain epytext markup; API documentation
 # may be created by processing this file with epydoc: http://epydoc.sf.net
 
-import sqlite3
 import logging
+from pysqlcipher import dbapi2 as sqlite
 
 class Obdb():
     """ Interface for db storage. Serves as segregation of the persistence layer
@@ -22,10 +22,14 @@ class Obdb():
     def _connectToDb(self):
         """ Opens a db connection
         """
-        self.con = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
-        sqlite3.register_adapter(bool, int)
-        sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
+        self.con = sqlite.connect(self.db_path, detect_types=sqlite.PARSE_DECLTYPES)
+        sqlite.register_adapter(bool, int)
+        sqlite.register_converter("BOOLEAN", lambda v: bool(int(v)))
         self.con.row_factory = self._dictFactory
+
+        # Use PRAGMA key to encrypt / decrypt database.
+        cur = self.con.cursor()
+        cur.execute("PRAGMA key = 'passphrase';") # TODO: Get passphrase from user.
 
     def _disconnectFromDb(self):
         """ Close the db connection
@@ -131,7 +135,7 @@ class Obdb():
         if lastrowid:
             return lastrowid
 
-    def selectEntries(self, table, where_clause="'1'='1'", order_field="id", order="ASC", limit=None, limit_offset=None):
+    def selectEntries(self, table, where_clause="'1'='1'", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
         """ A wrapper for the SQL SELECT operation. It will always return all the
             attributes for the selected rows.
         @param table: The table to search to
@@ -151,8 +155,15 @@ class Obdb():
             else:
                 limit_clause = ""
 
-            query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
-                    % (table, where_clause, order_field, order, limit_clause)
+            if select_fields is not "*":
+                columns = ",".join(select_fields)
+            else:
+                columns = "*"
+
+            query = "SELECT %s FROM %s WHERE %s ORDER BY %s %s %s" \
+                    % (columns, table, where_clause, order_field, order, limit_clause)
+
+            print query
             self._log.debug("query: %s "% query)
             cur.execute(query)
             rows = cur.fetchall()

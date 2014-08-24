@@ -5,7 +5,7 @@ RUN apt-get install -y python-dev python-pip g++ libjpeg-dev wget git
 
 RUN wget https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py
 RUN python get-pip.py
-RUN pip install tornado Twisted pycountry pillow python-gnupg mock qrcode requests python-obelisk ipy pyelliptic miniupnpc
+RUN pip install tornado Twisted pycountry pillow python-gnupg mock qrcode requests python-obelisk ipy pyelliptic miniupnpc pysqlcipher 
 
 ADD . /bazaar
 
