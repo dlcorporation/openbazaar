@@ -226,13 +226,18 @@ obControllers
                 console.log('Received a page for: ', msg)
                 console.log('Waiting for: ' + $scope.awaitingShop)
 
-
-
                 if (msg.senderGUID != $scope.awaitingShop)
                     return
                 if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
                     $scope.reviews[msg.pubkey] = []
                 }
+
+                console.log($scope.settings);
+                $.each($scope.settings.notaries, function(idx, val) {
+                    if (val.guid == msg.senderGUID) {
+                       msg.isTrustedNotary = true;
+                    }
+                });
 
                 if (!$scope.dashboard) {
                     $scope.currentReviews = $scope.reviews[msg.pubkey]
@@ -399,6 +404,7 @@ obControllers
                 //    alert('Incorrect format for GUID');
                 //    return;
                 //}
+                $scope.page.isTrustedNotary = true
 
                 socket.send('add_trusted_notary', { 'type': 'add_trusted_notary',
                     'guid': guid,

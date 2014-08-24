@@ -501,7 +501,7 @@ class Market(object):
         sin = page.get('sin')
         page = page.get('text')
 
-        self._log.info("Received store info from node: %s" % sin)
+        self._log.info("Received store info from node: %s" % page)
 
         if sin and page:
             self.pages[sin] = page
