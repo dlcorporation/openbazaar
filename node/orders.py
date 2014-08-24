@@ -55,7 +55,11 @@ class Orders(object):
             start_line = 4
 
         offer_data = ''.join(raw_contract.split('\n')[start_line:])
-        index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        
+        if state == Orders.State.NOTARIZED:
+            index_of_seller_signature = offer_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        else:
+            index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
 
         if state in (Orders.State.NEED_TO_PAY,
                                Orders.State.NOTARIZED,
