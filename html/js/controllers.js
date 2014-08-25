@@ -513,6 +513,7 @@ obControllers
 
                 Notifier.success('Success', 'Notary added successfully.');
 
+
             }
 
             $scope.BuyItemCtrl = function($scope, $modal, $log) {
@@ -1111,7 +1112,8 @@ obControllers
              * @msg - Message from server
              */
             $scope.parse_notaries = function(msg) {
-                $scope.trusted_notaries = msg.notaries
+                console.log('Parsing notaries');
+                $scope.settings.notaries = msg.notaries
                 console.log(msg.notaries)
                 if (!$scope.$$phase) {
                     $scope.$apply();
