@@ -20,7 +20,7 @@ import constants
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
-from bitcoin import decompress_public_key
+from obelisk import decompress_public_key
 
 ioloop.install()
 

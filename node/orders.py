@@ -10,7 +10,8 @@ import random
 import string
 import time
 import urllib
-from bitcoin import decompress_public_key
+import obelisk
+from obelisk import decompress_public_key
 
 class Orders(object):
     class State:
