@@ -67,7 +67,7 @@ class ProtocolHandler:
             "clear_dht_data": self.client_clear_dht_data,
             "clear_peers_data": self.client_clear_peers_data,
             "read_log": self.client_read_log,
-            "create_backup" : self.client_create_backup,
+            "create_backup": self.client_create_backup,
         }
 
         self._timeouts = []
@@ -488,7 +488,7 @@ class ProtocolHandler:
             callback=self.on_find_products_by_store
         )
 
-    def client_create_backup(self):
+    def client_create_backup(self, socket_handler, msg):
         """Currently hardcoded for testing: need to find out Installation path.
         Talk to team about right location for backup files
         they might have to be somewhere outside the installation path
@@ -497,16 +497,17 @@ class ProtocolHandler:
         and all files created by the app, have to be outside, usually at 
         ~/Library/Application Support/OpenBazaar/backups ??
         """
-        self._log.info('Received request for new Backup to be created.')        
+        self._log.info('Received request for new Backup to be created.')
+
         def on_backup_done(backupPath):
-            self._log.info('Backup sucessfully created at', backupPath)
+            self._log.info('Backup sucessfully created at ' + backupPath)
             self.send_ok()
             #TODO: self.send_to_client(None, json.{'Backup created successfully!')
-        
+
         def on_backup_error(errorMessage):
             self._log.info('Backup error:', errorMessage)
             #TODO:self.send_to_client(error, result)
-            
+
         BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar", 
                           "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
                            on_backup_done,
@@ -744,10 +745,12 @@ class ProtocolHandler:
     # handler a request
     def handle_request(self, socket_handler, request):
         command = request["command"]
+        self._log.info('(I) ws.ProtocolHandler.handle_request of: ' + command)
         if command not in self._handlers:
             return False
         params = request["params"]
         # Create callback handler to write response to the socket.
+        self._log.debug('found a handler!')
         self._handlers[command](socket_handler, params)
         return True
 
@@ -822,9 +825,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         # request.has_key("params") and type(request["params"]) == list
 
     def on_message(self, message):
-
         # self._log.info('[On Message]: %s' % message)
-
         try:
             request = json.loads(message)
         except:

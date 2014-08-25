@@ -1567,7 +1567,7 @@ obControllers
             
             $scope.createBackup = function() {
             	console.log('requesting additional units for backup! I repeat, requesting backup! over.')
-            	socket.send('create_backup') //TODO: security hole fix: forbid remote ips from invoking this or else they can fill disk.
+            	socket.send('create_backup',{}) //TODO: security hole fix: forbid remote ips from invoking this or else they can fill disk.
             	//TODO: Overall, setting-related requests should all be filtered out if not coming from localhost.
             }
 
