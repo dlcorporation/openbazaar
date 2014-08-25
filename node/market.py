@@ -152,7 +152,7 @@ class Market(object):
         self.settings = self.get_settings()
 
         msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
-        msg['Seller']['seller_BTC_uncompressed_pubkey'] = decompress_public_key(self.settings['pubkey'])
+        msg['Seller']['seller_BTC_uncompressed_pubkey'] = decompress_public_key(self.settings['pubkey']).encode('hex')
         msg['Seller']['seller_GUID'] = self.settings['guid']
 
         # Process and crop thumbs for images
