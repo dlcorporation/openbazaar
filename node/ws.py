@@ -7,11 +7,13 @@ import subprocess
 import protocol
 import pycountry
 import gnupg
+import os
 import obelisk
 
 import tornado.websocket
 from zmq.eventloop import ioloop
 from twisted.internet import reactor
+from backuptool import BackupTool
 
 ioloop.install()
 
@@ -66,6 +68,7 @@ class ProtocolHandler:
             "clear_dht_data": self.client_clear_dht_data,
             "clear_peers_data": self.client_clear_peers_data,
             "read_log": self.client_read_log,
+            "create_backup": self.client_create_backup,
         }
 
         self._timeouts = []
@@ -491,6 +494,37 @@ class ProtocolHandler:
             callback=self.on_find_products_by_store
         )
 
+    def client_create_backup(self, socket_handler, msg):
+        """Currently hardcoded for testing: need to find out Installation path.
+        Talk to team about right location for backup files
+        they might have to be somewhere outside the installation path
+        as some OSes might not allow the modification of the installation folder
+        e.g. MacOS won't allow for changes if the .app has been signed.
+        and all files created by the app, have to be outside, usually at 
+        ~/Library/Application Support/OpenBazaar/backups ??
+        """
+        def on_backup_done(backupPath):
+            self._log.info('Backup sucessfully created at ' + backupPath)
+            self.send_to_client(None, 
+                                {'type': 'create_backup_result',
+                                 'result': 'success',
+                                 'detail': backupPath})
+
+        def on_backup_error(error):
+            self._log.info('Backup error:' + str(error.strerror))
+            self.send_to_client(None, 
+                                {'type': 'create_backup_result',
+                                 'result': 'failure',
+                                 'detail': error.strerror})
+
+        #TODO: Make backup path configurable on server settings before run.sh
+        OB_PATH = os.path.realpath(os.path.abspath(__file__))[:os.path.realpath(os.path.abspath(__file__)).find('/node')]
+        BACKUP_PATH = OB_PATH + os.sep + "html" + os.sep + 'backups'
+        BackupTool.backup(OB_PATH,
+                          BACKUP_PATH,
+                          on_backup_done,
+                          on_backup_error)
+
     def on_find_products_by_store(self, results):
 
         self._log.info('Found Contracts: %s' % type(results))
@@ -723,10 +757,12 @@ class ProtocolHandler:
     # handler a request
     def handle_request(self, socket_handler, request):
         command = request["command"]
+        self._log.info('(I) ws.ProtocolHandler.handle_request of: ' + command)
         if command not in self._handlers:
             return False
         params = request["params"]
         # Create callback handler to write response to the socket.
+        self._log.debug('found a handler!')
         self._handlers[command](socket_handler, params)
         return True
 
@@ -801,9 +837,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         # request.has_key("params") and type(request["params"]) == list
 
     def on_message(self, message):
-
         # self._log.info('[On Message]: %s' % message)
-
         try:
             request = json.loads(message)
         except:
