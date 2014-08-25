@@ -104,7 +104,6 @@ class Multisig:
         key.set_secret(secret)
 
         for i, input in enumerate(tx.inputs):
-            self._log.info(i)
             sighash = generate_signature_hash(tx, i, self.script)
             # Add sighash::all to end of signature.
             signature = key.sign(sighash) + "\x01"

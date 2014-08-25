@@ -368,7 +368,7 @@ class ProtocolHandler:
 
         try:
             client = obelisk.ObeliskOfLightClient(
-                'tcp://obelisk.openbazaar.org:9091'
+                'tcp://obelisk2.airbitz.co:9091'
             )
 
             seller = offer_data_json['Seller']
@@ -406,14 +406,19 @@ class ProtocolHandler:
 
                 private_key = self._market.private_key()
 
-                multisig.sign_all_inputs(
+                signatures = multisig.sign_all_inputs(
                     tx, private_key.decode('hex')
                 )
 
+                self._log.info(signatures)
+
                 self.send_to_client(None, {
                     "type": "signed_tx_sent",
-                    "test": "teest"
+                    "tx": tx,
+                    "signed_inputs": signatures
                 })
+
+                self._log.debug('Sent tx and signed inputs to merchant')
 
             def get_history():
                 client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
