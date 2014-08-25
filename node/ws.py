@@ -501,12 +501,17 @@ class ProtocolHandler:
 
         def on_backup_done(backupPath):
             self._log.info('Backup sucessfully created at ' + backupPath)
-            self.send_ok()
-            #TODO: self.send_to_client(None, json.{'Backup created successfully!')
+            self.send_to_client(None, 
+                                {'type': 'create_backup_result',
+                                 'result': 'success',
+                                 'detail': backupPath})
 
         def on_backup_error(errorMessage):
-            self._log.info('Backup error:', errorMessage)
-            #TODO:self.send_to_client(error, result)
+            self._log.info('Backup error:' + str(errorMessage.strerror))
+            self.send_to_client(None, 
+                                {'type': 'create_backup_result',
+                                 'result': 'failure',
+                                 'detail': errorMessage.strerror})
 
         BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar", 
                           "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",

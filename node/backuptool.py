@@ -50,9 +50,11 @@ class BackupTool:
         except Exception, e:
             if onErrorCallback is not None:
                 onErrorCallback(e)
+                return
 
         if onSucessCallback is not None:
             onSucessCallback(outputFilepath)
+            return
 
     @staticmethod
     def restore(backupTarFilepath):
