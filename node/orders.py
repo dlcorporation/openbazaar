@@ -119,9 +119,12 @@ class Orders(object):
         output.close()
         return qr
 
-    def get_order(self, orderId):
+    def get_order(self, orderId, by_buyer_id=False):
 
-        _order = self._db.selectEntries("orders", "order_id = '%s'" % orderId)[0]
+        if not by_buyer_id:
+            _order = self._db.selectEntries("orders", "order_id = '%s'" % orderId)[0]
+        else:
+            _order = self._db.selectEntries("orders", "buyer_order_id = '%s'" % orderId)[0]
         total_price = 0
 
         offer_data_json = self.get_offer_json(_order['signed_contract_body'], _order['state'])
