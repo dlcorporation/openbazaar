@@ -4,7 +4,10 @@ import sys
 from twisted.internet import reactor
 
 
-TESTNET = False
+TESTNET = True
+OBELISK_SERVER_TESTNET = "tcp://obelisk-testnet2.airbitz.co:9091"
+OBELISK_SERVER_MAINNET = "tcp://85.25.198.97:9091"
+PROOF_OF_BURN_ADDR_PERTURBATION = 30
 
 def build_output_info_list(unspent_rows):
     unspent_infos = []
@@ -20,32 +23,34 @@ def build_output_info_list(unspent_rows):
 
 
 def burnaddr_from_guid(guid_hex):
+    # perturbate GUID
+    # to ensure unspendability through
+    # near-collision resistance of SHA256
+
     guid_hex = list(guid_hex)
 
     # change the address prefix to make it obvious it is a proof-of-burn address
     # we're still left with 128-bits of entropy to ensure brute-force-resistance
     if TESTNET:
         # the '6f' prefix is imperative to distinguish a testnet address
-        OPENBAZAAR_PREFIX = '6f5b19e0f541c4476'
+        OPENBAZAAR_PREFIX = '5b19e0f541c4476'
     else:
         # the '00' prefix is imperative to distinguish a mainnet address
         # prefix of b58decode('1openbazaarxxxxxxxxxxxxxxxxxxxxxx')
-        OPENBAZAAR_PREFIX = '0008dae9651b00eeab'
+        OPENBAZAAR_PREFIX = '08dae9651b00eeab'
 
-    for i, char in enumerate(OPENBAZAAR_PREFIX):
-        guid_hex[i] = char
-
-    # perturbate GUID
-    # to ensure unspendability through
-    # near-collision resistance of SHA256
-
-    if guid_hex[24] == '0':
-        guid_hex[24] = '1'
+    if guid_hex[PROOF_OF_BURN_ADDR_PERTURBATION] == '0':
+        guid_hex[PROOF_OF_BURN_ADDR_PERTURBATION] = '1'
     else:
-        guid_hex[24] = hex(int(guid_hex[14], 16) - 1)[2:]
+        guid_hex[PROOF_OF_BURN_ADDR_PERTURBATION] = hex(int(guid_hex[PROOF_OF_BURN_ADDR_PERTURBATION], 16) - 1)[2:]
 
     guid_hex = guid_hex[:40]
     guid_hex = ''.join(guid_hex)
+
+    if TESTNET:
+        guid_hex = '6f' + guid_hex
+    else:
+        guid_hex = '00' + guid_hex
 
     guid = guid_hex.decode('hex')
 
@@ -53,7 +58,7 @@ def burnaddr_from_guid(guid_hex):
 
 
 def get_global(guid, callback):
-    pass
+    get_unspent(burnaddr_from_guid(guid), callback)
 
 def get_unspent(addr, callback):
     print('get_unspent call')
@@ -82,9 +87,9 @@ def get_unspent(addr, callback):
         callback(value)
 
     if TESTNET:
-        obelisk_addr = "tcp://85.25.198.97:10091"
+        obelisk_addr = OBELISK_SERVER_TESTNET
     else:
-        obelisk_addr = "tcp://85.25.198.97:9091"
+        obelisk_addr = OBELISK_SERVER_MAINNET
 
     print('unspent query to obelisk server at %s' % obelisk_addr)
 
