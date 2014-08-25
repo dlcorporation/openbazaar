@@ -32,6 +32,7 @@ class ProtocolHandler:
             ('node_page', self.on_node_page),
             ('listing_results', self.on_listing_results),
             ('listing_result', self.on_listing_result),
+            ('release_funds_tx', self.on_release_funds_tx),
             ('all', self.on_node_message)
         ])
 
@@ -59,7 +60,6 @@ class ProtocolHandler:
             "pay_order": self.client_pay_order,
             "ship_order": self.client_ship_order,
             "release_payment": self.client_release_payment,
-            "release_funds_tx": self.client_release_funds_tx,
             "remove_contract": self.client_remove_contract,
             "generate_secret": self.client_generate_secret,
             "welcome_dismissed": self.client_welcome_dismissed,
@@ -426,7 +426,7 @@ class ProtocolHandler:
         except Exception, e:
             self._log.error('%s' % e)
 
-    def client_release_funds_tx(self, msg):
+    def on_release_funds_tx(self, msg):
         self._log.info('Receiving signed tx from buyer')
 
         order = self._market.orders.get_order(msg['buyer_order_id'])
