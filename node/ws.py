@@ -59,6 +59,7 @@ class ProtocolHandler:
             "pay_order": self.client_pay_order,
             "ship_order": self.client_ship_order,
             "release_payment": self.client_release_payment,
+            "release_funds_tx": self.client_release_funds_tx,
             "remove_contract": self.client_remove_contract,
             "generate_secret": self.client_generate_secret,
             "welcome_dismissed": self.client_welcome_dismissed,
@@ -413,12 +414,7 @@ class ProtocolHandler:
                     tx, private_key.decode('hex')
                 )
                 tx_serialized = tx.serialize().encode("hex")
-                self._market.release_funds_to_merchant(tx_serialized, signatures, order.get('merchant'))
-                # self.send_to_client(None, {
-                #     "type": "signed_tx_sent",
-                #     "tx": tx,
-                #     "signed_inputs": signatures
-                # })
+                self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx_serialized, signatures, order.get('merchant'))
 
                 self._log.debug('Sent tx and signed inputs to merchant')
 
@@ -427,24 +423,116 @@ class ProtocolHandler:
 
             reactor.callFromThread(get_history)
 
-            # def finished_cb(msg):
-            #     self._log.info('tx %s' % msg)
-            #
-            # addr = '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt'
-            # #multisig.create_unsigned_transaction(addr, finished_cb)
-            #
-            # def fetched(ec, history):
-            #     self._log.info(history)
-            #     if ec is not None:
-            #         self._log.error("Error fetching history: %s" % ec)
-            #         return
-            #     addr = '1EzD5Tj9fa5jqV1mCCBy7kW43TYEsJsZw6'
-            #     self._fetched(history, addr, finished_cb)
-            #
-            # addr = '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt'
-            # #client.fetch_history(addr, fetched)
         except Exception, e:
             self._log.error('%s' % e)
+
+    def client_release_funds_tx(self, msg):
+        self._log.info('Receiving signed tx from buyer')
+
+        order = self._market.orders.get_order(msg['buyer_order_id'])
+        contract = order['signed_contract_body']
+
+        # Find Seller Data in Contract
+        offer_data = ''.join(contract.split('\n')[8:])
+        index_of_seller_signature = offer_data.find(
+            '- - -----BEGIN PGP SIGNATURE-----', 0, len(offer_data)
+        )
+        offer_data_json = offer_data[0:index_of_seller_signature]
+        offer_data_json = json.loads(offer_data_json)
+        self._log.info('Offer Data: %s' % offer_data_json)
+
+        # Find Buyer Data in Contract
+        bid_data_index = offer_data.find(
+            '"Buyer"', index_of_seller_signature, len(offer_data)
+        )
+        end_of_bid_index = offer_data.find(
+            '- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data)
+        )
+        bid_data_json = "{"
+        bid_data_json += offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = json.loads(bid_data_json)
+
+        # Find Notary Data in Contract
+        notary_data_index = offer_data.find(
+            '"Notary"', end_of_bid_index, len(offer_data)
+        )
+        end_of_notary_index = offer_data.find(
+            '-----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data)
+        )
+        notary_data_json = "{"
+        notary_data_json += offer_data[notary_data_index:end_of_notary_index]
+        notary_data_json = json.loads(notary_data_json)
+        self._log.info('Notary Data: %s' % notary_data_json)
+
+        try:
+            client = obelisk.ObeliskOfLightClient(
+                'tcp://obelisk2.airbitz.co:9091'
+            )
+
+            seller = offer_data_json['Seller']
+            buyer = bid_data_json['Buyer']
+            notary = notary_data_json['Notary']
+
+            seller_key = seller['seller_BTC_uncompressed_pubkey']
+            buyer_key = buyer['buyer_BTC_uncompressed_pubkey']
+            notary_key = notary['notary_BTC_uncompressed_pubkey']
+
+            pubkeys = [
+                seller_key.decode('hex'),
+                buyer_key.decode('hex'),
+                notary_key.decode('hex')
+            ]
+
+            multisig = Multisig(client, 2, pubkeys)
+
+            def cb(ec, history, order):
+
+                # Debug
+                self._log.info('%s %s' % (ec, history))
+
+                if ec is not None:
+                    self._log.error("Error fetching history: %s" % ec)
+                    # TODO: Send error message to GUI
+                    return
+
+                # Create unsigned transaction
+                unspent = [row[:4] for row in history if row[4] is None]
+                tx = multisig._build_actual_tx(
+                    unspent, order['payment_address']
+                )
+                self._log.info(tx.serialize().encode("hex"))
+
+                private_key = self._market.private_key()
+
+                merchant_sigs = multisig.sign_all_inputs(tx,
+                                                      private_key.decode('hex'))
+                buyer_sigs = msg['signature']
+
+                for i, input in enumerate(tx.inputs):
+                    sigs = (buyer_sigs[i], merchant_sigs[i])
+                    script = "\x00"
+                    for sig in sigs:
+                        script += chr(len(sig)) + sig
+                    script += "\x4c"
+                    assert len(multisig.script) < 255
+                    script += chr(len(multisig.script)) + multisig.script
+                    print "Script:", script.encode("hex")
+                    tx.inputs[i].script = script
+
+                print tx
+                print tx.serialize().encode("hex")
+
+                Multisig.broadcast(tx)
+
+
+            def get_history():
+                client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
+
+            reactor.callFromThread(get_history)
+
+        except Exception, e:
+            self._log.error('%s' % e)
+
 
     def client_generate_secret(self, socket_handler, msg):
         self._transport._generate_new_keypair()
