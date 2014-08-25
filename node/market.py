@@ -253,30 +253,20 @@ class Market(object):
 
     def get_notaries(self, online_only=False):
         self._log.debug('Getting notaries')
-
         notaries = []
+        settings = self.get_settings()
 
-        notary_guids = self.settings['notaries']
+        # Untested code
+        if online_only:
+            notaries = {}
+            for n in settings['notaries']:
+                peer = self._dht._routingTable.getContact(n.guid)
+            if peer is not None and peer.check_port():
+                notaries.append(n)
+            return notaries
+        # End of untested code
 
-        for guid in notary_guids:
-            if Market.valid_guid(guid):
-                self._log.info('MARKET GUID %s' % guid)
-
-                if online_only:
-                    peer = self._dht._routingTable.getContact(guid)
-
-                    if peer and hasattr(peer, '_nickname'):
-                        nickname = peer._nickname
-                    else:
-                        nickname = ""
-
-                    if peer is not None and peer.check_port():
-                        notaries.append({"guid": guid, "nickname": nickname})
-                else:
-                    notaries.append({"guid": guid})
-
-        self._log.debug('NOTARIES: %s' % notaries)
-        return notaries
+        return settings['notaries']
 
     @staticmethod
     def valid_guid(guid):
