@@ -510,7 +510,7 @@ class ProtocolHandler:
                 buyer_sigs = msg['signature']
 
                 for i, input in enumerate(tx.inputs):
-                    sigs = (buyer_sigs[i], merchant_sigs[i])
+                    sigs = (buyer_sigs[i].decode('hex'), merchant_sigs[i].decode('hex'))
                     script = "\x00"
                     for sig in sigs:
                         script += chr(len(sig)) + sig
