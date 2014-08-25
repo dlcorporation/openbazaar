@@ -14,6 +14,7 @@ import urllib
 class Orders(object):
     class State:
         '''Enum inner class. Python introduces enums in Python 3.0, but this should be good enough'''
+        SENT = 'Sent'
         ACCEPTED = 'accepted'
         BID = 'bid'
         BUYER_PAID = 'Buyer Paid'
@@ -41,15 +42,44 @@ class Orders(object):
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
 
     def get_offer_json(self, raw_contract, state):
-        offer_data = ''.join(raw_contract.split('\n')[8:])
-        index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+
+        print state
+
+        if state == Orders.State.SENT:
+            offer_data = ''.join(raw_contract.split('\n')[5:])
+            sig_index = offer_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+            offer_data_json = offer_data[0:sig_index]
+            return json.loads(offer_data_json)
+
+        if state in [Orders.State.WAITING_FOR_PAYMENT,
+                     Orders.State.NOTARIZED,
+                     Orders.State.NEED_TO_PAY,
+                     Orders.State.PAID,
+                     Orders.State.BUYER_PAID,
+                     Orders.State.SHIPPED]:
+            start_line = 8
+        else:
+            start_line = 4
+
+        offer_data = ''.join(raw_contract.split('\n')[start_line:])
+
+        if state in [Orders.State.NOTARIZED,
+                     Orders.State.NEED_TO_PAY,
+                     Orders.State.PAID,
+                     Orders.State.BUYER_PAID,
+                     Orders.State.SHIPPED]:
+            index_of_seller_signature = offer_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+        else:
+            index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
 
         if state in (Orders.State.NEED_TO_PAY,
                                Orders.State.NOTARIZED,
-                               Orders.State.WAITING_FOR_PAYMENT,
-                               Orders.State.PAID,
                                Orders.State.BUYER_PAID,
+                               Orders.State.PAID,
                                Orders.State.SHIPPED):
+            offer_data_json = offer_data[0:index_of_seller_signature-2]
+            offer_data_json = json.loads(offer_data_json)
+        elif state in (Orders.State.WAITING_FOR_PAYMENT):
             offer_data_json = offer_data[0:index_of_seller_signature-4]
             offer_data_json = json.loads(str(offer_data_json))
         else:
@@ -57,6 +87,28 @@ class Orders(object):
             offer_data_json = json.loads(str(offer_data_json))
 
         return offer_data_json
+
+    def get_notary_json(self, raw_contract, state):
+
+        if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
+            start_line = 8
+        else:
+            start_line = 6
+        offer_data = ''.join(raw_contract.split('\n')[start_line:])
+        index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+
+        # Find Buyer Data in Contract
+        bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
+        end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+
+        # Find Notary Data in Contract
+        notary_data_index = offer_data.find('"Notary"', end_of_bid_index, len(offer_data))
+        end_of_notary_index = offer_data.find('-----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data))
+        notary_data_json = "{" + offer_data[notary_data_index:end_of_notary_index]
+
+        notary_data_json = json.loads(notary_data_json)
+
+        return notary_data_json
 
     def get_qr_code(self, item_title, address, total):
         qr_url = urllib.urlencode({"url":item_title})
@@ -67,12 +119,21 @@ class Orders(object):
         output.close()
         return qr
 
-    def get_order(self, orderId):
+    def get_order(self, orderId, by_buyer_id=False):
 
-        _order = self._db.selectEntries("orders", "order_id = '%s'" % orderId)[0]
+        if not by_buyer_id:
+            _order = self._db.selectEntries("orders", "order_id = '%s'" % orderId)[0]
+        else:
+            _order = self._db.selectEntries("orders", "buyer_order_id = '%s'" % orderId)[0]
         total_price = 0
 
         offer_data_json = self.get_offer_json(_order['signed_contract_body'], _order['state'])
+
+        if _order['state'] != Orders.State.SENT:
+            notary_json = self.get_notary_json(_order['signed_contract_body'], _order['state'])
+            notary = notary_json['Notary']['notary_GUID']
+        else:
+            notary = ""
 
         if _order['state'] in (Orders.State.NEED_TO_PAY,
                                Orders.State.NOTARIZED,
@@ -93,8 +154,6 @@ class Orders(object):
 
         # Generate QR code
         qr = self.get_qr_code(offer_data_json['Contract']['item_title'], _order['address'], total_price)
-
-        notary = self._transport._guid if _order['state'] == Orders.State.NOTARIZED else ""
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -291,6 +350,8 @@ class Orders(object):
                 order_to_notary['type'] = 'order'
                 order_to_notary['rawContract'] = contract
                 order_to_notary['state'] = Orders.State.BID
+
+                self._log.info('Sending order to %s' % notary)
 
                 # Send order to notary for approval
                 self._transport.send(order_to_notary, notary)

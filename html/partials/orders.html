@@ -11,6 +11,7 @@
 
     <div class="col-sm-12" style="padding:0">
 
+        <div data-ng-controller="ViewOrderCtrl">
 
         <div class="col-sm-12 text-right">
 
@@ -26,167 +27,9 @@
             You have no sales yet.
         </div>
 
-        <div data-ng-controller="ViewOrderCtrl">
-            <script type="text/ng-template" id="viewOrder.html">
-                <div class="modal-header">
-                    <h3 class="modal-title">Order #{{orderId}}</h3>
-                </div>
-                <div class="modal-body" style="text-align:left;">
-
-                    <div data-ng-show="Market.modalOrder.state == 'Need to Pay'" class="alert alert-warning" role="alert">
-                        <div class="row">
-
-                            <div style="float:left;margin:10px;"><img src="{{Market.modalOrder.qrcode}}" width="150" height="150"/></div>
-                            <div style="margin:10px;">You need to send <strong>&#3647;{{Market.modalOrder.total_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.
 
 
-                                <div data-ng-show="Market.modalOrder.state == 'Need to Pay'" id="payment_buttons2" style="margin-top:10px;">
-                                    <a href="bitcoin:{{Market.modalOrder.address}}?amount={{Market.modalOrder.total_price}}&message={{Market.modalOrder.item_title}}"><button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-share-alt"></span> Pay in your Wallet</button></a>
-                                    <button data-ng-click="markOrderPaid(orderId)" class="btn btn-info"><span class="glyphicon glyphicon-ok"></span> Mark as Paid</button>
-                                    <button data-ng-click="" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> Cancel Order</button>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div data-ng-show="Market.modalOrder.waitingForShipment"  class="alert alert-warning">
-                        <h3>Shipping & Payment</h3>
-                        <form name="releasePaymentForm" novalidate>
-
-                            <p style="padding:10px">This order has been paid for by the buyer. You should verify the funds have been sent and then ship the
-                            goods. Once you've done this you can enter your payment address and notify the buyer.</p>
-
-                            <div class="row" style="margin-top:10px;">
-                            <div class="col-sm-5 text-right" style="padding-top:5px">
-                                <strong>Where would you like payment sent to? </strong>
-                            </div>
-                            <div class="col-sm-7 {{releasePaymentForm.bitcoinPaymentAddress.$invalid ? 'has-error' : ''}}">
-                                <input type="text" required class="form-control text" name="bitcoinPaymentAddress" data-ng-model="Market.modalOrder.paymentAddress" placeholder="Enter a Bitcoin address"/>
-                            </div>
-                                </div>
-                            <div class="row" style="margin-top:10px;">
-                                <div class="col-sm-5 text-right" style="padding-top:5px">
-                                </div>
-                                <div class="col-sm-7">
-                                    <button id="send-order-button" data-ng-click="markOrderShipped(orderId)" class="{{releasePaymentForm.bitcoinPaymentAddress.$invalid ? 'disabled' : ''}} btn btn-info"><span class="glyphicon glyphicon-share"></span> Request Payment</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div data-ng-show="Market.modalOrder.state == 'Shipped' && Market.modalOrder.merchant != settings.guid" class="alert alert-warning" role="alert">
-                        <p style="margin:5px 0">Once you've received your order and are satisfied please release your payment to the seller.</p>
-                        <button id="send-order-button" data-ng-click="markOrderReceived(orderId)" class="btn btn-sm btn-info"><span class="glyphicon glyphicon-share"></span> Release Payment to Merchant</button>
-                    </div>
-
-                    <button data-ng-show="Market.modalOrder.flagForArbitration" id="send-order-button" data-ng-click="flagOrderForArbitration(orderId)" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-flag"></span> Flag for Arbiter</button>
-
-                    <!-- Nav tabs -->
-<ul class="nav nav-tabs" role="tablist">
-  <li class="active"><a href="#order" role="tab" data-toggle="tab">Order</a></li>
-  <li><a href="#contract-details" role="tab" data-toggle="tab">Contract Details</a></li>
-  <li><a href="#shipping-information" role="tab" data-toggle="tab">Shipping Information</a></li>
-</ul>
-
-<!-- Tab panes -->
-<div class="tab-content">
-  <div class="tab-pane active" id="order">
-
-      <div class="media" style="margin:10px;">
-          <a class="pull-left" href="#">
-            <img class="media-object" src="{{Market.modalOrder.item_image}}" alt="{{Market.modalOrder.item_title}">
-          </a>
-          <div class="media-body">
-            <h4 class="media-heading">{{Market.modalOrder.item_title}}</h4>
-            {{Market.modalOrder.item_desc}}
-          </div>
-        </div>
-
-      <table class="table table-striped">
-                        <tr>
-                            <td width=200><strong>Order Date:</strong></td>
-                            <td>{{Market.modalOrder.updated*1000 | date:'medium'}}</td>
-                        </tr>
-                        <tr>
-                            <td width=200><strong>Status:</strong></td>
-                            <td style="vertical-align:middle;"><span class="label label-info">{{Market.modalOrder.state}}</span> <span data-ng-show="Market.modalOrder.waitingForSellerToShip" style="font-weight:bold;">Waiting for Shipment</span></td>
-                        </tr>
-                        <tr data-ng-show="Market.modalOrder.item_price">
-                            <td><strong>Contract Price:</strong></td>
-                            <td style="word-break:break-all">&#3647;{{Market.modalOrder.item_price}}</td>
-                        </tr>
-                        <tr data-ng-show="Market.modalOrder.shipping_price">
-                            <td><strong>Shipping Price:</strong></td>
-                            <td style="word-break:break-all">&#3647;{{Market.modalOrder.shipping_price}}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Payment Address:</strong></td>
-                            <td style="word-break:break-all"><a href="https://blockchain.info/address/{{Market.modalOrder.address}}" target="_blank">{{Market.modalOrder.address}}</a></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Note to Merchant:</strong></td>
-                            <td style="word-break:break-all">{{Market.modalOrder.note_for_merchant}}</td>
-                        </tr>
-                    </table>
-
-
-  </div>
-  <div class="tab-pane" id="contract-details">
-
-      <table class="table table-striped" style="margin-top:10px;">
-            <tr>
-                <td><strong>Buyer:</strong></td>
-                <td style="word-break:break-all">{{Market.modalOrder.buyer}}</td>
-            </tr>
-            <tr>
-                <td><strong>Merchant:</strong></td>
-                <td style="word-break:break-all">{{Market.modalOrder.merchant}}</td>
-            </tr>
-            <tr>
-                <td><strong>Notary:</strong></td>
-                <td style="word-break:break-all">{{Market.modalOrder.notary}}</td>
-            </tr>
-            <tr>
-                <td><strong>Payment Address:</strong></td>
-                <td style="word-break:break-all"><a href="https://blockchain.info/address/{{Market.modalOrder.address}}" target="_blank">{{Market.modalOrder.address}}</a></td>
-            </tr>
-            <tr>
-                <td><strong>Raw Contract:</strong></td>
-                <td><pre style="word-wrap:break-word;font-size:12px;height:250px;">{{Market.modalOrder.signed_contract_body}}</pre></td>
-            </tr>
-        </table>
-
-
-  </div>
-
-    <div class="tab-pane" id="shipping-information" data-ng-show="Market.modalOrder.waitingForShipment">
-
-        <div style="padding:20px;">
-        <address>
-          <span data-ng-show="Market.modalOrder.shipping_address.recipient_name"><strong>{{Market.modalOrder.shipping_address.recipient_name}}</strong><br></span>
-          <span data-ng-show="Market.modalOrder.shipping_address.street1">{{Market.modalOrder.shipping_address.street1}}<br></span>
-          <span data-ng-show="Market.modalOrder.shipping_address.street2">{{Market.modalOrder.shipping_address.street2}}<br></span>
-          <span data-ng-show="Market.modalOrder.shipping_address.city">{{Market.modalOrder.shipping_address.city}}, </span>{{Market.modalOrder.shipping_address.stateRegion}} {{Market.modalOrder.shipping_address.zip}}
-        </address>
-        </div>
-
-
-    </div>
-
-</div>
-
-
-</div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-info" data-ng-click="cancel()">Close</button>
-                </div>
-            </script>
-
-
-
-            <div data-ng-show="orders_total > 0" style="padding:5px">
+        <div data-ng-show="orders_total > 0" style="padding:5px">
                 <table class="table table-striped table-bordered" >
 
                     <!--<tr><td colspan="100%" style="background-color:#ccc;Adding escrows to database instead of hard coded into order.py">-->
@@ -252,7 +95,7 @@
                 </table>
 
             </div>
-
+            </div>
 
         </div>
 

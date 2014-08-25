@@ -167,8 +167,12 @@ def start_node(my_market_ip,
 
         # application.get_transport().broadcast_goodbye()
         application.cleanup_upnp_port_mapping()
-        application.market.p.kill()
+        tornado.ioloop.IOLoop.instance().stop()
 
+        #TODO:
+        # we should implement the shutdown of the dht connections, db connection, bitmessage connection
+        # maybe this was meant to do all that but nobody ever got around it.
+        #application.market.p.kill()
         sys.exit(0)
     try:
         signal.signal(signal.SIGTERM, shutdown)

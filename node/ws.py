@@ -7,12 +7,14 @@ import subprocess
 import protocol
 import pycountry
 import gnupg
+import os
 import obelisk
 
 import tornado.websocket
 from zmq.eventloop import ioloop
 from twisted.internet import reactor
 import trust
+from backuptool import BackupTool
 
 ioloop.install()
 
@@ -31,6 +33,7 @@ class ProtocolHandler:
             ('node_page', self.on_node_page),
             ('listing_results', self.on_listing_results),
             ('listing_result', self.on_listing_result),
+            ('release_funds_tx', self.on_release_funds_tx),
             ('all', self.on_node_message)
         ])
 
@@ -67,6 +70,7 @@ class ProtocolHandler:
             "clear_dht_data": self.client_clear_dht_data,
             "clear_peers_data": self.client_clear_peers_data,
             "read_log": self.client_read_log,
+            "create_backup": self.client_create_backup,
         }
 
         self._timeouts = []
@@ -388,7 +392,7 @@ class ProtocolHandler:
 
         try:
             client = obelisk.ObeliskOfLightClient(
-                'tcp://obelisk.openbazaar.org:9091'
+                'tcp://obelisk2.airbitz.co:9091'
             )
 
             seller = offer_data_json['Seller']
@@ -426,38 +430,130 @@ class ProtocolHandler:
 
                 private_key = self._market.private_key()
 
-                multisig.sign_all_inputs(
+                signatures = multisig.sign_all_inputs(
                     tx, private_key.decode('hex')
                 )
+                tx_serialized = tx.serialize().encode("hex")
+                self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx_serialized, signatures, order.get('merchant'))
 
-                self.send_to_client(None, {
-                    "type": "signed_tx_sent",
-                    "test": "teest"
-                })
+                self._log.debug('Sent tx and signed inputs to merchant')
 
             def get_history():
                 client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
 
             reactor.callFromThread(get_history)
 
-            # def finished_cb(msg):
-            #     self._log.info('tx %s' % msg)
-            #
-            # addr = '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt'
-            # #multisig.create_unsigned_transaction(addr, finished_cb)
-            #
-            # def fetched(ec, history):
-            #     self._log.info(history)
-            #     if ec is not None:
-            #         self._log.error("Error fetching history: %s" % ec)
-            #         return
-            #     addr = '1EzD5Tj9fa5jqV1mCCBy7kW43TYEsJsZw6'
-            #     self._fetched(history, addr, finished_cb)
-            #
-            # addr = '16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt'
-            # #client.fetch_history(addr, fetched)
         except Exception, e:
             self._log.error('%s' % e)
+
+    def on_release_funds_tx(self, msg):
+        self._log.info('Receiving signed tx from buyer')
+
+        buyer_order_id = str(msg['senderGUID'])+'-'+str(msg['buyer_order_id'])
+        order = self._market.orders.get_order(buyer_order_id, by_buyer_id=True)
+        contract = order['signed_contract_body']
+
+        # Find Seller Data in Contract
+        offer_data = ''.join(contract.split('\n')[8:])
+        index_of_seller_signature = offer_data.find(
+            '- - -----BEGIN PGP SIGNATURE-----', 0, len(offer_data)
+        )
+        offer_data_json = offer_data[0:index_of_seller_signature]
+        offer_data_json = json.loads(offer_data_json)
+        self._log.info('Offer Data: %s' % offer_data_json)
+
+        # Find Buyer Data in Contract
+        bid_data_index = offer_data.find(
+            '"Buyer"', index_of_seller_signature, len(offer_data)
+        )
+        end_of_bid_index = offer_data.find(
+            '- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data)
+        )
+        bid_data_json = "{"
+        bid_data_json += offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = json.loads(bid_data_json)
+
+        # Find Notary Data in Contract
+        notary_data_index = offer_data.find(
+            '"Notary"', end_of_bid_index, len(offer_data)
+        )
+        end_of_notary_index = offer_data.find(
+            '-----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data)
+        )
+        notary_data_json = "{"
+        notary_data_json += offer_data[notary_data_index:end_of_notary_index]
+        notary_data_json = json.loads(notary_data_json)
+        self._log.info('Notary Data: %s' % notary_data_json)
+
+        try:
+            client = obelisk.ObeliskOfLightClient(
+                'tcp://obelisk2.airbitz.co:9091'
+            )
+
+            seller = offer_data_json['Seller']
+            buyer = bid_data_json['Buyer']
+            notary = notary_data_json['Notary']
+
+            seller_key = seller['seller_BTC_uncompressed_pubkey']
+            buyer_key = buyer['buyer_BTC_uncompressed_pubkey']
+            notary_key = notary['notary_BTC_uncompressed_pubkey']
+
+            pubkeys = [
+                seller_key.decode('hex'),
+                buyer_key.decode('hex'),
+                notary_key.decode('hex')
+            ]
+
+            multisig = Multisig(client, 2, pubkeys)
+
+            def cb(ec, history, order):
+
+                # Debug
+                self._log.info('%s %s' % (ec, history))
+
+                if ec is not None:
+                    self._log.error("Error fetching history: %s" % ec)
+                    # TODO: Send error message to GUI
+                    return
+
+                # Create unsigned transaction
+                unspent = [row[:4] for row in history if row[4] is None]
+                tx = multisig._build_actual_tx(
+                    unspent, order['payment_address']
+                )
+                self._log.info(tx.serialize().encode("hex"))
+
+                private_key = self._market.private_key()
+
+                merchant_sigs = multisig.sign_all_inputs(tx,
+                                                      private_key.decode('hex'))
+                buyer_sigs = msg['signature']
+
+                for i, input in enumerate(tx.inputs):
+                    sigs = (buyer_sigs[i].decode('hex'), merchant_sigs[i].decode('hex'))
+                    script = "\x00"
+                    for sig in sigs:
+                        script += chr(len(sig)) + sig
+                    script += "\x4c"
+                    assert len(multisig.script) < 255
+                    script += chr(len(multisig.script)) + multisig.script
+                    print "Script:", script.encode("hex")
+                    tx.inputs[i].script = script
+
+                print tx
+                print tx.serialize().encode("hex")
+
+                Multisig.broadcast(tx)
+
+
+            def get_history():
+                client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
+
+            reactor.callFromThread(get_history)
+
+        except Exception, e:
+            self._log.error('%s' % e)
+
 
     def client_generate_secret(self, socket_handler, msg):
         self._transport._generate_new_keypair()
@@ -505,6 +601,37 @@ class ProtocolHandler:
             msg['key'],
             callback=self.on_find_products_by_store
         )
+
+    def client_create_backup(self, socket_handler, msg):
+        """Currently hardcoded for testing: need to find out Installation path.
+        Talk to team about right location for backup files
+        they might have to be somewhere outside the installation path
+        as some OSes might not allow the modification of the installation folder
+        e.g. MacOS won't allow for changes if the .app has been signed.
+        and all files created by the app, have to be outside, usually at 
+        ~/Library/Application Support/OpenBazaar/backups ??
+        """
+        def on_backup_done(backupPath):
+            self._log.info('Backup sucessfully created at ' + backupPath)
+            self.send_to_client(None, 
+                                {'type': 'create_backup_result',
+                                 'result': 'success',
+                                 'detail': backupPath})
+
+        def on_backup_error(error):
+            self._log.info('Backup error:' + str(error.strerror))
+            self.send_to_client(None, 
+                                {'type': 'create_backup_result',
+                                 'result': 'failure',
+                                 'detail': error.strerror})
+
+        #TODO: Make backup path configurable on server settings before run.sh
+        OB_PATH = os.path.realpath(os.path.abspath(__file__))[:os.path.realpath(os.path.abspath(__file__)).find('/node')]
+        BACKUP_PATH = OB_PATH + os.sep + "html" + os.sep + 'backups'
+        BackupTool.backup(OB_PATH,
+                          BACKUP_PATH,
+                          on_backup_done,
+                          on_backup_error)
 
     def on_find_products_by_store(self, results):
 
@@ -738,10 +865,12 @@ class ProtocolHandler:
     # handler a request
     def handle_request(self, socket_handler, request):
         command = request["command"]
+        self._log.info('(I) ws.ProtocolHandler.handle_request of: ' + command)
         if command not in self._handlers:
             return False
         params = request["params"]
         # Create callback handler to write response to the socket.
+        self._log.debug('found a handler!')
         self._handlers[command](socket_handler, params)
         return True
 
@@ -816,9 +945,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         # request.has_key("params") and type(request["params"]) == list
 
     def on_message(self, message):
-
         # self._log.info('[On Message]: %s' % message)
-
         try:
             request = json.loads(message)
         except:

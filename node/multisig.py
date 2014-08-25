@@ -4,6 +4,7 @@ from twisted.internet import reactor
 
 import obelisk
 import pyelliptic as ec
+import urllib2, re, random
 
 
 # Create new private key:
@@ -104,12 +105,38 @@ class Multisig:
         key.set_secret(secret)
 
         for i, input in enumerate(tx.inputs):
-            self._log.info(i)
             sighash = generate_signature_hash(tx, i, self.script)
             # Add sighash::all to end of signature.
             signature = key.sign(sighash) + "\x01"
-            signatures.append(signature)
+            signatures.append(signature.encode('hex'))
         return signatures
+
+    @staticmethod
+    def make_request(*args):
+        opener = urllib2.build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0'+str(random.randrange(1000000)))]
+        try:
+            return opener.open(*args).read().strip()
+        except Exception,e:
+            try: p = e.read().strip()
+            except: p = e
+            raise Exception(p)
+
+    @staticmethod
+    def eligius_pushtx(tx):
+        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php','transaction='+tx+'&send=Push')
+        strings = re.findall('string[^"]*"[^"]*"',s)
+        for string in strings:
+            quote = re.findall('"[^"]*"',string)[0]
+            if len(quote) >= 5: return quote[1:-1]
+
+    @staticmethod
+    def broadcast(tx):
+        raw_tx = tx.serialize().encode("hex")
+        print "Tx data:", raw_tx
+        Multisig.eligius_pushtx(raw_tx)
+        #gateway_broadcast(raw_tx)
+        #bci_pushtx(raw_tx)
 
 
 def add_input(tx, prevout):
@@ -135,6 +162,8 @@ def generate_signature_hash(parent_tx, input_index, script_code):
     tx.inputs[input_index].script = script_code
     raw_tx = tx.serialize() + "\x01\x00\x00\x00"
     return obelisk.Hash(raw_tx)
+
+
 
 
 class Escrow:

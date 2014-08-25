@@ -203,7 +203,7 @@ class Market(object):
         self._log.debug('%s %s' % (guid, nickname))
         notaries = self.settings.get('notaries')
         print notaries
-        if notaries == "":
+        if notaries == "" or notaries != []:
             notaries = []
         else:
             notaries = json.loads(notaries)
@@ -576,3 +576,11 @@ class Market(object):
                 key, value[1].encode("hex") if value[1] is not None else value[1],
                 value[0].encode("hex") if value[0] is not None else value[0]))
         self._log.info("##################################")
+
+    def release_funds_to_merchant(self, buyer_order_id, tx, signature, guid):
+        self._log.debug('Release funds to merchant: %s %s %s %s' % (buyer_order_id, tx, signature, guid))
+        self._transport.send({'type': 'release_funds_tx',
+                              'tx': tx,
+                              'buyer_order_id': buyer_order_id,
+                              'signature': signature}, guid)
+        self._log.debug('TX sent to merchant')

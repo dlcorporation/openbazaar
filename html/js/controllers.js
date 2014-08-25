@@ -21,7 +21,7 @@ obControllers
              * @msg - message from websocket to pass on to handler
              */
             var socket = new Connection(function(msg) {
-
+            	
                 var handlers = {
                     'load_page': function(msg) { $scope.load_page(msg) },
                     'order': function(msg) { $scope.parse_order(msg) },
@@ -33,8 +33,6 @@ obControllers
                 if(handlers[msg.type]) {
                     handlers[msg.type](msg);
                 }
-
-
 
             })
 
@@ -136,6 +134,107 @@ obControllers
                     $scope.$apply();
                 }
             }
+
+            $scope.ViewOrderCtrl = function($scope, $modal, $log) {
+
+                $scope.open = function(size, orderId, settings) {
+
+                    // Send socket a request for order info
+                    socket.send('query_order', {
+                        orderId: orderId
+                    })
+
+                    var modalInstance = $modal.open({
+                        templateUrl: 'viewOrder.html',
+                        controller: ViewOrderInstanceCtrl,
+                        size: size,
+                        resolve: {
+                            orderId: function() {
+                                return orderId;
+                            },
+                            settings: function() {
+                                return settings;
+                            },
+                            scope: function() {
+                                return $scope
+                            }
+                        }
+                    });
+
+                    modalInstance.result.then(function() {
+
+                    }, function() {
+                        $log.info('Modal dismissed at: ' + new Date());
+                    });
+                };
+            };
+
+
+            var ViewOrderInstanceCtrl = function($scope, $modalInstance, orderId, scope, settings) {
+
+
+                $scope.orderId = orderId;
+                $scope.Market = scope;
+                $scope.settings = settings;
+
+                $scope.markOrderPaid = function(orderId) {
+
+                    socket.send("pay_order", {
+                        orderId: orderId
+                    })
+
+                    scope.modalOrder.state = 'Paid';
+
+                    // Refresh orders in background
+                    scope.queryMyOrder(0);
+
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+
+                }
+
+
+                $scope.markOrderShipped = function(orderId) {
+
+                    socket.send("ship_order", {
+                        orderId: orderId,
+                        paymentAddress: scope.modalOrder.paymentAddress
+                    })
+
+                    scope.modalOrder.state = 'Shipped';
+                    scope.modalOrder.waitingForShipment = false;
+                    scope.queryMyOrder(1);
+
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+
+                }
+
+                $scope.markOrderReceived = function(orderId) {
+
+                    socket.send("release_payment", {
+                        orderId: orderId
+                    })
+
+                    scope.modalOrder.state = 'Completed';
+                    scope.queryMyOrder(0);
+
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+
+                }
+
+                $scope.ok = function() {
+                    $modalInstance.close();
+                };
+
+                $scope.cancel = function() {
+                    $modalInstance.dismiss('cancel');
+                };
+            };
 
         }
 ]);
@@ -412,8 +511,191 @@ obControllers
                     }
                 );
 
+                Notifier.success('Success', 'Notary added successfully.');
 
             }
+
+            $scope.BuyItemCtrl = function($scope, $modal, $log) {
+
+                $scope.open = function(size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
+                    notaries, arbiters, btc_pubkey, guid) {
+
+                    // Send socket a request for order info
+                    //socket.send('query_order', { orderId: orderId } )
+
+                    notaries = $scope.settings.notaries;
+
+
+                    modalInstance = $modal.open({
+                        templateUrl: 'buyItem.html',
+                        controller: $scope.BuyItemInstanceCtrl,
+                        resolve: {
+                            merchantPubkey: function() {
+                                return merchantPubkey
+                            },
+                            myself: function() {
+                                return myself
+                            },
+                            productTitle: function() {
+                                return productTitle
+                            },
+                            productPrice: function() {
+                                return productPrice
+                            },
+                            productDescription: function() {
+                                return productDescription
+                            },
+                            productImageData: function() {
+                                return productImageData
+                            },
+                            key: function() {
+                                return key
+                            },
+                            btc_pubkey: function() {
+                                return btc_pubkey
+                            },
+                            rawContract: function() {
+                                return rawContract
+                            },
+                            notaries: function() {
+                                return notaries
+                            },
+                            arbiters: function() {
+                                return arbiters
+                            },
+                            guid: function() {
+                                return guid
+                            },
+                            scope: function() {
+                                return $scope
+                            }
+                        },
+                        size: size
+                    });
+
+                    modalInstance.result.then(function() {
+
+                        $scope.showDashboardPanel('orders_purchases');
+
+                        $('#pill-orders').addClass('active').siblings().removeClass('active').blur();
+                        $("#orderSuccessAlert").alert();
+                        window.setTimeout(function() {
+                            $("#orderSuccessAlert").alert('close')
+                        }, 5000);
+
+                    }, function() {
+                        $log.info('Modal dismissed at: ' + new Date());
+
+                    });
+                };
+            };
+
+
+            $scope.BuyItemInstanceCtrl = function($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key,
+                rawContract,
+                notaries,
+                arbiters,
+                btc_pubkey,
+                guid,
+                scope) {
+
+                $scope.myself = myself;
+                $scope.merchantPubkey = merchantPubkey;
+                $scope.productTitle = productTitle;
+                $scope.productPrice = productPrice;
+                $scope.productDescription = productDescription;
+                $scope.productImageData = productImageData;
+                $scope.totalPrice = productPrice;
+                $scope.productQuantity = 1;
+                $scope.rawContract = rawContract;
+                $scope.guid = guid;
+                $scope.arbiters = arbiters;
+
+                $scope.notaries = notaries
+
+                $scope.key = key;
+
+                $scope.update = function(user) {
+                    console.log('Updated');
+                };
+
+
+                $scope.ok = function() {
+                    $modalInstance.close();
+                };
+
+                $scope.cancel = function() {
+                    $modalInstance.dismiss('cancel');
+                };
+
+                $scope.updateTotal = function() {
+                    var newPrice = $('#itemQuantity').val() * $scope.productPrice;
+                    newPrice = Math.round(newPrice * 100000) / 100000
+                    $('#totalPrice').html(newPrice);
+                }
+
+                $scope.gotoStep2 = function() {
+                    $scope.order.step2 = 1;
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+                }
+
+                $scope.gotoStep1 = function() {
+                    $scope.order.step2 = '';
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+                }
+
+                $scope.order = {
+                    message: '',
+                    tx: '',
+                    listingKey: key,
+                    listingTotal: '',
+                    productTotal: '',
+                    productQuantity: 1,
+                    rawContract: rawContract,
+                    btc_pubkey: btc_pubkey
+                }
+                $scope.order.notary = ($scope.notaries.length > 0) ? $scope.notaries[0].guid : "";
+                $scope.order.arbiter = $scope.arbiters[0];
+
+                $scope.submitOrder = function() {
+
+                    $scope.creatingOrder = false;
+                    $scope.order.step2 = '';
+                    $scope.order.step1 = '';
+                    $scope.order.confirmation = true;
+
+                    var newOrder = {
+                        'message': $scope.order.message,
+                        'state': 'new',
+                        'buyer': $scope.myself.pubkey,
+                        'seller': $scope.merchantPubkey,
+                        'listingKey': $scope.key,
+                        'orderTotal': $('#totalPrice').html(),
+                        'rawContract': rawContract,
+                        'notary': $scope.order.notary,
+                        'btc_pubkey': $scope.order.btc_pubkey,
+                        'arbiter': $scope.order.arbiter
+                    }
+                    console.log(newOrder);
+                    socket.send('order', newOrder);
+                    $scope.sentOrder = true;
+
+
+
+                }
+
+                $scope.closeConfirmation = function() {
+                    $modalInstance.close();
+                    window.location = '#/orders/purchases';
+                }
+
+
+
+            };
 
         }
 ]);
@@ -701,9 +983,8 @@ obControllers
             $('#keys-form').siblings().hide();
             $scope.$emit('sidebar', false);
 
-
-
             /**
+             * (These are response handlers when the server talks back to the websocket)
              * Open Websocket and then establish message handlers
              * @msg - message from websocket to pass on to handler
              */
@@ -711,13 +992,15 @@ obControllers
 
                 var handlers = {
                     'load_page': function(msg) { $scope.load_page(msg) },
-                    'settings_notaries': function(msg) { $scope.parse_notaries(msg) }
+                    'settings_notaries': function(msg) { $scope.parse_notaries(msg) },
+                    'create_backup_result' : function(msg) { $scope.onCreateBackupResult(msg) },
                 }
 
+            	//TODO: security hole fix: forbid remote ips from invoking this or else they can fill disk.
+                //probably socket, knows about the remote client ip and we can make this question in this if before calling any handler.
                 if(handlers[msg.type]) {
                     handlers[msg.type](msg);
                 }
-
             })
 
             $scope.load_page = function(msg) {
@@ -725,7 +1008,6 @@ obControllers
                 $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
 
                 switch($scope.path) {
-
                     case "/settings/keys":
                         $('#keys-form').show();
                         $('#keys-form').siblings().hide();
@@ -752,6 +1034,11 @@ obControllers
                         $('#advanced-form').siblings().hide();
                         $('#settings-advanced').addClass('active');
                         break;
+                    case "/settings/backup":
+                    	$('#backup-form').show()
+                    	$('#backup-form').siblings().hide()
+                    	$('#settings-backup').addClass('active');
+                    	break;
                     default:
                         $('#profile-form').show();
                         $('#profile-form').siblings().hide();
@@ -779,6 +1066,7 @@ obControllers
                 );
 
                 Notifier.success('Success', 'Notary added successfully.');
+
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
@@ -829,7 +1117,20 @@ obControllers
                     $scope.$apply();
                 }
             }
-
+            
+            $scope.createBackup = function() {
+            	socket.send('create_backup',{}) 
+            }
+            
+            $scope.onCreateBackupResult = function(msg) {
+            	if (msg.result) {
+            		if (msg.result === 'success') {
+            			Notifier.success('Success','The backup was created successfully at ' + msg.detail);
+            		} else if (msg.result === 'failure') {
+            			Notifier.error(msg.detail,'Couldn\'t create backup.');
+            		}
+            	}
+            }
         }
 ]);
 
@@ -1238,9 +1539,6 @@ obControllers
                 }
             }
 
-
-
-
             $scope.search_results = [];
             $scope.parse_search_result = function(msg) {
                 console.log(msg);
@@ -1268,8 +1566,6 @@ obControllers
                 socket.send('check_order_count', {});
             }
 
-
-
             $scope.settings = {
                 email: '',
                 PGPPubKey: '',
@@ -1282,6 +1578,7 @@ obControllers
                 trustedNotaries: {}
             }
 
+            //TODO: This should probably be moved to the settings controllers.
             $scope.saveSettings = function(notify) {
                 console.log($scope.settings)
                 var query = {
@@ -1293,8 +1590,7 @@ obControllers
                     Notifier.success('Success', 'Settings saved successfully.');
                 }
             }
-
-
+            
             // Create a new order and send to the network
             $scope.newOrder = {
                 message: '',
@@ -1561,311 +1857,13 @@ obControllers
                 };
             };
 
-            $scope.ViewOrderCtrl = function($scope, $modal, $log) {
 
 
 
-                $scope.open = function(size, orderId, settings) {
 
-                    // Send socket a request for order info
-                    socket.send('query_order', {
-                        orderId: orderId
-                    })
 
-                    var modalInstance = $modal.open({
-                        templateUrl: 'viewOrder.html',
-                        controller: ViewOrderInstanceCtrl,
-                        size: size,
-                        resolve: {
-                            orderId: function() {
-                                return orderId;
-                            },
-                            settings: function() {
-                                return settings;
-                            },
-                            scope: function() {
-                                return $scope
-                            }
-                        }
-                    });
 
-                    modalInstance.result.then(function() {
 
-                    }, function() {
-                        $log.info('Modal dismissed at: ' + new Date());
-                    });
-                };
-            };
-
-
-            var ViewOrderInstanceCtrl = function($scope, $modalInstance, orderId, scope, settings) {
-
-
-                $scope.orderId = orderId;
-                $scope.Market = scope;
-                $scope.settings = settings;
-
-                $scope.markOrderPaid = function(orderId) {
-
-                    socket.send("pay_order", {
-                        orderId: orderId
-                    })
-
-                    scope.modalOrder.state = 'Paid';
-
-                    // Refresh orders in background
-                    scope.queryMyOrder(0);
-
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
-
-                }
-
-
-                $scope.markOrderShipped = function(orderId) {
-
-                    socket.send("ship_order", {
-                        orderId: orderId,
-                        paymentAddress: scope.modalOrder.paymentAddress
-                    })
-
-                    scope.modalOrder.state = 'Shipped';
-                    scope.modalOrder.waitingForShipment = false;
-                    scope.queryMyOrder(1);
-
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
-
-                }
-
-                $scope.markOrderReceived = function(orderId) {
-
-                    socket.send("release_payment", {
-                        orderId: orderId
-                    })
-
-                    scope.modalOrder.state = 'Completed';
-                    scope.queryMyOrder(0);
-
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
-
-                }
-
-                $scope.ok = function() {
-                    $modalInstance.close();
-                };
-
-                $scope.cancel = function() {
-                    $modalInstance.dismiss('cancel');
-                };
-            };
-
-
-
-
-
-            $scope.BuyItemCtrl = function($scope, $modal, $log) {
-
-                $scope.open = function(size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
-                    notaries, arbiters, btc_pubkey, guid) {
-
-                    // Send socket a request for order info
-                    //socket.send('query_order', { orderId: orderId } )
-
-
-
-
-                    modalInstance = $modal.open({
-                        templateUrl: 'buyItem.html',
-                        controller: $scope.BuyItemInstanceCtrl,
-                        resolve: {
-                            merchantPubkey: function() {
-                                return merchantPubkey
-                            },
-                            myself: function() {
-                                return myself
-                            },
-                            productTitle: function() {
-                                return productTitle
-                            },
-                            productPrice: function() {
-                                return productPrice
-                            },
-                            productDescription: function() {
-                                return productDescription
-                            },
-                            productImageData: function() {
-                                return productImageData
-                            },
-                            key: function() {
-                                return key
-                            },
-                            btc_pubkey: function() {
-                                return btc_pubkey
-                            },
-                            rawContract: function() {
-                                return rawContract
-                            },
-                            notaries: function() {
-                                return notaries
-                            },
-                            arbiters: function() {
-                                return arbiters
-                            },
-                            guid: function() {
-                                return guid
-                            },
-                            scope: function() {
-                                return $scope
-                            }
-                        },
-                        size: size
-                    });
-
-                    modalInstance.result.then(function() {
-
-                        $scope.showDashboardPanel('orders_purchases');
-
-                        $('#pill-orders').addClass('active').siblings().removeClass('active').blur();
-                        $("#orderSuccessAlert").alert();
-                        window.setTimeout(function() {
-                            $("#orderSuccessAlert").alert('close')
-                        }, 5000);
-
-                    }, function() {
-                        $log.info('Modal dismissed at: ' + new Date());
-
-                    });
-                };
-            };
-
-
-            $scope.BuyItemInstanceCtrl = function($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key,
-                rawContract,
-                notaries,
-                arbiters,
-                btc_pubkey,
-                guid,
-                scope) {
-
-
-                console.log(productTitle, productPrice, productDescription, productImageData, rawContract, notaries, arbiters, btc_pubkey, guid);
-                $scope.myself = myself;
-                $scope.merchantPubkey = merchantPubkey;
-                $scope.productTitle = productTitle;
-                $scope.productPrice = productPrice;
-                $scope.productDescription = productDescription;
-                $scope.productImageData = productImageData;
-                $scope.totalPrice = productPrice;
-                $scope.productQuantity = 1;
-                $scope.rawContract = rawContract;
-                $scope.guid = guid;
-                $scope.arbiters = arbiters;
-                $scope.notaries = []
-
-                jQuery.each(notaries, function(key, value) {
-                    notary = value
-                    console.log(value.guid + ' ' + guid)
-                    if (value.guid != guid) {
-                        $scope.notaries.push({
-                            "guid": value.guid,
-                            "nickname": value.nickname
-                        })
-                    }
-                })
-                console.log($scope.notaries)
-
-                $scope.key = key;
-
-                $scope.update = function(user) {
-                    console.log('Updated');
-                };
-
-
-                $scope.ok = function() {
-                    $modalInstance.close();
-                };
-
-                $scope.cancel = function() {
-                    $modalInstance.dismiss('cancel');
-                };
-
-                $scope.updateTotal = function() {
-                    var newPrice = $('#itemQuantity').val() * $scope.productPrice;
-                    newPrice = Math.round(newPrice * 100000) / 100000
-                    $('#totalPrice').html(newPrice);
-                }
-
-                $scope.gotoStep2 = function() {
-                    $scope.order.step2 = 1;
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
-                }
-
-                $scope.gotoStep1 = function() {
-                    $scope.order.step2 = '';
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
-                }
-
-                $scope.order = {
-                    message: '',
-                    tx: '',
-                    listingKey: key,
-                    listingTotal: '',
-                    productTotal: '',
-                    productQuantity: 1,
-                    rawContract: rawContract,
-                    btc_pubkey: btc_pubkey
-                }
-                $scope.order.notary = ($scope.notaries.length > 0) ? $scope.notaries[0].guid : "";
-                $scope.order.arbiter = $scope.arbiters[0];
-
-                $scope.submitOrder = function() {
-
-                    $scope.creatingOrder = false;
-                    $scope.order.step2 = '';
-                    $scope.order.step1 = '';
-                    $scope.order.confirmation = true;
-
-                    var newOrder = {
-                        'message': $scope.order.message,
-                        'state': 'new',
-                        'buyer': $scope.myself.pubkey,
-                        'seller': $scope.merchantPubkey,
-                        'listingKey': $scope.key,
-                        'orderTotal': $('#totalPrice').html(),
-                        'rawContract': rawContract,
-                        'notary': $scope.order.notary,
-                        'btc_pubkey': $scope.order.btc_pubkey,
-                        'arbiter': $scope.order.arbiter
-                    }
-                    console.log(newOrder);
-                    socket.send('order', newOrder);
-                    $scope.sentOrder = true;
-                    scope.queryMyOrder(0);
-
-                    if (!$scope.$$phase) {
-                        $scope.$apply();
-                    }
-
-
-
-                }
-
-                $scope.closeConfirmation = function() {
-                    $modalInstance.close();
-                }
-
-
-
-            };
 
 
             $scope.ComposeMessageCtrl = function($scope, $modal, $log) {

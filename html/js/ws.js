@@ -1,5 +1,4 @@
 function Connection(onMessage) {
-
   socket_uri = document.URL.replace(/https?:(.*)\/html\/.*/, "ws:$1/ws");
   var websocket = new WebSocket(socket_uri);
 
@@ -21,6 +20,8 @@ function Connection(onMessage) {
 
   websocket.onmessage = function(evt) {
    	var data = JSON.parse(evt.data)
+   	//console.log("Websocket.onMessage!")
+   	//console.log(data)
     onMessage(data.result)
   }
   this.websocket = websocket;
@@ -33,10 +34,9 @@ function Connection(onMessage) {
         "params": msg
     };
 
-    var message = JSON.stringify(request);    
+    var message = JSON.stringify(request);
+    //console.log('Connection.send ->')
+    //console.log(message)
     self.websocket.send(message);
-
   }
-
-
 }
