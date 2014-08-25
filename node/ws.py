@@ -7,6 +7,7 @@ import subprocess
 import protocol
 import pycountry
 import gnupg
+import os
 import obelisk
 
 import tornado.websocket
@@ -497,8 +498,6 @@ class ProtocolHandler:
         and all files created by the app, have to be outside, usually at 
         ~/Library/Application Support/OpenBazaar/backups ??
         """
-        self._log.info('Received request for new Backup to be created.')
-
         def on_backup_done(backupPath):
             self._log.info('Backup sucessfully created at ' + backupPath)
             self.send_to_client(None, 
@@ -506,17 +505,20 @@ class ProtocolHandler:
                                  'result': 'success',
                                  'detail': backupPath})
 
-        def on_backup_error(errorMessage):
-            self._log.info('Backup error:' + str(errorMessage.strerror))
+        def on_backup_error(error):
+            self._log.info('Backup error:' + str(error.strerror))
             self.send_to_client(None, 
                                 {'type': 'create_backup_result',
                                  'result': 'failure',
-                                 'detail': errorMessage.strerror})
+                                 'detail': error.strerror})
 
-        BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar", 
-                          "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
-                           on_backup_done,
-                           on_backup_error)
+        #TODO: Make backup path configurable on server settings before run.sh
+        OB_PATH = os.path.realpath(os.path.abspath(__file__))[:os.path.realpath(os.path.abspath(__file__)).find('/node')]
+        BACKUP_PATH = OB_PATH + os.sep + "html" + os.sep + 'backups'
+        BackupTool.backup(OB_PATH,
+                          BACKUP_PATH,
+                          on_backup_done,
+                          on_backup_error)
 
     def on_find_products_by_store(self, results):
 
