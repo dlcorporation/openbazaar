@@ -21,7 +21,7 @@ obControllers
              * @msg - message from websocket to pass on to handler
              */
             var socket = new Connection(function(msg) {
-
+            	
                 var handlers = {
                     'load_page': function(msg) { $scope.load_page(msg) },
                     'order': function(msg) { $scope.parse_order(msg) },
@@ -33,8 +33,6 @@ obControllers
                 if(handlers[msg.type]) {
                     handlers[msg.type](msg);
                 }
-
-
 
             })
 
@@ -985,9 +983,8 @@ obControllers
             $('#keys-form').siblings().hide();
             $scope.$emit('sidebar', false);
 
-
-
             /**
+             * (These are response handlers when the server talks back to the websocket)
              * Open Websocket and then establish message handlers
              * @msg - message from websocket to pass on to handler
              */
@@ -995,13 +992,15 @@ obControllers
 
                 var handlers = {
                     'load_page': function(msg) { $scope.load_page(msg) },
-                    'settings_notaries': function(msg) { $scope.parse_notaries(msg) }
+                    'settings_notaries': function(msg) { $scope.parse_notaries(msg) },
+                    'create_backup_result' : function(msg) { $scope.onCreateBackupResult(msg) },
                 }
 
+            	//TODO: security hole fix: forbid remote ips from invoking this or else they can fill disk.
+                //probably socket, knows about the remote client ip and we can make this question in this if before calling any handler.
                 if(handlers[msg.type]) {
                     handlers[msg.type](msg);
                 }
-
             })
 
             $scope.load_page = function(msg) {
@@ -1009,7 +1008,6 @@ obControllers
                 $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
 
                 switch($scope.path) {
-
                     case "/settings/keys":
                         $('#keys-form').show();
                         $('#keys-form').siblings().hide();
@@ -1036,6 +1034,11 @@ obControllers
                         $('#advanced-form').siblings().hide();
                         $('#settings-advanced').addClass('active');
                         break;
+                    case "/settings/backup":
+                    	$('#backup-form').show()
+                    	$('#backup-form').siblings().hide()
+                    	$('#settings-backup').addClass('active');
+                    	break;
                     default:
                         $('#profile-form').show();
                         $('#profile-form').siblings().hide();
@@ -1114,7 +1117,20 @@ obControllers
                     $scope.$apply();
                 }
             }
-
+            
+            $scope.createBackup = function() {
+            	socket.send('create_backup',{}) 
+            }
+            
+            $scope.onCreateBackupResult = function(msg) {
+            	if (msg.result) {
+            		if (msg.result === 'success') {
+            			Notifier.success('Success','The backup was created successfully at ' + msg.detail);
+            		} else if (msg.result === 'failure') {
+            			Notifier.error(msg.detail,'Couldn\'t create backup.');
+            		}
+            	}
+            }
         }
 ]);
 
@@ -1505,9 +1521,6 @@ obControllers
                 }
             }
 
-
-
-
             $scope.search_results = [];
             $scope.parse_search_result = function(msg) {
                 console.log(msg);
@@ -1535,8 +1548,6 @@ obControllers
                 socket.send('check_order_count', {});
             }
 
-
-
             $scope.settings = {
                 email: '',
                 PGPPubKey: '',
@@ -1549,6 +1560,7 @@ obControllers
                 trustedNotaries: {}
             }
 
+            //TODO: This should probably be moved to the settings controllers.
             $scope.saveSettings = function(notify) {
                 console.log($scope.settings)
                 var query = {
@@ -1560,8 +1572,7 @@ obControllers
                     Notifier.success('Success', 'Settings saved successfully.');
                 }
             }
-
-
+            
             // Create a new order and send to the network
             $scope.newOrder = {
                 message: '',
