@@ -20,24 +20,32 @@ def build_output_info_list(unspent_rows):
 
 
 def burnaddr_from_guid(guid_hex):
+    guid_hex = list(guid_hex)
+
+    # change the address prefix to make it obvious it is a proof-of-burn address
+    # we're still left with 128-bits of entropy to ensure brute-force-resistance
+    if TESTNET:
+        # the '6f' prefix is imperative to distinguish a testnet address
+        OPENBAZAAR_PREFIX = '6f5b19e0f541c4476'
+    else:
+        # the '00' prefix is imperative to distinguish a mainnet address
+        # prefix of b58decode('1openbazaarxxxxxxxxxxxxxxxxxxxxxx')
+        OPENBAZAAR_PREFIX = '0008dae9651b00eeab'
+
+    for i, char in enumerate(OPENBAZAAR_PREFIX):
+        guid_hex[i] = char
+
     # perturbate GUID
     # to ensure unspendability through
     # near-collision resistance of SHA256
 
-    guid_hex = list(guid_hex)
-
-    if guid_hex[14] == '0':
-        guid_hex[14] = '1'
+    if guid_hex[24] == '0':
+        guid_hex[24] = '1'
     else:
-        guid_hex[14] = hex(int(guid_hex[14], 16) - 1)[2:]
+        guid_hex[24] = hex(int(guid_hex[14], 16) - 1)[2:]
 
     guid_hex = guid_hex[:40]
     guid_hex = ''.join(guid_hex)
-
-    if TESTNET:
-        guid_hex = '6f' + guid_hex
-    else:
-        guid_hex = '00' + guid_hex
 
     guid = guid_hex.decode('hex')
 
