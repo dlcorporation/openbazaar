@@ -31,8 +31,11 @@ class PortMapper(object):
         self.debug('minissdpdsocket', self.upnp.minissdpdsocket)
 
     def debug_addresses(self):
-        self.debug('local ip address :', self.upnp.lanaddr)
-        self.debug('external ip address :', self.upnp.externalipaddress())
+        try:
+            self.debug('local ip address :', self.upnp.lanaddr)
+            self.debug('external ip address :', self.upnp.externalipaddress())
+        except:
+            pass
 
     def __init__(self):
         '''
