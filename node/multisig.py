@@ -107,7 +107,7 @@ class Multisig:
             sighash = generate_signature_hash(tx, i, self.script)
             # Add sighash::all to end of signature.
             signature = key.sign(sighash) + "\x01"
-            signatures.append(signature)
+            signatures.append(signature.encode('hex'))
         return signatures
 
 

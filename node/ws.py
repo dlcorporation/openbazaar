@@ -412,14 +412,13 @@ class ProtocolHandler:
                 signatures = multisig.sign_all_inputs(
                     tx, private_key.decode('hex')
                 )
-
-                self._log.info(signatures)
-
-                self.send_to_client(None, {
-                    "type": "signed_tx_sent",
-                    "tx": tx,
-                    "signed_inputs": signatures
-                })
+                tx_serialized = tx.serialize().encode("hex")
+                self._market.release_funds_to_merchant(tx_serialized, signatures, order.get('merchant'))
+                # self.send_to_client(None, {
+                #     "type": "signed_tx_sent",
+                #     "tx": tx,
+                #     "signed_inputs": signatures
+                # })
 
                 self._log.debug('Sent tx and signed inputs to merchant')
 
