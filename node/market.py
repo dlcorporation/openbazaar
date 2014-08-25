@@ -203,8 +203,7 @@ class Market(object):
     def add_trusted_notary(self, guid, nickname=""):
         self._log.debug('%s %s' % (guid, nickname))
         notaries = self.settings.get('notaries')
-        print notaries
-        if notaries == "" or notaries != []:
+        if notaries == "" or notaries == []:
             notaries = []
         else:
             notaries = json.loads(notaries)
