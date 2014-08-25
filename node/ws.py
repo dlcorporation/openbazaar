@@ -429,7 +429,8 @@ class ProtocolHandler:
     def on_release_funds_tx(self, msg):
         self._log.info('Receiving signed tx from buyer')
 
-        order = self._market.orders.get_order(msg['senderGUID']+'-'+msg['buyer_order_id'], by_buyer_id=True)
+        buyer_order_id = str(msg['senderGUID'])+'-'+str(msg['buyer_order_id'])
+        order = self._market.orders.get_order(buyer_order_id, by_buyer_id=True)
         contract = order['signed_contract_body']
 
         # Find Seller Data in Contract
