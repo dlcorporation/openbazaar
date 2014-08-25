@@ -124,7 +124,7 @@ class Multisig:
 
     @staticmethod
     def eligius_pushtx(tx):
-        s = make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php','transaction='+tx+'&send=Push')
+        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php','transaction='+tx+'&send=Push')
         strings = re.findall('string[^"]*"[^"]*"',s)
         for string in strings:
             quote = re.findall('"[^"]*"',string)[0]
@@ -134,7 +134,7 @@ class Multisig:
     def broadcast(tx):
         raw_tx = tx.serialize().encode("hex")
         print "Tx data:", raw_tx
-        eligius_pushtx(raw_tx)
+        Multisig.eligius_pushtx(raw_tx)
         #gateway_broadcast(raw_tx)
         #bci_pushtx(raw_tx)
 
