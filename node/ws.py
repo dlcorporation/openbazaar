@@ -92,7 +92,7 @@ class ProtocolHandler:
 
         message = {
             'type': 'myself',
-            'pubkey': self._transport._myself.get_pubkey().encode('hex'),
+            'pubkey': settings.get('pubkey'),
             'peers': peers,
             'settings': settings,
             'guid': self._transport.guid,
@@ -391,6 +391,7 @@ class ProtocolHandler:
 
             multisig = Multisig(client, 2, pubkeys)
 
+
             def cb(ec, history, order):
 
                 # Debug
@@ -483,6 +484,8 @@ class ProtocolHandler:
                 buyer_key.decode('hex'),
                 notary_key.decode('hex')
             ]
+
+            self._log.info('multisig pubkeys %s' % pubkeys)
 
             multisig = Multisig(client, 2, pubkeys)
 

@@ -231,7 +231,7 @@ class Orders(object):
     def create_order(self, seller, text):
         self._log.info('CREATING ORDER')
         order_id = random.randint(0, 1000000)
-        buyer = self._transport._myself.get_pubkey()
+        buyer = self._transport._myself.public_key.encode('hex')
         new_order = order(order_id, buyer, seller, 'new', text, self._escrows)
 
         # Add a timestamp
