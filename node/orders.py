@@ -286,7 +286,7 @@ class Orders(object):
         escrow = new_order['escrows'][0].decode('hex')
 
         # Create 2 of 3 multisig address
-        self._multisig = Multisig(None, 2, [buyer, seller, escrow])
+        self._multisig = Multisig(None, 2, [seller, buyer, escrow])
 
         new_order['address'] = self._multisig.address
 
@@ -535,6 +535,7 @@ class Orders(object):
                                       bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
                                       self._transport.settings['pubkey'].decode('hex')])
         multisig_address = multisig.address
+        print 'multisig_address %s' ,multisig_address
 
         self._db.insertEntry("orders", {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
@@ -638,6 +639,7 @@ class Orders(object):
                                       bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
                                       notary_data_json['Notary']['notary_BTC_uncompressed_pubkey'].decode('hex')])
         multisig_address = multisig.address
+        print 'multisig_address2 %s' ,multisig_address
 
         seller_GUID = offer_data_json['Seller']['seller_GUID']
 
