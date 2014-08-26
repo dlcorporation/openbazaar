@@ -4,7 +4,7 @@ import sys
 from twisted.internet import reactor
 
 
-TESTNET = True
+TESTNET = False
 OBELISK_SERVER_TESTNET = "tcp://obelisk-testnet2.airbitz.co:9091"
 OBELISK_SERVER_MAINNET = "tcp://85.25.198.97:9091"
 PROOF_OF_BURN_ADDR_PERTURBATION = 30
@@ -61,11 +61,11 @@ def get_global(guid, callback):
     get_unspent(burnaddr_from_guid(guid), callback)
 
 def get_unspent(addr, callback):
-    print('get_unspent call')
+    # print('get_unspent call')
     def history_fetched(ec, history):
-        print('history_fetched')
+        # print('history_fetched')
         if ec is not None:
-            print >> sys.stderr, "Error fetching history:", ec
+            # print >> sys.stderr, "Error fetching history:", ec
             return
         unspent_rows = [row[:4] for row in history if row[4] is None]
         unspent = build_output_info_list(unspent_rows)
@@ -91,14 +91,14 @@ def get_unspent(addr, callback):
     else:
         obelisk_addr = OBELISK_SERVER_MAINNET
 
-    print('unspent query to obelisk server at %s' % obelisk_addr)
+    # print('unspent query to obelisk server at %s' % obelisk_addr)
 
     client = obelisk.ObeliskOfLightClient(obelisk_addr)
 
-    print('Obelisk client instantiated')
+    # print('Obelisk client instantiated')
 
     def get_history():
-        print("get_history called from thread")
+        # print("get_history called from thread")
         client.fetch_history(addr, history_fetched)
 
     reactor.callFromThread(get_history)

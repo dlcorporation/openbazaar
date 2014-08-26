@@ -106,21 +106,21 @@ class ProtocolHandler:
             # 'globalTrust': globalTrust
         }
 
-        print('Sending opening')
+        # print('Sending opening')
         self.send_to_client(None, message)
 
         burnAddr = trust.burnaddr_from_guid(self._transport.guid)
         # def found_unspent(amount_in_satoshis):
 
         def found_unspent(amount):
-            print("found_unspent")
+            # print("found_unspent")
             self.send_to_client(None, {
                 'type': 'burn_info_available',
                 'amount': amount,
                 'addr': burnAddr
             })
 
-        print("getting unspent")
+        # print("getting unspent")
 
         trust.get_unspent(burnAddr, found_unspent)
 

@@ -1405,13 +1405,13 @@ obControllers
             }
 
             $scope.parse_burn_info = function(msg) {
-                console.log('Burn info available!');
+                // console.log('Burn info available!');
                 var SATOSHIS_IN_BITCOIN = 100000000;
                 var amountInSatoshis = msg.amount;
                 var bitcoins = msg.amount / SATOSHIS_IN_BITCOIN;
                 bitcoins = Math.round(bitcoins * 10000) / 10000;
 
-                console.log(bitcoins);
+                // console.log(bitcoins);
 
                 $scope.$apply(function() {
                     console.log(bitcoins);
