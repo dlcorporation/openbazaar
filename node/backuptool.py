@@ -9,6 +9,7 @@
 import tarfile
 import time
 import os
+import json
 
 class BackupTool:
     """
@@ -60,8 +61,18 @@ class BackupTool:
     def restore(backupTarFilepath):
         pass
 
+    @staticmethod
+    def get_installation_path():
+        """Returns the Project Root path"""
+        return os.path.realpath(os.path.abspath(__file__))[:os.path.realpath(os.path.abspath(__file__)).find('/node')]
 
-class Backup:
+    @staticmethod
+    def get_backup_path():
+        """TODO: Make backup path configurable on server settings before run.sh"""
+        return BackupTool.get_installation_path() + os.sep + 'html' + os.sep + 'backups'
+
+
+class Backup(json.JSONEncoder):
     """
     A (meant to be immutable) POPO to represent a backup. So that we can tell
     our Web client about the available backups made.
@@ -81,6 +92,12 @@ class Backup:
              self.full_file_path,
              long(self.created_timestamp_millis),
              long(self.size_in_bytes))
+
+    def __dict__(self):
+        return {'file_name': self.file_name,
+                'full_file_path': self.full_file_path,
+                'created_timestamp_millis': self.created_timestamp_millis,
+                'size_in_bytes': self.size_in_bytes}
 
     @staticmethod
     def get_backups(backups_folder_path):
@@ -113,6 +130,12 @@ class Backup:
         return result
 
 
+class BackupJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Backup):
+            return str(o.__dict__())
+
+
 if __name__ == '__main__':
     # tests here.
     def onBackUpDone(backupFilePath):
@@ -121,10 +144,10 @@ if __name__ == '__main__':
     def onError(errorMessage):
         print "Backup failed!", errorMessage
 
-    BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar", 
-                      "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
+    BackupTool.backup(BackupTool.get_installation_path(), 
+                      BackupTool.get_backup_path(),
                       onBackUpDone, 
                       onError)
-    for x in Backup.get_backups("/Users/gubatron/workspace.frostwire/OpenBazaar/html/"):
-        print x
+    for x in Backup.get_backups(BackupTool.get_backup_path()):
+        print json.dumps(x, cls=BackupJSONEncoder)
 

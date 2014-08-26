@@ -995,6 +995,7 @@ obControllers
                     'load_page': function(msg) { $scope.load_page(msg) },
                     'settings_notaries': function(msg) { $scope.parse_notaries(msg) },
                     'create_backup_result' : function(msg) { $scope.onCreateBackupResult(msg) },
+                    'on_get_backups_response': function(msg) { $scope.onGetBackupsResponse(msg) }
                 }
 
             	//TODO: security hole fix: forbid remote ips from invoking this or else they can fill disk.
@@ -1132,6 +1133,30 @@ obControllers
             			Notifier.error(msg.detail,'Couldn\'t create backup.');
             		}
             	}
+            }
+            
+            $scope.getBackups = function() {
+            	console.log('Settings.getBackups')
+            	socket.send('get_backups')
+            }
+            
+            $scope.onGetBackupsResponse = function (msg) {
+        		if (msg.result === 'success') {
+        			//update UI with list of backups. (could be empty list)
+        			if (msg.backups) {
+        				//convert list of json objects into JS objects.
+        				for (i=0; i < msg.backups.length; i++) {
+        					msg.backups[i] = $.parseJSON(msg.backups[i])
+        					console.log(msg.backups[i]);
+        				}
+        				
+        				$scope.backups = msg.backups;
+        				$scope.$apply();
+        			}
+        			
+        		} else if (msg.result === 'failure') {
+        			Notifier.error(msg.detail, 'Could not fetch list of backups, check your backup folder')
+        		}
             }
         }
 ]);

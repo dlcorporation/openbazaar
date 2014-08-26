@@ -7,13 +7,12 @@ import subprocess
 import protocol
 import pycountry
 import gnupg
-import os
 import obelisk
 
 import tornado.websocket
 from zmq.eventloop import ioloop
 from twisted.internet import reactor
-from backuptool import BackupTool
+from backuptool import BackupTool, Backup, BackupJSONEncoder
 
 ioloop.install()
 
@@ -70,6 +69,7 @@ class ProtocolHandler:
             "clear_peers_data": self.client_clear_peers_data,
             "read_log": self.client_read_log,
             "create_backup": self.client_create_backup,
+            "get_backups": self.get_backups,
         }
 
         self._timeouts = []
@@ -605,13 +605,25 @@ class ProtocolHandler:
                                  'result': 'failure',
                                  'detail': error.strerror})
 
-        #TODO: Make backup path configurable on server settings before run.sh
-        OB_PATH = os.path.realpath(os.path.abspath(__file__))[:os.path.realpath(os.path.abspath(__file__)).find('/node')]
-        BACKUP_PATH = OB_PATH + os.sep + "html" + os.sep + 'backups'
-        BackupTool.backup(OB_PATH,
-                          BACKUP_PATH,
+        BackupTool.backup(BackupTool.get_installation_path(),
+                          BackupTool.get_backup_path(),
                           on_backup_done,
                           on_backup_error)
+
+    def get_backups(self, socket_handler, msg=None):
+        try:
+            self._log.info('ws.get_backups invoked.')
+            backups = [json.dumps(x,cls=BackupJSONEncoder) for x in Backup.get_backups(BackupTool.get_backup_path())]
+            print backups
+            self._log.info(backups)
+            self.send_to_client(None,{'type': 'on_get_backups_response',
+                                      'result': 'success',
+                                      'backups': backups
+                                      })
+        except:
+            self.send_to_client(None,{'type':'on_get_backups_response',
+                                      'result': 'failure'})
+        return 
 
     def on_find_products_by_store(self, results):
 
