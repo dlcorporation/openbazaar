@@ -149,7 +149,7 @@ class ProtocolHandler:
         notaries = self._market.get_notaries()
         self._log.debug('Getting notaries %s' % notaries)
         self.send_to_client(None, {
-            "type": "notaries",
+            "type": "settings_notaries",
             "notaries": notaries
         })
 
