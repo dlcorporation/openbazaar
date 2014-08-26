@@ -85,7 +85,7 @@ class Market(object):
                                {"welcome": "disable"})
 
     def private_key(self):
-        return self.settings['privkey']
+        return self.settings['secret']
 
     def on_listing_results(self, results):
         self._log.debug('Listings %s' % results)
