@@ -1,3 +1,4 @@
+# coding=utf-8
 from IPy import IP
 from dht import DHT
 from p2p import PeerConnection, TransportLayer
@@ -11,13 +12,14 @@ import hashlib
 import xmlrpclib
 import json
 import logging
-import obelisk
 import pyelliptic as ec
 import requests
 import socket
 import traceback
 from threading import Thread
 import zlib
+import obelisk
+import arithmetic
 
 ioloop.install()
 
@@ -104,7 +106,7 @@ class CryptoPeerConnection(PeerConnection):
     def encrypt(self, data):
         try:
             if self._pub is not None:
-                result = self._priv.encrypt(data, self._pub.decode('hex'))
+                result = self._priv.encrypt(data, CryptoTransportLayer.pubkey_to_pyelliptic(self._pub).decode('hex'))
                 return result
             else:
                 self._log.error('Public Key is missing')
@@ -182,9 +184,10 @@ class CryptoTransportLayer(TransportLayer):
 
         self._dht = DHT(self, self._market_id, self.settings, self._db)
 
-        self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'),
-                              privkey=self.secret.decode('hex'),
-                              curve='secp256k1')
+        # self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'),
+        #                       privkey=self.secret.decode('hex'),
+        #                       curve='secp256k1')
+
 
         TransportLayer.__init__(self, market_id, my_ip, my_port,
                                 self.guid, self._nickname)
@@ -353,6 +356,13 @@ class CryptoTransportLayer(TransportLayer):
             self.sin = self.settings['sin'] if self.settings.has_key("sin") else ""
             self.bitmessage = self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ""
 
+            print 'Pubkey to Py', CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).encode('hex')
+
+            self._myself = ec.ECC(pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).decode('hex'),
+                              raw_privkey=self.secret.decode('hex'),
+                              curve='secp256k1')
+            print 'key2',self._myself.get_pubkey().encode('hex')
+
         else:
             self._nickname = 'Default'
 
@@ -365,22 +375,62 @@ class CryptoTransportLayer(TransportLayer):
 
             self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)[0]
 
+
+
         self._log.debug('Retrieved Settings: \n%s', pformat(self.settings))
+
+    @staticmethod
+    def pubkey_to_pyelliptic(pubkey):
+        # Strip 04
+        pubkey = pubkey[2:]
+
+        # Split it in half
+        pub_x = pubkey[0:len(pubkey)/2]
+        pub_y = pubkey[len(pubkey)/2:]
+
+        # Add pyelliptic content
+        print "02ca0020" + pub_x + "0020" + pub_y
+        return "02ca0020" + pub_x + "0020" + pub_y
+
 
 
     def _generate_new_keypair(self):
 
         # Generate new keypair
-        key = ec.ECC(curve='secp256k1')
-        self.secret = key.get_privkey().encode('hex')
-        pubkey = key.get_pubkey()
-        signedPubkey = key.sign(pubkey)
-        self.pubkey = pubkey.encode('hex')
-        self._myself = key
+        # key = ec.ECC(curve='secp256k1')
+        # self.secret = key.get_privkey().encode('hex')
+        # pubkey = key.get_pubkey()
+        # signedPubkey = key.sign(pubkey)
+        # self.pubkey = pubkey.encode('hex')
+        # self._myself = key
+
+        # secret = os.urandom(32)
+        #
+        # ec_key = obelisk.EllipticCurveKey()
+        # ec_key.set_secret(secret)
+
+        ec_key = ec.ECC(curve='secp256k1')
+        self.secret = ec_key.privkey.encode('hex')
+        self.pubkey = arithmetic.privtopub(ec_key.privkey.encode('hex'))
+        self._myself = ec_key
+
+        # self.secret = secret.encode('hex')
+        # self.privkey = ec_key._private_key.to_string().encode('hex')
+        # self.pubkey = arithmetic.privtopub(ec_key._private_key.to_string().encode('hex'))
+
+        # ec_key = ec.ECC()
+        # print ec_key.privkey.encode('hex')
+        #
+        # self._myself = ec.ECC(curve='secp256k1', pubkey=obelisk.decompress_public_key(self.pubkey.decode('hex')))
+
+        #self._log.info('%s %s %s' % (secret.encode('hex'), pubkey.encode('hex'), ec_key._private_key.to_string()))
+
+        #uncompressed_pubkey = obelisk.decompress_public_key(self.pubkey)
+        #self._log.info('uncompressed %s' % uncompressed_pubkey.encode('hex'))
 
         # Generate SIN
         sha_hash = hashlib.sha256()
-        sha_hash.update(pubkey)
+        sha_hash.update(self.pubkey)
         ripe_hash = hashlib.new('ripemd160')
         ripe_hash.update(sha_hash.digest())
 
@@ -681,7 +731,7 @@ class CryptoTransportLayer(TransportLayer):
 
                     guid =  json.loads(data).get('guid')
 
-                    ecc = ec.ECC(curve='secp256k1',pubkey=json.loads(data).get('pubkey').decode('hex'))
+                    ecc = ec.ECC(curve='secp256k1',pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(json.loads(data).get('pubkey')).decode('hex'))
 
                     # Check signature
                     if ecc.verify(sig, data):

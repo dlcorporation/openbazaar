@@ -10,6 +10,8 @@ import random
 import string
 import time
 import urllib
+import obelisk
+from obelisk import decompress_public_key
 
 class Orders(object):
     class State:
@@ -229,7 +231,7 @@ class Orders(object):
     def create_order(self, seller, text):
         self._log.info('CREATING ORDER')
         order_id = random.randint(0, 1000000)
-        buyer = self._transport._myself.get_pubkey()
+        buyer = self._transport._myself.public_key.encode('hex')
         new_order = order(order_id, buyer, seller, 'new', text, self._escrows)
 
         # Add a timestamp
@@ -386,7 +388,7 @@ class Orders(object):
         buyer = {}
         buyer['Buyer'] = {}
         buyer['Buyer']['buyer_GUID'] = self._transport._guid
-        buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
+        buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = decompress_public_key(msg['btc_pubkey'].decode('hex')).encode('hex')
         buyer['Buyer']['buyer_pgp'] = self._transport.settings['PGPPubKey']
         buyer['Buyer']['buyer_deliveryaddr'] = "123 Sesame Street"
         buyer['Buyer']['note_for_seller'] = msg['message']
@@ -477,7 +479,7 @@ class Orders(object):
 
         notary = {}
         notary['Notary'] = {'notary_GUID': self._transport._guid,
-                            'notary_BTC_uncompressed_pubkey': self._transport.settings['pubkey'],
+                            'notary_BTC_uncompressed_pubkey': decompress_public_key(self._transport.settings['pubkey'].decode('hex')).encode('hex'),
                             'notary_pgp': self._transport.settings['PGPPubKey'],
                             'notary_fee': "1%",
                             'notary_order_id': order_id

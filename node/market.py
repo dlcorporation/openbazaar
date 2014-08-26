@@ -20,6 +20,7 @@ import constants
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
+from obelisk import decompress_public_key
 
 ioloop.install()
 
@@ -151,7 +152,7 @@ class Market(object):
         self.settings = self.get_settings()
 
         msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
-        msg['Seller']['seller_BTC_uncompressed_pubkey'] = self.settings['pubkey']
+        msg['Seller']['seller_BTC_uncompressed_pubkey'] = decompress_public_key(self.settings['pubkey'].decode('hex')).encode('hex')
         msg['Seller']['seller_GUID'] = self.settings['guid']
 
         # Process and crop thumbs for images
@@ -202,8 +203,7 @@ class Market(object):
     def add_trusted_notary(self, guid, nickname=""):
         self._log.debug('%s %s' % (guid, nickname))
         notaries = self.settings.get('notaries')
-        print notaries
-        if notaries == "" or notaries != []:
+        if notaries == "" or notaries == []:
             notaries = []
         else:
             notaries = json.loads(notaries)
@@ -253,30 +253,20 @@ class Market(object):
 
     def get_notaries(self, online_only=False):
         self._log.debug('Getting notaries')
-
         notaries = []
+        settings = self.get_settings()
 
-        notary_guids = self.settings['notaries']
+        # Untested code
+        if online_only:
+            notaries = {}
+            for n in settings['notaries']:
+                peer = self._dht._routingTable.getContact(n.guid)
+            if peer is not None and peer.check_port():
+                notaries.append(n)
+            return notaries
+        # End of untested code
 
-        for guid in notary_guids:
-            if Market.valid_guid(guid):
-                self._log.info('MARKET GUID %s' % guid)
-
-                if online_only:
-                    peer = self._dht._routingTable.getContact(guid)
-
-                    if peer and hasattr(peer, '_nickname'):
-                        nickname = peer._nickname
-                    else:
-                        nickname = ""
-
-                    if peer is not None and peer.check_port():
-                        notaries.append({"guid": guid, "nickname": nickname})
-                else:
-                    notaries.append({"guid": guid})
-
-        self._log.debug('NOTARIES: %s' % notaries)
-        return notaries
+        return settings['notaries']
 
     @staticmethod
     def valid_guid(guid):
