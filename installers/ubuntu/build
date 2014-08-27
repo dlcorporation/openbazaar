@@ -143,10 +143,16 @@ def copy_files():
     os.chdir('..')
     assert_current_dir_is('ubuntu')
 
-def build_package(packageName):
+def build_deb_package(packageName):
     '''builds the .deb'''
     assert_current_dir_is('ubuntu')
-    os.system('fakeroot dpkg -D1 -b output ' + dotDebName)
+    os.system('fakeroot dpkg -D1 -b output ' + packageName)
+
+
+def build_rpm_package(packageName):
+    '''creates an .rpm out of the .deb file'''
+    assert_current_dir_is('ubuntu')
+    os.system('fakeroot alien --to-rpm --scripts ' + packageName)
 
 if __name__ == '__main__':
     dotDebName = 'openbazaar-'+read_version_from_changelog()+'.all.deb'
@@ -157,4 +163,5 @@ if __name__ == '__main__':
     create_folder_structure()
     copy_files()
 
-    build_package(dotDebName)
+    build_deb_package(dotDebName)
+    build_rpm_package(dotDebName)
