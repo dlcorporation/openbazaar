@@ -1,6 +1,9 @@
 openbazaar (0.1.0) unstable; urgency=high
-  * Some feature description for this beta.
-  * Another feature for this beta.
+  * Generation, signing, and verification of Ricardian Contracts.
+  * Generation, signing, and broadcasting of 2-of-3 multisig.
+  * Reputation Pledges, a proof-of-burn implementation for bootstrapping trust. 
+  * Ability to back up database.
+  * GUI to manage these features.
 
 
  -- OpenBazaar Team <project@openbazaar.org>  Wed, 27 August 2014 00:28:35 -0500
