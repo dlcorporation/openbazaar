@@ -1,0 +1,8 @@
+
+
+Important references for developing the Import from eBay Button:
+
+    * eBay Developers Program:
+        https://go.developer.ebay.com/content/what-ebay-api
+    * eBay SDK for Python:
+        https://github.com/timotheus/ebaysdk-python
