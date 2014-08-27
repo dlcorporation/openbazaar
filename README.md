@@ -1,4 +1,7 @@
 <img src="http://s27.postimg.org/5i0igk0v7/Open_Bazaar_Logo.png" width="800px"/>
+
+<img src="https://travis-ci.org/OpenBazaar/OpenBazaar.svg?branch=master" />
+
 ======
 
 **Zero** Fees. **Zero** Censorship.

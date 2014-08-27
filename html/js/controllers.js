@@ -1209,6 +1209,7 @@ obControllers
                     'global_search_result': function(msg) { $scope.parse_search_result(msg) },
                     'reputation': function(msg) { $scope.parse_reputation(msg) },
                     'proto_response_pubkey': function(msg) { $scope.parse_response_pubkey(msg) },
+                    'burn_info_available': function(msg) { $scope.parse_burn_info(msg) },
                 }
 
                 if(handlers[msg.type]) {
@@ -1426,6 +1427,23 @@ obControllers
 
                     $scope.$apply();
                 }
+            }
+
+            $scope.parse_burn_info = function(msg) {
+                // console.log('Burn info available!');
+                var SATOSHIS_IN_BITCOIN = 100000000;
+                var amountInSatoshis = msg.amount;
+                var bitcoins = msg.amount / SATOSHIS_IN_BITCOIN;
+                bitcoins = Math.round(bitcoins * 10000) / 10000;
+
+                // console.log(bitcoins);
+
+                $scope.$apply(function() {
+                    console.log(bitcoins);
+                    console.log(msg.addr);
+                    $scope.settings.burnAmount = bitcoins;
+                    $scope.settings.burnAddr = msg.addr;
+                });
             }
 
             // Peer information has arrived
