@@ -37,9 +37,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
-    apt-get install -y build-essential python-dev python-pip python-zmq sqlite3 libjpeg-dev zlib1g-dev tor privoxy gnupg rng-tools
+    apt-get install -y build-essential python-dev python-pip python-zmq sqlite3 libjpeg-dev zlib1g-dev tor privoxy gnupg rng-tools mongodb-clients libssl-dev
     pip install tornado Twisted pycountry pillow python-gnupg mock qrcode requests python-obelisk ipy pyelliptic miniupnpc pysqlcipher 
-    easy_install sqlite3 websocket behave
+    #easy_install sqlite3dbm websocket behave
+    easy_install sqlite_dbm websocket behave pybitcointools
     cp -R /vagrant/ecdsa /usr/local/lib/python2.7/dist-packages/
     mongo --eval "db = db.getSiblingDB('openbazaar')"
     sudo rngd -r /dev/urandom
