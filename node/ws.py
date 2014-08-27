@@ -611,19 +611,19 @@ class ProtocolHandler:
         they might have to be somewhere outside the installation path
         as some OSes might not allow the modification of the installation folder
         e.g. MacOS won't allow for changes if the .app has been signed.
-        and all files created by the app, have to be outside, usually at 
+        and all files created by the app, have to be outside, usually at
         ~/Library/Application Support/OpenBazaar/backups ??
         """
         def on_backup_done(backupPath):
             self._log.info('Backup sucessfully created at ' + backupPath)
-            self.send_to_client(None, 
+            self.send_to_client(None,
                                 {'type': 'create_backup_result',
                                  'result': 'success',
                                  'detail': backupPath})
 
         def on_backup_error(error):
             self._log.info('Backup error:' + str(error.strerror))
-            self.send_to_client(None, 
+            self.send_to_client(None,
                                 {'type': 'create_backup_result',
                                  'result': 'failure',
                                  'detail': error.strerror})

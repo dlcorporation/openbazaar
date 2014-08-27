@@ -131,7 +131,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
                 del self._sentMessages[message.id]
 
                 if hasattr(df, '_rpcRawResponse'):
-                    # The RPC requested that the raw response message and originating address be returned; 
+                    # The RPC requested that the raw response message and originating address be returned;
                     # do not interpret it
                     df.callback((message, address))
                 elif isinstance(message, msgtypes.ErrorMessage):
@@ -180,7 +180,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
         """
         if len(data) > self.msgSizeLimit:
             # We have to spread the data over multiple UDP datagrams, and provide sequencing information
-            # 1st byte is transmission type id, bytes 2 & 3 are the total number of packets in this transmission, 
+            # 1st byte is transmission type id, bytes 2 & 3 are the total number of packets in this transmission,
             # bytes 4 & 5 are the sequence number for this specific packet
             totalPackets = len(data) / self.msgSizeLimit
             if len(data) % self.msgSizeLimit > 0:
