@@ -1,6 +1,6 @@
 .PHONY: test style
 
-all=test style
+all: test style
 
 test:
 	nosetests
