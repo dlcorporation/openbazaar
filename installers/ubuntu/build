@@ -1,0 +1,109 @@
+"""
+Author: Angel Leon (gubatron@openbazaar.org)
+Created: August 27th, 2014
+"""
+import os
+import re
+
+USR_LOCAL_OB_DIR='/usr/local/openbazaar'
+BIN_DIR='/usr/bin'
+SHARE_DIR='/usr/share'
+APP_DIR=SHARE_DIR+'/applications'
+HICOLOR_DIR=SHARE_DIR + '/icons/hicolor'
+DOC_DIR=SHARE_DIR + '/doc/openbazaar'
+
+def read_version_from_changelog():
+  f = open('../../changelog','r')
+  first_line = f.readline()
+  f.close()
+
+  m = re.search('openbazaar.*?([0-9]+\.[0-9]+\.[0-9]+).*', first_line)
+  return m.group(1)
+
+def rm_rf(d):
+  #removes folders recursively
+  for path in (os.path.join(d,f) for f in os.listdir(d)):
+    if os.path.isdir(path):
+      rm_rf(path)
+    else:
+      os.unlink(path)
+  os.rmdir(d)
+
+def cleanCurrentFolder():
+  #clean everything but the files we'll take to build the installer
+  contents = os.listdir('.')
+
+  for item in contents:
+    if item in ('DEBIAN','icons','openbazaar','openbazaar.desktop'):
+      continue
+    else:
+      if os.path.isdir(item):
+        rm_rf(item)
+        print '(deleted',item,'folder)'
+      elif os.path.isfile(item):
+        os.unlink(item)
+        print '(deleted',item,'file)'
+
+def makeFolderStructure():
+  os.makedirs('.' + USR_LOCAL_OB_DIR)
+  os.makedirs('.' + SHARE_DIR)
+  os.makedirs('.' + HICOLOR_DIR + '/16x16/apps')
+  os.makedirs('.' + HICOLOR_DIR + '/32x32/apps')
+  os.makedirs('.' + HICOLOR_DIR + '/48x48/apps')
+  os.makedirs('.' + HICOLOR_DIR + '/64x64/apps')
+  os.makedirs('.' + HICOLOR_DIR + '/128x128/apps')  
+  os.makedirs('.' + APP_DIR)
+  os.makedirs('.' + BIN_DIR)
+  os.makedirs('.' + DOC_DIR)
+
+def copyFiles():
+  #copy the launcher scripts and icon
+  os.system('cp ../../run.sh .' +  USR_LOCAL_OB_DIR)
+  os.system('cp ../../stop.sh .' + USR_LOCAL_OB_DIR)
+  os.system('cp ../../requirements.txt .' + USR_LOCAL_OB_DIR)
+  os.system('cp ../../configure.sh .' +     USR_LOCAL_OB_DIR)
+  os.system('cp ../../openbazaar .'+        BIN_DIR)
+  os.system('chmod +x .'+BIN_DIR+'/openbazaar')
+
+  #take care of the icons
+  os.system('cp ./icons/16x16.png .'+ HICOLOR_DIR +'/16x16/apps/openbazaar.png')
+  os.system('cp ./icons/32x32.png .'+ HICOLOR_DIR +'/32x32/apps/openbazaar.png')
+  os.system('cp ./icons/48x48.png .'+ HICOLOR_DIR +'/48x48/apps/openbazaar.png')
+  os.system('cp ./icons/64x64.png .'+ HICOLOR_DIR +'/64x64/apps/openbazaar.png')
+  os.system('cp ./icons/128x128.png .'+ HICOLOR_DIR +'/128x128/apps/openbazaar.png')
+
+  #copy License and changelog to /usr/share/doc/openbazaar
+  os.system('cp ../changelog .'+DOC_DIR)
+  os.system('cp ../LICENSE.txt .'+DOC_DIR)
+
+  #copy the desktop launcher
+  os.system('cp ../openbazaar.desktop .'+APP_DIR)
+  os.system('chmod +x .'+APP_DIR+'/openbazaar.desktop')
+
+  #copy all the good stuff
+  os.system('cp -R ../models .'+USR_LOCAL_OB_DIR)
+  os.system('cp -R ../controllers .'+USR_LOCAL_OB_DIR)
+  os.system('cp -R ../views .'+USR_LOCAL_OB_DIR)
+  os.system('cp -R ../lib .'+USR_LOCAL_OB_DIR)
+  os.system('cp -R ../utils .'+USR_LOCAL_OB_DIR)
+  os.system('cp -R ../i18n .'+USR_LOCAL_OB_DIR)
+
+
+def makePackage():
+  #This function asssumes you're standing outside, say on
+  #~/workspace/openbazaar and that you can see the 'debian'
+  #folder.
+
+  #dpkg -D1 -b ${FW_DIR}/ ${FW_DIR}.i586.deb
+  os.system('dpkg -D1 -b debian openbazaar.i586.deb')
+
+if os.path.exists('openbazaar.i586.deb'):
+  os.unlink('openbazaar.i586.deb')
+
+os.chdir('debian')
+cleanCurrentFolder()
+makeFolderStructure()
+copyFiles()
+
+os.chdir('..')
+makePackage()

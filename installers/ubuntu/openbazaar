@@ -1,0 +1,21 @@
+#!/usr/bin/python
+def usage():
+    print """
+
+  openbazaar - A decentralized marketplace for instantly trading with anyone 
+               using Bitcoin.
+
+  Usage: openbazaar <command>
+
+  COMMANDS:
+  start      - Once the server has been started access it 
+               at http://localhost:8888
+
+  stop
+
+  restart
+
+  """
+
+if __name__=='__main__':
+  usage()
