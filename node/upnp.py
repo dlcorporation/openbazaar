@@ -64,7 +64,13 @@ class PortMapper(object):
         self.debug_upnp_values()
 
     def get_status_info(self):
-        return self.upnp.statusinfo()
+        result = 'n/a'
+        try:
+            result = self.upnp.statusinfo()
+        except:
+            pass
+
+        return result
 
     def get_connection_type(self):
         return self.upnp.connectiontype()
