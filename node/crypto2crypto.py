@@ -336,7 +336,7 @@ class CryptoTransportLayer(TransportLayer):
             self.settings = self.settings[0]
 
         # Generate PGP key during initial setup or if previous PGP gen failed
-        if not self.settings or not (self.settings.has_key("PGPPubKey") and self.settings["PGPPubKey"]):
+        if not self.settings or not ('PGPPubKey' in self.settings and self.settings["PGPPubKey"]):
             try:
                 self._log.info('Generating PGP keypair. This may take several minutes...')
                 gpg = gnupg.GPG()
@@ -360,14 +360,14 @@ class CryptoTransportLayer(TransportLayer):
                 self._log.error("Encountered a problem with GPG: %s" % e)
 
         if self.settings:
-            self._nickname = self.settings['nickname'] if self.settings.has_key("nickname") else ""
-            self.secret = self.settings['secret'] if self.settings.has_key("secret") else ""
-            self.pubkey = self.settings['pubkey'] if self.settings.has_key("pubkey") else ""
+            self._nickname = self.settings['nickname'] if 'nickname' in self.settings else ""
+            self.secret = self.settings['secret'] if 'secret' in self.settings else ""
+            self.pubkey = self.settings['pubkey'] if 'pubkey' in self.settings else ""
             self.privkey = self.settings.get('privkey')
             self.btc_pubkey = privkey_to_pubkey(self.privkey)
-            self.guid = self.settings['guid'] if self.settings.has_key("guid") else ""
-            self.sin = self.settings['sin'] if self.settings.has_key("sin") else ""
-            self.bitmessage = self.settings['bitmessage'] if self.settings.has_key('bitmessage') else ""
+            self.guid = self.settings['guid'] if 'guid' in self.settings else ""
+            self.sin = self.settings['sin'] if 'sin' in self.settings else ""
+            self.bitmessage = self.settings['bitmessage'] if 'bitmessage' in self.settings else ""
 
             self._myself = ec.ECC(pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).decode('hex'),
                               raw_privkey=self.secret.decode('hex'),

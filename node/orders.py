@@ -151,7 +151,7 @@ class Orders(object):
                 shipping_price = 0
 
             try:
-                total_price = (float(shipping_price) + float(_order['item_price'])) if _order.has_key("item_price") else _order['item_price']
+                total_price = (float(shipping_price) + float(_order['item_price'])) if 'item_price' in _order else _order['item_price']
             except Exception, e:
                 self._log.error('Probably not a number %s' % e)
 
@@ -161,22 +161,22 @@ class Orders(object):
         # Get order prototype object before storing
         order = {"id": _order['id'],
                  "state": _order['state'],
-                 "address": _order['address'] if _order.has_key("address") else "",
-                 "buyer": _order['buyer'] if _order.has_key("buyer") else "",
-                 "merchant": _order['merchant'] if _order.has_key("merchant") else "",
+                 "address": _order['address'] if 'address' in _order else "",
+                 "buyer": _order['buyer'] if 'buyer' in else "",
+                 "merchant": _order['merchant'] if 'merchant' in _order else "",
                  "order_id": _order['order_id'],
-                 "item_price": _order['item_price'] if _order.has_key("item_price") else "",
-                 "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
-                 "shipping_address": _order['shipping_address'] if _order.has_key('shipping_address') and _order['shipping_address'] is not "" else "",
+                 "item_price": _order['item_price'] if 'item_price' in _order else "",
+                 "shipping_price": _order['shipping_price'] if 'shipping_price' in _order else "",
+                 "shipping_address": _order['shipping_address'] if 'shipping_address' in _order and _order['shipping_address'] is not "" else "",
                  "total_price": total_price,
                  "notary": notary,
-                 "payment_address": _order['payment_address'] if _order.has_key('payment_address') and _order['payment_address'] is not "" else "",
+                 "payment_address": _order['payment_address'] if 'payment_address' in _order and _order['payment_address'] is not "" else "",
                  "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
                  "qrcode": 'data:image/png;base64,'+qr,
                  "item_title": offer_data_json['Contract']['item_title'],
-                 "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
-                 "note_for_merchant":  _order['note_for_merchant'] if _order.has_key("note_for_merchant") else "",
-                 "updated": _order['updated'] if _order.has_key("updated") else ""}
+                 "signed_contract_body": _order['signed_contract_body'] if 'signed_contract_body' in _order else "",
+                 "note_for_merchant":  _order['note_for_merchant'] if 'note_for_merchant' in _order else "",
+                 "updated": _order['updated'] if 'updated' in _order else ""}
 
         return order
 
@@ -556,8 +556,8 @@ class Orders(object):
                      'merchant': offer_data_json['Seller']['seller_GUID'],
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'address': multisig_address,
-                     'item_price': offer_data_json['Contract']['item_price'] if offer_data_json['Contract'].has_key('item_price') else 0,
-                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
+                     'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json['Contract'] else 0,
+                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()})
 
@@ -681,8 +681,8 @@ class Orders(object):
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'notary': notary_data_json['Notary']['notary_GUID'],
                      'address': multisig_address,
-                     'item_price': offer_data_json['Contract']['item_price'] if offer_data_json['Contract'].has_key('item_price') else 0,
-                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
+                     'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json['Contract'] else 0,
+                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()})
 
@@ -698,8 +698,8 @@ class Orders(object):
                      'buyer': bid_data_json['Buyer']['buyer_GUID'],
                      'notary': notary_data_json['Notary']['notary_GUID'],
                      'address': multisig_address,
-                     'item_price': offer_data_json['Contract']['item_price'] if offer_data_json['Contract'].has_key('item_price') else 0,
-                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if offer_data_json['Contract']['item_delivery'].has_key('shipping_price') else "",
+                     'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json['Contract'] else 0,
+                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()})
 

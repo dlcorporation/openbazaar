@@ -124,7 +124,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
             self._handleRPC(remoteContact, message.id, message.request, message.args)
         elif isinstance(message, msgtypes.ResponseMessage):
             # Find the message that triggered this response
-            if self._sentMessages.has_key(message.id):
+            if message.id in self._sentMessages:
                 # Cancel timeout timer for this RPC
                 df, timeoutCall = self._sentMessages[message.id][1:3]
                 timeoutCall.cancel()
@@ -268,12 +268,12 @@ class KademliaProtocol(protocol.DatagramProtocol):
     def _msgTimeout(self, messageID):
         """ Called when an RPC request message times out """
         # Find the message that timed out
-        if self._sentMessages.has_key(messageID):
+        if messageID in self._sentMessages:
             remoteContactID, df = self._sentMessages[messageID][0:2]
-            if self._partialMessages.has_key(messageID):
+            if messageID in self._partialMessages:
                 # We are still receiving this message
                 # See if any progress has been made; if not, kill the message
-                if self._partialMessagesProgress.has_key(messageID):
+                if messageID in self._partialMessagesProgress:
                     if len(self._partialMessagesProgress[messageID]) == len(self._partialMessages[messageID]):
                         # No progress has been made
                         del self._partialMessagesProgress[messageID]
