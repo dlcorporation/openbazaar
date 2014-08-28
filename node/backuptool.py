@@ -59,15 +59,15 @@ class BackupTool:
     @staticmethod
     def restore(backupTarFilepath):
         pass
-    
+
 if __name__ == '__main__':
     def onBackUpDone(backupFilePath):
         print "Backup succeeded!\nOutput file at",backupFilePath
-        
+
     def onError(errorMessage):
         print "Backup failed!", errorMessage
-    
-    BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar", 
+
+    BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar",
                       "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
-                       onBackUpDone, 
+                       onBackUpDone,
                        onError)

@@ -401,8 +401,8 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
-        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id, 
-                                           limit=10, 
+        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id,
+                                           limit=10,
                                            limit_offset=(page*10))
         my_contracts = []
         for contract in contracts:
@@ -423,7 +423,7 @@ class Market(object):
             except:
                 self._log.error('Problem loading the contract body JSON')
 
-        return {"contracts": my_contracts, "page": page, 
+        return {"contracts": my_contracts, "page": page,
                 "total_contracts": self._db.numEntries("contracts")}
 
     # SETTINGS
