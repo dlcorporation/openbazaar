@@ -311,7 +311,7 @@ class ProtocolHandler:
 
     def client_import_raw_contract(self, socket_handler, contract):
         self._log.info(
-            "Importing New Contract "\
+            "Importing New Contract "
             "(NOT IMPLEMENTED! TODO: Market.import_contract(contract)"
         )
         # self._market.import_contract(contract)
