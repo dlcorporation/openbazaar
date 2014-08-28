@@ -251,7 +251,13 @@ class CryptoTransportLayer(TransportLayer):
         #    self._db.updateEntries("peers", {"id": results[0]['id']}, {"market_id": self._market_id, "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname})
         #else:
         if guid is not None:
-            self._db.insertEntry("peers", { "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname, "market_id": self._market_id})
+            self._db.insertEntry("peers", {
+                "uri": uri,
+                "pubkey": pubkey,
+                "guid": guid,
+                "nickname": nickname,
+                "market_id": self._market_id
+            })
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
