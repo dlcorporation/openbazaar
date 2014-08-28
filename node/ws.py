@@ -537,7 +537,7 @@ class ProtocolHandler:
 
             def cb(ec, history, order):
 
-               # Debug
+                # Debug
                 #self._log.info('%s %s' % (ec, history))
 
                 if ec is not None:
