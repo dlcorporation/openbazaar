@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
-echo "[openbazaar] Installing openbazaar python dependencies..."
+echo "[openbazaar] Installing OpenBazaar python dependencies..."
 cd /usr/local/openbazaar
 sudo pip install -r requirements.txt
 echo "[openbazaar] Installation finished."
+echo "[openbazaar] Now type 'openbazaar start' to start OpenBazaar"
+echo "[openbazaar] then open 'http://localhost:8888' with your favorite web browser"
