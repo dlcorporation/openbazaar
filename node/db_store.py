@@ -43,7 +43,7 @@ class Obdb():
         """
         d = {}
         for idx, col in enumerate(cursor.description):
-            if row[idx] == None:
+            if row[idx] is None:
                 d[col[0]] = ""
             else:
                 d[col[0]] = row[idx]
@@ -148,9 +148,9 @@ class Obdb():
             first = True
 
 
-            if limit != None and limit_offset is None:
+            if limit is not None and limit_offset is None:
                 limit_clause = "LIMIT %s" % limit
-            elif limit != None and limit_offset is not None:
+            elif limit is not None and limit_offset is not None:
                 limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
             else:
                 limit_clause = ""
