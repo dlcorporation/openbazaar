@@ -78,7 +78,7 @@ class ProtocolHandler:
 
         self._timeouts = []
 
-        #unused for now, wipe it if you want later.
+        # unused for now, wipe it if you want later.
         self.loop = loop_instance
 
         self._log = logging.getLogger(
@@ -161,7 +161,7 @@ class ProtocolHandler:
     def client_add_trusted_notary(self, socket_handler, msg):
         self._log.info('Adding trusted notary %s' % msg)
         self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
-        #self.send_to_client(None, {"type": "load_page"})
+        # self.send_to_client(None, {"type": "load_page"})
 
     def client_remove_trusted_notary(self, socket_handler, msg):
         self._log.info('Removing trusted notary %s' % msg)
@@ -314,7 +314,7 @@ class ProtocolHandler:
             "Importing New Contract "\
             "(NOT IMPLEMENTED! TODO: Market.import_contract(contract)"
         )
-        #self._market.import_contract(contract)
+        # self._market.import_contract(contract)
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
@@ -416,7 +416,7 @@ class ProtocolHandler:
             def cb(ec, history, order):
 
                 # Debug
-                #self._log.info('%s %s' % (ec, history))
+                # self._log.info('%s %s' % (ec, history))
 
                 settings = self._market.get_settings()
                 private_key = settings.get('privkey')
@@ -538,7 +538,7 @@ class ProtocolHandler:
             def cb(ec, history, order):
 
                 # Debug
-                #self._log.info('%s %s' % (ec, history))
+                # self._log.info('%s %s' % (ec, history))
 
                 if ec is not None:
                     self._log.error("Error fetching history: %s" % ec)
@@ -597,10 +597,10 @@ class ProtocolHandler:
         )
         # self._log.info('Result: %s' % result)
 
-        #response = self._market.lookup(msg)
-        #if response:
-        #    self._log.info(response)
-        #self.send_to_client(*response)
+        # response = self._market.lookup(msg)
+        # if response:
+        #     self._log.info(response)
+        # self.send_to_client(*response)
 
     def client_query_network_for_products(self, socket_handler, msg):
 
@@ -644,7 +644,7 @@ class ProtocolHandler:
                                  'result': 'failure',
                                  'detail': error.strerror})
 
-        #TODO: Make backup path configurable on server settings before run.sh
+        # TODO: Make backup path configurable on server settings before run.sh
         OB_PATH = os.path.realpath(os.path.abspath(__file__))[:os.path.realpath(os.path.abspath(__file__)).find('/node')]
         BACKUP_PATH = OB_PATH + os.sep + "html" + os.sep + 'backups'
         BackupTool.backup(OB_PATH,
@@ -982,11 +982,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             # self._log.info('Response: %s' % response)
 
             self.write_message(json.dumps(response))
-            #try:
-            #    self.write_message(json.dumps(response))
-            #except tornado.websocket.WebSocketClosedError:
-            #    logging.warning("Dropping response to closed socket: %s",
-            #       response, exc_info=True)
+            # try:
+            #     self.write_message(json.dumps(response))
+            # except tornado.websocket.WebSocketClosedError:
+            #     logging.warning("Dropping response to closed socket: %s",
+            #        response, exc_info=True)
 
     def queue_response(self, response):
         def send_response(*args):

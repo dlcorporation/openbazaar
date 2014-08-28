@@ -30,7 +30,7 @@ class CryptoPeerConnection(PeerConnection):
     def __init__(self, transport, address, pub=None, guid=None, nickname=None,
                  sin=None, callback=lambda msg: None):
 
-        #self._priv = transport._myself
+        # self._priv = transport._myself
         self._pub = pub
         self._ip = urlparse(address).hostname
         self._port = urlparse(address).port
@@ -247,9 +247,9 @@ class CryptoTransportLayer(TransportLayer):
 
         # Update query
         self._db.deleteEntries("peers", {"uri": uri, "guid": guid}, "OR")
-        #if len(results) > 0:
-        #    self._db.updateEntries("peers", {"id": results[0]['id']}, {"market_id": self._market_id, "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname})
-        #else:
+        # if len(results) > 0:
+        #     self._db.updateEntries("peers", {"id": results[0]['id']}, {"market_id": self._market_id, "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname})
+        # else:
         if guid is not None:
             self._db.insertEntry("peers", {
                 "uri": uri,
@@ -603,7 +603,7 @@ class CryptoTransportLayer(TransportLayer):
         if send_to is not None:
 
             peer = self._dht._routingTable.getContact(send_to)
-            #peer = CryptoPeerConnection(msg['uri'])
+            # peer = CryptoPeerConnection(msg['uri'])
             if peer:
                 self._log.debug('Directed Data (%s): %s' % (send_to, data))
                 try:
@@ -695,7 +695,7 @@ class CryptoTransportLayer(TransportLayer):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        #self._log.info("[On Message] Data received: %s" % msg)
+        # self._log.info("[On Message] Data received: %s" % msg)
 
         pubkey = msg.get('pubkey')
         uri = msg.get('uri')
@@ -761,7 +761,7 @@ class CryptoTransportLayer(TransportLayer):
                         self._log.info('Verified')
                     else:
                         self._log.error('Message signature could not be verified %s' % msg)
-                        #return
+                        # return
 
                     msg = json.loads(data)
                     self._log.debug('Message Data %s ' % msg)

@@ -116,6 +116,6 @@ def bin_to_b58check(inp):
     checksum = dbl_sha256(inp_fmtd)[:4]
     return '1' * leadingzbytes + changebase(inp_fmtd + checksum, 256, 58)
 
-#Convert a public key (in hex) to a Bitcoin address
+# Convert a public key (in hex) to a Bitcoin address
 def pubkey_to_address(pubkey):
     return bin_to_b58check(hash_160(changebase(pubkey, 16, 256)))

@@ -6,7 +6,7 @@ class Contact(object):
     def __init__(self, guid, uri, firstComm=0):
         self.guid = guid
         self.uri = uri
-        #self._peerConnection = PeerConnection(uri, guid)
+        # self._peerConnection = PeerConnection(uri, guid)
         self.commTime = firstComm
         self.failedRPCs = 0
 

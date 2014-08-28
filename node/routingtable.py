@@ -360,8 +360,8 @@ class TreeRoutingTable(RoutingTable):
         @return: The index of the k-bucket responsible for the specified key
         @rtype: int
         """
-        #print key
-        #print obelisk.DecodeBase58Check(key)
+        # print key
+        # print obelisk.DecodeBase58Check(key)
         valKey = long(key, 16)
 
         i = 0

@@ -32,7 +32,7 @@ class Orders(object):
     def __init__(self, transport, market_id, db):
 
         self._transport = transport
-        #self._priv = transport._myself
+        # self._priv = transport._myself
         self._market_id = market_id
 
         self._gpg = gnupg.GPG()
@@ -460,9 +460,9 @@ class Orders(object):
         # Check signature and verify of seller and bidder contract
         seed_contract = self.get_seed_contract_from_doublesigned(contract)
         seed_contract_json = self.get_json_from_doublesigned_contract(seed_contract)
-        #seed_contract = seed_contract.replace('- -----', '-----')
+        # seed_contract = seed_contract.replace('- -----', '-----')
 
-        #self._log.debug('seed contract %s' % seed_contract)
+        # self._log.debug('seed contract %s' % seed_contract)
         self._log.debug('seed contract json %s' % seed_contract_json)
 
         contract_stripped = "".join(contract.split('\n'))
@@ -514,7 +514,7 @@ class Orders(object):
 
         # Push buy order to DHT and node if available
         # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
-        #self.update_listings_index()
+        # self.update_listings_index()
 
         # Find Seller Data in Contract
         offer_data = ''.join(contract.split('\n')[8:])

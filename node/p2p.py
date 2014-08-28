@@ -71,7 +71,7 @@ class PeerConnection(object):
             stream.on_recv_stream(cb)
         except Exception as e:
             self._log.error(e)
-            #shouldn't we raise the exception here???? I think not doing this could cause buggy behavior on top
+            # shouldn't we raise the exception here???? I think not doing this could cause buggy behavior on top
 
 # Transport layer manages a list of peers
 class TransportLayer(object):

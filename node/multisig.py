@@ -48,7 +48,7 @@ class Multisig:
 
     @property
     def script(self):
-        #return pybitcointools.mk_multisig_script(self.pubkeys, 2, 3)
+        # return pybitcointools.mk_multisig_script(self.pubkeys, 2, 3)
         result = chr(80 + self.number_required)
         for pubkey in self.pubkeys:
             result += chr(33) + pubkey
@@ -144,8 +144,8 @@ class Multisig:
     def broadcast(tx):
         raw_tx = tx.serialize().encode("hex")
         Multisig.eligius_pushtx(raw_tx)
-        #gateway_broadcast(raw_tx)
-        #bci_pushtx(raw_tx)
+        # gateway_broadcast(raw_tx)
+        # bci_pushtx(raw_tx)
 
 
 def add_input(tx, prevout):

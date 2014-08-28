@@ -43,7 +43,7 @@ class Market(object):
         self._transport = transport
         self._dht = transport.get_dht()
         self._market_id = transport.get_market_id()
-        #self._myself = transport.get_myself()
+        # self._myself = transport.get_myself()
         self._peers = self._dht.getActivePeers()
         self._db = db
         self.orders = Orders(transport, self._market_id, db)
@@ -496,7 +496,7 @@ class Market(object):
 
 
     def on_page(self, page):
-        #pubkey = page.get('pubkey')
+        # pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
         sin = page.get('sin')
         page = page.get('text')

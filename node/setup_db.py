@@ -100,9 +100,9 @@ def setup_db(db_path):
                         "guid TEXT, "
                         "updated INT, "
                         "created INT)")
-            #not sure if peers.market_id is actually supposed to be a TEXT
-            #field or an INT with foreign key
-            #referencing the markets(id)
+            # not sure if peers.market_id is actually supposed to be a TEXT
+            # field or an INT with foreign key
+            # referencing the markets(id)
 
             cur.execute("CREATE TABLE settings("
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
