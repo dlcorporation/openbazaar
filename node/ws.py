@@ -434,7 +434,7 @@ class ProtocolHandler:
                 inputs = []
                 for row in unspent:
                     assert len(row) == 4
-                    inputs.append(str(row[0].encode('hex'))+":"+str(row[1]))
+                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
                     value = row[3]
                     total_amount += value
 
@@ -448,7 +448,7 @@ class ProtocolHandler:
                 print payment_output
                 print 'PAYMENT OUTPUT', "16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt:%s" % send_amount
                 print 'inputs', inputs
-                tx = mktx(inputs, [str(payment_output)+":"+str(send_amount)])
+                tx = mktx(inputs, [str(payment_output) + ":" + str(send_amount)])
                 print 'TRANSACTION: %s' % tx
 
                 signatures = []
@@ -480,7 +480,7 @@ class ProtocolHandler:
     def on_release_funds_tx(self, msg):
         self._log.info('Receiving signed tx from buyer')
 
-        buyer_order_id = str(msg['senderGUID'])+'-'+str(msg['buyer_order_id'])
+        buyer_order_id = str(msg['senderGUID']) + '-' + str(msg['buyer_order_id'])
         order = self._market.orders.get_order(buyer_order_id, by_buyer_id=True)
         contract = order['signed_contract_body']
 
@@ -551,7 +551,7 @@ class ProtocolHandler:
                 inputs = []
                 for row in unspent:
                     assert len(row) == 4
-                    inputs.append(str(row[0].encode('hex'))+":"+str(row[1]))
+                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
 
                 seller_signatures = []
                 print 'private key ', self._transport.settings['privkey']

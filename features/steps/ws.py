@@ -31,8 +31,8 @@ def create_nodes(context, num_nodes):
 
 def create_connected_nodes(context, num_nodes):
     create_nodes(context, num_nodes)
-    for i in range(num_nodes-1):
-        ws_send(i, 'connect', {'uri': node_uri(i+1)})
+    for i in range(num_nodes - 1):
+        ws_send(i, 'connect', {'uri': node_uri(i + 1)})
 
 
 @given('{num_nodes} connected nodes')

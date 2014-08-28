@@ -123,7 +123,7 @@ class Multisig:
     @staticmethod
     def make_request(*args):
         opener = urllib2.build_opener()
-        opener.addheaders = [('User-agent', 'Mozilla/5.0'+str(random.randrange(1000000)))]
+        opener.addheaders = [('User-agent', 'Mozilla/5.0' + str(random.randrange(1000000)))]
         try:
             return opener.open(*args).read().strip()
         except Exception as e:
@@ -136,7 +136,7 @@ class Multisig:
     @staticmethod
     def eligius_pushtx(tx):
         print 'FINAL TRANSACTION: %s' % tx
-        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php', 'transaction='+tx+'&send=Push')
+        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php', 'transaction=' + tx + '&send=Push')
         strings = re.findall('string[^"]*"[^"]*"', s)
         for string in strings:
             quote = re.findall('"[^"]*"', string)[0]
