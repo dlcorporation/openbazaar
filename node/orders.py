@@ -160,23 +160,23 @@ class Orders(object):
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
-                 "state": _order['state'],
-                 "address": _order['address'] if _order.has_key("address") else "",
-                 "buyer": _order['buyer'] if _order.has_key("buyer") else "",
-                 "merchant": _order['merchant'] if _order.has_key("merchant") else "",
-                 "order_id": _order['order_id'],
-                 "item_price": _order['item_price'] if _order.has_key("item_price") else "",
-                 "shipping_price": _order['shipping_price'] if _order.has_key("shipping_price") else "",
-                 "shipping_address": _order['shipping_address'] if _order.has_key('shipping_address') and _order['shipping_address'] is not "" else "",
+                 "state": _order.get('state'),
+                 "address": _order.get('address'),
+                 "buyer": _order.get('buyer'),
+                 "merchant": _order.get('merchant'),
+                 "order_id": _order.get('order_id'),
+                 "item_price": _order.get('item_price'),
+                 "shipping_price": _order.get('shipping_price'),
+                 "shipping_address": _order.get('shipping_address'),
                  "total_price": total_price,
                  "notary": notary,
-                 "payment_address": _order['payment_address'] if _order.has_key('payment_address') and _order['payment_address'] is not "" else "",
-                 "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
+                 "payment_address": _order.get('payment_address'),
+                 "item_image": offer_data_json.get('Contract').get('item_images'),
                  "qrcode": 'data:image/png;base64,'+qr,
                  "item_title": offer_data_json['Contract']['item_title'],
-                 "signed_contract_body": _order['signed_contract_body'] if _order.has_key("signed_contract_body") else "",
-                 "note_for_merchant":  _order['note_for_merchant'] if _order.has_key("note_for_merchant") else "",
-                 "updated": _order['updated'] if _order.has_key("updated") else ""}
+                 "signed_contract_body": _order.get('signed_contract_body'),
+                 "note_for_merchant":  _order.get('note_for_merchant'),
+                 "updated": _order.get('updated')}
 
         return order
 
