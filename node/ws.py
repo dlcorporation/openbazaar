@@ -16,6 +16,7 @@ import arithmetic
 import tornado.websocket
 from zmq.eventloop import ioloop
 from twisted.internet import reactor
+import trust
 from backuptool import BackupTool
 
 ioloop.install()
@@ -92,6 +93,9 @@ class ProtocolHandler:
             countryCodes.append({"code": country.alpha2, "name": country.name})
 
         settings = self._market.get_settings()
+        # globalTrust = trust.getTrust(self._transport.guid)
+
+        # print(trust.get(self._transport.guid))
 
         message = {
             'type': 'myself',
@@ -102,10 +106,26 @@ class ProtocolHandler:
             'sin': self._transport.sin,
             'uri': self._transport._uri,
             'countryCodes': countryCodes,
-            'reputation': []  # self._transport.reputation.get_my_reputation()
+            # 'globalTrust': globalTrust
         }
 
+        # print('Sending opening')
         self.send_to_client(None, message)
+
+        burnAddr = trust.burnaddr_from_guid(self._transport.guid)
+        # def found_unspent(amount_in_satoshis):
+
+        def found_unspent(amount):
+            # print("found_unspent")
+            self.send_to_client(None, {
+                'type': 'burn_info_available',
+                'amount': amount,
+                'addr': burnAddr
+            })
+
+        # print("getting unspent")
+
+        trust.get_unspent(burnAddr, found_unspent)
 
     def client_read_log(self, socket_handler, msg):
         self._market.p = subprocess.Popen(

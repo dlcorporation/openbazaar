@@ -64,7 +64,13 @@ class PortMapper(object):
         self.debug_upnp_values()
 
     def get_status_info(self):
-        return self.upnp.statusinfo()
+        result = 'n/a'
+        try:
+            result = self.upnp.statusinfo()
+        except:
+            pass
+
+        return result
 
     def get_connection_type(self):
         return self.upnp.connectiontype()
@@ -192,8 +198,11 @@ if __name__ == '__main__':
     #Test code
     PortMapper.DEBUG = True
     mapper = PortMapper()
-    print "Adding mapping: External:12345, Internal:8888"
-    mapper.add_port_mapping(12345, 8888, 'TCP')
+    print "Adding mapping: P2P:12345->12345, HTTP:8888->8888"
+    mapper.add_port_mapping(8888, 8888, 'TCP')
+    mapper.add_port_mapping(8888, 8888, 'UDP')
+    mapper.add_port_mapping(12345, 12345, 'TCP')
+    mapper.add_port_mapping(12345, 12345, 'UDP')
     mappings = mapper.get_mapping_list()
     print len(mappings), "mappings"
 
