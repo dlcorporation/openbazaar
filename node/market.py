@@ -449,6 +449,9 @@ class Market(object):
         # Update nickname
         self._transport._nickname = msg['nickname']
 
+        if 'burnAmount' in msg:
+            del msg['burnAmount']
+
         # Update local settings
         self._db.updateEntries("settings", {'market_id': self._transport._market_id}, msg)
 
