@@ -26,7 +26,7 @@ def get_code_string(base):
         return "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
     elif base == 256:
         return ''.join([chr(x) for x in range(256)])
- 
+
     raise ValueError("Invalid base!")
 
 def encode(val, base, minlen=0):
