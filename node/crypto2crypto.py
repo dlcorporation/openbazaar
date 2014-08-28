@@ -743,7 +743,7 @@ class CryptoTransportLayer(TransportLayer):
                     self._log.debug('Signature: %s' % sig.encode('hex'))
                     self._log.debug('Signed Data: %s' % data)
 
-                    guid =  json.loads(data).get('guid')
+                    guid = json.loads(data).get('guid')
 
                     #ecc = ec.ECC(curve='secp256k1', pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(json.loads(data).get('pubkey')).decode('hex'))
 
