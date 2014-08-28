@@ -43,7 +43,8 @@ def encode(val, base, minlen=0):
 def decode(string, base):
     code_string = get_code_string(base)
     result = 0
-    if base == 16: string = string.lower()
+    if base == 16:
+        string = string.lower()
     while len(string) > 0:
         result *= base
         result += code_string.find(string[0])
@@ -68,7 +69,7 @@ def base10_add(a, b):
     return x, y
 
 def base10_double(a):
-    if a == None:
+    if a is None:
         return None
     m = ((3 * a[0] * a[0] + A) * inv(2 * a[1], P)) % P
     x = (m * m - 2 * a[0]) % P

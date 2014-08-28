@@ -127,8 +127,10 @@ class Multisig:
         try:
             return opener.open(*args).read().strip()
         except Exception as e:
-            try: p = e.read().strip()
-            except: p = e
+            try:
+                p = e.read().strip()
+            except:
+                p = e
             raise Exception(p)
 
     @staticmethod
@@ -138,7 +140,8 @@ class Multisig:
         strings = re.findall('string[^"]*"[^"]*"', s)
         for string in strings:
             quote = re.findall('"[^"]*"', string)[0]
-            if len(quote) >= 5: return quote[1:-1]
+            if len(quote) >= 5:
+                return quote[1:-1]
 
     @staticmethod
     def broadcast(tx):
