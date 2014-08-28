@@ -35,7 +35,7 @@ class Obdb():
         """ Close the db connection
         """
         if self.con:
-           self.con.close()
+            self.con.close()
         self.con = False
 
     def _dictFactory(self, cursor, row):
@@ -76,9 +76,9 @@ class Obdb():
                 key = str(key).replace("'", "''")
 
                 if type(value) == bool:
-                  value = 1 if value else 0
+                    value = bool(value)
                 else:
-                  value = str(value).replace("'", "''")
+                    value = str(value).replace("'", "''")
 
 
 
@@ -115,9 +115,9 @@ class Obdb():
                 key = str(key).replace("'", "''")
 
                 if type(value) == bool:
-                  value = 1 if value else 0
+                    value = bool(value)
                 else:
-                  value = str(value).replace("'", "''")
+                    value = str(value).replace("'", "''")
 
                 if first:
                     updatefield_part = "%s" % (key)
@@ -151,7 +151,7 @@ class Obdb():
             if limit != None and limit_offset is None:
                 limit_clause = "LIMIT %s" % limit
             elif limit != None and limit_offset is not None:
-                  limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
+                limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
             else:
                 limit_clause = ""
 

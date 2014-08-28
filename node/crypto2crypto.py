@@ -109,9 +109,9 @@ class CryptoPeerConnection(PeerConnection):
 
     @staticmethod
     def hexToPubkey(pubkey):
-      pubkey_raw = arithmetic.changebase(pubkey[2:], 16, 256, minlen=64)
-      pubkey_bin = '\x02\xca\x00 '+pubkey_raw[:32]+'\x00 '+pubkey_raw[32:]
-      return pubkey_bin
+        pubkey_raw = arithmetic.changebase(pubkey[2:], 16, 256, minlen=64)
+        pubkey_bin = '\x02\xca\x00 '+pubkey_raw[:32]+'\x00 '+pubkey_raw[32:]
+        return pubkey_bin
 
     def encrypt(self, data):
         try:
@@ -436,10 +436,20 @@ class CryptoTransportLayer(TransportLayer):
                                                                             "sin": self.sin})
 
     def _generate_new_bitmessage_address(self):
-      # Use the guid generated previously as the key
-      self.bitmessage = self._bitmessage_api.createRandomAddress(self.guid.encode('base64'),
-            False, 1.05, 1.1111)
-      self._db.updateEntries("settings", {"market_id": self._market_id}, {"bitmessage": self.bitmessage})
+        # Use the guid generated previously as the key
+        self.bitmessage = self._bitmessage_api.createRandomAddress(
+            self.guid.encode('base64'),
+            False,
+            1.05,
+            1.1111
+        )
+        self._db.updateEntries(
+            "settings", {
+                "market_id": self._market_id
+            }, {
+                "bitmessage": self.bitmessage
+            }
+        )
 
 
     def join_network(self, seed_peers=[], callback=lambda msg: None):
@@ -466,7 +476,7 @@ class CryptoTransportLayer(TransportLayer):
             self.search_for_my_node()
 
         if callback is not None:
-             callback('Joined')
+            callback('Joined')
 
     def get_past_peers(self):
         peers = []
@@ -702,16 +712,16 @@ class CryptoTransportLayer(TransportLayer):
 
     @staticmethod
     def makeCryptor(privkey):
-      privkey_bin = '\x02\xca\x00 '+arithmetic.changebase(privkey, 16, 256, minlen=32)
-      pubkey = arithmetic.changebase(arithmetic.privtopub(privkey), 16, 256, minlen=65)[1:]
-      pubkey_bin = '\x02\xca\x00 '+pubkey[:32]+'\x00 '+pubkey[32:]
-      cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
-      return cryptor
+        privkey_bin = '\x02\xca\x00 '+arithmetic.changebase(privkey, 16, 256, minlen=32)
+        pubkey = arithmetic.changebase(arithmetic.privtopub(privkey), 16, 256, minlen=65)[1:]
+        pubkey_bin = '\x02\xca\x00 '+pubkey[:32]+'\x00 '+pubkey[32:]
+        cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
+        return cryptor
 
     @staticmethod
     def makePubCryptor(pubkey):
-      pubkey_bin = CryptoPeerConnection.hexToPubkey(pubkey)
-      return ec.ECC(curve='secp256k1', pubkey=pubkey_bin)
+        pubkey_bin = CryptoPeerConnection.hexToPubkey(pubkey)
+        return ec.ECC(curve='secp256k1', pubkey=pubkey_bin)
 
     def _on_raw_message(self, serialized):
 
@@ -765,26 +775,24 @@ class CryptoTransportLayer(TransportLayer):
             try:
                 # Encrypted?
                 try:
-                  msg = self._myself.decrypt(serialized)
-                  msg = json.loads(msg)
+                    msg = self._myself.decrypt(serialized)
+                    msg = json.loads(msg)
 
-                  self._log.info("Decrypted Message [%s]"
-                               % msg.get('type', 'unknown'))
+                    self._log.info("Decrypted Message [%s]"
+                                 % msg.get('type', 'unknown'))
                 except:
-                  self._log.error("Could not decrypt message: %s" % msg)
-                  return
+                    self._log.error("Could not decrypt message: %s" % msg)
+                    return
             except:
-
                 self._log.error('Message probably sent using incorrect pubkey')
 
                 return
 
         if msg.get('type') is not None:
+            msg_type = msg.get('type')
+            msg_uri = msg.get('uri')
+            msg_guid = msg.get('guid')
 
-          msg_type = msg.get('type')
-          msg_uri = msg.get('uri')
-          msg_guid = msg.get('guid')
-
-          self._on_message(msg)
+            self._on_message(msg)
         else:
-          self._log.error('Received a message with no type')
+            self._log.error('Received a message with no type')
