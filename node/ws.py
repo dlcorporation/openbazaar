@@ -698,15 +698,15 @@ class ProtocolHandler:
 
         if len(results):
             if 'listings' in results:
-            # data = results['data']
-            # contracts = data['contracts']
-            # signature = results['signature']
-            # self._log.info('Signature: %s' % signature)
+                # data = results['data']
+                # contracts = data['contracts']
+                # signature = results['signature']
+                # self._log.info('Signature: %s' % signature)
 
-            # TODO: Validate signature of listings matches data
-            # self._transport._myself.
+                # TODO: Validate signature of listings matches data
+                # self._transport._myself.
 
-            # Go get listing metadata and then send it to the GUI
+                # Go get listing metadata and then send it to the GUI
                 for contract in results['listings']:
                     self._transport._dht.iterativeFindValue(
                         contract,
