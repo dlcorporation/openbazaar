@@ -162,7 +162,7 @@ class Orders(object):
         order = {"id": _order['id'],
                  "state": _order['state'],
                  "address": _order['address'] if 'address' in _order else "",
-                 "buyer": _order['buyer'] if 'buyer' in else "",
+                 "buyer": _order['buyer'] if 'buyer' in _order else "",
                  "merchant": _order['merchant'] if 'merchant' in _order else "",
                  "order_id": _order['order_id'],
                  "item_price": _order['item_price'] if 'item_price' in _order else "",
