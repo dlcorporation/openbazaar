@@ -20,7 +20,7 @@ replicateInterval = refreshTimeout
 # will also republish the data at this time if it is still valid
 dataExpireTimeout = 86400  # 24 hours
 
-######## IMPLEMENTATION-SPECIFIC CONSTANTS ###########
+# ####### IMPLEMENTATION-SPECIFIC CONSTANTS ###########
 
 # The interval in which the node should check its whether any buckets need refreshing,
 # or whether any data needs to be republished (in seconds)
