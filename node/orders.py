@@ -160,23 +160,23 @@ class Orders(object):
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
-                 "state": _order['state'],
-                 "address": _order['address'] if 'address' in _order else "",
-                 "buyer": _order['buyer'] if 'buyer' in _order else "",
-                 "merchant": _order['merchant'] if 'merchant' in _order else "",
-                 "order_id": _order['order_id'],
-                 "item_price": _order['item_price'] if 'item_price' in _order else "",
-                 "shipping_price": _order['shipping_price'] if 'shipping_price' in _order else "",
-                 "shipping_address": _order['shipping_address'] if 'shipping_address' in _order and _order['shipping_address'] is not "" else "",
+                 "state": _order.get('state'),
+                 "address": _order.get('address'),
+                 "buyer": _order.get('buyer'),
+                 "merchant": _order.get('merchant'),
+                 "order_id": _order.get('order_id'),
+                 "item_price": _order.get('item_price'),
+                 "shipping_price": _order.get('shipping_price'),
+                 "shipping_address": _order.get('shipping_address'),
                  "total_price": total_price,
                  "notary": notary,
-                 "payment_address": _order['payment_address'] if 'payment_address' in _order and _order['payment_address'] is not "" else "",
-                 "item_image": offer_data_json['Contract']['item_images'] if offer_data_json['Contract']['item_images'] != {} else "img/no-photo.png",
+                 "payment_address": _order.get('payment_address'),
+                 "item_image": offer_data_json.get('Contract').get('item_images'),
                  "qrcode": 'data:image/png;base64,'+qr,
                  "item_title": offer_data_json['Contract']['item_title'],
-                 "signed_contract_body": _order['signed_contract_body'] if 'signed_contract_body' in _order else "",
-                 "note_for_merchant":  _order['note_for_merchant'] if 'note_for_merchant' in _order else "",
-                 "updated": _order['updated'] if 'updated' in _order else ""}
+                 "signed_contract_body": _order.get('signed_contract_body'),
+                 "note_for_merchant":  _order.get('note_for_merchant'),
+                 "updated": _order.get('updated')}
 
         return order
 
@@ -449,7 +449,6 @@ class Orders(object):
 
         self._log.info('Bid Order: %s' % bid)
 
-
         # Generate unique id for this bid
         order_id = random.randint(0, 1000000)
         while self._db.numEntries("contracts", "id = '%s'" % order_id) > 0:
@@ -531,47 +530,50 @@ class Orders(object):
         bid_data_json = json.loads(bid_data_json)
         self._log.info('Bid Data: %s' % bid_data_json)
 
-        buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
+        def finish_notarization(msg):
+            buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
 
-        print offer_data_json
-        print bid_data_json
+            pubkeys = [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
+                bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
+                privkey_to_pubkey(self._transport.settings['privkey'])
+            ]
+            print pubkeys
 
-        pubkeys = [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
-            bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
-            privkey_to_pubkey(self._transport.settings['privkey'])
-        ]
-        print pubkeys
-
-        script = mk_multisig_script(pubkeys, 2, 3)
-        print script
-        multisig_address = scriptaddr(script)
+            script = mk_multisig_script(pubkeys, 2, 3)
+            print script
+            multisig_address = scriptaddr(script)
 
 
-        self._db.insertEntry("orders", {'market_id': self._transport._market_id,
-                     'contract_key': contract_key,
-                     'signed_contract_body': str(signed_data),
-                     'state': Orders.State.NOTARIZED,
-                     'buyer_order_id': buyer_order_id,
-                     'order_id': order_id,
-                     'merchant': offer_data_json['Seller']['seller_GUID'],
-                     'buyer': bid_data_json['Buyer']['buyer_GUID'],
-                     'address': multisig_address,
-                     'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json['Contract'] else 0,
-                     'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
-                     'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
-                     "updated": time.time()})
+            self._db.insertEntry("orders", {'market_id': self._transport._market_id,
+                         'contract_key': contract_key,
+                         'signed_contract_body': str(signed_data),
+                         'state': Orders.State.NOTARIZED,
+                         'buyer_order_id': buyer_order_id,
+                         'order_id': order_id,
+                         'merchant': offer_data_json['Seller']['seller_GUID'],
+                         'buyer': bid_data_json['Buyer']['buyer_GUID'],
+                         'address': multisig_address,
+                         'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json['Contract'] else 0,
+                         'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
+                         'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
+                         "updated": time.time()})
 
-        # Send order to seller and buyer
-        self._log.info('Sending notarized contract to buyer and seller %s' % bid)
+            # Send order to seller and buyer
+            self._log.info('Sending notarized contract to buyer and seller %s' % bid)
 
-        notarized_order = {"type": "order",
-                           "state": "Notarized",
-                           "rawContract": str(signed_data)}
+            notarized_order = {"type": "order",
+                               "state": "Notarized",
+                               "rawContract": str(signed_data)}
 
-        self._log.info('SELLER %s' % offer_data_json['Seller']['seller_GUID'])
+            self._log.info('SELLER %s' % offer_data_json['Seller']['seller_GUID'])
 
-        self._transport.send(notarized_order, offer_data_json['Seller']['seller_GUID'])
-        self._transport.send(notarized_order, bid_data_json['Buyer']['buyer_GUID'])
+            self._transport.send(notarized_order, offer_data_json['Seller']['seller_GUID'])
+            self._transport.send(notarized_order, bid_data_json['Buyer']['buyer_GUID'])
+
+
+        self._transport._dht.iterativeFindNode(offer_data_json['Seller']['seller_GUID'], finish_notarization)
+
+
 
     def generate_order_id(self):
         order_id = random.randint(0, 1000000)
@@ -729,75 +731,3 @@ class Orders(object):
         if state == Orders.State.SHIPPED:
             self._log.info('You received a shipping notification')
             self.handle_shipped_order(msg)
-            #
-            #
-            # state = msg.get('state')
-            #
-            # buyer = msg.get('buyer').decode('hex')
-            # seller = msg.get('seller').decode('hex')
-            # myself = self._transport._myself.get_pubkey()
-            #
-            # if not buyer or not seller or not state:
-            # self._log.info("Malformed order")
-            #     return
-            #
-            # if not state == 'new' and not msg.get('id'):
-            #     self._log.info("Order with no id")
-            #     return
-            #
-            # # Check order state
-            # if state == 'new':
-            #     if myself == buyer:
-            #         self.create_order(seller, msg.get('text', 'no comments'))
-            #     elif myself == seller:
-            #         self._log.info(msg)
-            #         self.accept_order(msg)
-            #     else:
-            #         self._log.info("Not a party to this order")
-            #
-            # elif state == 'cancelled':
-            #     if myself == seller or myself == buyer:
-            #         self._log.info('Order cancelled')
-            #     else:
-            #         self._log.info("Order not for us")
-            #
-            # elif state == 'accepted':
-            #     if myself == seller:
-            #         self._log.info("Bad subjects [%s]" % state)
-            #     elif myself == buyer:
-            #         # wait for confirmation
-            #         self._db.orders.update({"id": msg['id']}, {"$set": msg}, True)
-            #         pass
-            #     else:
-            #         self._log.info("Order not for us")
-            # elif state == 'paid':
-            #     if myself == seller:
-            #         # wait for  confirmation
-            #         pass
-            #     elif myself == buyer:
-            #         self.pay_order(msg)
-            #     else:
-            #         self._log.info("Order not for us")
-            # elif state == 'sent':
-            #     if myself == seller:
-            #         self.send_order(msg)
-            #     elif myself == buyer:
-            #         # wait for confirmation
-            #         pass
-            #     else:
-            #         self._log.info("Order not for us")
-            # elif state == 'received':
-            #     if myself == seller:
-            #         pass
-            #         # ok
-            #     elif myself == buyer:
-            #         self.receive_order(msg)
-            #     else:
-            #         self._log.info("Order not for us")
-            #
-            # # Store order
-            # if msg.get('id'):
-            #     if self.orders.find({id: msg['id']}):
-            #         self.orders.update({'id': msg['id']}, {"$set": {'state': msg['state']}}, True)
-            #     else:
-            #         self.orders.update({'id': msg['id']}, {"$set": {msg}}, True)

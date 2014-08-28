@@ -1789,12 +1789,6 @@ obControllers
 
             }
 
-
-
-
-
-
-
             // Modal Code
             $scope.WelcomeModalCtrl = function($scope, $modal, $log, $rootScope) {
 
