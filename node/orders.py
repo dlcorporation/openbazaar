@@ -519,7 +519,7 @@ class Orders(object):
         # Find Seller Data in Contract
         offer_data = ''.join(contract.split('\n')[8:])
         index_of_seller_signature = offer_data.find('- -----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
-        offer_data_json = "{\"Seller\": {"+ offer_data[0:index_of_seller_signature]
+        offer_data_json = "{\"Seller\": {" + offer_data[0:index_of_seller_signature]
         self._log.info('Offer Data: %s' % offer_data_json)
         offer_data_json = json.loads(str(offer_data_json))
 
