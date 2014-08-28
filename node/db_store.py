@@ -73,12 +73,12 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in set_dict.iteritems():
-                key = str(key).replace("'","''");
+                key = str(key).replace("'", "''");
 
                 if type(value) == bool:
                   value = 1 if value else 0
                 else:
-                  value = str(value).replace("'","''");
+                  value = str(value).replace("'", "''");
 
 
 
@@ -89,8 +89,8 @@ class Obdb():
                     set_part = set_part + ", %s = '%s'" % (key, value)
             first = True
             for key, value in where_dict.iteritems():
-                key = str(key).replace("'","''");
-                value = str(value).replace("'","''");
+                key = str(key).replace("'", "''");
+                value = str(value).replace("'", "''");
                 if first:
                     where_part = "%s = '%s'" % (key, value)
                     first = False
@@ -112,12 +112,12 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in update_dict.iteritems():
-                key = str(key).replace("'","''");
+                key = str(key).replace("'", "''");
 
                 if type(value) == bool:
                   value = 1 if value else 0
                 else:
-                  value = str(value).replace("'","''");
+                  value = str(value).replace("'", "''");
 
                 if first:
                     updatefield_part = "%s" % (key)
@@ -170,7 +170,7 @@ class Obdb():
         self._disconnectFromDb()
         return rows
 
-    def deleteEntries(self, table, where_dict={"\"1\"":"1"}, operator="AND"):
+    def deleteEntries(self, table, where_dict={"\"1\"": "1"}, operator="AND"):
         """ A wrapper for the SQL DELETE operation. It will always return all the
             attributes for the selected rows.
         @param table: The table to search to
@@ -184,8 +184,8 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in where_dict.iteritems():
-                key = str(key).replace("'","''");
-                value = str(value).replace("'","''");
+                key = str(key).replace("'", "''");
+                value = str(value).replace("'", "''");
                 if first:
                     where_part = "%s = '%s'" % (key, value)
                     first = False

@@ -124,7 +124,7 @@ class Multisig:
         opener.addheaders = [('User-agent', 'Mozilla/5.0'+str(random.randrange(1000000)))]
         try:
             return opener.open(*args).read().strip()
-        except Exception,e:
+        except Exception as e:
             try: p = e.read().strip()
             except: p = e
             raise Exception(p)
@@ -132,10 +132,10 @@ class Multisig:
     @staticmethod
     def eligius_pushtx(tx):
         print 'FINAL TRANSACTION: %s' % tx
-        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php','transaction='+tx+'&send=Push')
-        strings = re.findall('string[^"]*"[^"]*"',s)
+        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php', 'transaction='+tx+'&send=Push')
+        strings = re.findall('string[^"]*"[^"]*"', s)
         for string in strings:
-            quote = re.findall('"[^"]*"',string)[0]
+            quote = re.findall('"[^"]*"', string)[0]
             if len(quote) >= 5: return quote[1:-1]
 
     @staticmethod

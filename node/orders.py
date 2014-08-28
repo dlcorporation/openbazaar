@@ -114,7 +114,7 @@ class Orders(object):
         return notary_data_json
 
     def get_qr_code(self, item_title, address, total):
-        qr_url = urllib.urlencode({"url":item_title})
+        qr_url = urllib.urlencode({"url": item_title})
         qr = qrcode.make("bitcoin:"+address+"?amount="+str(total)+"&message="+qr_url)
         output = StringIO.StringIO()
         qr.save(output, "PNG")
@@ -225,7 +225,7 @@ class Orders(object):
             if len(merchant) > 0:
                 order['merchant_nickname'] = merchant[0]['nickname']
 
-        return {"total": total_orders, "orders":orders}
+        return {"total": total_orders, "orders": orders}
 
 
     # Create a new order
@@ -291,7 +291,7 @@ class Orders(object):
 
         new_order['address'] = self._multisig.address
 
-        if self._db.numEntries("order",{"order_id": new_order['id']}) > 0:
+        if self._db.numEntries("order", {"order_id": new_order['id']}) > 0:
             self._db.updateEntries("orders", {"order_id": new_order['id']}, {new_order})
         else:
             self._db.insertEntry("orders", new_order)
@@ -370,7 +370,7 @@ class Orders(object):
         new_order['state'] = Orders.State.RECEIVED
 
         order_id = random.randint(0, 1000000)
-        while self._db.numEntries("orders",{'id': order_id}) > 0:
+        while self._db.numEntries("orders", {'id': order_id}) > 0:
             order_id = random.randint(0, 1000000)
 
         new_order['order_id'] = order_id
@@ -383,7 +383,7 @@ class Orders(object):
 
         # Save order locally in database
         order_id = random.randint(0, 1000000)
-        while self._db.numEntries("orders","id = '%s'" % order_id) > 0:
+        while self._db.numEntries("orders", "id = '%s'" % order_id) > 0:
             order_id = random.randint(0, 1000000)
 
         buyer = {}
@@ -452,7 +452,7 @@ class Orders(object):
 
         # Generate unique id for this bid
         order_id = random.randint(0, 1000000)
-        while self._db.numEntries("contracts","id = '%s'" % order_id) > 0:
+        while self._db.numEntries("contracts", "id = '%s'" % order_id) > 0:
             order_id = random.randint(0, 1000000)
 
         # Add to contract and sign
@@ -461,7 +461,7 @@ class Orders(object):
         # Check signature and verify of seller and bidder contract
         seed_contract = self.get_seed_contract_from_doublesigned(contract)
         seed_contract_json = self.get_json_from_doublesigned_contract(seed_contract)
-        #seed_contract = seed_contract.replace('- -----','-----')
+        #seed_contract = seed_contract.replace('- -----', '-----')
 
         #self._log.debug('seed contract %s' % seed_contract)
         self._log.debug('seed contract json %s' % seed_contract_json)
@@ -597,7 +597,7 @@ class Orders(object):
 
         buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
 
-        self._db.updateEntries("orders", {'buyer_order_id': buyer_order_id}, {'state':Orders.State.BUYER_PAID,
+        self._db.updateEntries("orders", {'buyer_order_id': buyer_order_id}, {'state': Orders.State.BUYER_PAID,
                                                                               'shipping_address': json.dumps(msg['shipping_address']),
                                                                               "updated": time.time()})
 
@@ -615,8 +615,8 @@ class Orders(object):
         bid_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
         bid_data_json = json.loads(bid_data_json)
 
-        self._db.updateEntries("orders", {'order_id': bid_data_json['Buyer']['buyer_order_id']}, {'state':Orders.State.SHIPPED,
-                     "updated": time.time(), "payment_address":msg['payment_address']})
+        self._db.updateEntries("orders", {'order_id': bid_data_json['Buyer']['buyer_order_id']}, {'state': Orders.State.SHIPPED,
+                     "updated": time.time(), "payment_address": msg['payment_address']})
 
     def handle_notarized_order(self, msg):
         self._log.info(msg['rawContract'])

@@ -109,7 +109,7 @@ class CryptoPeerConnection(PeerConnection):
 
     @staticmethod
     def hexToPubkey(pubkey):
-      pubkey_raw = arithmetic.changebase(pubkey[2:],16,256,minlen=64)
+      pubkey_raw = arithmetic.changebase(pubkey[2:], 16, 256, minlen=64)
       pubkey_bin = '\x02\xca\x00 '+pubkey_raw[:32]+'\x00 '+pubkey_raw[32:]
       return pubkey_bin
 
@@ -148,7 +148,7 @@ class CryptoPeerConnection(PeerConnection):
                     if data is not None:
                         encoded_data = data.encode('hex')
                         if self.check_port():
-                            self.send_raw(json.dumps({'sig':signature.encode('hex'),'data':encoded_data}), callback)
+                            self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
                         else:
                             self._log.error('Cannot reach this peer to send raw')
                     else:
@@ -224,7 +224,7 @@ class CryptoTransportLayer(TransportLayer):
         try:
             r = requests.get('https://icanhazip.com')
 
-            if r and hasattr(r,'text'):
+            if r and hasattr(r, 'text'):
                 ip = r.text
                 ip = ip.strip(' \t\n\r')
                 if ip != self._ip:
@@ -246,12 +246,12 @@ class CryptoTransportLayer(TransportLayer):
         nickname = peer_tuple[3]
 
         # Update query
-        self._db.deleteEntries("peers", {"uri": uri, "guid":guid}, "OR")
+        self._db.deleteEntries("peers", {"uri": uri, "guid": guid}, "OR")
         #if len(results) > 0:
-        #    self._db.updateEntries("peers", {"id":results[0]['id']}, {"market_id":self._market_id,"uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname})
+        #    self._db.updateEntries("peers", {"id": results[0]['id']}, {"market_id": self._market_id, "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname})
         #else:
         if guid is not None:
-            self._db.insertEntry("peers", { "uri":uri, "pubkey": pubkey, "guid":guid, "nickname": nickname, "market_id":self._market_id})
+            self._db.insertEntry("peers", { "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname, "market_id": self._market_id})
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -260,7 +260,7 @@ class CryptoTransportLayer(TransportLayer):
         try:
             self._log.info('[_connect_to_bitmessage] Connecting to Bitmessage on port %s' % bm_port)
             self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
-            result = self._bitmessage_api.add(2,3)
+            result = self._bitmessage_api.add(2, 3)
             self._log.info("[_connect_to_bitmessage] Bitmessage API is live".format(result))
         # If we failed, fall back to starting our own
         except Exception as e:
@@ -307,7 +307,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self._log.info('Pinged %s ' % pformat(msg))
         #
-        # pinger = CryptoPeerConnection(self,msg['uri'], msg['pubkey'], msg['senderGUID'])
+        # pinger = CryptoPeerConnection(self, msg['uri'], msg['pubkey'], msg['senderGUID'])
         # pinger.send_raw(json.dumps(
         #     {"type": "hello_response",
         #      "senderGUID": self.guid,
@@ -331,7 +331,7 @@ class CryptoTransportLayer(TransportLayer):
         self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)
         if len(self.settings) == 0:
             self.settings = None
-            self._db.insertEntry("settings", {"market_id": self._market_id, "welcome":"enable"})
+            self._db.insertEntry("settings", {"market_id": self._market_id, "welcome": "enable"})
         else:
             self.settings = self.settings[0]
 
@@ -350,7 +350,7 @@ class CryptoTransportLayer(TransportLayer):
                 assert key is not None
 
                 pubkey_text = gpg.export_keys(key.fingerprint)
-                pgp_dict = {"PGPPubKey":pubkey_text, "PGPPubkeyFingerprint": key.fingerprint}
+                pgp_dict = {"PGPPubKey": pubkey_text, "PGPPubkeyFingerprint": key.fingerprint}
                 self._db.updateEntries("settings", {"market_id": self._market_id}, pgp_dict)
                 if self.settings:
                     self.settings.update(pgp_dict)
@@ -423,17 +423,17 @@ class CryptoTransportLayer(TransportLayer):
         self.guid = ripe_hash.digest().encode('hex')
         self.sin = obelisk.EncodeBase58Check('\x0F\x02%s' + ripe_hash.digest())
 
-        self._db.updateEntries("settings", {"market_id": self._market_id}, {"secret":self.secret,
-                                                                            "pubkey":self.pubkey,
-                                                                            "privkey":self.privkey,
-                                                                            "guid":self.guid,
-                                                                            "sin":self.sin})
+        self._db.updateEntries("settings", {"market_id": self._market_id}, {"secret": self.secret,
+                                                                            "pubkey": self.pubkey,
+                                                                            "privkey": self.privkey,
+                                                                            "guid": self.guid,
+                                                                            "sin": self.sin})
 
     def _generate_new_bitmessage_address(self):
       # Use the guid generated previously as the key
       self.bitmessage = self._bitmessage_api.createRandomAddress(self.guid.encode('base64'),
             False, 1.05, 1.1111)
-      self._db.updateEntries("settings", {"market_id": self._market_id}, {"bitmessage":self.bitmessage})
+      self._db.updateEntries("settings", {"market_id": self._market_id}, {"bitmessage": self.bitmessage})
 
 
     def join_network(self, seed_peers=[], callback=lambda msg: None):
@@ -534,7 +534,7 @@ class CryptoTransportLayer(TransportLayer):
         for uri, peer in self._peers.iteritems():
             if peer._pub:
                 peers[uri] = peer._pub.encode('hex')
-        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'),'nickname': self._nickname,
+        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'), 'nickname': self._nickname,
                 'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
@@ -696,16 +696,16 @@ class CryptoTransportLayer(TransportLayer):
 
     @staticmethod
     def makeCryptor(privkey):
-      privkey_bin = '\x02\xca\x00 '+arithmetic.changebase(privkey,16,256,minlen=32)
-      pubkey = arithmetic.changebase(arithmetic.privtopub(privkey),16,256,minlen=65)[1:]
+      privkey_bin = '\x02\xca\x00 '+arithmetic.changebase(privkey, 16, 256, minlen=32)
+      pubkey = arithmetic.changebase(arithmetic.privtopub(privkey), 16, 256, minlen=65)[1:]
       pubkey_bin = '\x02\xca\x00 '+pubkey[:32]+'\x00 '+pubkey[32:]
-      cryptor = ec.ECC(curve='secp256k1',privkey=privkey_bin,pubkey=pubkey_bin)
+      cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
       return cryptor
 
     @staticmethod
     def makePubCryptor(pubkey):
       pubkey_bin = CryptoPeerConnection.hexToPubkey(pubkey)
-      return ec.ECC(curve='secp256k1',pubkey=pubkey_bin)
+      return ec.ECC(curve='secp256k1', pubkey=pubkey_bin)
 
     def _on_raw_message(self, serialized):
 
@@ -739,7 +739,7 @@ class CryptoTransportLayer(TransportLayer):
 
                     guid =  json.loads(data).get('guid')
 
-                    #ecc = ec.ECC(curve='secp256k1',pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(json.loads(data).get('pubkey')).decode('hex'))
+                    #ecc = ec.ECC(curve='secp256k1', pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(json.loads(data).get('pubkey')).decode('hex'))
 
                     # Check signature
                     data_json = json.loads(data)

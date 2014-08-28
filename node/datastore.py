@@ -155,9 +155,9 @@ class MongoDataStore(DataStore):
         rows = self._db.selectEntries("datastore", "key = '%s' and market_id = '%s'" % (key, market_id))
         if len(rows) == 0:
             # FIXME: Wrap text.
-            row = self._db.insertEntry("datastore", {'key':key, 'market_id':market_id, 'key':key, 'value':value, 'lastPublished':lastPublished, 'originallyPublished':originallyPublished, 'originalPublisherID':originalPublisherID, 'market_id':market_id})
+            row = self._db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
         else:
-            row = self._db.updateEntries("datastore", {'key':key, 'market_id':market_id}, {'key':key, 'value':value, 'lastPublished':lastPublished, 'originallyPublished':originallyPublished, 'originalPublisherID':originalPublisherID, 'market_id':market_id})
+            row = self._db.updateEntries("datastore", {'key': key, 'market_id': market_id}, {'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
 
 
         # if self._cursor.fetchone() == None:
@@ -230,9 +230,9 @@ class SqliteDataStore(DataStore):
         rows = self._db.selectEntries("datastore", "key = '%s' and market_id = '%s'" % (key, market_id))
         if len(rows) == 0:
             # FIXME: Wrap text.
-            row = self._db.insertEntry("datastore", {'key':key, 'market_id':market_id, 'key':key, 'value':value, 'lastPublished':lastPublished, 'originallyPublished':originallyPublished, 'originalPublisherID':originalPublisherID, 'market_id':market_id})
+            row = self._db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
         else:
-            row = self._db.updateEntries("datastore", {'key':key, 'market_id':market_id}, {'key':key, 'value':value, 'lastPublished':lastPublished, 'originallyPublished':originallyPublished, 'originalPublisherID':originalPublisherID, 'market_id':market_id})
+            row = self._db.updateEntries("datastore", {'key': key, 'market_id': market_id}, {'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
 
 
         # if self._cursor.fetchone() == None:

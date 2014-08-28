@@ -62,7 +62,7 @@ class BackupTool:
 
 if __name__ == '__main__':
     def onBackUpDone(backupFilePath):
-        print "Backup succeeded!\nOutput file at",backupFilePath
+        print "Backup succeeded!\nOutput file at", backupFilePath
 
     def onError(errorMessage):
         print "Backup failed!", errorMessage
