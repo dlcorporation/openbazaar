@@ -222,7 +222,8 @@ class Market(object):
         notaries.append({"guid": guid, "nickname": nickname})
         self.settings['notaries'] = json.dumps(notaries)
 
-        print self.settings
+        if 'btc_pubkey' in self.settings:
+            del self.settings['btc_pubkey']
 
         self._db.updateEntries("settings",
                                {'market_id': self._transport._market_id},
