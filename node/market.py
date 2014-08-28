@@ -144,7 +144,7 @@ class Market(object):
 
             self._transport._dht.iterativeStore(self._transport,
                                                 keyword_key,
-                                                json.dumps({'keyword_index_add':key}),
+                                                json.dumps({'keyword_index_add': key}),
                                                 self._transport._guid)
 
     def save_contract(self, msg):
@@ -300,7 +300,7 @@ class Market(object):
         #     hash_value.update('keyword-%s' % keyword)
         #     keyword_key = hash_value.hexdigest()
         #
-        #     self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':contract_key}), self._transport._guid)
+        #     self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add': contract_key}), self._transport._guid)
 
     def update_listings_index(self):
 
@@ -401,8 +401,8 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
-        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id, 
-                                           limit=10, 
+        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id,
+                                           limit=10,
                                            limit_offset=(page*10))
         my_contracts = []
         for contract in contracts:
@@ -423,7 +423,7 @@ class Market(object):
             except:
                 self._log.error('Problem loading the contract body JSON')
 
-        return {"contracts": my_contracts, "page": page, 
+        return {"contracts": my_contracts, "page": page,
                 "total_contracts": self._db.numEntries("contracts")}
 
     # SETTINGS
@@ -460,7 +460,7 @@ class Market(object):
     def get_settings(self):
 
         self._log.info('Getting settings info for Market %s' % self._transport._market_id)
-        settings = self._db.getOrCreate("settings", "market_id = '%s'" % self._transport._market_id, {"market_id":self._transport._market_id})
+        settings = self._db.getOrCreate("settings", "market_id = '%s'" % self._transport._market_id, {"market_id": self._transport._market_id})
 
         if settings['arbiter'] == 1:
             settings['arbiter'] = True

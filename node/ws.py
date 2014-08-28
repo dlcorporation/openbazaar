@@ -156,12 +156,12 @@ class ProtocolHandler:
         })
 
     def client_load_page(self, socket_handler, msg):
-        self.send_to_client(None, {"type":"load_page"})
+        self.send_to_client(None, {"type": "load_page"})
 
     def client_add_trusted_notary(self, socket_handler, msg):
         self._log.info('Adding trusted notary %s' % msg)
         self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
-        #self.send_to_client(None, {"type":"load_page"})
+        #self.send_to_client(None, {"type": "load_page"})
 
     def client_remove_trusted_notary(self, socket_handler, msg):
         self._log.info('Removing trusted notary %s' % msg)
@@ -446,13 +446,13 @@ class ProtocolHandler:
 
                 payment_output = order['payment_address']
                 print payment_output
-                print 'PAYMENT OUTPUT',"16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt:%s" % send_amount
+                print 'PAYMENT OUTPUT', "16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt:%s" % send_amount
                 print 'inputs', inputs
                 tx = mktx(inputs, [str(payment_output)+":"+str(send_amount)])
                 print 'TRANSACTION: %s' % tx
 
                 signatures = []
-                for x in range(0,len(inputs)):
+                for x in range(0, len(inputs)):
                     ms = multisign(tx, x, script, private_key)
                     print 'buyer sig', ms
                     signatures.append(ms)
@@ -555,7 +555,7 @@ class ProtocolHandler:
 
                 seller_signatures = []
                 print 'private key ', self._transport.settings['privkey']
-                for x in range(0,len(inputs)):
+                for x in range(0, len(inputs)):
                     ms = multisign(tx, x, script, self._transport.settings['privkey'])
                     print 'seller sig', ms
                     seller_signatures.append(ms)
@@ -627,19 +627,19 @@ class ProtocolHandler:
         they might have to be somewhere outside the installation path
         as some OSes might not allow the modification of the installation folder
         e.g. MacOS won't allow for changes if the .app has been signed.
-        and all files created by the app, have to be outside, usually at 
+        and all files created by the app, have to be outside, usually at
         ~/Library/Application Support/OpenBazaar/backups ??
         """
         def on_backup_done(backupPath):
             self._log.info('Backup sucessfully created at ' + backupPath)
-            self.send_to_client(None, 
+            self.send_to_client(None,
                                 {'type': 'create_backup_result',
                                  'result': 'success',
                                  'detail': backupPath})
 
         def on_backup_error(error):
             self._log.info('Backup error:' + str(error.strerror))
-            self.send_to_client(None, 
+            self.send_to_client(None,
                                 {'type': 'create_backup_result',
                                  'result': 'failure',
                                  'detail': error.strerror})
