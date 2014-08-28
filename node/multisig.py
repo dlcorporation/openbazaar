@@ -46,32 +46,27 @@ class Multisig:
 
     @property
     def script(self):
-        result = str(50 + self.number_required)
+        #return pybitcointools.mk_multisig_script(self.pubkeys, 2, 3)
+        result = chr(80 + self.number_required)
         for pubkey in self.pubkeys:
-            result += str(41) + pubkey
-        result += chr(50 + len(self.pubkeys))
+            result += chr(33) + pubkey
+        result += chr(80 + len(self.pubkeys))
         # checkmultisig
-        result += "ae"
-        print 'redeem', result
+        result += "\xae"
         return result
+
 
     @property
     def address(self):
-        print 'pubkeys', self.pubkeys
 
-        pubkeys = self.pubkeys
-        for idx, pubkey in enumerate(pubkeys):
-            pubkeys[idx] = pubkey.encode('hex')
+        # script = self.script
+        # print 'multisig-script',script
+        #
+        # address = pybitcointools.scriptaddr(script)
+        # return address
 
-        print 'pubkeys2', pubkeys
-
-        script = pybitcointools.mk_multisig_script(self.pubkeys, 2, 3)
-        address = pybitcointools.scriptaddr(script)
-        print 'script',script
-        return address
-
-        #raw_addr = obelisk.hash_160(self.script)
-        #return obelisk.hash_160_to_bc_address(raw_addr, addrtype=0x05)
+        raw_addr = obelisk.hash_160(self.script)
+        return obelisk.hash_160_to_bc_address(raw_addr, addrtype=0x05)
 
     #
     def create_unsigned_transaction(self, destination, finished_cb):

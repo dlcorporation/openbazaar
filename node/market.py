@@ -21,6 +21,8 @@ from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
 from obelisk import decompress_public_key
+from crypto2crypto import CryptoTransportLayer
+from pybitcointools import *
 
 ioloop.install()
 
@@ -41,7 +43,7 @@ class Market(object):
         self._transport = transport
         self._dht = transport.get_dht()
         self._market_id = transport.get_market_id()
-        self._myself = transport.get_myself()
+        #self._myself = transport.get_myself()
         self._peers = self._dht.getActivePeers()
         self._db = db
         self.orders = Orders(transport, self._market_id, db)
@@ -152,7 +154,7 @@ class Market(object):
         self.settings = self.get_settings()
 
         msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
-        msg['Seller']['seller_BTC_uncompressed_pubkey'] = decompress_public_key(self.settings['pubkey'].decode('hex')).encode('hex')
+        msg['Seller']['seller_BTC_uncompressed_pubkey'] = self.settings['btc_pubkey']
         msg['Seller']['seller_GUID'] = self.settings['guid']
 
         # Process and crop thumbs for images
@@ -322,7 +324,7 @@ class Market(object):
         # Sign listing index for validation and tamper resistance
         data_string = str({'guid': self._transport._guid,
                            'contracts': my_contracts})
-        signature = self._myself.sign(data_string).encode('hex')
+        signature = CryptoTransportLayer.makeCryptor(self._transport.settings['secret']).sign(data_string).encode('hex')
 
         value = {'signature': signature,
                  'data': {'guid': self._transport._guid,
@@ -462,7 +464,9 @@ class Market(object):
 
         settings['notaries'] = ast.literal_eval(settings['notaries']) if settings['notaries'] != "" else []
         settings['trustedArbiters'] = ast.literal_eval(settings['trustedArbiters']) if settings['trustedArbiters'] != "" else []
-        settings['privkey'] = settings['secret'][8:] if 'secret' in settings else ""
+        settings['privkey'] = settings['privkey'] if 'secret' in settings else ""
+        settings['btc_pubkey'] = privkey_to_pubkey(settings.get('privkey'))
+        settings['secret'] = settings['secret'] if 'secret' in settings else ""
 
         self._log.info('SETTINGS: %s' % settings)
 
@@ -567,10 +571,11 @@ class Market(object):
                 value[0].encode("hex") if value[0] is not None else value[0]))
         self._log.info("##################################")
 
-    def release_funds_to_merchant(self, buyer_order_id, tx, signature, guid):
-        self._log.debug('Release funds to merchant: %s %s %s %s' % (buyer_order_id, tx, signature, guid))
+    def release_funds_to_merchant(self, buyer_order_id, tx, script, signatures, guid):
+        self._log.debug('Release funds to merchant: %s %s %s %s' % (buyer_order_id, tx, signatures, guid))
         self._transport.send({'type': 'release_funds_tx',
                               'tx': tx,
+                              'script': script,
                               'buyer_order_id': buyer_order_id,
-                              'signature': signature}, guid)
+                              'signatures': signatures}, guid)
         self._log.debug('TX sent to merchant')

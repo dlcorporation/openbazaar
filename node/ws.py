@@ -9,6 +9,9 @@ import pycountry
 import gnupg
 import os
 import obelisk
+import pybitcointools
+from pybitcointools import *
+import arithmetic
 
 import tornado.websocket
 from zmq.eventloop import ioloop
@@ -301,6 +304,8 @@ class ProtocolHandler:
     def client_update_settings(self, socket_handler, msg):
         self._log.info("Updating settings: %s" % msg)
         self.send_to_client(None, {"type": "settings", "values": msg})
+        if msg['settings'].get('btc_pubkey'):
+            del msg['settings']['btc_pubkey']
         self._market.save_settings(msg['settings'])
 
     def client_create_contract(self, socket_handler, contract):
@@ -379,23 +384,22 @@ class ProtocolHandler:
             buyer = bid_data_json['Buyer']
             notary = notary_data_json['Notary']
 
-            seller_key = seller['seller_BTC_uncompressed_pubkey']
-            buyer_key = buyer['buyer_BTC_uncompressed_pubkey']
-            notary_key = notary['notary_BTC_uncompressed_pubkey']
-
             pubkeys = [
-                seller_key.decode('hex'),
-                buyer_key.decode('hex'),
-                notary_key.decode('hex')
+                seller['seller_BTC_uncompressed_pubkey'],
+                buyer['buyer_BTC_uncompressed_pubkey'],
+                notary['notary_BTC_uncompressed_pubkey']
             ]
 
-            multisig = Multisig(client, 2, pubkeys)
-
+            script = mk_multisig_script(pubkeys, 2, 3)
+            multi_address = scriptaddr(script)
 
             def cb(ec, history, order):
 
                 # Debug
-                self._log.info('%s %s' % (ec, history))
+                #self._log.info('%s %s' % (ec, history))
+
+                settings = self._market.get_settings()
+                private_key = settings.get('privkey')
 
                 if ec is not None:
                     self._log.error("Error fetching history: %s" % ec)
@@ -404,23 +408,49 @@ class ProtocolHandler:
 
                 # Create unsigned transaction
                 unspent = [row[:4] for row in history if row[4] is None]
-                tx = multisig._build_actual_tx(
-                    unspent, order['payment_address']
-                )
-                self._log.info(tx.serialize().encode("hex"))
 
-                private_key = self._market.private_key()
+                # Send all unspent outputs (everything in the address) minus the fee
+                total_amount = 0
+                inputs = []
+                for row in unspent:
+                    assert len(row) == 4
+                    inputs.append(str(row[0].encode('hex'))+":"+str(row[1]))
+                    value = row[3]
+                    total_amount += value
 
-                signatures = multisig.sign_all_inputs(
-                    tx, private_key.decode('hex')
-                )
-                tx_serialized = tx.serialize().encode("hex")
-                self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx_serialized, signatures, order.get('merchant'))
 
-                self._log.debug('Sent tx and signed inputs to merchant')
+
+                # Constrain fee so we don't get negative amount to send
+                fee = min(total_amount, 10000)
+                send_amount = total_amount - fee
+
+                payment_output = order['payment_address']
+                print payment_output
+                print 'PAYMENT OUTPUT',"16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt:%s" % send_amount
+                print 'inputs', inputs
+                tx = mktx(inputs, [str(payment_output)+":"+str(send_amount)])
+                print 'TRANSACTION: %s' % tx
+
+                signatures = []
+                for x in range(0,len(inputs)):
+                    ms = multisign(tx, x, script, private_key)
+                    print 'buyer sig', ms
+                    signatures.append(ms)
+
+                print signatures
+
+
+
+
+                self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx, script, signatures, order.get('merchant'))
+
+
+
 
             def get_history():
-                client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
+                client.fetch_history(multi_address, lambda ec, history, order=order: cb(ec, history, order))
+
+
 
             reactor.callFromThread(get_history)
 
@@ -475,62 +505,48 @@ class ProtocolHandler:
             buyer = bid_data_json['Buyer']
             notary = notary_data_json['Notary']
 
-            seller_key = seller['seller_BTC_uncompressed_pubkey']
-            buyer_key = buyer['buyer_BTC_uncompressed_pubkey']
-            notary_key = notary['notary_BTC_uncompressed_pubkey']
-
             pubkeys = [
-                seller_key.decode('hex'),
-                buyer_key.decode('hex'),
-                notary_key.decode('hex')
+                seller['seller_BTC_uncompressed_pubkey'],
+                buyer['buyer_BTC_uncompressed_pubkey'],
+                notary['notary_BTC_uncompressed_pubkey']
             ]
 
-            self._log.info('multisig pubkeys %s' % pubkeys)
-
-            multisig = Multisig(client, 2, pubkeys)
+            script = msg['script']
+            tx = msg['tx']
+            multi_addr = scriptaddr(script)
 
             def cb(ec, history, order):
 
-                # Debug
-                self._log.info('%s %s' % (ec, history))
+               # Debug
+                #self._log.info('%s %s' % (ec, history))
 
                 if ec is not None:
                     self._log.error("Error fetching history: %s" % ec)
                     # TODO: Send error message to GUI
                     return
 
-                # Create unsigned transaction
                 unspent = [row[:4] for row in history if row[4] is None]
-                tx = multisig._build_actual_tx(
-                    unspent, order['payment_address']
-                )
-                self._log.info(tx.serialize().encode("hex"))
 
-                private_key = self._market.private_key()
+                # Send all unspent outputs (everything in the address) minus the fee
+                inputs = []
+                for row in unspent:
+                    assert len(row) == 4
+                    inputs.append(str(row[0].encode('hex'))+":"+str(row[1]))
 
-                merchant_sigs = multisig.sign_all_inputs(tx,
-                                                      private_key.decode('hex'))
-                buyer_sigs = msg['signature']
+                seller_signatures = []
+                print 'private key ', self._transport.settings['privkey']
+                for x in range(0,len(inputs)):
+                    ms = multisign(tx, x, script, self._transport.settings['privkey'])
+                    print 'seller sig', ms
+                    seller_signatures.append(ms)
 
-                for i, input in enumerate(tx.inputs):
-                    sigs = (buyer_sigs[i].decode('hex'), merchant_sigs[i].decode('hex'))
-                    script = "\x00"
-                    for sig in sigs:
-                        script += chr(len(sig)) + sig
-                    script += "\x4c"
-                    assert len(multisig.script) < 255
-                    script += chr(len(multisig.script)) + multisig.script
-                    print "Script:", script.encode("hex")
-                    tx.inputs[i].script = script
+                tx2 = pybitcointools.apply_multisignatures(tx, 0, script, seller_signatures[0], msg['signatures'][0])
 
-                print tx
-                print tx.serialize().encode("hex")
-
-                Multisig.broadcast(tx)
-
+                print 'FINAL SCRIPT: %s' % tx2
+                print 'Sent', pybitcointools.eligius_pushtx(tx2)
 
             def get_history():
-                client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
+                client.fetch_history(multi_addr, lambda ec, history, order=order: cb(ec, history, order))
 
             reactor.callFromThread(get_history)
 

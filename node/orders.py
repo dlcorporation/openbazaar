@@ -12,6 +12,7 @@ import time
 import urllib
 import obelisk
 from obelisk import decompress_public_key
+from pybitcointools import *
 
 class Orders(object):
     class State:
@@ -31,7 +32,7 @@ class Orders(object):
     def __init__(self, transport, market_id, db):
 
         self._transport = transport
-        self._priv = transport._myself
+        #self._priv = transport._myself
         self._market_id = market_id
 
         self._gpg = gnupg.GPG()
@@ -279,11 +280,11 @@ class Orders(object):
         # TODO: Need to have a check for the vendor to agree to the order
 
         new_order['state'] = Orders.State.ACCEPTED
-        seller = new_order['seller'].decode('hex')
-        buyer = new_order['buyer'].decode('hex')
+        seller = new_order['seller']
+        buyer = new_order['buyer']
 
         new_order['escrows'] = [new_order.get('escrows')[0]]
-        escrow = new_order['escrows'][0].decode('hex')
+        escrow = new_order['escrows'][0]
 
         # Create 2 of 3 multisig address
         self._multisig = Multisig(None, 2, [seller, buyer, escrow])
@@ -388,7 +389,7 @@ class Orders(object):
         buyer = {}
         buyer['Buyer'] = {}
         buyer['Buyer']['buyer_GUID'] = self._transport._guid
-        buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = decompress_public_key(msg['btc_pubkey'].decode('hex')).encode('hex')
+        buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
         buyer['Buyer']['buyer_pgp'] = self._transport.settings['PGPPubKey']
         buyer['Buyer']['buyer_deliveryaddr'] = "123 Sesame Street"
         buyer['Buyer']['note_for_seller'] = msg['message']
@@ -448,6 +449,7 @@ class Orders(object):
 
         self._log.info('Bid Order: %s' % bid)
 
+
         # Generate unique id for this bid
         order_id = random.randint(0, 1000000)
         while self._db.numEntries("contracts","id = '%s'" % order_id) > 0:
@@ -479,7 +481,7 @@ class Orders(object):
 
         notary = {}
         notary['Notary'] = {'notary_GUID': self._transport._guid,
-                            'notary_BTC_uncompressed_pubkey': decompress_public_key(self._transport.settings['pubkey'].decode('hex')).encode('hex'),
+                            'notary_BTC_uncompressed_pubkey': privkey_to_pubkey(self._transport.settings['privkey']),
                             'notary_pgp': self._transport.settings['PGPPubKey'],
                             'notary_fee': "1%",
                             'notary_order_id': order_id
@@ -531,11 +533,19 @@ class Orders(object):
 
         buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
 
-        multisig = Multisig(None, 2, [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'].decode('hex'),
-                                      bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
-                                      self._transport.settings['pubkey'].decode('hex')])
-        multisig_address = multisig.address
-        print 'multisig_address %s' ,multisig_address
+        print offer_data_json
+        print bid_data_json
+
+        pubkeys = [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
+            bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
+            privkey_to_pubkey(self._transport.settings['privkey'])
+        ]
+        print pubkeys
+
+        script = mk_multisig_script(pubkeys, 2, 3)
+        print script
+        multisig_address = scriptaddr(script)
+
 
         self._db.insertEntry("orders", {'market_id': self._transport._market_id,
                      'contract_key': contract_key,
@@ -635,11 +645,12 @@ class Orders(object):
         self._log.info('Notary Data: %s' % notary_data_json)
 
         # Generate multi-sig address
-        multisig = Multisig(None, 2, [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'].decode('hex'),
-                                      bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'].decode('hex'),
-                                      notary_data_json['Notary']['notary_BTC_uncompressed_pubkey'].decode('hex')])
-        multisig_address = multisig.address
-        print 'multisig_address2 %s' ,multisig_address
+        pubkeys = [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
+                                      bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
+                                      notary_data_json['Notary']['notary_BTC_uncompressed_pubkey']]
+        script = mk_multisig_script(pubkeys, 2, 3)
+        print script
+        multisig_address = scriptaddr(script)
 
         seller_GUID = offer_data_json['Seller']['seller_GUID']
 
