@@ -291,6 +291,8 @@ class DHT(object):
                 # Add foundNode to active peers list and routing table
                 if foundNode[2] != self._transport._guid:
                     self._log.debug('Found a tuple %s' % foundNode)
+                    if len(foundNode) == 3:
+                        foundNode.append('')
                     self.add_peer(self._transport, foundNode[1], foundNode[2], foundNode[0], foundNode[3])
 
                 for idx, search in enumerate(self._searches):
