@@ -451,6 +451,8 @@ class Market(object):
 
         if 'burnAmount' in msg:
             del msg['burnAmount']
+        if 'burnAddr' in msg:
+            del msg['burnAddr']
 
         # Update local settings
         self._db.updateEntries("settings", {'market_id': self._transport._market_id}, msg)
