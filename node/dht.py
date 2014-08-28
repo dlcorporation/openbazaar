@@ -896,7 +896,7 @@ class DHTSearch(object):
 
         self._log.debug('Additions: %s' % additions)
         for item in additions:
-            if not item in self._shortlist:
+            if item not in self._shortlist:
                 self._shortlist.append(item)
 
         self._log.debug('Updated short list: %s' % self._shortlist)

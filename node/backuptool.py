@@ -37,7 +37,7 @@ class BackupTool:
         try:
             os.makedirs(backupFolderPath)
         except:
-            #folder might already exist, no biggie
+            # folder might already exist, no biggie
             pass
 
         try:

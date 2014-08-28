@@ -4,7 +4,9 @@ from twisted.internet import reactor
 
 import obelisk
 import pyelliptic as ec
-import urllib2, re, random
+import urllib2
+import re
+import random
 import pybitcointools
 
 
@@ -46,7 +48,7 @@ class Multisig:
 
     @property
     def script(self):
-        #return pybitcointools.mk_multisig_script(self.pubkeys, 2, 3)
+        # return pybitcointools.mk_multisig_script(self.pubkeys, 2, 3)
         result = chr(80 + self.number_required)
         for pubkey in self.pubkeys:
             result += chr(33) + pubkey
@@ -121,29 +123,32 @@ class Multisig:
     @staticmethod
     def make_request(*args):
         opener = urllib2.build_opener()
-        opener.addheaders = [('User-agent', 'Mozilla/5.0'+str(random.randrange(1000000)))]
+        opener.addheaders = [('User-agent', 'Mozilla/5.0' + str(random.randrange(1000000)))]
         try:
             return opener.open(*args).read().strip()
         except Exception as e:
-            try: p = e.read().strip()
-            except: p = e
+            try:
+                p = e.read().strip()
+            except:
+                p = e
             raise Exception(p)
 
     @staticmethod
     def eligius_pushtx(tx):
         print 'FINAL TRANSACTION: %s' % tx
-        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php', 'transaction='+tx+'&send=Push')
+        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php', 'transaction=' + tx + '&send=Push')
         strings = re.findall('string[^"]*"[^"]*"', s)
         for string in strings:
             quote = re.findall('"[^"]*"', string)[0]
-            if len(quote) >= 5: return quote[1:-1]
+            if len(quote) >= 5:
+                return quote[1:-1]
 
     @staticmethod
     def broadcast(tx):
         raw_tx = tx.serialize().encode("hex")
         Multisig.eligius_pushtx(raw_tx)
-        #gateway_broadcast(raw_tx)
-        #bci_pushtx(raw_tx)
+        # gateway_broadcast(raw_tx)
+        # bci_pushtx(raw_tx)
 
 
 def add_input(tx, prevout):
@@ -274,4 +279,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

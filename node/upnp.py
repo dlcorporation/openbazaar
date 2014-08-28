@@ -109,7 +109,7 @@ class PortMapper(object):
                     ''
                 )
             except:
-                #ConflictInMappingEntry
+                # ConflictInMappingEntry
                 result = False
 
             self.debug("add_port_mapping(%s)?:" % str(externalPort), result)
@@ -195,7 +195,7 @@ class PortMappingEntry:
                '}'
 
 if __name__ == '__main__':
-    #Test code
+    # Test code
     PortMapper.DEBUG = True
     mapper = PortMapper()
     print "Adding mapping: P2P:12345->12345, HTTP:8888->8888"

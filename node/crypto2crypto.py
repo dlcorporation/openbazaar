@@ -30,7 +30,7 @@ class CryptoPeerConnection(PeerConnection):
     def __init__(self, transport, address, pub=None, guid=None, nickname=None,
                  sin=None, callback=lambda msg: None):
 
-        #self._priv = transport._myself
+        # self._priv = transport._myself
         self._pub = pub
         self._ip = urlparse(address).hostname
         self._port = urlparse(address).port
@@ -109,9 +109,9 @@ class CryptoPeerConnection(PeerConnection):
 
     @staticmethod
     def hexToPubkey(pubkey):
-      pubkey_raw = arithmetic.changebase(pubkey[2:], 16, 256, minlen=64)
-      pubkey_bin = '\x02\xca\x00 '+pubkey_raw[:32]+'\x00 '+pubkey_raw[32:]
-      return pubkey_bin
+        pubkey_raw = arithmetic.changebase(pubkey[2:], 16, 256, minlen=64)
+        pubkey_bin = '\x02\xca\x00 ' + pubkey_raw[:32] + '\x00 ' + pubkey_raw[32:]
+        return pubkey_bin
 
     def encrypt(self, data):
         try:
@@ -247,11 +247,17 @@ class CryptoTransportLayer(TransportLayer):
 
         # Update query
         self._db.deleteEntries("peers", {"uri": uri, "guid": guid}, "OR")
-        #if len(results) > 0:
-        #    self._db.updateEntries("peers", {"id": results[0]['id']}, {"market_id": self._market_id, "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname})
-        #else:
+        # if len(results) > 0:
+        #     self._db.updateEntries("peers", {"id": results[0]['id']}, {"market_id": self._market_id, "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname})
+        # else:
         if guid is not None:
-            self._db.insertEntry("peers", { "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname, "market_id": self._market_id})
+            self._db.insertEntry("peers", {
+                "uri": uri,
+                "pubkey": pubkey,
+                "guid": guid,
+                "nickname": nickname,
+                "market_id": self._market_id
+            })
 
     def _connect_to_bitmessage(self, bm_user, bm_pass, bm_port):
         # Get bitmessage going
@@ -395,8 +401,8 @@ class CryptoTransportLayer(TransportLayer):
         pubkey = pubkey[2:]
 
         # Split it in half
-        pub_x = pubkey[0:len(pubkey)/2]
-        pub_y = pubkey[len(pubkey)/2:]
+        pub_x = pubkey[0:len(pubkey) / 2]
+        pub_y = pubkey[len(pubkey) / 2:]
 
         # Add pyelliptic content
         print "02ca0020" + pub_x + "0020" + pub_y
@@ -405,8 +411,7 @@ class CryptoTransportLayer(TransportLayer):
 
 
     def _generate_new_keypair(self):
-
-        secret = str(random.randrange(2**256))
+        secret = str(random.randrange(2 ** 256))
         self.secret = hashlib.sha256(secret).hexdigest()
         self.pubkey = privtopub(self.secret)
         self.privkey = random_key()
@@ -430,10 +435,20 @@ class CryptoTransportLayer(TransportLayer):
                                                                             "sin": self.sin})
 
     def _generate_new_bitmessage_address(self):
-      # Use the guid generated previously as the key
-      self.bitmessage = self._bitmessage_api.createRandomAddress(self.guid.encode('base64'),
-            False, 1.05, 1.1111)
-      self._db.updateEntries("settings", {"market_id": self._market_id}, {"bitmessage": self.bitmessage})
+        # Use the guid generated previously as the key
+        self.bitmessage = self._bitmessage_api.createRandomAddress(
+            self.guid.encode('base64'),
+            False,
+            1.05,
+            1.1111
+        )
+        self._db.updateEntries(
+            "settings", {
+                "market_id": self._market_id
+            }, {
+                "bitmessage": self.bitmessage
+            }
+        )
 
 
     def join_network(self, seed_peers=[], callback=lambda msg: None):
@@ -460,7 +475,7 @@ class CryptoTransportLayer(TransportLayer):
             self.search_for_my_node()
 
         if callback is not None:
-             callback('Joined')
+            callback('Joined')
 
     def get_past_peers(self):
         peers = []
@@ -587,7 +602,7 @@ class CryptoTransportLayer(TransportLayer):
         if send_to is not None:
 
             peer = self._dht._routingTable.getContact(send_to)
-            #peer = CryptoPeerConnection(msg['uri'])
+            # peer = CryptoPeerConnection(msg['uri'])
             if peer:
                 self._log.debug('Directed Data (%s): %s' % (send_to, data))
                 try:
@@ -679,7 +694,7 @@ class CryptoTransportLayer(TransportLayer):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        #self._log.info("[On Message] Data received: %s" % msg)
+        # self._log.info("[On Message] Data received: %s" % msg)
 
         pubkey = msg.get('pubkey')
         uri = msg.get('uri')
@@ -697,16 +712,16 @@ class CryptoTransportLayer(TransportLayer):
 
     @staticmethod
     def makeCryptor(privkey):
-      privkey_bin = '\x02\xca\x00 '+arithmetic.changebase(privkey, 16, 256, minlen=32)
-      pubkey = arithmetic.changebase(arithmetic.privtopub(privkey), 16, 256, minlen=65)[1:]
-      pubkey_bin = '\x02\xca\x00 '+pubkey[:32]+'\x00 '+pubkey[32:]
-      cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
-      return cryptor
+        privkey_bin = '\x02\xca\x00 ' + arithmetic.changebase(privkey, 16, 256, minlen=32)
+        pubkey = arithmetic.changebase(arithmetic.privtopub(privkey), 16, 256, minlen=65)[1:]
+        pubkey_bin = '\x02\xca\x00 ' + pubkey[:32] + '\x00 ' + pubkey[32:]
+        cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
+        return cryptor
 
     @staticmethod
     def makePubCryptor(pubkey):
-      pubkey_bin = CryptoPeerConnection.hexToPubkey(pubkey)
-      return ec.ECC(curve='secp256k1', pubkey=pubkey_bin)
+        pubkey_bin = CryptoPeerConnection.hexToPubkey(pubkey)
+        return ec.ECC(curve='secp256k1', pubkey=pubkey_bin)
 
     def _on_raw_message(self, serialized):
 
@@ -736,7 +751,7 @@ class CryptoTransportLayer(TransportLayer):
                     self._log.debug('Signature: %s' % sig.encode('hex'))
                     self._log.debug('Signed Data: %s' % data)
 
-                    guid =  json.loads(data).get('guid')
+                    guid = json.loads(data).get('guid')
 
                     # Check signature
                     data_json = json.loads(data)
@@ -745,7 +760,7 @@ class CryptoTransportLayer(TransportLayer):
                         self._log.info('Verified')
                     else:
                         self._log.error('Message signature could not be verified %s' % msg)
-                        #return
+                        # return
 
                     msg = json.loads(data)
                     self._log.debug('Message Data %s ' % msg)
@@ -756,27 +771,24 @@ class CryptoTransportLayer(TransportLayer):
             try:
                 # Encrypted?
                 try:
-                  msg = self._myself.decrypt(serialized)
-                  msg = json.loads(msg)
+                    msg = self._myself.decrypt(serialized)
+                    msg = json.loads(msg)
 
-                  self._log.info("Decrypted Message [%s]"
-                               % msg.get('type', 'unknown'))
+                    self._log.info("Decrypted Message [%s]"
+                                 % msg.get('type', 'unknown'))
                 except:
-                  self._log.error("Could not decrypt message: %s" % msg)
-                  return
+                    self._log.error("Could not decrypt message: %s" % msg)
+                    return
             except:
-
                 self._log.error('Message probably sent using incorrect pubkey')
 
                 return
 
         if msg.get('type') is not None:
+            msg_type = msg.get('type')
+            msg_uri = msg.get('uri')
+            msg_guid = msg.get('guid')
 
-          msg_type = msg.get('type')
-          msg_uri = msg.get('uri')
-          msg_guid = msg.get('guid')
-
-          self._on_message(msg)
+            self._on_message(msg)
         else:
-          self._log.error('Received a message with no type')
-
+            self._log.error('Received a message with no type')

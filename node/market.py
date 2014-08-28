@@ -43,7 +43,7 @@ class Market(object):
         self._transport = transport
         self._dht = transport.get_dht()
         self._market_id = transport.get_market_id()
-        #self._myself = transport.get_myself()
+        # self._myself = transport.get_myself()
         self._peers = self._dht.getActivePeers()
         self._db = db
         self.orders = Orders(transport, self._market_id, db)
@@ -116,7 +116,7 @@ class Market(object):
     def linebreak_signing_data(self, data):
         json_string = json.dumps(data, indent=0)
         seg_len = 52
-        out_text = string.join(map(lambda x: json_string[x:x+seg_len],
+        out_text = string.join(map(lambda x: json_string[x:x + seg_len],
                                    range(0, len(json_string), seg_len)), "\n")
         return out_text
 
@@ -404,7 +404,7 @@ class Market(object):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
         contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id,
                                            limit=10,
-                                           limit_offset=(page*10))
+                                           limit_offset=(page * 10))
         my_contracts = []
         for contract in contracts:
             try:
@@ -496,7 +496,7 @@ class Market(object):
 
 
     def on_page(self, page):
-        #pubkey = page.get('pubkey')
+        # pubkey = page.get('pubkey')
         guid = page.get('senderGUID')
         sin = page.get('sin')
         page = page.get('text')

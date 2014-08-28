@@ -35,7 +35,7 @@ class Obdb():
         """ Close the db connection
         """
         if self.con:
-           self.con.close()
+            self.con.close()
         self.con = False
 
     def _dictFactory(self, cursor, row):
@@ -43,7 +43,7 @@ class Obdb():
         """
         d = {}
         for idx, col in enumerate(cursor.description):
-            if row[idx] == None:
+            if row[idx] is None:
                 d[col[0]] = ""
             else:
                 d[col[0]] = row[idx]
@@ -73,12 +73,12 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in set_dict.iteritems():
-                key = str(key).replace("'", "''");
+                key = str(key).replace("'", "''")
 
                 if type(value) == bool:
-                  value = 1 if value else 0
+                    value = bool(value)
                 else:
-                  value = str(value).replace("'", "''");
+                    value = str(value).replace("'", "''")
 
 
 
@@ -89,8 +89,8 @@ class Obdb():
                     set_part = set_part + ", %s = '%s'" % (key, value)
             first = True
             for key, value in where_dict.iteritems():
-                key = str(key).replace("'", "''");
-                value = str(value).replace("'", "''");
+                key = str(key).replace("'", "''")
+                value = str(value).replace("'", "''")
                 if first:
                     where_part = "%s = '%s'" % (key, value)
                     first = False
@@ -112,12 +112,12 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in update_dict.iteritems():
-                key = str(key).replace("'", "''");
+                key = str(key).replace("'", "''")
 
                 if type(value) == bool:
-                  value = 1 if value else 0
+                    value = bool(value)
                 else:
-                  value = str(value).replace("'", "''");
+                    value = str(value).replace("'", "''")
 
                 if first:
                     updatefield_part = "%s" % (key)
@@ -130,7 +130,7 @@ class Obdb():
                     % (table, updatefield_part, setfield_part)
             cur.execute(query)
             lastrowid = cur.lastrowid
-            self._log.debug("query: %s "% query)
+            self._log.debug("query: %s " % query)
         self._disconnectFromDb()
         if lastrowid:
             return lastrowid
@@ -148,10 +148,10 @@ class Obdb():
             first = True
 
 
-            if limit != None and limit_offset is None:
+            if limit is not None and limit_offset is None:
                 limit_clause = "LIMIT %s" % limit
-            elif limit != None and limit_offset is not None:
-                  limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
+            elif limit is not None and limit_offset is not None:
+                limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
             else:
                 limit_clause = ""
 
@@ -164,7 +164,7 @@ class Obdb():
                     % (columns, table, where_clause, order_field, order, limit_clause)
 
             print query
-            self._log.debug("query: %s "% query)
+            self._log.debug("query: %s " % query)
             cur.execute(query)
             rows = cur.fetchall()
         self._disconnectFromDb()
@@ -184,8 +184,8 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in where_dict.iteritems():
-                key = str(key).replace("'", "''");
-                value = str(value).replace("'", "''");
+                key = str(key).replace("'", "''")
+                value = str(value).replace("'", "''")
                 if first:
                     where_part = "%s = '%s'" % (key, value)
                     first = False

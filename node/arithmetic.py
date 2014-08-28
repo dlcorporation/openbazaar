@@ -1,6 +1,7 @@
-import hashlib, re
+import hashlib
+import re
 
-P = 2**256 - 2**32 - 2**9 - 2**8 - 2**7 - 2**6 - 2**4 - 1
+P = 2 ** 256 - 2 ** 32 - 2 ** 9 - 2 ** 8 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1
 A = 0
 Gx = 55066263022277343669578718895168534326250603453777594175500187360389116729240
 Gy = 32670510020758816978083085130507043184471273380659243275938904335757337482424
@@ -10,7 +11,7 @@ def inv(a, n):
     lm, hm = 1, 0
     low, high = a % n, n
     while low > 1:
-        r = high/low
+        r = high / low
         nm, new = hm - lm * r, high - low * r
         lm, low, hm, high = nm, new, lm, low
     return lm % n
@@ -26,7 +27,7 @@ def get_code_string(base):
         return "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
     elif base == 256:
         return ''.join([chr(x) for x in range(256)])
- 
+
     raise ValueError("Invalid base!")
 
 def encode(val, base, minlen=0):
@@ -42,7 +43,8 @@ def encode(val, base, minlen=0):
 def decode(string, base):
     code_string = get_code_string(base)
     result = 0
-    if base == 16: string = string.lower()
+    if base == 16:
+        string = string.lower()
     while len(string) > 0:
         result *= base
         result += code_string.find(string[0])
@@ -67,7 +69,7 @@ def base10_add(a, b):
     return x, y
 
 def base10_double(a):
-    if a == None:
+    if a is None:
         return None
     m = ((3 * a[0] * a[0] + A) * inv(2 * a[1], P)) % P
     x = (m * m - 2 * a[0]) % P
@@ -115,6 +117,6 @@ def bin_to_b58check(inp):
     checksum = dbl_sha256(inp_fmtd)[:4]
     return '1' * leadingzbytes + changebase(inp_fmtd + checksum, 256, 58)
 
-#Convert a public key (in hex) to a Bitcoin address
+# Convert a public key (in hex) to a Bitcoin address
 def pubkey_to_address(pubkey):
     return bin_to_b58check(hash_160(changebase(pubkey, 16, 256)))
