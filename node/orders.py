@@ -533,7 +533,8 @@ class Orders(object):
         def finish_notarization(msg):
             buyer_order_id = bid_data_json['Buyer']['buyer_GUID']+'-'+str(bid_data_json['Buyer']['buyer_order_id'])
 
-            pubkeys = [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
+            pubkeys = [
+                offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
                 bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
                 privkey_to_pubkey(self._transport.settings['privkey'])
             ]
