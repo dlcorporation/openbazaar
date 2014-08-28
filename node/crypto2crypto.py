@@ -471,6 +471,7 @@ class CryptoTransportLayer(TransportLayer):
 
 
     def search_for_my_node(self):
+        print 'Searching for myself'
         self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
 
     def connect_to_peers(self, known_peers):
@@ -724,8 +725,6 @@ class CryptoTransportLayer(TransportLayer):
 
                 try:
 
-                    #data = self._myself.decrypt(data)
-
                     cryptor = CryptoTransportLayer.makeCryptor(self.secret)
 
                     try:
@@ -738,8 +737,6 @@ class CryptoTransportLayer(TransportLayer):
                     self._log.debug('Signed Data: %s' % data)
 
                     guid =  json.loads(data).get('guid')
-
-                    #ecc = ec.ECC(curve='secp256k1', pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(json.loads(data).get('pubkey')).decode('hex'))
 
                     # Check signature
                     data_json = json.loads(data)
@@ -782,3 +779,4 @@ class CryptoTransportLayer(TransportLayer):
           self._on_message(msg)
         else:
           self._log.error('Received a message with no type')
+
