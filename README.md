@@ -76,6 +76,7 @@ Here are some screenshots of the *alpha* UI so far:
 
 - **Wired**
   - [Inside the ‘DarkMarket’ Prototype, a Silk Road the FBI Can Never Seize](http://www.wired.com/2014/04/darkmarket/)
+  - [Creators of New Fed-Proof Bitcoin Marketplace Swear It’s Not for Drugs](http://www.wired.com/2014/08/openbazaar-not-for-drugs/)
 - **The Guardian**
   - [Silk Road successor DarkMarket rebrands as OpenBazaar](http://www.theguardian.com/technology/2014/apr/30/silk-road-darkmarket-openbazaar-online-drugs-marketplace)
 - **DeepDotWeb**
