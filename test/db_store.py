@@ -22,7 +22,7 @@ class TestDbOperations(unittest.TestCase):
     def test_insert_select_operations(self):
 
         # Initialize our db instance
-        db = Obdb()
+        db = Obdb("db/ob.db")
 
         # Create a dictionary of a random review
         review_to_store = {"pubKey": "123",
@@ -72,10 +72,10 @@ class TestDbOperations(unittest.TestCase):
     def test_update_operation(self):
 
         # Initialize our db instance
-        db = Obdb()
+        db = Obdb("db/ob.db")
 
         # Retrieve the record with pubkey equal to '123'
-        retrieved_review = db.selectEntries("reviews", {"pubkey": "123"})[0]
+        retrieved_review = db.selectEntries("reviews", "pubkey = '123'")[0]
 
         # Check that the rating is still '10' as expected
         self.assertEqual(retrieved_review["rating"], 10)
@@ -85,7 +85,7 @@ class TestDbOperations(unittest.TestCase):
         db.updateEntries("reviews", {"pubkey": "123"}, {"rating": 9})
 
         # Retrieve the same record again
-        retrieved_review = db.selectEntries("reviews", {"pubkey": "123"})[0]
+        retrieved_review = db.selectEntries("reviews", "pubkey = '123'")[0]
 
         # Test that the rating has been updated succesfully
         self.assertEqual(retrieved_review["rating"], 9)
@@ -93,13 +93,13 @@ class TestDbOperations(unittest.TestCase):
     def test_delete_operation(self):
 
         # Initialize our db instance
-        db = Obdb()
+        db = Obdb("db/ob.db")
 
         # Delete the entry with pubkey equal to '123'
         db.deleteEntries("reviews", {"pubkey": "123"})
 
         # Looking for this record with will bring nothing
-        retrieved_review = db.selectEntries("reviews", {"pubkey": "123"})
+        retrieved_review = db.selectEntries("reviews", "pubkey = '123'")
         self.assertEqual(len(retrieved_review), 0)
 
 
