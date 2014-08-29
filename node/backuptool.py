@@ -47,7 +47,7 @@ class BackupTool:
             tar.add(db_folder, os.path.basename(db_folder))
             tar.add(msig_folder, os.path.basename(msig_folder))
             tar.close()
-        except Exception, e:
+        except Exception as e:
             if onErrorCallback is not None:
                 onErrorCallback(e)
                 return

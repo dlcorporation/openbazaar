@@ -152,7 +152,7 @@ class Orders(object):
 
             try:
                 total_price = (float(shipping_price) + float(_order['item_price'])) if 'item_price' in _order else _order['item_price']
-            except Exception, e:
+            except Exception as e:
                 self._log.error('Probably not a number %s' % e)
 
         # Generate QR code
@@ -227,7 +227,6 @@ class Orders(object):
 
         return {"total": total_orders, "orders": orders}
 
-
     # Create a new order
     def create_order(self, seller, text):
         self._log.info('CREATING ORDER')
@@ -274,7 +273,6 @@ class Orders(object):
 
         self._transport.send(order, bid_data_json['Buyer']['buyer_GUID'])
 
-
     def accept_order(self, new_order):
 
         # TODO: Need to have a check for the vendor to agree to the order
@@ -314,7 +312,6 @@ class Orders(object):
 
         self._transport.send(new_order, new_order['merchant'])
 
-
     def offer_json_from_seed_contract(self, seed_contract):
         self._log.debug('Seed Contract: %s' % seed_contract)
         contract_data = ''.join(seed_contract.split('\n')[6:])
@@ -346,7 +343,7 @@ class Orders(object):
                                                    "updated": time.time(),
                                                    "merchant": contract_data_json['Seller']['seller_GUID'],
                                                    "buyer": self._transport._guid})
-                except Exception, e:
+                except Exception as e:
                     self._log.error('Cannot update DB %s ' % e)
 
                 order_to_notary = {}
@@ -362,9 +359,8 @@ class Orders(object):
             else:
                 self._log.error('Could not verify signature of contract.')
 
-        except Exception, e2:
+        except Exception as e2:
             self._log.error(e2)
-
 
     def receive_order(self, new_order):  # action
         new_order['state'] = Orders.State.RECEIVED
@@ -443,7 +439,6 @@ class Orders(object):
         end_index = contract.find('- -----BEGIN PGP SIGNATURE-----', 0, len(contract))
         self._log.info(contract[start_index:end_index])
         return json.loads("".join(contract[start_index:end_index].split('\n')))
-
 
     def handle_bid_order(self, bid):
 
@@ -544,7 +539,6 @@ class Orders(object):
             print script
             multisig_address = scriptaddr(script)
 
-
             self._db.insertEntry("orders", {'market_id': self._transport._market_id,
                          'contract_key': contract_key,
                          'signed_contract_body': str(signed_data),
@@ -571,10 +565,7 @@ class Orders(object):
             self._transport.send(notarized_order, offer_data_json['Seller']['seller_GUID'])
             self._transport.send(notarized_order, bid_data_json['Buyer']['buyer_GUID'])
 
-
         self._transport._dht.iterativeFindNode(offer_data_json['Seller']['seller_GUID'], finish_notarization)
-
-
 
     def generate_order_id(self):
         order_id = random.randint(0, 1000000)
@@ -705,8 +696,6 @@ class Orders(object):
                      'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
                      'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                      "updated": time.time()})
-
-
 
     # Order callbacks
     def on_order(self, msg):

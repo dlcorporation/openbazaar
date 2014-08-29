@@ -52,7 +52,7 @@ class PortMapper(object):
         try:
             self.upnp.selectigd()
             self.UPNP_DEVICE_AVAILABLE = True
-        except Exception, e:
+        except Exception as e:
             print 'Exception :', e
             self.UPNP_DEVICE_AVAILABLE = False
             return

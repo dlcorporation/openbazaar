@@ -60,7 +60,6 @@ class Obdb():
             self.insertEntry(table, data_dict)
         return self.selectEntries(table, where_clause)[0]
 
-
     def updateEntries(self, table, where_dict, set_dict, operator="AND"):
         """ A wrapper for the SQL UPDATE operation
         @param table: The table to search to
@@ -79,8 +78,6 @@ class Obdb():
                     value = bool(value)
                 else:
                     value = str(value).replace("'", "''")
-
-
 
                 if first:
                     set_part = "%s = '%s'" % (key, value)
@@ -147,7 +144,6 @@ class Obdb():
             cur = self.con.cursor()
             first = True
 
-
             if limit is not None and limit_offset is None:
                 limit_clause = "LIMIT %s" % limit
             elif limit is not None and limit_offset is not None:
@@ -209,6 +205,5 @@ class Obdb():
             cur.execute(query)
             rows = cur.fetchall()
         self._disconnectFromDb()
-
 
         return rows[0]['count']

@@ -481,7 +481,6 @@ class Market(object):
         else:
             return {}
 
-
     # PAGE QUERYING
     def query_page(self, find_guid, callback=lambda msg: None):
 
@@ -493,7 +492,6 @@ class Market(object):
         msg['pubkey'] = self._transport.pubkey
 
         self._transport.send(msg, find_guid, callback)
-
 
     def on_page(self, page):
         # pubkey = page.get('pubkey')

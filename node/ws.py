@@ -438,8 +438,6 @@ class ProtocolHandler:
                     value = row[3]
                     total_amount += value
 
-
-
                 # Constrain fee so we don't get negative amount to send
                 fee = min(total_amount, 10000)
                 send_amount = total_amount - fee
@@ -459,22 +457,14 @@ class ProtocolHandler:
 
                 print signatures
 
-
-
-
                 self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx, script, signatures, order.get('merchant'))
-
-
-
 
             def get_history():
                 client.fetch_history(multi_address, lambda ec, history, order=order: cb(ec, history, order))
 
-
-
             reactor.callFromThread(get_history)
 
-        except Exception, e:
+        except Exception as e:
             self._log.error('%s' % e)
 
     def on_release_funds_tx(self, msg):
@@ -570,9 +560,8 @@ class ProtocolHandler:
 
             reactor.callFromThread(get_history)
 
-        except Exception, e:
+        except Exception as e:
             self._log.error('%s' % e)
-
 
     def client_generate_secret(self, socket_handler, msg):
         self._transport._generate_new_keypair()
