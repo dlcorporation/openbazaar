@@ -341,9 +341,9 @@ class Orders(object):
                                                     "state": "Sent",
                                                     "signed_contract_body": contract,
                                                     "market_id": self._market_id,
-                                                   "updated": time.time(),
-                                                   "merchant": contract_data_json['Seller']['seller_GUID'],
-                                                   "buyer": self._transport._guid})
+                                                    "updated": time.time(),
+                                                    "merchant": contract_data_json['Seller']['seller_GUID'],
+                                                    "buyer": self._transport._guid})
                 except Exception as e:
                     self._log.error('Cannot update DB %s ' % e)
 

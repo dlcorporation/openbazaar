@@ -2,6 +2,7 @@ import unittest
 
 import network_util
 
+
 class TestNodeNetworkUtil(unittest.TestCase):
     def test_is_loopback_addr(self):
         self.assertTrue(network_util.is_loopback_addr("127.0.0.1"))
