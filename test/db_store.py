@@ -15,14 +15,27 @@ dir_of_executable = os.path.dirname(__file__)
 path_to_project_root = os.path.abspath(os.path.join(dir_of_executable, '..'))
 sys.path.insert(0, path_to_project_root)
 from node.db_store import Obdb
+from node.setup_db import setup_db
 
+TEST_DB_PATH = "test/test_ob.db"
+
+def setUpModule():
+    # Create a test db.
+    if not os.path.isfile(TEST_DB_PATH):
+        print "Creating test db: %s" % TEST_DB_PATH
+        setup_db(TEST_DB_PATH)
+
+def tearDownModule():
+    # Cleanup.
+    print "Cleaning up."
+    print os.remove(TEST_DB_PATH)
 
 class TestDbOperations(unittest.TestCase):
 
     def test_insert_select_operations(self):
 
         # Initialize our db instance
-        db = Obdb("db/ob.db")
+        db = Obdb(TEST_DB_PATH)
 
         # Create a dictionary of a random review
         review_to_store = {"pubKey": "123",
@@ -72,7 +85,7 @@ class TestDbOperations(unittest.TestCase):
     def test_update_operation(self):
 
         # Initialize our db instance
-        db = Obdb("db/ob.db")
+        db = Obdb(TEST_DB_PATH)
 
         # Retrieve the record with pubkey equal to '123'
         retrieved_review = db.selectEntries("reviews", "pubkey = '123'")[0]
@@ -93,7 +106,7 @@ class TestDbOperations(unittest.TestCase):
     def test_delete_operation(self):
 
         # Initialize our db instance
-        db = Obdb("db/ob.db")
+        db = Obdb(TEST_DB_PATH)
 
         # Delete the entry with pubkey equal to '123'
         db.deleteEntries("reviews", {"pubkey": "123"})
@@ -104,4 +117,5 @@ class TestDbOperations(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    # Run tests.
     unittest.main()
