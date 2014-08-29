@@ -27,7 +27,7 @@ class TestDbOperations(unittest.TestCase):
         # Create a dictionary of a random review
         review_to_store = {"pubKey": "123",
                            "subject": "A review",
-                           "signature":  "a signature",
+                           "signature": "a signature",
                            "text": "Very happy to be a customer.",
                            "rating": 10}
 

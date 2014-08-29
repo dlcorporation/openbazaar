@@ -374,7 +374,7 @@ class Orders(object):
             order_id = random.randint(0, 1000000)
 
         new_order['order_id'] = order_id
-        self._db.insertEntry("orders",  new_order)
+        self._db.insertEntry("orders", new_order)
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
     def new_order(self, msg):
