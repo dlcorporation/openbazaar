@@ -10,6 +10,7 @@
 import logging
 from pysqlcipher import dbapi2 as sqlite
 
+
 class Obdb():
     """ Interface for db storage. Serves as segregation of the persistence layer
     and the application logic

@@ -58,6 +58,7 @@ class DataStore(UserDict.DictMixin):
     def __delitem__(self, key):
         """ Delete the specified key (and its value) """
 
+
 class DictDataStore(DataStore):
     """ A datastore using an in-memory Python dictionary """
     def __init__(self):
@@ -179,6 +180,7 @@ class MongoDataStore(DataStore):
 
     def __delitem__(self, key):
         self._db.deleteEntries("datastore", {"key": key.encode("hex")})
+
 
 class SqliteDataStore(DataStore):
     """ Sqlite database-based datastore

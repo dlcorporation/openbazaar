@@ -14,6 +14,7 @@ import obelisk
 from obelisk import decompress_public_key
 from pybitcointools import *
 
+
 class Orders(object):
     class State:
         '''Enum inner class. Python introduces enums in Python 3.0, but this should be good enough'''

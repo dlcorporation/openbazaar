@@ -2,6 +2,7 @@ from behave import *
 from test_util import *
 import logging
 
+
 @given('there is a node')
 def step_impl(context):
     create_nodes(context, 1)

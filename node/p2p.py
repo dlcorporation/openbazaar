@@ -73,6 +73,7 @@ class PeerConnection(object):
             self._log.error(e)
             # shouldn't we raise the exception here???? I think not doing this could cause buggy behavior on top
 
+
 # Transport layer manages a list of peers
 class TransportLayer(object):
     def __init__(self, market_id, my_ip, my_port, my_guid, nickname=None):

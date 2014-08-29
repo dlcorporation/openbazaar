@@ -9,6 +9,7 @@ OBELISK_SERVER_TESTNET = "tcp://obelisk-testnet2.airbitz.co:9091"
 OBELISK_SERVER_MAINNET = "tcp://85.25.198.97:9091"
 PROOF_OF_BURN_ADDR_PERTURBATION = 30
 
+
 def build_output_info_list(unspent_rows):
     unspent_infos = []
     for row in unspent_rows:
@@ -59,6 +60,7 @@ def burnaddr_from_guid(guid_hex):
 
 def get_global(guid, callback):
     get_unspent(burnaddr_from_guid(guid), callback)
+
 
 def get_unspent(addr, callback):
     # print('get_unspent call')
