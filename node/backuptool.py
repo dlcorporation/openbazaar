@@ -79,8 +79,8 @@ class Backup(json.JSONEncoder):
     A (meant to be immutable) POPO to represent a backup. So that we can tell
     our Web client about the available backups made.
     """
-    def __init__(self, file_name=None, 
-                 full_file_path=None, 
+    def __init__(self, file_name=None,
+                 full_file_path=None,
                  created_timestamp_millis=None,
                  size_in_bytes=None):
         self.file_name = file_name
@@ -109,9 +109,10 @@ class Backup(json.JSONEncoder):
         result = []
         if backups_folder_path is not None and os.path.isdir(backups_folder_path):
             if backups_folder_path.endswith(os.sep):
-                backups_folder_path = backups_folder_path[:-1] #trim trailing '/'
-            result = reversed([Backup.get_backup(backups_folder_path+os.sep+x) for x in os.listdir(backups_folder_path)])
-        
+                # trim trailing '/'
+                backups_folder_path = backups_folder_path[:-1]
+            result = reversed([Backup.get_backup(backups_folder_path + os.sep + x) for x in os.listdir(backups_folder_path)])
+
         return result
 
     @staticmethod

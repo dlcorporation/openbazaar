@@ -168,16 +168,16 @@ class Orders(object):
                  "total_price": total_price,
                  "notary": notary,
                  "payment_address": _order.get('payment_address'),
-                 "item_image": offer_data_json['Contract']['item_images'] if 'item_images'
-                                                                             in offer_data_json['Contract']
-                                                                             and offer_data_json['Contract'][
-                                                                             'item_images'] != {}
-                 else "img/no-photo.png",
                  "qrcode": 'data:image/png;base64,' + qr,
                  "item_title": offer_data_json['Contract']['item_title'],
                  "signed_contract_body": _order.get('signed_contract_body'),
                  "note_for_merchant": _order.get('note_for_merchant'),
                  "updated": _order.get('updated')}
+
+        if 'item_images' in offer_data_json['Contract'] and offer_data_json['Contract']['item_images'] != {}:
+            order['item_image'] = offer_data_json['Contract']['item_images']
+        else:
+            order['item_image'] = "img/no-photo.png"
 
         return order
 
