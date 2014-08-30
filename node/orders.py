@@ -14,7 +14,7 @@ from pybitcointools import *
 
 class Orders(object):
     class State:
-        '''Enum inner class. Python introduces enums in Python 3.0, but this should be good enough'''
+        """Enum inner class. Python introduces enums in Python 3.0, but this should be good enough"""
         SENT = 'Sent'
         ACCEPTED = 'accepted'
         BID = 'bid'
@@ -43,8 +43,6 @@ class Orders(object):
         self._log = logging.getLogger('[%s] %s' % (self._market_id, self.__class__.__name__))
 
     def get_offer_json(self, raw_contract, state):
-
-        print state
 
         if state == Orders.State.SENT:
             offer_data = ''.join(raw_contract.split('\n')[5:])
@@ -80,7 +78,7 @@ class Orders(object):
                      Orders.State.SHIPPED):
             offer_data_json = offer_data[0:index_of_seller_signature - 2]
             offer_data_json = json.loads(offer_data_json)
-        elif state in (Orders.State.WAITING_FOR_PAYMENT):
+        elif state in Orders.State.WAITING_FOR_PAYMENT:
             offer_data_json = offer_data[0:index_of_seller_signature - 4]
             offer_data_json = json.loads(str(offer_data_json))
         else:
@@ -120,12 +118,12 @@ class Orders(object):
         output.close()
         return qr
 
-    def get_order(self, orderId, by_buyer_id=False):
+    def get_order(self, order_id, by_buyer_id=False):
 
         if not by_buyer_id:
-            _order = self._db.selectEntries("orders", "order_id = '%s'" % orderId)[0]
+            _order = self._db.selectEntries("orders", "order_id = '%s'" % order_id)[0]
         else:
-            _order = self._db.selectEntries("orders", "buyer_order_id = '%s'" % orderId)[0]
+            _order = self._db.selectEntries("orders", "buyer_order_id = '%s'" % order_id)[0]
         total_price = 0
 
         offer_data_json = self.get_offer_json(_order['signed_contract_body'], _order['state'])
@@ -149,7 +147,8 @@ class Orders(object):
                 shipping_price = 0
 
             try:
-                total_price = (float(shipping_price) + float(_order['item_price'])) if 'item_price' in _order else _order['item_price']
+                total_price = (float(shipping_price) + float(_order['item_price'])) \
+                    if 'item_price' in _order else _order['item_price']
             except Exception as e:
                 self._log.error('Probably not a number %s' % e)
 
@@ -165,11 +164,16 @@ class Orders(object):
                  "order_id": _order.get('order_id'),
                  "item_price": _order.get('item_price'),
                  "shipping_price": _order.get('shipping_price'),
-                 "shipping_address": _order.get('shipping_address'),
+                 "shipping_address": json.loads(_order.get('shipping_address'))
+                 if _order.get('shipping_address') != "" else "",
                  "total_price": total_price,
                  "notary": notary,
                  "payment_address": _order.get('payment_address'),
-                 "item_image": offer_data_json.get('Contract').get('item_images'),
+                 "item_image": offer_data_json['Contract']['item_images'] if 'item_images'
+                                                                             in offer_data_json['Contract']
+                                                                             and offer_data_json['Contract'][
+                                                                             'item_images'] != {}
+                 else "img/no-photo.png",
                  "qrcode": 'data:image/png;base64,' + qr,
                  "item_title": offer_data_json['Contract']['item_title'],
                  "signed_contract_body": _order.get('signed_contract_body'),
@@ -211,14 +215,23 @@ class Orders(object):
                 for result in order_ids:
                     order = self.get_order(result['order_id'])
                     orders.append(order)
-                total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant = '%s'" % (self._market_id, self._transport._guid))
+                total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant = '%s'" % (
+                    self._market_id, self._transport._guid))
             else:
-                order_ids = self._db.selectEntries("orders", "market_id = '%s' and merchant <> '%s'" % (self._market_id, self._transport._guid), order_field="updated", order="DESC", limit=10, limit_offset=page * 10)
+                order_ids = self._db.selectEntries("orders", "market_id = '%s' and merchant <> '%s'" % (
+                    self._market_id,
+                    self._transport._guid
+                ),
+                    order_field="updated",
+                    order="DESC", limit=10,
+                    limit_offset=page * 10
+                )
                 for result in order_ids:
                     order = self.get_order(result['order_id'])
                     orders.append(order)
 
-                total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant <> '%s'" % (self._market_id, self._transport._guid))
+                total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant <> '%s'" % (
+                    self._market_id, self._transport._guid))
 
         for order in orders:
             buyer = self._db.selectEntries("peers", "guid = '%s'" % order['buyer'])
@@ -231,18 +244,18 @@ class Orders(object):
         return {"total": total_orders, "orders": orders}
 
     # Create a new order
-    def create_order(self, seller, text):
-        self._log.info('CREATING ORDER')
-        order_id = random.randint(0, 1000000)
-        buyer = self._transport._myself.public_key.encode('hex')
-        new_order = order(order_id, buyer, seller, 'new', text, self._escrows)
-
-        # Add a timestamp
-        new_order['created'] = time.time()
-
-        self._transport.send(new_order, seller)
-
-        self._db.insertEntry("orders", new_order)
+    # def create_order(self, seller, text):
+    # self._log.info('CREATING ORDER')
+    #     order_id = random.randint(0, 1000000)
+    #     buyer = self._transport._myself.public_key.encode('hex')
+    #     new_order = order(order_id, buyer, seller, 'new', text, self._escrows)
+    #
+    #     # Add a timestamp
+    #     new_order['created'] = time.time()
+    #
+    #     self._transport.send(new_order, seller)
+    #
+    #     self._db.insertEntry("orders", new_order)
 
     def ship_order(self, order, order_id, payment_address):
         self._log.info('Shipping order')
@@ -337,15 +350,21 @@ class Orders(object):
 
             if v:
                 self._log.info('Verified Contract')
-
+                self._log.info(self.get_shipping_address())
                 try:
-                    self._db.insertEntry("orders", {"order_id": order_id,
-                                                    "state": "Sent",
-                                                    "signed_contract_body": contract,
-                                                    "market_id": self._market_id,
-                                                    "updated": time.time(),
-                                                    "merchant": contract_data_json['Seller']['seller_GUID'],
-                                                    "buyer": self._transport._guid})
+                    self._db.insertEntry(
+                        "orders",
+                        {
+                            "order_id": order_id,
+                            "state": "Sent",
+                            "signed_contract_body": contract,
+                            "market_id": self._market_id,
+                            "shipping_address": json.dumps(self.get_shipping_address()),
+                            "updated": time.time(),
+                            "merchant": contract_data_json['Seller']['seller_GUID'],
+                            "buyer": self._transport._guid
+                        }
+                    )
                 except Exception as e:
                     self._log.error('Cannot update DB %s ' % e)
 
@@ -353,6 +372,12 @@ class Orders(object):
                 order_to_notary['type'] = 'order'
                 order_to_notary['rawContract'] = contract
                 order_to_notary['state'] = Orders.State.BID
+
+                merchant = self._transport._dht._routingTable.getContact(contract_data_json['Seller']['seller_GUID'])
+                order_to_notary['merchantURI'] = merchant._address
+                order_to_notary['merchantGUID'] = merchant._guid
+                order_to_notary['merchantNickname'] = merchant._nickname
+                order_to_notary['merchantPubkey'] = merchant._pub
 
                 self._log.info('Sending order to %s' % notary)
 
@@ -376,6 +401,23 @@ class Orders(object):
         self._db.insertEntry("orders", new_order)
         self._transport.send(new_order, new_order['seller'].decode('hex'))
 
+    def get_shipping_address(self):
+
+        settings = self._transport.settings
+
+        shipping_info = {
+            "street1": settings.get('street1'),
+            "street2": settings.get('street2'),
+            "city": settings.get('city'),
+            "stateRegion": settings.get('stateRegion'),
+            "stateProvinceRegion": settings.get('stateProvinceRegion'),
+            "zip": settings.get('zip'),
+            "country": settings.get('country'),
+            "countryCode": settings.get('countryCode'),
+            "recipient_name": settings.get('recipient_name')
+        }
+        return shipping_info
+
     def new_order(self, msg):
 
         self._log.debug('New Order: %s' % msg)
@@ -385,12 +427,15 @@ class Orders(object):
         while self._db.numEntries("orders", "id = '%s'" % order_id) > 0:
             order_id = random.randint(0, 1000000)
 
+        seller = self._transport._dht._routingTable.getContact(msg['sellerGUID'])
+
         buyer = {}
         buyer['Buyer'] = {}
         buyer['Buyer']['buyer_GUID'] = self._transport._guid
         buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
         buyer['Buyer']['buyer_pgp'] = self._transport.settings['PGPPubKey']
-        buyer['Buyer']['buyer_deliveryaddr'] = "123 Sesame Street"
+        buyer['Buyer']['buyer_deliveryaddr'] = seller.encrypt(str(json.dumps(self.get_shipping_address()))).encode(
+            'hex')
         buyer['Buyer']['note_for_seller'] = msg['message']
         buyer['Buyer']['buyer_order_id'] = order_id
 
@@ -430,6 +475,7 @@ class Orders(object):
                 'market_id': self._transport._market_id,
                 'contract_key': contract_key,
                 'signed_contract_body': str(signed_data),
+                'shipping_address': json.dumps(self.get_shipping_address()),
                 'state': Orders.State.NEW,
                 'updated': time.time(),
                 'note_for_merchant': msg['message']
@@ -454,6 +500,9 @@ class Orders(object):
     def handle_bid_order(self, bid):
 
         self._log.info('Bid Order: %s' % bid)
+
+        new_peer = self._transport.get_crypto_peer(bid.get('merchantGUID'), bid.get('merchantURI'),
+                                                   bid.get('merchantPubkey'))
 
         # Generate unique id for this bid
         order_id = random.randint(0, 1000000)
@@ -485,12 +534,13 @@ class Orders(object):
             self._log.info('Sellers contract verified')
 
         notary = {}
-        notary['Notary'] = {'notary_GUID': self._transport._guid,
-                            'notary_BTC_uncompressed_pubkey': privkey_to_pubkey(self._transport.settings['privkey']),
-                            'notary_pgp': self._transport.settings['PGPPubKey'],
-                            'notary_fee': "1%",
-                            'notary_order_id': order_id
-                            }
+        notary['Notary'] = {
+            'notary_GUID': self._transport._guid,
+            'notary_BTC_uncompressed_pubkey': privkey_to_pubkey(self._transport.settings['privkey']),
+            'notary_pgp': self._transport.settings['PGPPubKey'],
+            'notary_fee': "1%",
+            'notary_order_id': order_id
+        }
 
         self._log.debug('Notary: %s' % notary)
 
@@ -536,54 +586,50 @@ class Orders(object):
         bid_data_json = json.loads(bid_data_json)
         self._log.info('Bid Data: %s' % bid_data_json)
 
-        def finish_notarization(msg):
-            buyer_order_id = bid_data_json['Buyer']['buyer_GUID'] + '-' + str(bid_data_json['Buyer']['buyer_order_id'])
+        buyer_order_id = bid_data_json['Buyer']['buyer_GUID'] + '-' + str(bid_data_json['Buyer']['buyer_order_id'])
 
-            pubkeys = [
-                offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
-                bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
-                privkey_to_pubkey(self._transport.settings['privkey'])
-            ]
-            print pubkeys
+        pubkeys = [
+            offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
+            bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
+            privkey_to_pubkey(self._transport.settings['privkey'])
+        ]
 
-            script = mk_multisig_script(pubkeys, 2, 3)
-            print script
-            multisig_address = scriptaddr(script)
+        script = mk_multisig_script(pubkeys, 2, 3)
+        multisig_address = scriptaddr(script)
 
-            self._db.insertEntry(
-                "orders",
-                {
-                    'market_id': self._transport._market_id,
-                    'contract_key': contract_key,
-                    'signed_contract_body': str(signed_data),
-                    'state': Orders.State.NOTARIZED,
-                    'buyer_order_id': buyer_order_id,
-                    'order_id': order_id,
-                    'merchant': offer_data_json['Seller']['seller_GUID'],
-                    'buyer': bid_data_json['Buyer']['buyer_GUID'],
-                    'address': multisig_address,
-                    'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json['Contract'] else 0,
-                    'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
-                    'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
-                    "updated": time.time()
-                }
-            )
-
-            # Send order to seller and buyer
-            self._log.info('Sending notarized contract to buyer and seller %s' % bid)
-
-            notarized_order = {
-                "type": "order",
-                "state": "Notarized",
-                "rawContract": str(signed_data)
+        self._db.insertEntry(
+            "orders", {
+                'market_id': self._transport._market_id,
+                'contract_key': contract_key,
+                'signed_contract_body': str(signed_data),
+                'state': Orders.State.NOTARIZED,
+                'buyer_order_id': buyer_order_id,
+                'order_id': order_id,
+                'merchant': offer_data_json['Seller']['seller_GUID'],
+                'buyer': bid_data_json['Buyer']['buyer_GUID'],
+                'address': multisig_address,
+                'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in
+                                                                           offer_data_json[
+                                                                               'Contract'] else 0,
+                'shipping_price': offer_data_json['Contract']['item_delivery'][
+                    'shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
+                'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
+                "updated": time.time()
             }
+        )
 
-            self._log.info('SELLER %s' % offer_data_json['Seller']['seller_GUID'])
+        # Send order to seller and buyer
+        self._log.info('Sending notarized contract to buyer and seller %s' % bid)
 
-            self._transport.send(notarized_order, offer_data_json['Seller']['seller_GUID'])
-            self._transport.send(notarized_order, bid_data_json['Buyer']['buyer_GUID'])
+        notarized_order = {
+            "type": "order",
+            "state": "Notarized",
+            "rawContract": str(signed_data)
+        }
 
-        self._transport._dht.iterativeFindNode(offer_data_json['Seller']['seller_GUID'], finish_notarization)
+        new_peer.send(notarized_order)
+        self._transport.send(notarized_order, bid_data_json['Buyer']['buyer_GUID'])
+        self._log.info('Sent notarized contract to Seller and Buyer')
 
     def generate_order_id(self):
         order_id = random.randint(0, 1000000)
@@ -610,7 +656,8 @@ class Orders(object):
         buyer_order_id = bid_data_json['Buyer']['buyer_GUID'] + '-' + str(bid_data_json['Buyer']['buyer_order_id'])
 
         self._db.updateEntries("orders", {'buyer_order_id': buyer_order_id}, {'state': Orders.State.BUYER_PAID,
-                                                                              'shipping_address': json.dumps(msg['shipping_address']),
+                                                                              'shipping_address': json.dumps(
+                                                                                  msg['shipping_address']),
                                                                               "updated": time.time()})
 
     def handle_shipped_order(self, msg):
@@ -640,7 +687,6 @@ class Orders(object):
         )
 
     def handle_notarized_order(self, msg):
-        self._log.info(msg['rawContract'])
 
         contract = msg['rawContract']
 
@@ -670,7 +716,7 @@ class Orders(object):
                    bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
                    notary_data_json['Notary']['notary_BTC_uncompressed_pubkey']]
         script = mk_multisig_script(pubkeys, 2, 3)
-        print script
+
         multisig_address = scriptaddr(script)
 
         seller_GUID = offer_data_json['Seller']['seller_GUID']
@@ -705,10 +751,14 @@ class Orders(object):
                     'buyer': bid_data_json['Buyer']['buyer_GUID'],
                     'notary': notary_data_json['Notary']['notary_GUID'],
                     'address': multisig_address,
-                    'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json['Contract'] else 0,
-                    'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
+                    'shipping_address': self._transport._myself.decrypt(
+                        bid_data_json['Buyer']['buyer_deliveryaddr'].decode('hex')),
+                    'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json[
+                        'Contract'] else 0,
+                    'shipping_price': offer_data_json['Contract']['item_delivery'][
+                        'shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
                     'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
-                    'updated': time.time()
+                    "updated": time.time()
                 }
             )
 
@@ -730,10 +780,13 @@ class Orders(object):
                     'buyer': bid_data_json['Buyer']['buyer_GUID'],
                     'notary': notary_data_json['Notary']['notary_GUID'],
                     'address': multisig_address,
-                    'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json['Contract'] else 0,
-                    'shipping_price': offer_data_json['Contract']['item_delivery']['shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
+                    'shipping_address': self.get_shipping_address(),
+                    'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json[
+                        'Contract'] else 0,
+                    'shipping_price': offer_data_json['Contract']['item_delivery'][
+                        'shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
                     'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
-                    'updated': time.time()
+                    "updated": time.time()
                 }
             )
 

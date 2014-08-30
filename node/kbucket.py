@@ -61,7 +61,7 @@ class KBucket(object):
         for contact in self._contacts:
             if contact._guid == contactID:
                 self._log.debug('[getContact] Found %s' % contact)
-            return contact
+                return contact
         self._log.debug('[getContact] No Results')
 
     def getContacts(self, count=-1, excludeContact=None):

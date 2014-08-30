@@ -5,6 +5,7 @@
                 </div>
                 <div class="modal-body" style="text-align:left;">
 
+
                     <div data-ng-show="Market.modalOrder.state == 'Need to Pay'" class="alert alert-warning" role="alert">
                         <div class="row">
 
@@ -58,7 +59,7 @@
 <ul class="nav nav-tabs" role="tablist">
   <li class="active"><a data-target="#order" role="tab" data-toggle="tab">Order</a></li>
   <li><a data-target="#contract-details" role="tab" data-toggle="tab">Contract Details</a></li>
-  <li><a data-target="#shipping-information" role="tab" data-toggle="tab">Shipping Information</a></li>
+  <li><a ng-show="Market.modalOrder.state != 'Notarized'" data-target="#shipping-information" role="tab" data-toggle="tab">Shipping Information</a></li>
 </ul>
 
 <!-- Tab panes -->
@@ -134,7 +135,9 @@
 
   </div>
 
-    <div class="tab-pane" id="shipping-information" data-ng-show="Market.modalOrder.waitingForShipment">
+    <div class="tab-pane" id="shipping-information">
+
+
 
         <div style="padding:20px;">
         <address>
