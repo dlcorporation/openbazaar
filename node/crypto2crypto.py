@@ -369,10 +369,11 @@ class CryptoTransportLayer(TransportLayer):
             self.sin = self.settings['sin'] if 'sin' in self.settings else ""
             self.bitmessage = self.settings['bitmessage'] if 'bitmessage' in self.settings else ""
 
-            self._myself = ec.ECC(pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).decode('hex'),
-                              raw_privkey=self.secret.decode('hex'),
-                              curve='secp256k1')
-
+            self._myself = ec.ECC(
+                pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).decode('hex'),
+                raw_privkey=self.secret.decode('hex'),
+                curve='secp256k1'
+            )
         else:
             self._nickname = 'Default'
 
@@ -755,8 +756,9 @@ class CryptoTransportLayer(TransportLayer):
                     msg = self._myself.decrypt(serialized)
                     msg = json.loads(msg)
 
-                    self._log.info("Decrypted Message [%s]"
-                                 % msg.get('type', 'unknown'))
+                    self._log.info(
+                        "Decrypted Message [%s]" % msg.get('type', 'unknown')
+                    )
                 except:
                     self._log.error("Could not decrypt message: %s" % msg)
                     return
