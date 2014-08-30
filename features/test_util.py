@@ -1,12 +1,10 @@
 import json
 import time
-import logging
 
 from tornado.ioloop import IOLoop
 from tornado import gen
 from tornado.websocket import websocket_connect
 
-from node.tornadoloop import MarketApplication, start_node
 from node.db_store import Obdb
 
 

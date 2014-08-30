@@ -1,5 +1,3 @@
-# coding=utf-8
-from IPy import IP
 from dht import DHT
 from p2p import PeerConnection, TransportLayer
 from pprint import pformat
@@ -84,7 +82,6 @@ class CryptoPeerConnection(PeerConnection):
                                       'senderGUID': self._transport.guid,
                                       'senderNick': self._transport._nickname}), cb)
 
-
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
 
@@ -106,7 +103,6 @@ class CryptoPeerConnection(PeerConnection):
         cryptor = CryptoTransportLayer.makeCryptor(self._transport.settings['secret'])
         return cryptor.sign(data)
 
-
     @staticmethod
     def hexToPubkey(pubkey):
         pubkey_raw = arithmetic.changebase(pubkey[2:], 16, 256, minlen=64)
@@ -122,7 +118,7 @@ class CryptoPeerConnection(PeerConnection):
             else:
                 self._log.error('Public Key is missing')
                 return False
-        except Exception, e:
+        except Exception as e:
             self._log.error('Encryption failed. %s' % e)
 
     def send(self, data, callback=lambda msg: None):
@@ -199,7 +195,6 @@ class CryptoTransportLayer(TransportLayer):
         #                       privkey=self.secret.decode('hex'),
         #                       curve='secp256k1')
 
-
         TransportLayer.__init__(self, market_id, my_ip, my_port,
                                 self.guid, self._nickname)
 
@@ -236,7 +231,7 @@ class CryptoTransportLayer(TransportLayer):
                     self._dht._iterativeFind(self._guid, [], 'findNode')
             else:
                 self._log.error('Could not get IP')
-        except Exception, e:
+        except Exception as e:
             self._log.error('[Requests] error: %s' % e)
 
     def save_peer_to_db(self, peer_tuple):
@@ -322,7 +317,6 @@ class CryptoTransportLayer(TransportLayer):
         #      "pubkey": self.pubkey,
         #     }))
 
-
     def _store_value(self, msg):
         self._dht._on_storeValue(msg)
 
@@ -362,7 +356,7 @@ class CryptoTransportLayer(TransportLayer):
                     self.settings.update(pgp_dict)
 
                 self._log.info('PGP keypair generated.')
-            except Exception, e:
+            except Exception as e:
                 self._log.error("Encountered a problem with GPG: %s" % e)
 
         if self.settings:
@@ -375,10 +369,11 @@ class CryptoTransportLayer(TransportLayer):
             self.sin = self.settings['sin'] if 'sin' in self.settings else ""
             self.bitmessage = self.settings['bitmessage'] if 'bitmessage' in self.settings else ""
 
-            self._myself = ec.ECC(pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).decode('hex'),
-                              raw_privkey=self.secret.decode('hex'),
-                              curve='secp256k1')
-
+            self._myself = ec.ECC(
+                pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).decode('hex'),
+                raw_privkey=self.secret.decode('hex'),
+                curve='secp256k1'
+            )
         else:
             self._nickname = 'Default'
 
@@ -390,8 +385,6 @@ class CryptoTransportLayer(TransportLayer):
                 self._generate_new_bitmessage_address()
 
             self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self._market_id)[0]
-
-
 
         self._log.debug('Retrieved Settings: \n%s', pformat(self.settings))
 
@@ -407,8 +400,6 @@ class CryptoTransportLayer(TransportLayer):
         # Add pyelliptic content
         print "02ca0020" + pub_x + "0020" + pub_y
         return "02ca0020" + pub_x + "0020" + pub_y
-
-
 
     def _generate_new_keypair(self):
         secret = str(random.randrange(2 ** 256))
@@ -450,7 +441,6 @@ class CryptoTransportLayer(TransportLayer):
             }
         )
 
-
     def join_network(self, seed_peers=[], callback=lambda msg: None):
 
         self._log.info('Joining network')
@@ -484,7 +474,6 @@ class CryptoTransportLayer(TransportLayer):
             peers.append(peer['uri'])
         return peers
 
-
     def search_for_my_node(self):
         print 'Searching for myself'
         self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
@@ -504,7 +493,6 @@ class CryptoTransportLayer(TransportLayer):
 
         return CryptoPeerConnection(self, uri, pubkey, guid=guid,
                                     nickname=nickname, callback=callback)
-
 
     def addCryptoPeer(self, peer_to_add):
 
@@ -607,7 +595,7 @@ class CryptoTransportLayer(TransportLayer):
                 self._log.debug('Directed Data (%s): %s' % (send_to, data))
                 try:
                     peer.send(data, callback=callback)
-                except Exception, e:
+                except Exception as e:
                     self._log.error('Not sending message directly to peer %s' % e)
             else:
                 self._log.error('No peer found')
@@ -644,7 +632,6 @@ class CryptoTransportLayer(TransportLayer):
             self._log.info("Sending unencrypted [%s] message to %s"
                            % (msg['type'], uri))
             self._peers[uri].send_raw(json.dumps(msg))
-
 
     def _init_peer(self, msg):
 
@@ -687,8 +674,6 @@ class CryptoTransportLayer(TransportLayer):
             if msg_type == 'hello_request':
                 # reply only if necessary
                 self.send_enc(uri, hello_response(self.get_profile()))
-
-
 
     def _on_message(self, msg):
 
@@ -744,14 +729,11 @@ class CryptoTransportLayer(TransportLayer):
 
                     try:
                         data = cryptor.decrypt(data)
-                    except Exception, e:
+                    except Exception as e:
                         self._log.info('Exception: %s' % e)
-
 
                     self._log.debug('Signature: %s' % sig.encode('hex'))
                     self._log.debug('Signed Data: %s' % data)
-
-                    guid = json.loads(data).get('guid')
 
                     # Check signature
                     data_json = json.loads(data)
@@ -764,7 +746,7 @@ class CryptoTransportLayer(TransportLayer):
 
                     msg = json.loads(data)
                     self._log.debug('Message Data %s ' % msg)
-                except Exception, e:
+                except Exception as e:
                     self._log.error('Could not decrypt message properly %s' % e)
 
         except ValueError:
@@ -774,8 +756,9 @@ class CryptoTransportLayer(TransportLayer):
                     msg = self._myself.decrypt(serialized)
                     msg = json.loads(msg)
 
-                    self._log.info("Decrypted Message [%s]"
-                                 % msg.get('type', 'unknown'))
+                    self._log.info(
+                        "Decrypted Message [%s]" % msg.get('type', 'unknown')
+                    )
                 except:
                     self._log.error("Could not decrypt message: %s" % msg)
                     return
@@ -785,10 +768,6 @@ class CryptoTransportLayer(TransportLayer):
                 return
 
         if msg.get('type') is not None:
-            msg_type = msg.get('type')
-            msg_uri = msg.get('uri')
-            msg_guid = msg.get('guid')
-
             self._on_message(msg)
         else:
             self._log.error('Received a message with no type')

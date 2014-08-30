@@ -7,6 +7,7 @@ Gx = 550662630222773436695787188951685343262506034537775941755001873603891167292
 Gy = 32670510020758816978083085130507043184471273380659243275938904335757337482424
 G = Gx, Gy
 
+
 def inv(a, n):
     lm, hm = 1, 0
     low, high = a % n, n
@@ -15,6 +16,7 @@ def inv(a, n):
         nm, new = hm - lm * r, high - low * r
         lm, low, hm, high = nm, new, lm, low
     return lm % n
+
 
 def get_code_string(base):
     if base == 2:
@@ -30,6 +32,7 @@ def get_code_string(base):
 
     raise ValueError("Invalid base!")
 
+
 def encode(val, base, minlen=0):
     code_string = get_code_string(base)
     result = ""
@@ -39,6 +42,7 @@ def encode(val, base, minlen=0):
     if len(result) < minlen:
         result = code_string[0] * (minlen - len(result)) + result
     return result
+
 
 def decode(string, base):
     code_string = get_code_string(base)
@@ -51,8 +55,10 @@ def decode(string, base):
         string = string[1:]
     return result
 
+
 def changebase(string, frm, to, minlen=0):
     return encode(decode(string, frm), to, minlen)
+
 
 def base10_add(a, b):
     if a is None:
@@ -68,6 +74,7 @@ def base10_add(a, b):
     y = (m * (a[0] - x) - a[1]) % P
     return x, y
 
+
 def base10_double(a):
     if a is None:
         return None
@@ -75,6 +82,7 @@ def base10_double(a):
     x = (m * m - 2 * a[0]) % P
     y = (m * (a[0] - x) - a[1]) % P
     return x, y
+
 
 def base10_multiply(a, n):
     if n == 0:
@@ -85,22 +93,28 @@ def base10_multiply(a, n):
         return base10_double(base10_multiply(a, n / 2))
     return base10_add(base10_double(base10_multiply(a, n / 2)), a)
 
+
 def hex_to_point(h):
     return decode(h[2:66], 16), decode(h[66:], 16)
+
 
 def point_to_hex(p):
     return '04' + encode(p[0], 16, 64) + encode(p[1], 16, 64)
 
+
 def multiply(privkey, pubkey):
     return point_to_hex(base10_multiply(hex_to_point(pubkey), decode(privkey, 16)))
 
+
 def privtopub(privkey):
     return point_to_hex(base10_multiply(G, decode(privkey, 16)))
+
 
 def add(p1, p2):
     if len(p1) == 32:
         return encode(decode(p1, 16) + decode(p2, 16) % P, 16, 32)
     return point_to_hex(base10_add(hex_to_point(p1), hex_to_point(p2)))
+
 
 def hash_160(string):
     intermed = hashlib.sha256(string).digest()
@@ -108,14 +122,17 @@ def hash_160(string):
     ripemd160.update(intermed)
     return ripemd160.digest()
 
+
 def dbl_sha256(string):
     return hashlib.sha256(hashlib.sha256(string).digest()).digest()
+
 
 def bin_to_b58check(inp):
     inp_fmtd = '\x00' + inp
     leadingzbytes = len(re.match('^\x00*', inp_fmtd).group(0))
     checksum = dbl_sha256(inp_fmtd)[:4]
     return '1' * leadingzbytes + changebase(inp_fmtd + checksum, 256, 58)
+
 
 # Convert a public key (in hex) to a Bitcoin address
 def pubkey_to_address(pubkey):

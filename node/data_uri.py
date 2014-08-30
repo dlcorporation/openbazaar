@@ -54,9 +54,6 @@ class DataURI(str):
     def __repr__(self):
         return 'DataURI(%s)' % (super(DataURI, self).__repr__(),)
 
-    def wrap(self, width=76):
-        return type(self)('\n'.join(textwrap.wrap(self, width)))
-
     @property
     def mimetype(self):
         return self._parse[0]

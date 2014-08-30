@@ -19,19 +19,21 @@ from node.setup_db import setup_db
 
 TEST_DB_PATH = "test/test_ob.db"
 
+
 def setUpModule():
     # Create a test db.
     if not os.path.isfile(TEST_DB_PATH):
         print "Creating test db: %s" % TEST_DB_PATH
         setup_db(TEST_DB_PATH)
 
+
 def tearDownModule():
     # Cleanup.
     print "Cleaning up."
     print os.remove(TEST_DB_PATH)
 
-class TestDbOperations(unittest.TestCase):
 
+class TestDbOperations(unittest.TestCase):
     def test_insert_select_operations(self):
 
         # Initialize our db instance
@@ -40,7 +42,7 @@ class TestDbOperations(unittest.TestCase):
         # Create a dictionary of a random review
         review_to_store = {"pubKey": "123",
                            "subject": "A review",
-                           "signature":  "a signature",
+                           "signature": "a signature",
                            "text": "Very happy to be a customer.",
                            "rating": 10}
 

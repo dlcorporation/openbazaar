@@ -3,11 +3,10 @@ import logging
 from twisted.internet import reactor
 
 import obelisk
-import pyelliptic as ec
 import urllib2
 import re
 import random
-import pybitcointools
+# import pybitcointools
 
 
 # Create new private key:
@@ -56,7 +55,6 @@ class Multisig:
         # checkmultisig
         result += "\xae"
         return result
-
 
     @property
     def address(self):
@@ -176,8 +174,6 @@ def generate_signature_hash(parent_tx, input_index, script_code):
     return obelisk.Hash(raw_tx)
 
 
-
-
 class Escrow:
     def __init__(self, client, buyer_pubkey, seller_pubkey, arbit_pubkey):
         pubkeys = (buyer_pubkey, seller_pubkey, arbit_pubkey)
@@ -275,7 +271,6 @@ def main():
 
     msig.create_unsigned_transaction("1Fufjpf9RM2aQsGedhSpbSCGRHrmLMJ7yY", finished)
     reactor.run()
-
 
 if __name__ == "__main__":
     main()

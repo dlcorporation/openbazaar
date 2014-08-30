@@ -2,6 +2,7 @@ from behave import *
 from test_util import *
 import logging
 
+
 @given('there is a node')
 def step_impl(context):
     create_nodes(context, 1)
@@ -20,10 +21,14 @@ def step_impl(context):
 def create_nodes(context, num_nodes):
     app = []
     for i in range(num_nodes):
-        app.append(MarketApplication(ip_address(i),
-                                    12345,
-                                    i, db_path=get_db_path(i),
-                                    dev_mode=True))
+        app.append(
+            MarketApplication(
+                ip_address(i),
+                12345,
+                i, db_path=get_db_path(i),
+                dev_mode=True
+            )
+        )
         app[i].listen(node_to_ws_port(i))
         set_store_description(i)
     context.app = app
