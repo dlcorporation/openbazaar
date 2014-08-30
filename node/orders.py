@@ -164,8 +164,7 @@ class Orders(object):
                  "order_id": _order.get('order_id'),
                  "item_price": _order.get('item_price'),
                  "shipping_price": _order.get('shipping_price'),
-                 "shipping_address": json.loads(_order.get('shipping_address'))
-                 if _order.get('shipping_address') != "" else "",
+                 "shipping_address": _order.get('shipping_address') if _order.get("shipping_address") != "" else "",
                  "total_price": total_price,
                  "notary": notary,
                  "payment_address": _order.get('payment_address'),
