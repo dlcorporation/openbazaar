@@ -627,19 +627,18 @@ class ProtocolHandler:
                           on_backup_error)
 
     def get_backups(self, socket_handler, msg=None):
-        try:
-            self._log.info('ws.get_backups invoked.')
-            backups = [json.dumps(x,cls=BackupJSONEncoder) for x in Backup.get_backups(BackupTool.get_backup_path())]
-            print backups
-            self._log.info(backups)
-            self.send_to_client(None,{'type': 'on_get_backups_response',
-                                      'result': 'success',
-                                      'backups': backups
-                                      })
-        except:
-            self.send_to_client(None,{'type':'on_get_backups_response',
-                                      'result': 'failure'})
-        return 
+        if "127.0.0.1" == socket_handler.request.remote_ip:
+            try:
+                self._log.info('ws.get_backups invoked.') 
+                backups = [json.dumps(x,cls=BackupJSONEncoder) for x in Backup.get_backups(BackupTool.get_backup_path())]
+                self.send_to_client(None,{'type': 'on_get_backups_response',
+                                          'result': 'success',
+                                          'backups': backups
+                                          })
+            except:
+                self.send_to_client(None,{'type':'on_get_backups_response',
+                                          'result': 'failure'})
+ 
 
     def on_find_products_by_store(self, results):
 
