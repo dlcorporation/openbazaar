@@ -10,7 +10,6 @@ import string
 import time
 import urllib
 from pybitcointools import *
-from urlparse import urlparse
 
 
 class Orders(object):
