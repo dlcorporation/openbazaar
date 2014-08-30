@@ -80,8 +80,6 @@ class Obdb():
                 else:
                   value = str(value).replace("'", "''");
 
-
-
                 if first:
                     set_part = "%s = '%s'" % (key, value)
                     first = False
