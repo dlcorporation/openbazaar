@@ -352,17 +352,17 @@
         <h4>Backup Management</h4>
 
         <div class="form-group">
-			<span class="col-xs-7"></span><button id="createBackupButton" class="btn btn-info col-sm-5" data-ng-click="createBackup()">Create New Backup</button>
-        </div>
-
-        <div class="form-group">
-			<span class="col-xs-7"></span><button id="listBackupsButton" class="btn btn-info col-sm-5" data-ng-click="getBackups()">List Backups</button>
+			<span class="col-xs-7"></span><button id="createBackupButton" class="btn btn-info col-sm-5" data-ng-click="createBackup(); getBackups();">Create New Backup</button>
         </div>
 
         <div style="margin:20px 0">
-	        <h4>Restore Previous Backup</h4>
-	        <div id="previous-backups-container">
-	        	<div ng-controller="Settings" ng-repeat="backup in Settings.backups"><a class="col-sm-8" href="/html/backups/{{backup.file_name}}">{{backup.file_name}}</a> <a href="#" data-ng-click="restoreBackup('{{backup.file_name}}')">Restore</a> &nbsp;&nbsp; <a href="#" data-ng-click="deleteBackup('{{backup.file_name}}')">Delete</a></div>
+	        <h4>Previous Backups</h4>
+
+	        <div id="previous-backups-container"
+	             data-ng-model="backups"
+	             data-ng-repeat="backup in backups">
+	        	<div ng-hide="!backups.length"><a class="col-sm-8" href="/html/backups/{{backup.file_name}}">{{backup.file_name}}</a> &nbsp;&nbsp; <!-- <a href="#" data-ng-click="deleteBackup('{{backup.file_name}}')">Delete</a> --></div>
+	        	<div ng-hide="backups.length">No backup</div>
 	        </div>
         </div>
     </form>    
