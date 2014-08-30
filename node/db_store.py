@@ -25,7 +25,7 @@ class Obdb():
         """
         self.con = sqlite.connect(self.db_path, detect_types=sqlite.PARSE_DECLTYPES)
         sqlite.register_adapter(bool, int)
-        sqlite.register_converter("BOOLEAN", lambda v: bool(int(v)))
+        sqlite.register_converter("bool", lambda v: bool(int(v)))
         self.con.row_factory = self._dictFactory
 
         # Use PRAGMA key to encrypt / decrypt database.
