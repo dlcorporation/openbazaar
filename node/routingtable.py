@@ -231,10 +231,10 @@ class TreeRoutingTable(RoutingTable):
         @type key: str
         @param count: the amount of contacts to return
         @type count: int
-        @param _rpcNodeID: Used during RPC, this is be the sender's Node ID
+        @param nodeID: Used during RPC, this is be the sender's Node ID
                            Whatever ID is passed in the paramater will get
                            excluded from the list of returned contacts.
-        @type _rpcNodeID: str
+        @type nodeID: str
 
         @return: A list of node contacts
                  (C{kademlia.contact.Contact instances})
@@ -262,7 +262,7 @@ class TreeRoutingTable(RoutingTable):
                 bucket = self._buckets[bucketIndex - i]
                 closestNodes.extend(
                     bucket.getContacts(
-                        constants.k - len(closestNodes), _rpcNodeID
+                        constants.k - len(closestNodes), nodeID
                     )
                 )
                 canGoLower = bucketIndex - (i + 1) >= 0
@@ -270,7 +270,7 @@ class TreeRoutingTable(RoutingTable):
                 bucket = self._buckets[bucketIndex + i]
                 closestNodes.extend(
                     bucket.getContacts(
-                        constants.k - len(closestNodes), _rpcNodeID
+                        constants.k - len(closestNodes), nodeID
                     )
                 )
                 canGoHigher = bucketIndex + (i + 1) < len(self._buckets)
@@ -360,8 +360,8 @@ class TreeRoutingTable(RoutingTable):
         @return: The index of the k-bucket responsible for the specified key
         @rtype: int
         """
-        #print key
-        #print obelisk.DecodeBase58Check(key)
+        # print key
+        # print obelisk.DecodeBase58Check(key)
         valKey = long(key, 16)
 
         i = 0
@@ -537,13 +537,13 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
 
         if contact:
             self._buckets[bucketIndex].removeContact(contactID)
-                # Replace this stale contact with one from our replacement
-                # cache, if we have any
-                # if self._replacementCache.has_key(bucketIndex):
-                #     if len(self._replacementCache[bucketIndex]) > 0:
-                #         self._buckets[bucketIndex].addContact(
-                #             self._replacementCache[bucketIndex].pop()
-                #         )
+            # Replace this stale contact with one from our replacement
+            # cache, if we have any
+            # if self._replacementCache.has_key(bucketIndex):
+            #     if len(self._replacementCache[bucketIndex]) > 0:
+            #         self._buckets[bucketIndex].addContact(
+            #             self._replacementCache[bucketIndex].pop()
+            #         )
 
             self._log.debug(
                 'Contacts: %s' % self._buckets[bucketIndex]._contacts

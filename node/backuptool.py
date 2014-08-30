@@ -10,6 +10,7 @@ import tarfile
 import time
 import os
 
+
 class BackupTool:
     """
     Simple backup utility.
@@ -37,7 +38,7 @@ class BackupTool:
         try:
             os.makedirs(backupFolderPath)
         except:
-            #folder might already exist, no biggie
+            # folder might already exist, no biggie
             pass
 
         try:
@@ -47,7 +48,7 @@ class BackupTool:
             tar.add(db_folder, os.path.basename(db_folder))
             tar.add(msig_folder, os.path.basename(msig_folder))
             tar.close()
-        except Exception, e:
+        except Exception as e:
             if onErrorCallback is not None:
                 onErrorCallback(e)
                 return
@@ -67,7 +68,9 @@ if __name__ == '__main__':
     def onError(errorMessage):
         print "Backup failed!", errorMessage
 
-    BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar",
-                      "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
-                       onBackUpDone,
-                       onError)
+    BackupTool.backup(
+        "/Users/gubatron/workspace.frostwire/OpenBazaar",
+        "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
+        onBackUpDone,
+        onError
+    )

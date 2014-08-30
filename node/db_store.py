@@ -10,6 +10,7 @@
 import logging
 from pysqlcipher import dbapi2 as sqlite
 
+
 class Obdb():
     """ Interface for db storage. Serves as segregation of the persistence layer
     and the application logic
@@ -29,13 +30,13 @@ class Obdb():
 
         # Use PRAGMA key to encrypt / decrypt database.
         cur = self.con.cursor()
-        cur.execute("PRAGMA key = 'passphrase';") # TODO: Get passphrase from user.
+        cur.execute("PRAGMA key = 'passphrase';")
 
     def _disconnectFromDb(self):
         """ Close the db connection
         """
         if self.con:
-           self.con.close()
+            self.con.close()
         self.con = False
 
     def _dictFactory(self, cursor, row):
@@ -43,7 +44,7 @@ class Obdb():
         """
         d = {}
         for idx, col in enumerate(cursor.description):
-            if row[idx] == None:
+            if row[idx] is None:
                 d[col[0]] = ""
             else:
                 d[col[0]] = row[idx]
@@ -60,7 +61,6 @@ class Obdb():
             self.insertEntry(table, data_dict)
         return self.selectEntries(table, where_clause)[0]
 
-
     def updateEntries(self, table, where_dict, set_dict, operator="AND"):
         """ A wrapper for the SQL UPDATE operation
         @param table: The table to search to
@@ -73,12 +73,12 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in set_dict.iteritems():
-                key = str(key).replace("'", "''");
+                key = str(key).replace("'", "''")
 
                 if type(value) == bool:
-                  value = 1 if value else 0
+                    value = bool(value)
                 else:
-                  value = str(value).replace("'", "''");
+                    value = str(value).replace("'", "''")
 
                 if first:
                     set_part = "%s = '%s'" % (key, value)
@@ -87,8 +87,8 @@ class Obdb():
                     set_part = set_part + ", %s = '%s'" % (key, value)
             first = True
             for key, value in where_dict.iteritems():
-                key = str(key).replace("'", "''");
-                value = str(value).replace("'", "''");
+                key = str(key).replace("'", "''")
+                value = str(value).replace("'", "''")
                 if first:
                     where_part = "%s = '%s'" % (key, value)
                     first = False
@@ -110,12 +110,12 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in update_dict.iteritems():
-                key = str(key).replace("'", "''");
+                key = str(key).replace("'", "''")
 
                 if type(value) == bool:
-                  value = 1 if value else 0
+                    value = bool(value)
                 else:
-                  value = str(value).replace("'", "''");
+                    value = str(value).replace("'", "''")
 
                 if first:
                     updatefield_part = "%s" % (key)
@@ -128,7 +128,7 @@ class Obdb():
                     % (table, updatefield_part, setfield_part)
             cur.execute(query)
             lastrowid = cur.lastrowid
-            self._log.debug("query: %s "% query)
+            self._log.debug("query: %s " % query)
         self._disconnectFromDb()
         if lastrowid:
             return lastrowid
@@ -143,13 +143,11 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
 
-
-            if limit != None and limit_offset is None:
+            if limit is not None and limit_offset is None:
                 limit_clause = "LIMIT %s" % limit
-            elif limit != None and limit_offset is not None:
-                  limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
+            elif limit is not None and limit_offset is not None:
+                limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
             else:
                 limit_clause = ""
 
@@ -162,7 +160,7 @@ class Obdb():
                     % (columns, table, where_clause, order_field, order, limit_clause)
 
             print query
-            self._log.debug("query: %s "% query)
+            self._log.debug("query: %s " % query)
             cur.execute(query)
             rows = cur.fetchall()
         self._disconnectFromDb()
@@ -182,8 +180,8 @@ class Obdb():
             cur = self.con.cursor()
             first = True
             for key, value in where_dict.iteritems():
-                key = str(key).replace("'", "''");
-                value = str(value).replace("'", "''");
+                key = str(key).replace("'", "''")
+                value = str(value).replace("'", "''")
                 if first:
                     where_part = "%s = '%s'" % (key, value)
                     first = False
@@ -199,7 +197,6 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
 
             query = "SELECT count(*) as count FROM %s WHERE %s" \
                     % (table, where_clause)
@@ -207,6 +204,5 @@ class Obdb():
             cur.execute(query)
             rows = cur.fetchall()
         self._disconnectFromDb()
-
 
         return rows[0]['count']

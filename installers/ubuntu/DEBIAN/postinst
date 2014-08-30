@@ -1,6 +1,25 @@
 #!/bin/bash
 set -e
-echo "[openbazaar] Installing openbazaar python dependencies..."
-cd /usr/local/openbazaar
+echo "[openbazaar] Installing OpenBazaar python dependencies..."
+pushd /usr/local/openbazaar
 sudo pip install -r requirements.txt
+
+pushd pysqlcipher
+sudo python setup.py install
+popd
+popd
+
+sudo chmod -R 775 /usr/local/openbazaar
+sudo chown -R $SUDO_USER:$SUDO_USER /usr/local/openbazaar
+
+echo
+echo
+echo
+echo
 echo "[openbazaar] Installation finished."
+echo "[openbazaar] Now type 'openbazaar start' to start OpenBazaar"
+echo "[openbazaar] then open 'http://localhost:8888' with your favorite web browser"
+echo
+echo
+echo
+echo

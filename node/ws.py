@@ -1,4 +1,3 @@
-from multisig import Multisig
 import threading
 import json
 import random
@@ -11,7 +10,6 @@ import os
 import obelisk
 import pybitcointools
 from pybitcointools import *
-import arithmetic
 
 import tornado.websocket
 from zmq.eventloop import ioloop
@@ -78,7 +76,7 @@ class ProtocolHandler:
 
         self._timeouts = []
 
-        #unused for now, wipe it if you want later.
+        # unused for now, wipe it if you want later.
         self.loop = loop_instance
 
         self._log = logging.getLogger(
@@ -161,7 +159,7 @@ class ProtocolHandler:
     def client_add_trusted_notary(self, socket_handler, msg):
         self._log.info('Adding trusted notary %s' % msg)
         self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
-        #self.send_to_client(None, {"type": "load_page"})
+        # self.send_to_client(None, {"type": "load_page"})
 
     def client_remove_trusted_notary(self, socket_handler, msg):
         self._log.info('Removing trusted notary %s' % msg)
@@ -311,10 +309,10 @@ class ProtocolHandler:
 
     def client_import_raw_contract(self, socket_handler, contract):
         self._log.info(
-            "Importing New Contract "\
+            "Importing New Contract "
             "(NOT IMPLEMENTED! TODO: Market.import_contract(contract)"
         )
-        #self._market.import_contract(contract)
+        # self._market.import_contract(contract)
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
@@ -416,7 +414,7 @@ class ProtocolHandler:
             def cb(ec, history, order):
 
                 # Debug
-                #self._log.info('%s %s' % (ec, history))
+                # self._log.info('%s %s' % (ec, history))
 
                 settings = self._market.get_settings()
                 private_key = settings.get('privkey')
@@ -434,11 +432,9 @@ class ProtocolHandler:
                 inputs = []
                 for row in unspent:
                     assert len(row) == 4
-                    inputs.append(str(row[0].encode('hex'))+":"+str(row[1]))
+                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
                     value = row[3]
                     total_amount += value
-
-
 
                 # Constrain fee so we don't get negative amount to send
                 fee = min(total_amount, 10000)
@@ -448,7 +444,7 @@ class ProtocolHandler:
                 print payment_output
                 print 'PAYMENT OUTPUT', "16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt:%s" % send_amount
                 print 'inputs', inputs
-                tx = mktx(inputs, [str(payment_output)+":"+str(send_amount)])
+                tx = mktx(inputs, [str(payment_output) + ":" + str(send_amount)])
                 print 'TRANSACTION: %s' % tx
 
                 signatures = []
@@ -459,28 +455,20 @@ class ProtocolHandler:
 
                 print signatures
 
-
-
-
                 self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx, script, signatures, order.get('merchant'))
-
-
-
 
             def get_history():
                 client.fetch_history(multi_address, lambda ec, history, order=order: cb(ec, history, order))
 
-
-
             reactor.callFromThread(get_history)
 
-        except Exception, e:
+        except Exception as e:
             self._log.error('%s' % e)
 
     def on_release_funds_tx(self, msg):
         self._log.info('Receiving signed tx from buyer')
 
-        buyer_order_id = str(msg['senderGUID'])+'-'+str(msg['buyer_order_id'])
+        buyer_order_id = str(msg['senderGUID']) + '-' + str(msg['buyer_order_id'])
         order = self._market.orders.get_order(buyer_order_id, by_buyer_id=True)
         contract = order['signed_contract_body']
 
@@ -521,24 +509,14 @@ class ProtocolHandler:
                 'tcp://obelisk2.airbitz.co:9091'
             )
 
-            seller = offer_data_json['Seller']
-            buyer = bid_data_json['Buyer']
-            notary = notary_data_json['Notary']
-
-            pubkeys = [
-                seller['seller_BTC_uncompressed_pubkey'],
-                buyer['buyer_BTC_uncompressed_pubkey'],
-                notary['notary_BTC_uncompressed_pubkey']
-            ]
-
             script = msg['script']
             tx = msg['tx']
             multi_addr = scriptaddr(script)
 
             def cb(ec, history, order):
 
-               # Debug
-                #self._log.info('%s %s' % (ec, history))
+                # Debug
+                # self._log.info('%s %s' % (ec, history))
 
                 if ec is not None:
                     self._log.error("Error fetching history: %s" % ec)
@@ -551,7 +529,7 @@ class ProtocolHandler:
                 inputs = []
                 for row in unspent:
                     assert len(row) == 4
-                    inputs.append(str(row[0].encode('hex'))+":"+str(row[1]))
+                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
 
                 seller_signatures = []
                 print 'private key ', self._transport.settings['privkey']
@@ -570,9 +548,8 @@ class ProtocolHandler:
 
             reactor.callFromThread(get_history)
 
-        except Exception, e:
+        except Exception as e:
             self._log.error('%s' % e)
-
 
     def client_generate_secret(self, socket_handler, msg):
         self._transport._generate_new_keypair()
@@ -597,10 +574,10 @@ class ProtocolHandler:
         )
         # self._log.info('Result: %s' % result)
 
-        #response = self._market.lookup(msg)
-        #if response:
-        #    self._log.info(response)
-        #self.send_to_client(*response)
+        # response = self._market.lookup(msg)
+        # if response:
+        #     self._log.info(response)
+        # self.send_to_client(*response)
 
     def client_query_network_for_products(self, socket_handler, msg):
 
@@ -644,7 +621,7 @@ class ProtocolHandler:
                                  'result': 'failure',
                                  'detail': error.strerror})
 
-        #TODO: Make backup path configurable on server settings before run.sh
+        # TODO: Make backup path configurable on server settings before run.sh
         OB_PATH = os.path.realpath(os.path.abspath(__file__))[:os.path.realpath(os.path.abspath(__file__)).find('/node')]
         BACKUP_PATH = OB_PATH + os.sep + "html" + os.sep + 'backups'
         BackupTool.backup(OB_PATH,
@@ -698,15 +675,15 @@ class ProtocolHandler:
 
         if len(results):
             if 'listings' in results:
-            # data = results['data']
-            # contracts = data['contracts']
-            # signature = results['signature']
-            # self._log.info('Signature: %s' % signature)
+                # data = results['data']
+                # contracts = data['contracts']
+                # signature = results['signature']
+                # self._log.info('Signature: %s' % signature)
 
-            # TODO: Validate signature of listings matches data
-            # self._transport._myself.
+                # TODO: Validate signature of listings matches data
+                # self._transport._myself.
 
-            # Go get listing metadata and then send it to the GUI
+                # Go get listing metadata and then send it to the GUI
                 for contract in results['listings']:
                     self._transport._dht.iterativeFindValue(
                         contract,
@@ -982,11 +959,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             # self._log.info('Response: %s' % response)
 
             self.write_message(json.dumps(response))
-            #try:
-            #    self.write_message(json.dumps(response))
-            #except tornado.websocket.WebSocketClosedError:
-            #    logging.warning("Dropping response to closed socket: %s",
-            #       response, exc_info=True)
+            # try:
+            #     self.write_message(json.dumps(response))
+            # except tornado.websocket.WebSocketClosedError:
+            #     logging.warning("Dropping response to closed socket: %s",
+            #        response, exc_info=True)
 
     def queue_response(self, response):
         def send_response(*args):

@@ -32,7 +32,7 @@ def main(argv):
                 os.system(COMMANDS[command])
             else:
                 usage()
-        except Exception, e:
+        except Exception:
             usage()
     else:
         usage()

@@ -257,7 +257,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
                 except TypeError:
                     # ...or simply call it if that fails
                     result = func(*args)
-            except Exception, e:
+            except Exception as e:
                 df.errback(failure.Failure(e))
             else:
                 df.callback(result)
@@ -302,7 +302,7 @@ class KademliaProtocol(protocol.DatagramProtocol):
             try:
                 if key > time.time():
                     self._callLaterList[key].cancel()
-            except Exception, e:
+            except Exception as e:
                 print e
             del self._callLaterList[key]
             # TODO: test: do we really need the reactor.iterate() call?

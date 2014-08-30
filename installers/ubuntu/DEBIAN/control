@@ -2,13 +2,13 @@ Package: openbazaar
 Version: 0.1.0
 Section: Networking
 Priority: optional
-Architecture: all
+Architecture: amd64
 Essential: no
-Depends: python-pip, python-dev, g++, libjpeg-dev, zlib1g-dev, sqlite3, openssl
+Depends: python-pip, python-dev, g++, libjpeg-dev, zlib1g-dev, sqlite3, openssl, build-essential, python-zmq, tor, privoxy, rng-tools
 Pre-Depends:
 Recommends:
 Suggests:
-Installed-Size: 250
+Installed-Size: 24600
 Maintainer: Gubatron [gubatron@openbazaar.org]
 Conflicts:
 Replaces: openbazaar

@@ -6,4 +6,4 @@ test:
 	nosetests
 
 style:
-	find . -iname "*.py"|xargs flake8 --select=W291,W601,E231,E901 --exclude=*pybitmessage*
+	find . -iname "*.py"|xargs flake8 --ignore=E501,E127,F811,F821,F403 --exclude=*pybitmessage*,*pysqlcipher*
