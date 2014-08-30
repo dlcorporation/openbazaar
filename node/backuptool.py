@@ -110,7 +110,8 @@ class Backup(json.JSONEncoder):
         if backups_folder_path is not None and os.path.isdir(backups_folder_path):
             if backups_folder_path.endswith(os.sep):
                 backups_folder_path = backups_folder_path[:-1] #trim trailing '/'
-            result = [Backup.get_backup(backups_folder_path+os.sep+x) for x in os.listdir(backups_folder_path)]
+            result = reversed([Backup.get_backup(backups_folder_path+os.sep+x) for x in os.listdir(backups_folder_path)])
+        
         return result
 
     @staticmethod
