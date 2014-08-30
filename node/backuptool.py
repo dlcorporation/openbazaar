@@ -68,7 +68,9 @@ if __name__ == '__main__':
     def onError(errorMessage):
         print "Backup failed!", errorMessage
 
-    BackupTool.backup("/Users/gubatron/workspace.frostwire/OpenBazaar",
-                      "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
-                       onBackUpDone,
-                       onError)
+    BackupTool.backup(
+        "/Users/gubatron/workspace.frostwire/OpenBazaar",
+        "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
+        onBackUpDone,
+        onError
+    )

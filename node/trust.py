@@ -30,16 +30,6 @@ def burnaddr_from_guid(guid_hex):
 
     guid_hex = list(guid_hex)
 
-    # change the address prefix to make it obvious it is a proof-of-burn address
-    # we're still left with 128-bits of entropy to ensure brute-force-resistance
-    if TESTNET:
-        # the '6f' prefix is imperative to distinguish a testnet address
-        OPENBAZAAR_PREFIX = '5b19e0f541c4476'
-    else:
-        # the '00' prefix is imperative to distinguish a mainnet address
-        # prefix of b58decode('1openbazaarxxxxxxxxxxxxxxxxxxxxxx')
-        OPENBAZAAR_PREFIX = '08dae9651b00eeab'
-
     if guid_hex[PROOF_OF_BURN_ADDR_PERTURBATION] == '0':
         guid_hex[PROOF_OF_BURN_ADDR_PERTURBATION] = '1'
     else:

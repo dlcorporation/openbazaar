@@ -511,16 +511,6 @@ class ProtocolHandler:
                 'tcp://obelisk2.airbitz.co:9091'
             )
 
-            seller = offer_data_json['Seller']
-            buyer = bid_data_json['Buyer']
-            notary = notary_data_json['Notary']
-
-            pubkeys = [
-                seller['seller_BTC_uncompressed_pubkey'],
-                buyer['buyer_BTC_uncompressed_pubkey'],
-                notary['notary_BTC_uncompressed_pubkey']
-            ]
-
             script = msg['script']
             tx = msg['tx']
             multi_addr = scriptaddr(script)

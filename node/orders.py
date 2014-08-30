@@ -1,5 +1,4 @@
 from multisig import Multisig
-from protocol import order
 import StringIO
 import gnupg
 import hashlib
@@ -77,10 +76,10 @@ class Orders(object):
             index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
 
         if state in (Orders.State.NEED_TO_PAY,
-                               Orders.State.NOTARIZED,
-                               Orders.State.BUYER_PAID,
-                               Orders.State.PAID,
-                               Orders.State.SHIPPED):
+                     Orders.State.NOTARIZED,
+                     Orders.State.BUYER_PAID,
+                     Orders.State.PAID,
+                     Orders.State.SHIPPED):
             offer_data_json = offer_data[0:index_of_seller_signature - 2]
             offer_data_json = json.loads(offer_data_json)
         elif state in (Orders.State.WAITING_FOR_PAYMENT):
@@ -641,8 +640,8 @@ class Orders(object):
 
         # Generate multi-sig address
         pubkeys = [offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
-                                      bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
-                                      notary_data_json['Notary']['notary_BTC_uncompressed_pubkey']]
+                   bid_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
+                   notary_data_json['Notary']['notary_BTC_uncompressed_pubkey']]
         script = mk_multisig_script(pubkeys, 2, 3)
         print script
         multisig_address = scriptaddr(script)

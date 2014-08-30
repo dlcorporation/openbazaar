@@ -143,7 +143,6 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
 
             if limit is not None and limit_offset is None:
                 limit_clause = "LIMIT %s" % limit
@@ -198,7 +197,6 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
 
             query = "SELECT count(*) as count FROM %s WHERE %s" \
                     % (table, where_clause)

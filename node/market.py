@@ -494,8 +494,6 @@ class Market(object):
         self._transport.send(msg, find_guid, callback)
 
     def on_page(self, page):
-        # pubkey = page.get('pubkey')
-        guid = page.get('senderGUID')
         sin = page.get('sin')
         page = page.get('text')
 

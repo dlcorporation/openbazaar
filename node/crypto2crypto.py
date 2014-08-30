@@ -736,8 +736,6 @@ class CryptoTransportLayer(TransportLayer):
                     self._log.debug('Signature: %s' % sig.encode('hex'))
                     self._log.debug('Signed Data: %s' % data)
 
-                    guid = json.loads(data).get('guid')
-
                     # Check signature
                     data_json = json.loads(data)
                     sigCryptor = CryptoTransportLayer.makePubCryptor(data_json['pubkey'])
@@ -770,10 +768,6 @@ class CryptoTransportLayer(TransportLayer):
                 return
 
         if msg.get('type') is not None:
-            msg_type = msg.get('type')
-            msg_uri = msg.get('uri')
-            msg_guid = msg.get('guid')
-
             self._on_message(msg)
         else:
             self._log.error('Received a message with no type')
