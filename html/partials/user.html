@@ -162,7 +162,7 @@
                     <a class="btn btn-primary navbar-btn" data-ng-click="sendOrder(order)" type="submit">Sent</a>
                 </form><!-- Received -->
 
-                <form data-ng-show="order && order.state == 'sent' && order.buyer == myself.pubkey">
+                <form data-ng-show="order && order.state == 'Sent' && order.buyer == myself.pubkey">
                     <a class="btn btn-primary navbar-btn" data-ng-click="receiveOrder(order)" type="submit">Received</a>
                 </form>
             </div>

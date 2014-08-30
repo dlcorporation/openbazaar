@@ -66,6 +66,7 @@ obControllers
              */
             $scope.parse_order = function(msg) {
 
+
                 if ($scope.myOrders.hasOwnProperty(msg.id)) {
                     console.log("Updating order!")
                     $scope.myOrders[msg.id].state = msg.state
@@ -77,6 +78,7 @@ obControllers
                     $scope.myOrders[msg.id].address = msg.address
                     $scope.myOrders[msg.id].buyer = msg.buyer
                     $scope.myOrders[msg.id].merchant = msg.merchant
+                    $scope.myOrders[msg.id].shipping_address = msg.shipping_address
                     $scope.myOrders[msg.id].note_for_merchant = msg.note_for_merchant
                     return;
                 } else {
@@ -117,6 +119,7 @@ obControllers
                 if (msg.order.state == 'Notarized') {
                     $scope.modalOrder.notary = $scope.myself.guid
                 }
+                $scope.modalOrder.shipping_address = JSON.parse($scope.modalOrder.shipping_address)
 
                 if (!$scope.$$phase) {
                     $scope.$apply();
@@ -674,6 +677,7 @@ obControllers
                         'state': 'new',
                         'buyer': $scope.myself.pubkey,
                         'seller': $scope.merchantPubkey,
+                        'sellerGUID': $scope.guid,
                         'listingKey': $scope.key,
                         'orderTotal': $('#totalPrice').html(),
                         'rawContract': rawContract,
