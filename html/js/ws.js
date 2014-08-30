@@ -28,6 +28,10 @@ function Connection(onMessage) {
   var self = this;
 
   this.send = function(command, msg) {
+	 if (msg === undefined) {
+		 msg = {}
+	 }
+	 
      var request = {
         "id": 42,
         "command": command,

@@ -1,6 +1,5 @@
 var app = angular.module('app', ['ui.bootstrap', 'ngRoute', 'obControllers'])
 
-
 app.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
@@ -133,8 +132,6 @@ app.directive("validateOnBlur", [function() {
     };
     return ddo;
 }]);
-
-
 
 function validate_bitcoin_address(address) {
     var result = false;
