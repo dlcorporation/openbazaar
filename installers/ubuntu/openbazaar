@@ -1,0 +1,42 @@
+#!/usr/bin/python
+import sys
+import os
+
+def usage():
+    print """
+
+  openbazaar - A decentralized marketplace for instantly trading with anyone 
+               using Bitcoin.
+
+  Usage: openbazaar <command>
+
+  COMMANDS:
+  start      - Once the server has been started access it 
+               at http://localhost:8888
+
+  stop
+
+  restart
+
+  """
+
+def main(argv):
+    if len(argv) >= 2:
+        COMMANDS = {'start':'/usr/local/openbazaar/run.sh',
+                    'stop':'/usr/local/openbazaar/stop.sh',
+                    'restart':'/usr/local/openbazaar/stop.sh; /usr/local/openbazaar/run.sh'}
+        try:
+            command = argv[1]
+            if command in COMMANDS:
+                os.chdir('/usr/local/openbazaar')
+                os.system(COMMANDS[command])
+            else:
+                usage()
+        except Exception:
+            usage()
+    else:
+        usage()
+
+
+if __name__=='__main__':
+    main(sys.argv)

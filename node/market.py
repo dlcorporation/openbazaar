@@ -20,7 +20,8 @@ import constants
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
-from obelisk import decompress_public_key
+from crypto2crypto import CryptoTransportLayer
+from pybitcointools import *
 
 ioloop.install()
 
@@ -41,7 +42,7 @@ class Market(object):
         self._transport = transport
         self._dht = transport.get_dht()
         self._market_id = transport.get_market_id()
-        self._myself = transport.get_myself()
+        # self._myself = transport.get_myself()
         self._peers = self._dht.getActivePeers()
         self._db = db
         self.orders = Orders(transport, self._market_id, db)
@@ -114,7 +115,7 @@ class Market(object):
     def linebreak_signing_data(self, data):
         json_string = json.dumps(data, indent=0)
         seg_len = 52
-        out_text = string.join(map(lambda x: json_string[x:x+seg_len],
+        out_text = string.join(map(lambda x: json_string[x:x + seg_len],
                                    range(0, len(json_string), seg_len)), "\n")
         return out_text
 
@@ -142,7 +143,7 @@ class Market(object):
 
             self._transport._dht.iterativeStore(self._transport,
                                                 keyword_key,
-                                                json.dumps({'keyword_index_add':key}),
+                                                json.dumps({'keyword_index_add': key}),
                                                 self._transport._guid)
 
     def save_contract(self, msg):
@@ -152,7 +153,7 @@ class Market(object):
         self.settings = self.get_settings()
 
         msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
-        msg['Seller']['seller_BTC_uncompressed_pubkey'] = decompress_public_key(self.settings['pubkey'].decode('hex')).encode('hex')
+        msg['Seller']['seller_BTC_uncompressed_pubkey'] = self.settings['btc_pubkey']
         msg['Seller']['seller_GUID'] = self.settings['guid']
 
         # Process and crop thumbs for images
@@ -220,7 +221,8 @@ class Market(object):
         notaries.append({"guid": guid, "nickname": nickname})
         self.settings['notaries'] = json.dumps(notaries)
 
-        print self.settings
+        if 'btc_pubkey' in self.settings:
+            del self.settings['btc_pubkey']
 
         self._db.updateEntries("settings",
                                {'market_id': self._transport._market_id},
@@ -298,7 +300,7 @@ class Market(object):
         #     hash_value.update('keyword-%s' % keyword)
         #     keyword_key = hash_value.hexdigest()
         #
-        #     self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add':contract_key}), self._transport._guid)
+        #     self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add': contract_key}), self._transport._guid)
 
     def update_listings_index(self):
 
@@ -322,7 +324,7 @@ class Market(object):
         # Sign listing index for validation and tamper resistance
         data_string = str({'guid': self._transport._guid,
                            'contracts': my_contracts})
-        signature = self._myself.sign(data_string).encode('hex')
+        signature = CryptoTransportLayer.makeCryptor(self._transport.settings['secret']).sign(data_string).encode('hex')
 
         value = {'signature': signature,
                  'data': {'guid': self._transport._guid,
@@ -399,9 +401,9 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
-        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id, 
-                                           limit=10, 
-                                           limit_offset=(page*10))
+        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id,
+                                           limit=10,
+                                           limit_offset=(page * 10))
         my_contracts = []
         for contract in contracts:
             try:
@@ -421,7 +423,7 @@ class Market(object):
             except:
                 self._log.error('Problem loading the contract body JSON')
 
-        return {"contracts": my_contracts, "page": page, 
+        return {"contracts": my_contracts, "page": page,
                 "total_contracts": self._db.numEntries("contracts")}
 
     # SETTINGS
@@ -447,13 +449,18 @@ class Market(object):
         # Update nickname
         self._transport._nickname = msg['nickname']
 
+        if 'burnAmount' in msg:
+            del msg['burnAmount']
+        if 'burnAddr' in msg:
+            del msg['burnAddr']
+
         # Update local settings
         self._db.updateEntries("settings", {'market_id': self._transport._market_id}, msg)
 
     def get_settings(self):
 
         self._log.info('Getting settings info for Market %s' % self._transport._market_id)
-        settings = self._db.getOrCreate("settings", "market_id = '%s'" % self._transport._market_id, {"market_id":self._transport._market_id})
+        settings = self._db.getOrCreate("settings", "market_id = '%s'" % self._transport._market_id, {"market_id": self._transport._market_id})
 
         if settings['arbiter'] == 1:
             settings['arbiter'] = True
@@ -462,7 +469,9 @@ class Market(object):
 
         settings['notaries'] = ast.literal_eval(settings['notaries']) if settings['notaries'] != "" else []
         settings['trustedArbiters'] = ast.literal_eval(settings['trustedArbiters']) if settings['trustedArbiters'] != "" else []
-        settings['privkey'] = settings['secret'][8:] if 'secret' in settings else ""
+        settings['privkey'] = settings['privkey'] if 'secret' in settings else ""
+        settings['btc_pubkey'] = privkey_to_pubkey(settings.get('privkey'))
+        settings['secret'] = settings['secret'] if 'secret' in settings else ""
 
         self._log.info('SETTINGS: %s' % settings)
 
@@ -470,7 +479,6 @@ class Market(object):
             return settings
         else:
             return {}
-
 
     # PAGE QUERYING
     def query_page(self, find_guid, callback=lambda msg: None):
@@ -484,10 +492,7 @@ class Market(object):
 
         self._transport.send(msg, find_guid, callback)
 
-
     def on_page(self, page):
-        #pubkey = page.get('pubkey')
-        guid = page.get('senderGUID')
         sin = page.get('sin')
         page = page.get('text')
 
@@ -567,10 +572,11 @@ class Market(object):
                 value[0].encode("hex") if value[0] is not None else value[0]))
         self._log.info("##################################")
 
-    def release_funds_to_merchant(self, buyer_order_id, tx, signature, guid):
-        self._log.debug('Release funds to merchant: %s %s %s %s' % (buyer_order_id, tx, signature, guid))
+    def release_funds_to_merchant(self, buyer_order_id, tx, script, signatures, guid):
+        self._log.debug('Release funds to merchant: %s %s %s %s' % (buyer_order_id, tx, signatures, guid))
         self._transport.send({'type': 'release_funds_tx',
                               'tx': tx,
+                              'script': script,
                               'buyer_order_id': buyer_order_id,
-                              'signature': signature}, guid)
+                              'signatures': signatures}, guid)
         self._log.debug('TX sent to merchant')

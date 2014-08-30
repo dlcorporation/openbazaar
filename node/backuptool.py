@@ -11,6 +11,7 @@ import time
 import os
 import json
 
+
 class BackupTool:
     """
     Simple backup utility.
@@ -38,7 +39,7 @@ class BackupTool:
         try:
             os.makedirs(backupFolderPath)
         except:
-            #folder might already exist, no biggie
+            # folder might already exist, no biggie
             pass
 
         try:
@@ -48,7 +49,7 @@ class BackupTool:
             tar.add(db_folder, os.path.basename(db_folder))
             tar.add(msig_folder, os.path.basename(msig_folder))
             tar.close()
-        except Exception, e:
+        except Exception as e:
             if onErrorCallback is not None:
                 onErrorCallback(e)
                 return
@@ -59,6 +60,7 @@ class BackupTool:
 
     @staticmethod
     def restore(backupTarFilepath):
+        print "BackupTool.restore() NOT IMPLEMENTED"
         pass
 
     @staticmethod
@@ -144,6 +146,7 @@ if __name__ == '__main__':
     def onError(errorMessage):
         print "Backup failed!", errorMessage
 
+
     BackupTool.backup(BackupTool.get_installation_path(), 
                       BackupTool.get_backup_path(),
                       onBackUpDone, 
@@ -151,3 +154,9 @@ if __name__ == '__main__':
     for x in Backup.get_backups(BackupTool.get_backup_path()):
         print json.dumps(x, cls=BackupJSONEncoder)
 
+    BackupTool.backup(
+        "/Users/gubatron/workspace.frostwire/OpenBazaar",
+        "/Users/gubatron/workspace.frostwire/OpenBazaar/html/backups",
+        onBackUpDone,
+        onError
+    )

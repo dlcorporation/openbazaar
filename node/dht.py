@@ -9,6 +9,7 @@ import os
 import routingtable
 import time
 
+
 class DHT(object):
     def __init__(self, transport, market_id, settings, db_connection):
 
@@ -291,6 +292,8 @@ class DHT(object):
                 # Add foundNode to active peers list and routing table
                 if foundNode[2] != self._transport._guid:
                     self._log.debug('Found a tuple %s' % foundNode)
+                    if len(foundNode) == 3:
+                        foundNode.append('')
                     self.add_peer(self._transport, foundNode[1], foundNode[2], foundNode[0], foundNode[3])
 
                 for idx, search in enumerate(self._searches):
@@ -355,7 +358,6 @@ class DHT(object):
                         self._log.info('Shortlist is empty')
                         if search._callback is not None:
                             search._callback(search._shortlist)
-
 
     def _refreshNode(self):
         """ Periodically called to perform k-bucket refreshes and data
@@ -504,7 +506,6 @@ class DHT(object):
         # Find appropriate storage nodes and save key value
         # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
 
-
     def iterativeStore(self, transport, key, value_to_store=None, originalPublisherID=None, age=0):
         """ The Kademlia store operation
 
@@ -597,8 +598,7 @@ class DHT(object):
                     # Not in keyword index anyways
                     return
 
-
-        except Exception, e:
+        except Exception as e:
             self._log.debug('Value is not a JSON array: %s' % e)
 
         now = int(time.time())
@@ -622,7 +622,6 @@ class DHT(object):
                 peer.start_handshake()
 
             peer.send(proto_store(key, value, originalPublisherID, age))
-
 
     def _on_storeValue(self, msg):
 
@@ -894,7 +893,7 @@ class DHTSearch(object):
 
         self._log.debug('Additions: %s' % additions)
         for item in additions:
-            if not item in self._shortlist:
+            if item not in self._shortlist:
                 self._shortlist.append(item)
 
         self._log.debug('Updated short list: %s' % self._shortlist)

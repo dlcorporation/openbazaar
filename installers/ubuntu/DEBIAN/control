@@ -1,0 +1,16 @@
+Package: openbazaar
+Version: 0.1.0
+Section: Networking
+Priority: optional
+Architecture: amd64
+Essential: no
+Depends: python-pip, python-dev, g++, libjpeg-dev, zlib1g-dev, sqlite3, openssl, build-essential, python-zmq, tor, privoxy, rng-tools
+Pre-Depends:
+Recommends:
+Suggests:
+Installed-Size: 24600
+Maintainer: Gubatron [gubatron@openbazaar.org]
+Conflicts:
+Replaces: openbazaar
+Provides: openbazaar
+Description: OpenBazaar is an open source project to create a decentralized network for commerce online (using Bitcoin) that has no fees and cannot be censored.

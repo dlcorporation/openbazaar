@@ -1,17 +1,15 @@
 import json
 import time
-import logging
 
 from tornado.ioloop import IOLoop
 from tornado import gen
 from tornado.websocket import websocket_connect
 
-from node.tornadoloop import MarketApplication,start_node
 from node.db_store import Obdb
 
 
 def ip_address(i):
-    return '127.0.0.%s' % str(i+1)
+    return '127.0.0.%s' % str(i + 1)
 
 
 def nickname(i):
@@ -23,7 +21,7 @@ def get_db_path(i):
 
 
 def node_uri(node_index):
-    return 'tcp://127.0.0.%s:12345' % str(node_index+1)
+    return 'tcp://127.0.0.%s:12345' % str(node_index + 1)
 
 
 def set_store_description(i):

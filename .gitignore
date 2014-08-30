@@ -11,3 +11,6 @@ blockchain
 gpg/random_seed
 *~
 *.log.*
+installers/ubuntu/*.deb
+installers/ubuntu/output/
+/html/backups/

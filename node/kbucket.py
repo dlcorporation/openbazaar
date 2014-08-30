@@ -59,8 +59,8 @@ class KBucket(object):
         self._log.debug('[getContact] %s' % contactID)
         self._log.debug('contacts %s' % self._contacts)
         for contact in self._contacts:
-          if contact._guid == contactID:
-            self._log.debug('[getContact] Found %s' % contact)
+            if contact._guid == contactID:
+                self._log.debug('[getContact] Found %s' % contact)
             return contact
         self._log.debug('[getContact] No Results')
 

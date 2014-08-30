@@ -3,9 +3,10 @@ import logging
 from twisted.internet import reactor
 
 import obelisk
-import pyelliptic as ec
-import urllib2, re, random
-import pybitcointools
+import urllib2
+import re
+import random
+# import pybitcointools
 
 
 # Create new private key:
@@ -46,32 +47,26 @@ class Multisig:
 
     @property
     def script(self):
-        result = str(50 + self.number_required)
+        # return pybitcointools.mk_multisig_script(self.pubkeys, 2, 3)
+        result = chr(80 + self.number_required)
         for pubkey in self.pubkeys:
-            result += str(41) + pubkey
-        result += chr(50 + len(self.pubkeys))
+            result += chr(33) + pubkey
+        result += chr(80 + len(self.pubkeys))
         # checkmultisig
-        result += "ae"
-        print 'redeem', result
+        result += "\xae"
         return result
 
     @property
     def address(self):
-        print 'pubkeys', self.pubkeys
 
-        pubkeys = self.pubkeys
-        for idx, pubkey in enumerate(pubkeys):
-            pubkeys[idx] = pubkey.encode('hex')
+        # script = self.script
+        # print 'multisig-script',script
+        #
+        # address = pybitcointools.scriptaddr(script)
+        # return address
 
-        print 'pubkeys2', pubkeys
-
-        script = pybitcointools.mk_multisig_script(self.pubkeys, 2, 3)
-        address = pybitcointools.scriptaddr(script)
-        print 'script',script
-        return address
-
-        #raw_addr = obelisk.hash_160(self.script)
-        #return obelisk.hash_160_to_bc_address(raw_addr, addrtype=0x05)
+        raw_addr = obelisk.hash_160(self.script)
+        return obelisk.hash_160_to_bc_address(raw_addr, addrtype=0x05)
 
     #
     def create_unsigned_transaction(self, destination, finished_cb):
@@ -126,29 +121,32 @@ class Multisig:
     @staticmethod
     def make_request(*args):
         opener = urllib2.build_opener()
-        opener.addheaders = [('User-agent', 'Mozilla/5.0'+str(random.randrange(1000000)))]
+        opener.addheaders = [('User-agent', 'Mozilla/5.0' + str(random.randrange(1000000)))]
         try:
             return opener.open(*args).read().strip()
-        except Exception,e:
-            try: p = e.read().strip()
-            except: p = e
+        except Exception as e:
+            try:
+                p = e.read().strip()
+            except:
+                p = e
             raise Exception(p)
 
     @staticmethod
     def eligius_pushtx(tx):
         print 'FINAL TRANSACTION: %s' % tx
-        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php','transaction='+tx+'&send=Push')
-        strings = re.findall('string[^"]*"[^"]*"',s)
+        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php', 'transaction=' + tx + '&send=Push')
+        strings = re.findall('string[^"]*"[^"]*"', s)
         for string in strings:
-            quote = re.findall('"[^"]*"',string)[0]
-            if len(quote) >= 5: return quote[1:-1]
+            quote = re.findall('"[^"]*"', string)[0]
+            if len(quote) >= 5:
+                return quote[1:-1]
 
     @staticmethod
     def broadcast(tx):
         raw_tx = tx.serialize().encode("hex")
         Multisig.eligius_pushtx(raw_tx)
-        #gateway_broadcast(raw_tx)
-        #bci_pushtx(raw_tx)
+        # gateway_broadcast(raw_tx)
+        # bci_pushtx(raw_tx)
 
 
 def add_input(tx, prevout):
@@ -174,8 +172,6 @@ def generate_signature_hash(parent_tx, input_index, script_code):
     tx.inputs[input_index].script = script_code
     raw_tx = tx.serialize() + "\x01\x00\x00\x00"
     return obelisk.Hash(raw_tx)
-
-
 
 
 class Escrow:
@@ -276,7 +272,5 @@ def main():
     msig.create_unsigned_transaction("1Fufjpf9RM2aQsGedhSpbSCGRHrmLMJ7yY", finished)
     reactor.run()
 
-
 if __name__ == "__main__":
     main()
-

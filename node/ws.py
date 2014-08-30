@@ -1,4 +1,3 @@
-from multisig import Multisig
 import threading
 import json
 import random
@@ -8,6 +7,8 @@ import protocol
 import pycountry
 import gnupg
 import obelisk
+import pybitcointools
+from pybitcointools import *
 
 import tornado.websocket
 from zmq.eventloop import ioloop
@@ -75,7 +76,7 @@ class ProtocolHandler:
 
         self._timeouts = []
 
-        #unused for now, wipe it if you want later.
+        # unused for now, wipe it if you want later.
         self.loop = loop_instance
 
         self._log = logging.getLogger(
@@ -153,12 +154,12 @@ class ProtocolHandler:
         })
 
     def client_load_page(self, socket_handler, msg):
-        self.send_to_client(None, {"type":"load_page"})
+        self.send_to_client(None, {"type": "load_page"})
 
     def client_add_trusted_notary(self, socket_handler, msg):
         self._log.info('Adding trusted notary %s' % msg)
         self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
-        #self.send_to_client(None, {"type":"load_page"})
+        # self.send_to_client(None, {"type": "load_page"})
 
     def client_remove_trusted_notary(self, socket_handler, msg):
         self._log.info('Removing trusted notary %s' % msg)
@@ -308,10 +309,10 @@ class ProtocolHandler:
 
     def client_import_raw_contract(self, socket_handler, contract):
         self._log.info(
-            "Importing New Contract "\
+            "Importing New Contract "
             "(NOT IMPLEMENTED! TODO: Market.import_contract(contract)"
         )
-        #self._market.import_contract(contract)
+        # self._market.import_contract(contract)
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
@@ -321,6 +322,8 @@ class ProtocolHandler:
     def client_update_settings(self, socket_handler, msg):
         self._log.info("Updating settings: %s" % msg)
         self.send_to_client(None, {"type": "settings", "values": msg})
+        if msg['settings'].get('btc_pubkey'):
+            del msg['settings']['btc_pubkey']
         self._market.save_settings(msg['settings'])
 
     def client_create_contract(self, socket_handler, contract):
@@ -399,23 +402,22 @@ class ProtocolHandler:
             buyer = bid_data_json['Buyer']
             notary = notary_data_json['Notary']
 
-            seller_key = seller['seller_BTC_uncompressed_pubkey']
-            buyer_key = buyer['buyer_BTC_uncompressed_pubkey']
-            notary_key = notary['notary_BTC_uncompressed_pubkey']
-
             pubkeys = [
-                seller_key.decode('hex'),
-                buyer_key.decode('hex'),
-                notary_key.decode('hex')
+                seller['seller_BTC_uncompressed_pubkey'],
+                buyer['buyer_BTC_uncompressed_pubkey'],
+                notary['notary_BTC_uncompressed_pubkey']
             ]
 
-            multisig = Multisig(client, 2, pubkeys)
-
+            script = mk_multisig_script(pubkeys, 2, 3)
+            multi_address = scriptaddr(script)
 
             def cb(ec, history, order):
 
                 # Debug
-                self._log.info('%s %s' % (ec, history))
+                # self._log.info('%s %s' % (ec, history))
+
+                settings = self._market.get_settings()
+                private_key = settings.get('privkey')
 
                 if ec is not None:
                     self._log.error("Error fetching history: %s" % ec)
@@ -424,33 +426,49 @@ class ProtocolHandler:
 
                 # Create unsigned transaction
                 unspent = [row[:4] for row in history if row[4] is None]
-                tx = multisig._build_actual_tx(
-                    unspent, order['payment_address']
-                )
-                self._log.info(tx.serialize().encode("hex"))
 
-                private_key = self._market.private_key()
+                # Send all unspent outputs (everything in the address) minus the fee
+                total_amount = 0
+                inputs = []
+                for row in unspent:
+                    assert len(row) == 4
+                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
+                    value = row[3]
+                    total_amount += value
 
-                signatures = multisig.sign_all_inputs(
-                    tx, private_key.decode('hex')
-                )
-                tx_serialized = tx.serialize().encode("hex")
-                self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx_serialized, signatures, order.get('merchant'))
+                # Constrain fee so we don't get negative amount to send
+                fee = min(total_amount, 10000)
+                send_amount = total_amount - fee
 
-                self._log.debug('Sent tx and signed inputs to merchant')
+                payment_output = order['payment_address']
+                print payment_output
+                print 'PAYMENT OUTPUT', "16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt:%s" % send_amount
+                print 'inputs', inputs
+                tx = mktx(inputs, [str(payment_output) + ":" + str(send_amount)])
+                print 'TRANSACTION: %s' % tx
+
+                signatures = []
+                for x in range(0, len(inputs)):
+                    ms = multisign(tx, x, script, private_key)
+                    print 'buyer sig', ms
+                    signatures.append(ms)
+
+                print signatures
+
+                self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx, script, signatures, order.get('merchant'))
 
             def get_history():
-                client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
+                client.fetch_history(multi_address, lambda ec, history, order=order: cb(ec, history, order))
 
             reactor.callFromThread(get_history)
 
-        except Exception, e:
+        except Exception as e:
             self._log.error('%s' % e)
 
     def on_release_funds_tx(self, msg):
         self._log.info('Receiving signed tx from buyer')
 
-        buyer_order_id = str(msg['senderGUID'])+'-'+str(msg['buyer_order_id'])
+        buyer_order_id = str(msg['senderGUID']) + '-' + str(msg['buyer_order_id'])
         order = self._market.orders.get_order(buyer_order_id, by_buyer_id=True)
         contract = order['signed_contract_body']
 
@@ -491,72 +509,47 @@ class ProtocolHandler:
                 'tcp://obelisk2.airbitz.co:9091'
             )
 
-            seller = offer_data_json['Seller']
-            buyer = bid_data_json['Buyer']
-            notary = notary_data_json['Notary']
-
-            seller_key = seller['seller_BTC_uncompressed_pubkey']
-            buyer_key = buyer['buyer_BTC_uncompressed_pubkey']
-            notary_key = notary['notary_BTC_uncompressed_pubkey']
-
-            pubkeys = [
-                seller_key.decode('hex'),
-                buyer_key.decode('hex'),
-                notary_key.decode('hex')
-            ]
-
-            self._log.info('multisig pubkeys %s' % pubkeys)
-
-            multisig = Multisig(client, 2, pubkeys)
+            script = msg['script']
+            tx = msg['tx']
+            multi_addr = scriptaddr(script)
 
             def cb(ec, history, order):
 
                 # Debug
-                self._log.info('%s %s' % (ec, history))
+                # self._log.info('%s %s' % (ec, history))
 
                 if ec is not None:
                     self._log.error("Error fetching history: %s" % ec)
                     # TODO: Send error message to GUI
                     return
 
-                # Create unsigned transaction
                 unspent = [row[:4] for row in history if row[4] is None]
-                tx = multisig._build_actual_tx(
-                    unspent, order['payment_address']
-                )
-                self._log.info(tx.serialize().encode("hex"))
 
-                private_key = self._market.private_key()
+                # Send all unspent outputs (everything in the address) minus the fee
+                inputs = []
+                for row in unspent:
+                    assert len(row) == 4
+                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
 
-                merchant_sigs = multisig.sign_all_inputs(tx,
-                                                      private_key.decode('hex'))
-                buyer_sigs = msg['signature']
+                seller_signatures = []
+                print 'private key ', self._transport.settings['privkey']
+                for x in range(0, len(inputs)):
+                    ms = multisign(tx, x, script, self._transport.settings['privkey'])
+                    print 'seller sig', ms
+                    seller_signatures.append(ms)
 
-                for i, input in enumerate(tx.inputs):
-                    sigs = (buyer_sigs[i].decode('hex'), merchant_sigs[i].decode('hex'))
-                    script = "\x00"
-                    for sig in sigs:
-                        script += chr(len(sig)) + sig
-                    script += "\x4c"
-                    assert len(multisig.script) < 255
-                    script += chr(len(multisig.script)) + multisig.script
-                    print "Script:", script.encode("hex")
-                    tx.inputs[i].script = script
+                tx2 = pybitcointools.apply_multisignatures(tx, 0, script, seller_signatures[0], msg['signatures'][0])
 
-                print tx
-                print tx.serialize().encode("hex")
-
-                Multisig.broadcast(tx)
-
+                print 'FINAL SCRIPT: %s' % tx2
+                print 'Sent', pybitcointools.eligius_pushtx(tx2)
 
             def get_history():
-                client.fetch_history(multisig.address, lambda ec, history, order=order: cb(ec, history, order))
+                client.fetch_history(multi_addr, lambda ec, history, order=order: cb(ec, history, order))
 
             reactor.callFromThread(get_history)
 
-        except Exception, e:
+        except Exception as e:
             self._log.error('%s' % e)
-
 
     def client_generate_secret(self, socket_handler, msg):
         self._transport._generate_new_keypair()
@@ -581,10 +574,10 @@ class ProtocolHandler:
         )
         # self._log.info('Result: %s' % result)
 
-        #response = self._market.lookup(msg)
-        #if response:
-        #    self._log.info(response)
-        #self.send_to_client(*response)
+        # response = self._market.lookup(msg)
+        # if response:
+        #     self._log.info(response)
+        # self.send_to_client(*response)
 
     def client_query_network_for_products(self, socket_handler, msg):
 
@@ -611,19 +604,19 @@ class ProtocolHandler:
         they might have to be somewhere outside the installation path
         as some OSes might not allow the modification of the installation folder
         e.g. MacOS won't allow for changes if the .app has been signed.
-        and all files created by the app, have to be outside, usually at 
+        and all files created by the app, have to be outside, usually at
         ~/Library/Application Support/OpenBazaar/backups ??
         """
         def on_backup_done(backupPath):
             self._log.info('Backup sucessfully created at ' + backupPath)
-            self.send_to_client(None, 
+            self.send_to_client(None,
                                 {'type': 'create_backup_result',
                                  'result': 'success',
                                  'detail': backupPath})
 
         def on_backup_error(error):
             self._log.info('Backup error:' + str(error.strerror))
-            self.send_to_client(None, 
+            self.send_to_client(None,
                                 {'type': 'create_backup_result',
                                  'result': 'failure',
                                  'detail': error.strerror})
@@ -694,15 +687,15 @@ class ProtocolHandler:
 
         if len(results):
             if 'listings' in results:
-            # data = results['data']
-            # contracts = data['contracts']
-            # signature = results['signature']
-            # self._log.info('Signature: %s' % signature)
+                # data = results['data']
+                # contracts = data['contracts']
+                # signature = results['signature']
+                # self._log.info('Signature: %s' % signature)
 
-            # TODO: Validate signature of listings matches data
-            # self._transport._myself.
+                # TODO: Validate signature of listings matches data
+                # self._transport._myself.
 
-            # Go get listing metadata and then send it to the GUI
+                # Go get listing metadata and then send it to the GUI
                 for contract in results['listings']:
                     self._transport._dht.iterativeFindValue(
                         contract,
@@ -978,11 +971,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             # self._log.info('Response: %s' % response)
 
             self.write_message(json.dumps(response))
-            #try:
-            #    self.write_message(json.dumps(response))
-            #except tornado.websocket.WebSocketClosedError:
-            #    logging.warning("Dropping response to closed socket: %s",
-            #       response, exc_info=True)
+            # try:
+            #     self.write_message(json.dumps(response))
+            # except tornado.websocket.WebSocketClosedError:
+            #     logging.warning("Dropping response to closed socket: %s",
+            #        response, exc_info=True)
 
     def queue_response(self, response):
         def send_response(*args):
