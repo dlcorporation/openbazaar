@@ -599,7 +599,7 @@ class ProtocolHandler:
         )
 
     def client_create_backup(self, socket_handler, msg):
-        """Currently hardcoded for testing: need to find out Installation path.
+        """Currently hard-coded for testing: need to find out Installation path.
         Talk to team about right location for backup files
         they might have to be somewhere outside the installation path
         as some OSes might not allow the modification of the installation folder
@@ -608,7 +608,7 @@ class ProtocolHandler:
         ~/Library/Application Support/OpenBazaar/backups ??
         """
         def on_backup_done(backupPath):
-            self._log.info('Backup sucessfully created at ' + backupPath)
+            self._log.info('Backup successfully created at ' + backupPath)
             self.send_to_client(None,
                                 {'type': 'create_backup_result',
                                  'result': 'success',
@@ -629,16 +629,16 @@ class ProtocolHandler:
     def get_backups(self, socket_handler, msg=None):
         if "127.0.0.1" == socket_handler.request.remote_ip:
             try:
-                self._log.info('ws.get_backups invoked.') 
-                backups = [json.dumps(x,cls=BackupJSONEncoder) for x in Backup.get_backups(BackupTool.get_backup_path())]
-                self.send_to_client(None,{'type': 'on_get_backups_response',
-                                          'result': 'success',
-                                          'backups': backups
-                                          })
+                backups = [json.dumps(x, cls=BackupJSONEncoder)
+                           for x in
+                           Backup.get_backups(BackupTool.get_backup_path())]
+                self.send_to_client(None, {'type': 'on_get_backups_response',
+                                           'result': 'success',
+                                           'backups': backups
+                                           })
             except:
-                self.send_to_client(None,{'type':'on_get_backups_response',
-                                          'result': 'failure'})
- 
+                self.send_to_client(None, {'type': 'on_get_backups_response',
+                                           'result': 'failure'})
 
     def on_find_products_by_store(self, results):
 
