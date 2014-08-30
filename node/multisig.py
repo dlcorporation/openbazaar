@@ -3,11 +3,10 @@ import logging
 from twisted.internet import reactor
 
 import obelisk
-import pyelliptic as ec
 import urllib2
 import re
 import random
-import pybitcointools
+# import pybitcointools
 
 
 # Create new private key:

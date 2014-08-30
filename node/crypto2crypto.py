@@ -1,5 +1,3 @@
-# coding=utf-8
-from IPy import IP
 from dht import DHT
 from p2p import PeerConnection, TransportLayer
 from pprint import pformat

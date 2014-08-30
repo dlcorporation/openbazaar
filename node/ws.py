@@ -1,4 +1,3 @@
-from multisig import Multisig
 import threading
 import json
 import random
@@ -11,7 +10,6 @@ import os
 import obelisk
 import pybitcointools
 from pybitcointools import *
-import arithmetic
 
 import tornado.websocket
 from zmq.eventloop import ioloop

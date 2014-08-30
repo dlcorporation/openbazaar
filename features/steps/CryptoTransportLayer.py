@@ -5,7 +5,6 @@ from node.crypto2crypto import *
 from node.db_store import Obdb
 from util.setup_db import *
 from test_util import ip_address, nickname, get_db_path
-import logging
 
 port = 12345
 

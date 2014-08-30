@@ -11,8 +11,6 @@ import UserDict
 import logging
 import ast
 
-from db_store import Obdb
-
 
 class DataStore(UserDict.DictMixin):
     """ Interface for classes implementing physical storage (for data

@@ -9,8 +9,6 @@ import random
 import string
 import time
 import urllib
-import obelisk
-from obelisk import decompress_public_key
 from pybitcointools import *
 
 

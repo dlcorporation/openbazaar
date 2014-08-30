@@ -20,7 +20,6 @@ import constants
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
-from obelisk import decompress_public_key
 from crypto2crypto import CryptoTransportLayer
 from pybitcointools import *
 

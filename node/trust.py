@@ -1,6 +1,5 @@
 import obelisk
 
-import sys
 from twisted.internet import reactor
 
 
