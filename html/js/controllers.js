@@ -1040,6 +1040,7 @@ obControllers
                     	$('#backup-form').show()
                     	$('#backup-form').siblings().hide()
                     	$('#settings-backup').addClass('active');
+                    	$scope.getBackups();
                     	break;
                     default:
                         $('#profile-form').show();
@@ -1049,7 +1050,6 @@ obControllers
                 }
 
             }
-
 
             $scope.addNotary = function(notary) {
 
@@ -1136,25 +1136,26 @@ obControllers
             }
             
             $scope.getBackups = function() {
-            	console.log('Settings.getBackups')
+            	//console.log("executing getBackups()!")
             	socket.send('get_backups')
             }
             
             $scope.onGetBackupsResponse = function (msg) {
+            	//console.log("executing onGetBackupsResponse!")
         		if (msg.result === 'success') {
         			//update UI with list of backups. (could be empty list)
         			if (msg.backups) {
+        				$scope.backups = []
         				//convert list of json objects into JS objects.
         				for (i=0; i < msg.backups.length; i++) {
-        					msg.backups[i] = $.parseJSON(msg.backups[i])
-        					console.log(msg.backups[i]);
+        					$scope.backups[i] = $.parseJSON(msg.backups[i]);
         				}
-        				
-        				$scope.backups = msg.backups;
-        				$scope.$apply();
+        				if (!$scope.$$phase) {
+                            $scope.$apply();
+                        }
         			}
-        			
         		} else if (msg.result === 'failure') {
+        			//console.log('onGetBackupsResponse: failure')
         			Notifier.error(msg.detail, 'Could not fetch list of backups, check your backup folder')
         		}
             }
