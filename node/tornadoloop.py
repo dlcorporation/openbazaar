@@ -146,7 +146,7 @@ def start_node(my_market_ip,
 
     while error and http_port < 8988:
         try:
-            application.listen(http_port)
+            application.listen(http_port, '127.0.0.1')
             error = False
         except:
             http_port += 1
