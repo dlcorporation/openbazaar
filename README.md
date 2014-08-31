@@ -40,7 +40,24 @@ You can financially support the project by either:
 - Transactions are **not possible** for the moment.
 
 ## Build Instructions
-Read the [build instructions wiki](https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions).
+
+For Linux and OSX users, run these commands:
+
+```
+git clone https://github.com/OpenBazaar/OpenBazaar.git
+
+cd OpenBazaar
+
+./configure.sh
+```
+
+After running the configure.sh script you should have an OpenBazaar installation ready to go, to start run: 
+```
+./run.sh
+```
+Then point your web browser to http://localhost:8888
+
+Read more at the [build instructions wiki](https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions).
 
 ## Artwork Contributions
 ![](https://github.com/OpenBazaar/OpenBazaar/blob/gh-pages/img/logo_alt1-b-h.png?raw=true)  
