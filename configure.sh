@@ -75,9 +75,26 @@ function installUbuntu {
   doneMessage
 }
 
+function installArch {
+  sudo pacman -Sy
+  #TODO: add correct dependencies
+  #sudo pacman -S python-pip build-essential python-zmq tor privoxy rng-tools
+  #sudo pacman -S python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
+  sudo pacman -S python2-pip
+  sudo pip2 install -r requirements.txt
+  pushd pysqlcipher
+  sudo python2.7 setup.py install
+  popd
+
+  doneMessage
+}
+
 if [[ $OSTYPE == darwin* ]] ; then
   installMac
 elif [[ $OSTYPE == linux-gnu ]]; then
-  installUbuntu
+  if [ -f /etc/arch-release ]; then
+    installArch
+  else
+    installUbuntu
+  fi
 fi
-
