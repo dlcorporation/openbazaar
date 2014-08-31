@@ -496,7 +496,8 @@ class DHT(object):
     def find_listings_by_keyword(self, transport, keyword, listingFilter=None, callback=None):
 
         hashvalue = hashlib.new('ripemd160')
-        hashvalue.update('keyword-%s' % keyword)
+        keyword_key = 'keyword-%s' % keyword
+        hashvalue.update(keyword_key.encode('utf-8'))
         listing_index_key = hashvalue.hexdigest()
 
         self._log.info('Finding contracts for keyword: %s' % keyword)

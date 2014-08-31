@@ -941,7 +941,8 @@ obControllers
             var socket = new Connection(function(msg) {
 
                 var handlers = {
-                    'load_page': function(msg) { $scope.load_page(msg) }
+                    'load_page': function(msg) { $scope.load_page(msg) },
+                    'global_search_result': function(msg) { $scope.parse_search_result(msg) }
                 }
 
                 if(handlers[msg.type]) {
@@ -951,24 +952,65 @@ obControllers
             })
 
             $scope.load_page = function(msg) {
-                console.log($scope.path)
+                console.log($location.search())
                 $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
-
+                $scope.searchNetwork()
             }
 
-            $scope.search = ""
+            function getJsonFromUrl() {
+                  var query = location.search.substr(1);
+                  var result = {};
+                  query.split("&").forEach(function(part) {
+                    var item = part.split("=");
+                    result[item[0]] = decodeURIComponent(item[1]);
+                  });
+                  return result;
+                }
+
+            url_json = getJsonFromUrl();
+            $scope.search = url_json.searchterm
+
+
             $scope.searchNetwork = function() {
+
+                <!--
                 var query = {
                     'type': 'search',
-                    'key': $scope.search
+                    'key': url_json.searchterm
                 };
                 $scope.searching = $scope.search;
+
                 $scope.search_results = [];
                 $scope.awaitingShop = $scope.search;
                 socket.send('search', query)
                 $scope.search = ""
                 $scope.showDashboardPanel('search');
+                -->
             }
+
+            $scope.search_results = [];
+            $scope.parse_search_result = function(msg) {
+                console.log(msg);
+                contract_data = msg.data;
+                contract_data.key = msg.key;
+                contract_data.rawContract = msg.rawContract;
+                contract_data.nickname = msg.nickname;
+                $scope.search_results.push(contract_data)
+                $scope.search_results = jQuery.unique($scope.search_results);
+                $.each($scope.search_results, function(index, contract) {
+                    if (jQuery.isEmptyObject(contract.Contract.item_images)) {
+                        console.log('empty object');
+                        contract.Contract.item_images = "img/no-photo.png";
+                    }
+                });
+
+                console.log('Search Results', $scope.search_results)
+
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+            }
+
     }
 ]);
 
@@ -1211,7 +1253,6 @@ obControllers
                     'log_output': function(msg) { $scope.parse_log_output(msg) },
                     'messages': function(msg) { $scope.parse_messages(msg) },
                     'notaries': function(msg) { $scope.parse_notaries(msg) },
-                    'global_search_result': function(msg) { $scope.parse_search_result(msg) },
                     'reputation': function(msg) { $scope.parse_reputation(msg) },
                     'proto_response_pubkey': function(msg) { $scope.parse_response_pubkey(msg) },
                     'burn_info_available': function(msg) { $scope.parse_burn_info(msg) },
@@ -1571,28 +1612,7 @@ obControllers
                 }
             }
 
-            $scope.search_results = [];
-            $scope.parse_search_result = function(msg) {
-                console.log(msg);
-                contract_data = msg.data;
-                contract_data.key = msg.key;
-                contract_data.rawContract = msg.rawContract;
-                contract_data.nickname = msg.nickname;
-                $scope.search_results.push(contract_data)
-                $scope.search_results = jQuery.unique($scope.search_results);
-                $.each($scope.search_results, function(index, contract) {
-                    if (jQuery.isEmptyObject(contract.Contract.item_images)) {
-                        console.log('empty object');
-                        contract.Contract.item_images = "img/no-photo.png";
-                    }
-                });
 
-                console.log('Search Results', $scope.search_results)
-
-                if (!$scope.$$phase) {
-                    $scope.$apply();
-                }
-            }
 
             $scope.checkOrderCount = function() {
                 socket.send('check_order_count', {});

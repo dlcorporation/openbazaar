@@ -1,10 +1,10 @@
 <!-- Search -->
-<div data-ng-show="searchPanel" class="animated fadeInLeft">
+<div data-ng-controller="Search" data-ng-show="searchPanel" class="animated fadeInLeft">
 
     <h4>Search Results</h4>
 
     <div data-ng-show="search_results.length == 0" class="alert alert-info" role="alert">
-        <div >No results found yet for <strong>{{searching}}</strong>.</div>
+        <div >No results found yet for <strong>{{search}}</strong>.</div>
     </div>
 
 
