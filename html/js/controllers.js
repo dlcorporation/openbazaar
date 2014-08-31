@@ -326,7 +326,9 @@ obControllers
 
                 $scope.page_loading = null
                 console.log('Received a page for: ', msg)
-                console.log('Waiting for: ' + $scope.awaitingShop)
+
+                msg.senderNick = msg.senderNick.substring(0, 120);
+                msg.text = msg.text.substring(0, 2048);
 
                 if (msg.senderGUID != $scope.awaitingShop)
                     return
