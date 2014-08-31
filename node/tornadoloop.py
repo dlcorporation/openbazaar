@@ -141,12 +141,13 @@ def start_node(my_market_ip,
                                     database)
 
     error = True
+    http_ip = '127.0.0.1'
     http_port = 8888
     p2p_port = 12345
 
     while error and http_port < 8988:
         try:
-            application.listen(http_port, '127.0.0.1')
+            application.listen(http_port, http_ip)
             error = False
         except:
             http_port += 1
@@ -157,8 +158,8 @@ def start_node(my_market_ip,
         print "Disabling upnp setup"
 
     locallogger.info("Started OpenBazaar Web App at http://%s:%s" %
-                     (my_market_ip, http_port))
-    print "Started OpenBazaar Web App at http://%s:%s" % (my_market_ip, http_port)
+                     (http_ip, http_port))
+    print "Started OpenBazaar Web App at http://%s:%s" % (http_ip, http_port)
 
     # handle shutdown
     def shutdown(x, y):
