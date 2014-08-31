@@ -501,7 +501,6 @@ class Market(object):
         def reputation_pledge_retrieved(amount):
             self._log.debug('Received reputation pledge amount %s for guid %s' % (amount, guid))
             SATOSHIS_IN_BITCOIN = 100000000
-            amountInSatoshis = amount
             bitcoins = float(amount) / SATOSHIS_IN_BITCOIN
             bitcoins = round(bitcoins, 4)
             page['reputation_pledge'] = bitcoins
