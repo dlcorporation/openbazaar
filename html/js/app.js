@@ -31,6 +31,10 @@ app.config(['$routeProvider',
         templateUrl: 'partials/arbiter.html',
         controller: 'Arbiter'
       }).
+      when('/messages', {
+        templateUrl: 'partials/messages.html',
+        controller: 'Messages'
+      }).
       when('/user/:userId/products', {
         templateUrl: 'partials/user.html',
         controller: 'User'

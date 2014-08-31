@@ -290,6 +290,7 @@ class ProtocolHandler:
 
         # Query bitmessage for messages
         messages = self._market.get_messages()
+        self._log.info('Bitmessages: %s' % messages)
 
         self.send_to_client(None, {"type": "messages", "messages": messages})
 
@@ -715,49 +716,47 @@ class ProtocolHandler:
 
     def on_node_search_value(self, results, key):
 
-        if results:
+        self._log.debug('Listing Data: %s %s' % (results, key))
 
-            self._log.debug('Listing Data: %s %s' % (results, key))
+        # Fix newline issue
+        # self._log.info(results_data)
 
-            # Fix newline issue
-            # self._log.info(results_data)
+        # Import gpg pubkey
+        gpg = gnupg.GPG()
 
-            # Import gpg pubkey
-            gpg = gnupg.GPG()
+        # Retrieve JSON from the contract
+        # 1) Remove PGP Header
+        contract_data = ''.join(results.split('\n')[3:])
+        index_of_signature = contract_data.find(
+            '-----BEGIN PGP SIGNATURE-----', 0, len(contract_data)
+        )
+        contract_data_json = contract_data[0:index_of_signature]
 
-            # Retrieve JSON from the contract
-            # 1) Remove PGP Header
-            contract_data = ''.join(results.split('\n')[3:])
-            index_of_signature = contract_data.find(
-                '-----BEGIN PGP SIGNATURE-----', 0, len(contract_data)
-            )
-            contract_data_json = contract_data[0:index_of_signature]
+        try:
+            contract_data_json = json.loads(contract_data_json)
+            seller = contract_data_json.get('Seller')
+            seller_pubkey = seller.get('seller_PGP')
 
-            try:
-                contract_data_json = json.loads(contract_data_json)
-                seller = contract_data_json.get('Seller')
-                seller_pubkey = seller.get('seller_PGP')
+            gpg.import_keys(seller_pubkey)
 
-                gpg.import_keys(seller_pubkey)
+            v = gpg.verify(results)
+            if v:
+                self.send_to_client(None, {
+                    "type": "new_listing",
+                    "data": contract_data_json,
+                    "key": key,
+                    "rawContract": results
+                })
+            else:
 
-                v = gpg.verify(results)
-                if v:
+                self._log.error('Could not verify signature of contract.')
 
-                    self.send_to_client(None, {
-                        "type": "new_listing",
-                        "data": contract_data_json,
-                        "key": key,
-                        "rawContract": results
-                    })
-                else:
-                    self._log.error('Could not verify signature of contract.')
-            except:
-                self._log.debug('Error getting JSON contract')
-        else:
-            self._log.info('No results')
+        except:
+            self._log.debug('Error getting JSON contract')
 
     def on_global_search_value(self, results, key):
 
+        self._log.info('global search: %s %s' % (results, key))
         if results:
 
             self._log.debug('Listing Data: %s %s' % (results, key))
@@ -791,7 +790,7 @@ class ProtocolHandler:
 
                     seller = contract_data_json.get('Seller')
                     contract_guid = seller.get('seller_GUID')
-                    self._log.info('my guid %s' % self._transport._nickname)
+
                     if contract_guid == self._transport._guid:
                         nickname = self._transport._nickname
                     else:
@@ -808,6 +807,7 @@ class ProtocolHandler:
                     })
                 else:
                     self._log.error('Could not verify signature of contract.')
+
             except:
                 self._log.debug('Error getting JSON contract')
         else:

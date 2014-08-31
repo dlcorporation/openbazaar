@@ -110,7 +110,7 @@ class Orders(object):
         return notary_data_json
 
     def get_qr_code(self, item_title, address, total):
-        qr_url = urllib.urlencode({"url": item_title})
+        qr_url = urllib.urlencode({"url": item_title.decode('utf-8', 'ignore')})
         qr = qrcode.make("bitcoin:" + address + "?amount=" + str(total) + "&message=" + qr_url)
         output = StringIO.StringIO()
         qr.save(output, "PNG")

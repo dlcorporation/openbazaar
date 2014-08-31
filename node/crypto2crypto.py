@@ -686,7 +686,7 @@ class CryptoTransportLayer(TransportLayer):
         ip = urlparse(uri).hostname
         port = urlparse(uri).port
         guid = msg.get('senderGUID')
-        nickname = msg.get('senderNick')
+        nickname = msg.get('senderNick')[:120]
 
         self._dht.add_known_node((ip, port, guid, nickname))
         self._log.info('ON MESSAGE %s' % msg)

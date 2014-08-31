@@ -20,21 +20,29 @@
 </div>
 <div id="settings-content" class="col-sm-10" style="">
 
-    <form id="profile-form" role="form" class="form-horizontal">
+    <form id="profile-form" name="profileForm" novalidate role="form" class="form-horizontal" data-ng-submit="saveSettings()">
 
         <h4>Store Details</h4>
 
-        <div class="form-group">
+        <div class="alert alert-danger" role="alert" data-ng-show="profileForm.$invalid">
+            There are some problems with your form:<br/>
+            <ul>
+                <li data-ng-show="profileForm.inputNickname.$invalid">Make sure your nickname is less than 120 characters.</li>
+                <li data-ng-show="profileForm.inputStoreDescription.$invalid">Make sure your description is less than 2048 characters.</li>
+            </ul>
+        </div>
+
+        <div class="form-group {{profileForm.inputNickname.$invalid ? 'has-error' : ''}}">
             <label for="inputNickname" class="col-sm-3 control-label">Nickname</label>
             <div class="col-sm-9">
-                <input data-ng-model="settings.nickname" class="form-control" id="inputNickname" placeholder="Nickname">
+                <input data-ng-model="settings.nickname" data-ng-maxlength="120" class="form-control" id="inputNickname" name="inputNickname" placeholder="Nickname">
             </div>
         </div>
 
         <div class="form-group">
             <label for="inputStoreDescription" class="col-sm-3 control-label">Store Description</label>
             <div class="col-sm-9">
-                <textarea data-ng-model="settings.storeDescription" class="form-control" id="inputStoreDescription" rows="5" placeholder="Enter a short description about your store"></textarea>
+                <textarea data-ng-model="settings.storeDescription" data-ng-maxlength="2048" name="inputStoreDescription" class="form-control" id="inputStoreDescription" rows="5" placeholder="Enter a short description about your store"></textarea>
             </div>
         </div>
 
@@ -131,9 +139,10 @@
         </div>
 
         <div class="form-group">
+
             <div class="col-sm-3"></div>
             <div class="col-sm-9" style="text-align:right">
-                <button type="submit" class="btn btn-default" data-ng-click="saveSettings()">Save</button>
+                <button type="submit" class="btn btn-default" data-ng-disabled="!profileForm.$valid">Save</button>
             </div>
         </div>
 
