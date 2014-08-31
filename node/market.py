@@ -23,6 +23,8 @@ from protocol import proto_page, query_page
 from crypto2crypto import CryptoTransportLayer
 from pybitcointools import *
 
+import trust
+
 ioloop.install()
 
 
@@ -493,6 +495,14 @@ class Market(object):
         self._transport.send(msg, find_guid, callback)
 
     def on_page(self, page):
+        guid = page.get('guid')
+
+        # TODO: allow async calling in different thread
+        def reputation_pledge_retrieved(amount):
+            self._log.debug('Received reputation pledge amount %s for guid %s' % (guid, amount))
+            page['reputation_pledge'] = amount
+
+        reputation_pledge = trust.get_global(guid, reputation_pledge_retrieved)
         sin = page.get('sin')
         page = page.get('text')
 

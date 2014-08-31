@@ -26,23 +26,6 @@ def proto_welcome():
     return {'type': 'welcome'}
 
 
-def proto_reputation(pubkey, reviews):
-    data = {
-        'type': 'reputation',
-        'pubkey': pubkey.encode('hex'),
-        'reviews': reviews
-    }
-    return data
-
-
-def proto_query_reputation(pubkey):
-    data = {
-        'type': 'query_reputation',
-        'pubkey': pubkey.encode('hex')
-    }
-    return data
-
-
 def proto_page(uri, pubkey, guid, text, signature, nickname, PGPPubKey, email,
                bitmessage, arbiter, notary, arbiter_description, sin):
     data = {
