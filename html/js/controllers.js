@@ -1,6 +1,76 @@
 var obControllers = angular.module('obControllers', []);
 
 /**
+ * Messages controller.
+ *
+ * @desc This controller is the messages controller.
+ * @param {!angular.Scope} $scope
+ * @constructor
+ */
+obControllers
+    .controller('Messages', ['$scope', '$interval', '$routeParams', '$location',
+        function($scope, $interval, $routeParams, $location) {
+
+            $scope.myOrders = []
+            $scope.ordersPanel = true;
+            $scope.path = $location.path();
+            $scope.$emit('sidebar', false);
+
+            /**
+             * Open Websocket and then establish message handlers
+             * @msg - message from websocket to pass on to handler
+             */
+            var socket = new Connection(function(msg) {
+
+                var handlers = {
+                    'load_page': function(msg) { $scope.load_page(msg) },
+                    'messages': function(msg) { $scope.parse_messages(msg) },
+                }
+
+                if(handlers[msg.type]) {
+                    handlers[msg.type](msg);
+                }
+
+            })
+
+            $scope.load_page = function(msg) {
+                $scope.messagesPanel = true;
+                $scope.queryMessages();
+            }
+
+
+            $scope.queryMessages = function() {
+                // Query for messages
+                var query = {
+                    'type': 'query_messages'
+                }
+                console.log('querying messages')
+                socket.send('query_messages', query)
+                console.log($scope.myself.messages)
+
+            }
+
+            $scope.message = {};
+            $scope.parse_messages = function(msg) {
+                console.log('parsing messages',msg);
+                if (msg != null &&
+                    msg.messages != null &&
+                    msg.messages.messages != null &&
+                    msg.messages.messages.inboxMessages != null) {
+
+                    $scope.messages = msg.messages.messages.inboxMessages;
+
+                    $scope.message = {};
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+                }
+            }
+
+        }
+]);
+
+/**
  * Orders controller.
  *
  * @desc This controller is the orders controller.
@@ -1905,15 +1975,6 @@ obControllers
                 };
             };
 
-
-
-
-
-
-
-
-
-
             $scope.ComposeMessageCtrl = function($scope, $modal, $log) {
 
 
@@ -1922,6 +1983,7 @@ obControllers
                     $scope.size = args.size;
                     $scope.subject = args.subject;
                     $scope.myself = args.myself;
+
 
                     $scope.compose($scope.size, $scope.myself, $scope.bm_address, $scope.subject);
                 });
@@ -1950,6 +2012,7 @@ obControllers
                     };
                     composeModal.result.then(afterFunc,
                         function() {
+                            $scope.queryMessages();
                             $log.info('Modal dismissed at: ' + new Date());
                         });
                 };

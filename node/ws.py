@@ -290,6 +290,7 @@ class ProtocolHandler:
 
         # Query bitmessage for messages
         messages = self._market.get_messages()
+        self._log.info('Bitmessages: %s' % messages);
 
         self.send_to_client(None, {"type": "messages", "messages": messages})
 
