@@ -1,6 +1,76 @@
 var obControllers = angular.module('obControllers', []);
 
 /**
+ * Messages controller.
+ *
+ * @desc This controller is the messages controller.
+ * @param {!angular.Scope} $scope
+ * @constructor
+ */
+obControllers
+    .controller('Messages', ['$scope', '$interval', '$routeParams', '$location',
+        function($scope, $interval, $routeParams, $location) {
+
+            $scope.myOrders = []
+            $scope.ordersPanel = true;
+            $scope.path = $location.path();
+            $scope.$emit('sidebar', false);
+
+            /**
+             * Open Websocket and then establish message handlers
+             * @msg - message from websocket to pass on to handler
+             */
+            var socket = new Connection(function(msg) {
+
+                var handlers = {
+                    'load_page': function(msg) { $scope.load_page(msg) },
+                    'messages': function(msg) { $scope.parse_messages(msg) },
+                }
+
+                if(handlers[msg.type]) {
+                    handlers[msg.type](msg);
+                }
+
+            })
+
+            $scope.load_page = function(msg) {
+                $scope.messagesPanel = true;
+                $scope.queryMessages();
+            }
+
+
+            $scope.queryMessages = function() {
+                // Query for messages
+                var query = {
+                    'type': 'query_messages'
+                }
+                console.log('querying messages')
+                socket.send('query_messages', query)
+                console.log($scope.myself.messages)
+
+            }
+
+            $scope.message = {};
+            $scope.parse_messages = function(msg) {
+                console.log('parsing messages',msg);
+                if (msg != null &&
+                    msg.messages != null &&
+                    msg.messages.messages != null &&
+                    msg.messages.messages.inboxMessages != null) {
+
+                    $scope.messages = msg.messages.messages.inboxMessages;
+
+                    $scope.message = {};
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+                }
+            }
+
+        }
+]);
+
+/**
  * Orders controller.
  *
  * @desc This controller is the orders controller.
@@ -326,7 +396,9 @@ obControllers
 
                 $scope.page_loading = null
                 console.log('Received a page for: ', msg)
-                console.log('Waiting for: ' + $scope.awaitingShop)
+
+                msg.senderNick = msg.senderNick.substring(0, 120);
+                msg.text = msg.text.substring(0, 2048);
 
                 if (msg.senderGUID != $scope.awaitingShop)
                     return
@@ -891,7 +963,6 @@ obControllers
                                 Notifier.success('Success', 'Contract saved successfully.');
                                 socket.send("query_contracts", {})
 
-
                             }
 
                         } else {
@@ -941,7 +1012,8 @@ obControllers
             var socket = new Connection(function(msg) {
 
                 var handlers = {
-                    'load_page': function(msg) { $scope.load_page(msg) }
+                    'load_page': function(msg) { $scope.load_page(msg) },
+                    'global_search_result': function(msg) { $scope.parse_search_result(msg) }
                 }
 
                 if(handlers[msg.type]) {
@@ -951,24 +1023,64 @@ obControllers
             })
 
             $scope.load_page = function(msg) {
-                console.log($scope.path)
+                console.log($location.search())
                 $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
-
+                $scope.searchNetwork()
             }
 
-            $scope.search = ""
+            function getJsonFromUrl() {
+                var query = location.search.substr(1);
+                var result = {};
+                query.split("&").forEach(function(part) {
+                    var item = part.split("=");
+                    result[item[0]] = decodeURIComponent(item[1]);
+                });
+                return result;
+            }
+
+            url_json = getJsonFromUrl();
+            $scope.search = url_json.searchterm
+
             $scope.searchNetwork = function() {
+
+                <!--
                 var query = {
                     'type': 'search',
-                    'key': $scope.search
+                    'key': url_json.searchterm
                 };
                 $scope.searching = $scope.search;
+
                 $scope.search_results = [];
                 $scope.awaitingShop = $scope.search;
                 socket.send('search', query)
                 $scope.search = ""
                 $scope.showDashboardPanel('search');
+                -->
             }
+
+            $scope.search_results = [];
+            $scope.parse_search_result = function(msg) {
+                console.log(msg);
+                contract_data = msg.data;
+                contract_data.key = msg.key;
+                contract_data.rawContract = msg.rawContract;
+                contract_data.nickname = msg.nickname;
+                $scope.search_results.push(contract_data)
+                $scope.search_results = jQuery.unique($scope.search_results);
+                $.each($scope.search_results, function(index, contract) {
+                    if (jQuery.isEmptyObject(contract.Contract.item_images)) {
+                        console.log('empty object');
+                        contract.Contract.item_images = "img/no-photo.png";
+                    }
+                });
+
+                console.log('Search Results', $scope.search_results)
+
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+            }
+
     }
 ]);
 
@@ -1211,7 +1323,6 @@ obControllers
                     'log_output': function(msg) { $scope.parse_log_output(msg) },
                     'messages': function(msg) { $scope.parse_messages(msg) },
                     'notaries': function(msg) { $scope.parse_notaries(msg) },
-                    'global_search_result': function(msg) { $scope.parse_search_result(msg) },
                     'reputation': function(msg) { $scope.parse_reputation(msg) },
                     'proto_response_pubkey': function(msg) { $scope.parse_response_pubkey(msg) },
                     'burn_info_available': function(msg) { $scope.parse_burn_info(msg) },
@@ -1571,28 +1682,7 @@ obControllers
                 }
             }
 
-            $scope.search_results = [];
-            $scope.parse_search_result = function(msg) {
-                console.log(msg);
-                contract_data = msg.data;
-                contract_data.key = msg.key;
-                contract_data.rawContract = msg.rawContract;
-                contract_data.nickname = msg.nickname;
-                $scope.search_results.push(contract_data)
-                $scope.search_results = jQuery.unique($scope.search_results);
-                $.each($scope.search_results, function(index, contract) {
-                    if (jQuery.isEmptyObject(contract.Contract.item_images)) {
-                        console.log('empty object');
-                        contract.Contract.item_images = "img/no-photo.png";
-                    }
-                });
 
-                console.log('Search Results', $scope.search_results)
-
-                if (!$scope.$$phase) {
-                    $scope.$apply();
-                }
-            }
 
             $scope.checkOrderCount = function() {
                 socket.send('check_order_count', {});
@@ -1883,15 +1973,6 @@ obControllers
                 };
             };
 
-
-
-
-
-
-
-
-
-
             $scope.ComposeMessageCtrl = function($scope, $modal, $log) {
 
 
@@ -1900,6 +1981,7 @@ obControllers
                     $scope.size = args.size;
                     $scope.subject = args.subject;
                     $scope.myself = args.myself;
+
 
                     $scope.compose($scope.size, $scope.myself, $scope.bm_address, $scope.subject);
                 });
@@ -1928,6 +2010,7 @@ obControllers
                     };
                     composeModal.result.then(afterFunc,
                         function() {
+                            $scope.queryMessages();
                             $log.info('Modal dismissed at: ' + new Date());
                         });
                 };

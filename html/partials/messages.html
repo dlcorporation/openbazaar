@@ -1,0 +1,53 @@
+<!-- Messages -->
+<div ng-show="messagesPanel" class="animated fadeInLeft">
+
+    <div ng-controller="ComposeMessageCtrl">
+
+    <h3>Messages</h3>
+
+    <div role="alert" class="alert alert-warning">
+        <div class="row">
+        <div class="col-sm-10">OpenBazaar uses <strong><a href="https://bitmessage.org/wiki/Main_Page" target="_blank">Bitmessage</a></strong> as our private messaging technology. This is your inbox where all messages from other network members will reside.
+
+            <span ng-show="settings.bitmessage">Your Bitmessage address is <strong>{{settings.bitmessage}}</strong></span>
+        </div>
+        <div class="col-sm-2" style="text-align:right"><button class="btn btn-info" ng-click="compose('lg', myself, '', null)"><span class="glyphicon glyphicon-pencil"/> Compose</button></div>
+        </div>
+    </div>
+
+
+
+    <div ng-repeat="message in myself.messages">
+        {{message.text}}
+    </div>
+
+    <div ng-show="messages">
+        <table class="table table-striped table-bordered" style="margin-top:10px;">
+            <tr>
+                <th></th>
+                <th width="200">Date</th>
+                <th width="375">From</th>
+                <th>Subject</th>
+                <th>Actions</th>
+            </tr>
+            <tr ng-repeat="message in messages">
+                <td width=15><input type="checkbox"/></td>
+                <td style="border-left:none;">{{message.receivedTime * 1000 | date:'medium'}}</td>
+                <td style="border-left:none;"><identicon icon-size="32" hash="message.fromAddress" title="{{message.fromAddress}}"></identicon> {{message.fromAddress}}</td>
+                <td style="border-left:none;"><a href="#"
+                    ng-click="view('lg', myself, settings.bitmessage, message)">{{message.subject}}</a></td>
+                <td width="40" style="border-left:none;"><a href="#"
+                    ng-click="compose('lg', myself, settings.bitmessage, message)"><button class="btn btn-info">Reply</button></a></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="col-sm-12" ng-show="!messages">
+        <p>There are no messages for your marketplace.</p>
+    </div>
+
+    </div>
+
+</div>
+
+

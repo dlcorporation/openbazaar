@@ -78,7 +78,7 @@ class Obdb():
                 if type(value) == bool:
                     value = bool(value)
                 else:
-                    value = str(value).replace("'", "''")
+                    value = unicode(value).replace("'", "''")
 
                 if first:
                     set_part = "%s = '%s'" % (key, value)
