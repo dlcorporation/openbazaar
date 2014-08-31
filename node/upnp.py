@@ -73,7 +73,12 @@ class PortMapper(object):
         return result
 
     def get_connection_type(self):
-        return self.upnp.connectiontype()
+        result = 'n/a'
+        try:
+            result = self.upnp.connectiontype()
+        except:
+            pass
+        return result
 
     def add_port_mapping(self, externalPort, internalPort,
                          protocol='TCP', ipToBind=None):
