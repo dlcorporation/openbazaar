@@ -963,7 +963,6 @@ obControllers
                                 Notifier.success('Success', 'Contract saved successfully.');
                                 socket.send("query_contracts", {})
 
-
                             }
 
                         } else {
@@ -1030,18 +1029,17 @@ obControllers
             }
 
             function getJsonFromUrl() {
-                  var query = location.search.substr(1);
-                  var result = {};
-                  query.split("&").forEach(function(part) {
+                var query = location.search.substr(1);
+                var result = {};
+                query.split("&").forEach(function(part) {
                     var item = part.split("=");
                     result[item[0]] = decodeURIComponent(item[1]);
-                  });
-                  return result;
-                }
+                });
+                return result;
+            }
 
             url_json = getJsonFromUrl();
             $scope.search = url_json.searchterm
-
 
             $scope.searchNetwork = function() {
 
