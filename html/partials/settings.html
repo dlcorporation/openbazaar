@@ -54,8 +54,7 @@
             <label for="burnAmount" class="col-sm-3 control-label">Your pledge</label>
             <div class="col-sm-9">
                 <div class="input-group">
-                    <span class="input-group-addon">฿</span>
-                    <input id="burnAmount" ng-model="settings.burnAmount" class="form-control" disabled="disabled" placeholder="Reading from blockchain..." />
+                    <div class="form-control">฿ <span id="burnAmount" ng-bind="settings.burnAmount">Reading from blockchain...</span></div>
                 </div>
             </div>
         </div>
@@ -63,7 +62,7 @@
         <div class="form-group">
             <label for="burnAddr" class="col-sm-3 control-label">Proof-of-burn address</label>
             <div class="col-sm-9">
-                <input id="burnAddr" ng-model="settings.burnAddr" class="form-control" disabled="disabled" placeholder="Loading..." />
+                <div class="form-control"><span id="burnAddr" ng-bind="settings.burnAddr">Loading...</span></div>
             </div>
         </div>
 
