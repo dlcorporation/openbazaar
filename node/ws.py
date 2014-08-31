@@ -290,7 +290,7 @@ class ProtocolHandler:
 
         # Query bitmessage for messages
         messages = self._market.get_messages()
-        self._log.info('Bitmessages: %s' % messages);
+        self._log.info('Bitmessages: %s' % messages)
 
         self.send_to_client(None, {"type": "messages", "messages": messages})
 
@@ -716,8 +716,6 @@ class ProtocolHandler:
 
     def on_node_search_value(self, results, key):
 
-
-
         self._log.debug('Listing Data: %s %s' % (results, key))
 
         # Fix newline issue
@@ -755,7 +753,6 @@ class ProtocolHandler:
 
         except:
             self._log.debug('Error getting JSON contract')
-
 
     def on_global_search_value(self, results, key):
 
