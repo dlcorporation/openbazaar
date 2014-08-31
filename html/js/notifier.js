@@ -2,10 +2,10 @@
 
   var config = window.NotifierjsConfig = {
     defaultTimeOut: 2000,
-    position: ["top", "left"],
+    position: ["top", "right"],
     notificationStyles: {
-      padding: "12px 18px",
-      margin: "0 0 6px 0",
+      padding: "15px 20px",
+      margin: "0 auto",
       backgroundColor: "#000",
       opacity: 0.5,
       color: "#fff",
@@ -13,7 +13,6 @@
       fontSize: "13px",
       borderRadius: "3px",
       boxShadow: "#999 0 0 12px",
-      width: "300px"
     },
     notificationStylesHover: {
       opacity: 1,
@@ -25,8 +24,8 @@
   $(document).ready(function() {
     config.container.css("position", "fixed");
     config.container.css("z-index", 9999);
-    config.container.css(config.position[0], "12px");
-    config.container.css(config.position[1], ($('#header').position().left+$('#header').outerWidth()-100)+'px');
+    config.container.css(config.position[0], "35px");
+    config.container.css(config.position[1], '55px');
     $("body").append(config.container);
   });
 
