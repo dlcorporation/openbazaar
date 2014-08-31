@@ -77,10 +77,10 @@ class MarketApplication(tornado.web.Application):
 
         # for now let's always clean mappings every time.
         self.upnp_mapper.clean_my_mappings()
-        result_http_port_mapping = self.upnp_mapper.add_port_mapping(http_port,
-                                                                     http_port)
-        print ("UPnP HTTP Port Map configuration done (%s -> %s) => %s" %
-               (str(http_port), str(http_port), str(result_http_port_mapping)))
+        # result_http_port_mapping = self.upnp_mapper.add_port_mapping(http_port,
+        #                                                             http_port)
+        # print ("UPnP HTTP Port Map configuration done (%s -> %s) => %s" %
+        #        (str(http_port), str(http_port), str(result_http_port_mapping)))
 
         result_tcp_p2p_mapping = self.upnp_mapper.add_port_mapping(p2p_port,
                                                                    p2p_port)
@@ -93,9 +93,9 @@ class MarketApplication(tornado.web.Application):
         print ("UPnP UDP P2P Port Map configuration done (%s -> %s) => %s" %
                (str(p2p_port), str(p2p_port), str(result_udp_p2p_mapping)))
 
-        return result_http_port_mapping and \
-            result_tcp_p2p_mapping and \
-            result_udp_p2p_mapping
+        # return result_http_port_mapping and \
+        return result_tcp_p2p_mapping and \
+               result_udp_p2p_mapping
 
     def cleanup_upnp_port_mapping(self):
         if self.upnp_mapper is not None:
