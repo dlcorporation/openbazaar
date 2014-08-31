@@ -198,9 +198,6 @@ if __name__ == '__main__':
     # Test code
     PortMapper.DEBUG = True
     mapper = PortMapper()
-    print "Adding mapping: P2P:12345->12345, HTTP:8888->8888"
-    mapper.add_port_mapping(8888, 8888, 'TCP')
-    mapper.add_port_mapping(8888, 8888, 'UDP')
     mapper.add_port_mapping(12345, 12345, 'TCP')
     mapper.add_port_mapping(12345, 12345, 'UDP')
     mappings = mapper.get_mapping_list()
