@@ -42,7 +42,7 @@ function installMac {
   sudo easy_install pip
 
   #python libraries
-  pip install -r --upgrade requirements.txt
+  sudo pip install -r --upgrade requirements.txt
 
   #install sqlite3 from brew and manually link it as brew won't link this for us.
   brew install sqlite3
