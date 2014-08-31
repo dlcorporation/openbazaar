@@ -36,7 +36,7 @@ function installMac {
   fi
 
   #pre-requisites
-  brew install wget gpg
+  brew install wget gpg zmq
   brew install openssl
   brew link openssl --force
   sudo easy_install pip
