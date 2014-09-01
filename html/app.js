@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ui.bootstrap', 'ngRoute', 'obControllers'])
+var app = angular.module('app', ['ui.bootstrap', 'ngRoute'])
 
 app.config(['$routeProvider',
   function($routeProvider) {
