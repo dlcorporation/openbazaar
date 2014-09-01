@@ -824,6 +824,7 @@ obControllers
             }
 
             $scope.removeContract = function(contract_id) {
+                $('#contract-row-'+contract_id).fadeOut({ "duration": 1000 });
                 socket.send("remove_contract", {
                     "contract_id": contract_id
                 });
