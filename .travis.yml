@@ -8,3 +8,6 @@ install:
     - "pip install pysqlcipher"
 
 script: make
+
+notifications:
+    irc: "chat.freenode.net#openbazaar"
