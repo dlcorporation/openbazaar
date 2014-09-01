@@ -82,23 +82,23 @@ function installUbuntu {
 }
 
 function installArch {
-sudo pacman -Sy
-sudo pacman -S base-devel python2 python2-pip python2-pyzmq rng-tools
-sudo pacman -S gcc libjpeg zlib sqlite3 openssl
-sudo pip2 install -r requirements.txt
-pushd pysqlcipher
-sudo python2.7 setup.py install
-popd
-doneMessage
+  sudo pacman -Sy
+  sudo pacman -S base-devel python2 python2-pip python2-pyzmq rng-tools
+  sudo pacman -S gcc libjpeg zlib sqlite3 openssl
+  sudo pip2 install -r requirements.txt
+  pushd pysqlcipher
+  sudo python2.7 setup.py install
+  popd
+  doneMessage
 }
 
 if [[ $OSTYPE == darwin* ]] ; then
-installMac
+  installMac
 elif [[ $OSTYPE == linux-gnu ]]; then
-if [ -f /etc/arch-release ]; then
-installArch
-else
-installUbuntu
-fi
+  if [ -f /etc/arch-release ]; then
+    installArch
+  else
+    installUbuntu
+  fi
 fi
 
