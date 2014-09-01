@@ -6,10 +6,13 @@ sudo rm -rf backups/*
 
 cd /usr/local/openbazaar
 echo "[openbazaar] Cleaning up database..."
-sudo rm -f db/*
+sudo rm -fr db/*
 
 echo "[openbazaar] Cleaning up keys..."
 sudo rm -f msig/*
+
+echo "[openbazaar] Cleaning up logs..."
+sudo rm -fr logs
 
 echo "[openbazaar] Done cleaning."
 
