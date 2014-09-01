@@ -96,7 +96,14 @@ class CryptoPeerConnection(PeerConnection):
             s.close()
             return True
         except:
-            return False
+            try:
+                s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+                s.settimeout(5)
+                s.connect((self._ip, self._port))
+                s.close()
+                return True
+            except:
+                return False
 
     def sign(self, data):
         self._log.info('secret %s' % self._transport.settings['secret'])
@@ -181,7 +188,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self._market_id = market_id
         self.nick_mapping = {}
-        self._uri = "tcp://%s:%s" % (my_ip, my_port)
+        self._uri = "tcp://[%s]:%s" % (my_ip, my_port)
         self._ip = my_ip
         self._nickname = ""
         self._dev_mode = dev_mode
@@ -224,7 +231,7 @@ class CryptoTransportLayer(TransportLayer):
                 ip = ip.strip(' \t\n\r')
                 if ip != self._ip:
                     self._ip = ip
-                    self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+                    self._uri = 'tcp://[%s]:%s' % (self._ip, self._port)
                     self.stream.close()
                     self.listen(self.pubkey)
 
@@ -449,7 +456,7 @@ class CryptoTransportLayer(TransportLayer):
 
         # Connect up through seed servers
         for idx, seed in enumerate(seed_peers):
-            seed_peers[idx] = "tcp://%s:12345" % seed
+            seed_peers[idx] = "tcp://[%s]:12345" % seed
 
         # Connect to persisted peers
         db_peers = self.get_past_peers()

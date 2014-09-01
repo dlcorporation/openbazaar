@@ -87,7 +87,7 @@ class TestTransportLayerMessageHandling(unittest.TestCase):
     # A hello message with a uri should result in a new peer
     def test_on_raw_message_hello_with_uri(self):
         request = protocol.hello_request({
-            'uri': 'tcp://localhost:12345'
+            'uri': 'tcp://[localhost]:12345'
         })
         self.tl._on_raw_message([json.dumps(request)])
         self.assertEqual(1, len(self.tl._peers))
@@ -99,6 +99,6 @@ class TestTransportLayerProfile(unittest.TestCase):
         self.assertEqual(
             tl.get_profile(),
             protocol.hello_request({
-                'uri': 'tcp://1.1.1.1:12345'
+                'uri': 'tcp://[1.1.1.1]:12345'
             })
         )
