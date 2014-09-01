@@ -1,16 +1,21 @@
 FROM ubuntu:14.04
 
-RUN apt-get update
-RUN apt-get install -y python-dev python-pip g++ libjpeg-dev wget git libssl-dev
-
-RUN wget https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py
-RUN python get-pip.py
-RUN pip install tornado Twisted pycountry pillow python-gnupg mock qrcode requests python-obelisk ipy pyelliptic miniupnpc pysqlcipher 
-
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get install -y python-pip build-essential python-zmq rng-tools
+RUN apt-get install -y python-dev g++ libjpeg-dev zlib1g-dev sqlite3 openssl
+RUN apt-get install -y alien libssl-dev wget
 ADD . /bazaar
+RUN cd /bazaar && pip install -r requirements.txt
+RUN cd /bazaar/pysqlcipher && python setup.py install
 
 EXPOSE 8888 8889 8890 12345
 
 WORKDIR /bazaar
-
-CMD bash run.sh && tail -f /bazaar/logs/production.log
+ENV LOG_PATH /bazaar/logs/production.log
+# touch log file before bash run.sh to keep tail -f work
+RUN mkdir -p /bazaar/logs && touch $LOG_PATH
+CMD IP=$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}') && \
+    bash run.sh -k $IP && tail -f $LOG_PATH
+# clean tmp file
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
