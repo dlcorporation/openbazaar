@@ -44,10 +44,16 @@ function installMac {
   #python libraries
   sudo pip install -r requirements.txt
 
+  pushd pysqlcipher
+  sudo python setup.py install
+  popd
+
   #install sqlite3 from brew and manually link it as brew won't link this for us.
   brew install sqlite3
   SQLITE3_LAST_VERSION=`ls -1t /usr/local/Cellar/sqlite | head -1`
   ln -s /usr/local/Cellar/sqlite/${SQLITE3_LAST_VERSION}/bin/sqlite3 /usr/local/bin/sqlite3
+
+  
 
   doneMessage
 }
