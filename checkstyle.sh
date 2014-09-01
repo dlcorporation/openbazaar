@@ -6,7 +6,7 @@ set -o pipefail
 
 ERR=0
 
-for file in $(find . -iname "*.py" -o -iname "*.html" -o -iname "*.js"); do
+for file in $(find . -iname "*.py" -o -iname "*.html" -o -iname "*.js"|grep -v pybitmessage|grep -v '.min.js'|grep -v bower_components); do
     if [ "$(tail -c1 $file)" != "" ]; then
         echo "$file: No new line at end of file"
         ERR=1
