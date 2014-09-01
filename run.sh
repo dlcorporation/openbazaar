@@ -45,7 +45,7 @@ DISABLE_UPNP=0
 # INFO       20
 # DEBUG      10
 # NOTSET      0
-LOG_LEVEL=20
+LOG_LEVEL=10
 
 NODES=3
 BM_USERNAME=brian
@@ -120,8 +120,6 @@ do
 done
 
 HTTP_OPTS="-k $HTTP_IP -q $HTTP_PORT"
-
-echo "HTTP opts: $HTTP_OPTS"
 
 if [ -z "$SERVER_IP" ]; then
     SERVER_IP=$(wget -qO- icanhazip.com)
