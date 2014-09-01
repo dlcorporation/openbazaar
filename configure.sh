@@ -77,10 +77,8 @@ function installUbuntu {
 
 function installArch {
   sudo pacman -Sy
-  #TODO: add correct dependencies
-  #sudo pacman -S python-pip build-essential python-zmq tor privoxy rng-tools
-  #sudo pacman -S python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
-  sudo pacman -S python2-pip
+  sudo pacman -S base-devel python2-pip python2-pyzmq tor privoxy rng-tools
+  sudo pacman -S python2 gcc libjpeg zlib sqlite3 openssl
   sudo pip2 install -r requirements.txt
   pushd pysqlcipher
   sudo python2.7 setup.py install
