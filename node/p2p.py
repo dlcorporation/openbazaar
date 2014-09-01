@@ -138,6 +138,7 @@ class TransportLayer(object):
                 raise Exception(error_message)
 
         else:
+            self.socket.ipv6 = True
             self.socket.bind('tcp://[*]:%s' % self._port)
 
         self.stream = zmqstream.ZMQStream(
