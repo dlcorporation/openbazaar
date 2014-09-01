@@ -143,7 +143,7 @@ obControllers
                     $scope.myOrders[msg.id].tx = msg.tx
                     $scope.myOrders[msg.id].notary = msg.notary
                     $scope.myOrders[msg.id].item_price = msg.item_price
-                    $scope.myOrders[msg.id].shipping_price = msg.shipping_price
+                    $scope.myOrders[msg.id].shipping_price = (msg.shipping_price > 0) ? msg.shipping_price : 0
                     //$scope.myOrders[msg.id].total_price = parseFloat(msg.item_price) + parseFloat(msg.shipping_price)
                     $scope.myOrders[msg.id].address = msg.address
                     $scope.myOrders[msg.id].buyer = msg.buyer
@@ -666,7 +666,7 @@ obControllers
                 key = listing.key
                 rawContract = listing.signed_contract_body
                 guid = listing.contract_body.Seller.seller_GUID
-                shippingPrice = listing.contract_body.Contract.item_delivery.shipping_price
+                shippingPrice = (listing.contract_body.Contract.item_delivery.shipping_price > 0) ? listing.contract_body.Contract.item_delivery.shipping_price : 0
 
                 $scope.myself = myself;
                 $scope.merchantPubkey = merchantPubkey;
