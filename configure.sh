@@ -67,6 +67,7 @@ function installUbuntu {
   sudo apt-get update
   sudo apt-get install python-pip build-essential python-zmq tor privoxy rng-tools
   sudo apt-get install python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
+  sudo apt-get install alien libssl-dev
   sudo pip install -r requirements.txt
   pushd pysqlcipher
   sudo python setup.py install
