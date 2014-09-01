@@ -111,10 +111,14 @@
             <tbody>
             <tr>
                 <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
-                <td style="font-size:14px;word-wrap:break-word;word-break:break-all"><span title="{{myself.pubkey}}"><strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong><br>
-                    <span style="font-style:italic;font-size:12px">
-                        {{myself.nickname ? myself.nickname : myself.sin}}
-                        <!--<div data-ng-show="myself.uri">{{myself.uri}}</div>-->
+                <td style="font-size:14px;word-wrap:break-word;word-break:break-all">
+                    <span title="{{myself.pubkey}}">
+                        <strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong>
+                        <br>
+                        <span style="font-style:italic;font-size:12px">
+                            {{myself.nickname ? myself.nickname : myself.sin}}
+                            <!--<div data-ng-show="myself.uri">{{myself.uri}}</div>-->
+                        </span>
                     </span>
                 </td>
 
@@ -132,10 +136,14 @@
                 <tbody>
                 <tr data-ng-repeat="peer in peers" data-ng-click="go('/user/'+peer.guid)">
                     <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
-                    <td style="font-size:14px;word-wrap:break-word;word-break:break-all"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
-                        <span style="font-style:italic;font-size:12px">
-                            {{peer.nickname ? peer.nickname : peer.sin}}
-                            <!--<div data-ng-show="peer.uri">{{peer.uri}}</div>-->
+                    <td style="font-size:14px;word-wrap:break-word;word-break:break-all">
+                        <span title="{{peer.pubkey}}">
+                            <strong>{{peer.nick != "" ? peer.nick : peer.uri }}</strong>
+                            <br>
+                            <span style="font-style:italic;font-size:12px">
+                                {{peer.nickname ? peer.nickname : peer.sin}}
+                                <!--<div data-ng-show="peer.uri">{{peer.uri}}</div>-->
+                            </span>
                         </span>
                     </td>
                 </tr>
