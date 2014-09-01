@@ -593,8 +593,7 @@ obControllers
 
             $scope.BuyItemCtrl = function($scope, $modal, $log) {
 
-                $scope.open = function(size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
-                    notaries, arbiters, btc_pubkey, guid) {
+                $scope.open = function(size, myself, merchantPubkey, listing, notaries, arbiters, btc_pubkey) {
 
                     // Send socket a request for order info
                     //socket.send('query_order', { orderId: orderId } )
@@ -612,26 +611,11 @@ obControllers
                             myself: function() {
                                 return myself
                             },
-                            productTitle: function() {
-                                return productTitle
-                            },
-                            productPrice: function() {
-                                return productPrice
-                            },
-                            productDescription: function() {
-                                return productDescription
-                            },
-                            productImageData: function() {
-                                return productImageData
-                            },
-                            key: function() {
-                                return key
+                            listing: function() {
+                                return listing
                             },
                             btc_pubkey: function() {
                                 return btc_pubkey
-                            },
-                            rawContract: function() {
-                                return rawContract
                             },
                             notaries: function() {
                                 return notaries
@@ -639,12 +623,9 @@ obControllers
                             arbiters: function() {
                                 return arbiters
                             },
-                            guid: function() {
-                                return guid
-                            },
                             scope: function() {
                                 return $scope
-                            }
+                            },
                         },
                         size: size
                     });
@@ -667,13 +648,25 @@ obControllers
             };
 
 
-            $scope.BuyItemInstanceCtrl = function($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key,
-                rawContract,
+            $scope.BuyItemInstanceCtrl = function($scope,
+                $modalInstance,
+                myself,
+                merchantPubkey,
+                listing,
                 notaries,
                 arbiters,
                 btc_pubkey,
-                guid,
-                scope) {
+                scope)
+            {
+
+                productTitle = listing.contract_body.Contract.item_title
+                productPrice = listing.contract_body.Contract.item_price
+                productDescription = listing.contract_body.Contract.item_desc
+                productImageData = listing.contract_body.Contract.item_images
+                key = listing.key
+                rawContract = listing.signed_contract_body
+                guid = listing.contract_body.Seller.seller_GUID
+                shippingPrice = listing.contract_body.Contract.item_delivery.shipping_price
 
                 $scope.myself = myself;
                 $scope.merchantPubkey = merchantPubkey;
@@ -681,7 +674,8 @@ obControllers
                 $scope.productPrice = productPrice;
                 $scope.productDescription = productDescription;
                 $scope.productImageData = productImageData;
-                $scope.totalPrice = productPrice;
+                $scope.totalPrice = +(parseFloat(productPrice) + parseFloat(shippingPrice)).toFixed(8);
+                $scope.shippingPrice = shippingPrice;
                 $scope.productQuantity = 1;
                 $scope.rawContract = rawContract;
                 $scope.guid = guid;
