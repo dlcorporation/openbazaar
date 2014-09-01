@@ -1214,7 +1214,10 @@ obControllers
                 socket.send('get_notaries', {});
             }
 
-            $scope.generateNewSecret = function() {
+            $scope.generateNewSecret = function(e) {
+                if (e) {
+                    e.preventDefault();
+                }
 
                 var query = {
                     'type': 'generate_secret'
@@ -1845,7 +1848,10 @@ obControllers
                 $scope.searchPanel = false;
             }
 
-            $scope.showDashboardPanel = function(panelName) {
+            $scope.showDashboardPanel = function(panelName, e) {
+                if (e) {
+                    e.preventDefault();
+                }
 
                 resetPanels();
 
