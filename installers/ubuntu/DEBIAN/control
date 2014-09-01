@@ -4,7 +4,7 @@ Section: Networking
 Priority: optional
 Architecture: amd64
 Essential: no
-Depends: python-pip, python-dev, g++, libjpeg-dev, zlib1g-dev, sqlite3, openssl, build-essential, libzmq3, python-zmq, tor, privoxy, rng-tools
+Depends: python-pip, python-dev, g++, libjpeg-dev, zlib1g-dev, sqlite3, libssl-dev, openssl, build-essential, libzmq3, python-zmq, tor, privoxy, rng-tools
 Pre-Depends:
 Recommends:
 Suggests:
