@@ -66,7 +66,7 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hp:l:dn:a:b:c:u:oi:j:k:q:" OPTION
+while getopts "hp:l:dn:a:b:c:u:oi:jk:q:" OPTION
 do
      case ${OPTION} in
          h)
