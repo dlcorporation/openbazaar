@@ -10,6 +10,7 @@ import string
 import time
 import urllib
 from pybitcointools import *
+from decimal import Decimal
 
 
 class Orders(object):
@@ -147,7 +148,7 @@ class Orders(object):
                 shipping_price = 0
 
             try:
-                total_price = (float(shipping_price) + float(_order['item_price'])) \
+                total_price = str((Decimal(shipping_price) + Decimal(_order['item_price']))) \
                     if 'item_price' in _order else _order['item_price']
             except Exception as e:
                 self._log.error('Probably not a number %s' % e)
@@ -755,7 +756,7 @@ class Orders(object):
                     'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json[
                         'Contract'] else 0,
                     'shipping_price': offer_data_json['Contract']['item_delivery'][
-                        'shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else "",
+                        'shipping_price'] if 'shipping_price' in offer_data_json['Contract']['item_delivery'] else 0,
                     'note_for_merchant': bid_data_json['Buyer']['note_for_seller'],
                     "updated": time.time()
                 }
