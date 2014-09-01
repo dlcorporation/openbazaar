@@ -357,7 +357,8 @@ class Market(object):
         for keyword in contract_keywords:
             # Remove keyword from index
             hash_value = hashlib.new('ripemd160')
-            hash_value.update('keyword-%s' % keyword)
+            keyword_key = 'keyword-%s' % keyword
+            hash_value.update(keyword_key.encode('utf-8'))
             keyword_key = hash_value.hexdigest()
 
             self._transport._dht.iterativeStore(self._transport,
@@ -412,12 +413,14 @@ class Market(object):
             try:
                 contract_body = json.loads(u"%s" % contract['contract_body'])
                 item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
+                shipping_price = contract_body.get('Contract').get('item_delivery').get('shipping_price') if contract_body.get('Contract').get('item_delivery').get('shipping_price') > 0 else 0
                 my_contracts.append({"key": contract['key'] if 'key' in contract else "",
                                      "id": contract['id'] if 'id' in contract else "",
                                      "item_images": contract_body.get('Contract').get('item_images'),
                                      "signed_contract_body": contract['signed_contract_body'] if 'signed_contract_body' in contract else "",
                                      "contract_body": contract_body,
                                      "unit_price": item_price,
+                                     "shipping_price": shipping_price,
                                      "item_title": contract_body.get('Contract').get('item_title'),
                                      "item_desc": contract_body.get('Contract').get('item_desc'),
                                      "item_condition": contract_body.get('Contract').get('item_condition'),

@@ -610,7 +610,7 @@ class DHT(object):
 
         for node in nodes:
 
-            uri = 'tcp://%s:%s' % (node[0], node[1])
+            uri = 'tcp://[%s]:%s' % (node[0], node[1])
             guid = node[2]
 
             peer = self._routingTable.getContact(guid)
