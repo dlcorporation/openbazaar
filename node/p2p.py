@@ -48,7 +48,11 @@ class PeerConnection(object):
 
         try:
             s = self.create_socket()
-            s.connect(self._address)
+            try:
+                s.connect(self._address)
+            except:
+                s.ipv6 = True
+                s.connect(self._address)
 
             stream = zmqstream.ZMQStream(s, io_loop=ioloop.IOLoop.current())
             stream.send(compressed_data)

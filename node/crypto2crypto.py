@@ -96,7 +96,14 @@ class CryptoPeerConnection(PeerConnection):
             s.close()
             return True
         except:
-            return False
+            try:
+                s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+                s.settimeout(5)
+                s.connect((self._ip, self._port))
+                s.close()
+                return True
+            except:
+                return False
 
     def sign(self, data):
         self._log.info('secret %s' % self._transport.settings['secret'])
