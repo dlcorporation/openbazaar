@@ -65,7 +65,7 @@ echo ""
 
 function installUbuntu {
   sudo apt-get update
-  sudo apt-get install python-pip build-essential python-zmq tor privoxy rng-tools
+  sudo apt-get install python-pip build-essential python-zmq rng-tools
   sudo apt-get install python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
   sudo pip install -r requirements.txt
   pushd pysqlcipher
@@ -77,7 +77,7 @@ function installUbuntu {
 
 function installArch {
   sudo pacman -Sy
-  sudo pacman -S base-devel python2 python2-pip python2-pyzmq tor privoxy rng-tools
+  sudo pacman -S base-devel python2 python2-pip python2-pyzmq rng-tools
   sudo pacman -S gcc libjpeg zlib sqlite3 openssl
   sudo pip2 install -r requirements.txt
   pushd pysqlcipher
