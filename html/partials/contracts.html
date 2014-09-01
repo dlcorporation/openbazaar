@@ -29,17 +29,18 @@
 
         <table data-ng-show="total_contracts > 0" class="table table-striped table-bordered contract-table" style="margin-top:0px;">
             <tr>
-                <th><input type="checkbox"/></th>
+                <!--<th><input type="checkbox"/></th>-->
                 <th colspan=2>Product</th>
                 <th width=50>Quantity</th>
-                <th width=75>Price</th>
+                <th width=50>Price</th>
+                <th width="50">Shipping</th>
                 <th></th>
             </tr>
             <tr data-ng-repeat="contract in contracts" id="contract-row-{{contract.id}}">
-                <td width=15><input type="checkbox"/></td>
+                <!--<td width=15><input type="checkbox"/></td>-->
                 <td width=100 style="border-right:none;"><img data-ng-show="contract.item_images" src="{{contract.item_images}}" alt="" class="img-thumbnail" width=100 height=100></td>
-                <td  style="border-left:none;">
-                    <a href="#">{{contract.item_title}}</a>
+                <td style="border-left:none;">
+                    <strong style="font-size:20px">{{contract.item_title}}</strong>
                     <div class="contract-description">{{contract.item_desc}}</div>
                     <div style="font-size:14px">
                         <strong>Condition:</strong> {{contract.item_condition}}
@@ -51,10 +52,13 @@
 
                 </td>
                 <td width=50>{{contract.item_quantity_available}}</td>
-                <td width=50>&#3647;{{contract.unit_price}}</td>
+                <td>
+                    &#3647;{{contract.unit_price}}<br/>
+                </td>
+                <td>&#3647;{{contract.shipping_price}}</td>
                 <td width=100 align="center">
                     <div class="listing-button">
-                        <button type="button" class="btn btn-default btn-sm" data-ng-click="removeContract(contract.id)">
+                        <button type="button" class="btn btn-danger btn-sm" data-ng-click="removeContract(contract.id)">
                             <span class="glyphicon glyphicon-trash"></span> Remove
                         </button>
                     </div>
