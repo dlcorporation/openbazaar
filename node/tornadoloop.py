@@ -105,6 +105,8 @@ class MarketApplication(tornado.web.Application):
 
 def start_node(my_market_ip,
                my_market_port,
+               http_ip,
+               http_port,
                log_file,
                market_id,
                bm_user=None,
@@ -141,8 +143,6 @@ def start_node(my_market_ip,
                                     database)
 
     error = True
-    http_ip = '127.0.0.1'
-    http_port = 8888
     p2p_port = 12345
 
     while error and http_port < 8988:
@@ -192,6 +192,9 @@ if __name__ == "__main__":
     parser.add_argument("my_market_ip")
     parser.add_argument("-p", "--my_market_port",
                         type=int, default=12345)
+    # default secure behavior is to keep HTTP port private
+    parser.add_argument("-k", "--http_ip", default="127.0.0.1")
+    parser.add_argument("-q", "--http_port", type=int, default=8888)
     parser.add_argument("-l", "--log_file",
                         default='logs/production.log')
     parser.add_argument("-u", "--market_id",
@@ -217,6 +220,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     start_node(args.my_market_ip,
                args.my_market_port,
+               args.http_ip,
+               args.http_port,
                args.log_file,
                args.market_id,
                args.bmuser,
