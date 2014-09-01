@@ -86,7 +86,7 @@ class TransportLayer(object):
         self._guid = my_guid
         self._market_id = market_id
         self._nickname = nickname
-        self._uri = 'tcp://%s:%s' % (self._ip, self._port)
+        self._uri = 'tcp://[%s]:%s' % (self._ip, self._port)
 
         self._log = logging.getLogger(
             '[%s] %s' % (market_id, self.__class__.__name__)
@@ -138,7 +138,7 @@ class TransportLayer(object):
                 raise Exception(error_message)
 
         else:
-            self.socket.bind('tcp://*:%s' % self._port)
+            self.socket.bind('tcp://[*]:%s' % self._port)
 
         self.stream = zmqstream.ZMQStream(
             self.socket, io_loop=ioloop.IOLoop.current()
