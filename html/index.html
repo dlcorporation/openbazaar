@@ -38,37 +38,7 @@
 
 
 <div data-ng-show="settings.welcome">
-    <div data-ng-controller="WelcomeModalCtrl">
-        <script type="text/ng-template" id="myModalContent.html">
-
-            <div class="modal-header">
-                <h3 class="modal-title">Welcome to OpenBazaar</h3>
-            </div>
-
-            <div class="modal-body"  style="text-align:left;">
-                <p style="font-size:110%">
-                    <div role="alert" class="alert alert-danger">
-                        <strong>Stop and read this. Your money and privacy are at risk.</strong>
-                    </div>
-
-                    OpenBazaar is in beta. What this means for you:
-                    <ul>
-                        <li>You are <strong>not anonymous at all</strong> on the OpenBazaar network. Your IP is tied to contracts you sell, buy, or notarize. Malicious parties could use this information against you; protecting your privacy is your own responsibility.</li>
-                        <li>Transactions may fail for technical reasons, and <strong>you can lose your bitcoins</strong>. In early beta we recommend smaller transactions and only using the bitcoin testnet. The OpenBazaar dev team is not responsible for any lost Bitcoin or product issues.</li>
-                        <li>The software functionality will change over time. This means that <strong>you may lose your product listings</strong> or settings when we roll out new releases.</li>
-                        <li>Proof-of-burn address format will change, and <strong>reputation pledges will be lost</strong>. Don't pledge too much on your stores yet!</li>
-                        <li>There will be bugs. Submit a bug report in the <a href="http://forum.openbazaar.org">forums</a> or on Reddit, and please be patient.</li>
-                    </ul>
-
-                </p>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-primary" data-ng-click="ok()">Ok, let&apos;s get started!</button>
-            </div>
-
-        </script>
-    </div>
+    <div data-ng-controller="WelcomeModalCtrl" ng-include="'partials/welcome.html'"></div>
 </div>
 
 <div class="container" style="min-height: 100%;">

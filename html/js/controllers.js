@@ -1930,7 +1930,7 @@ obControllers
                     backdrop = backdrop ? backdrop : true;
 
                     var modalInstance = $modal.open({
-                        templateUrl: 'myModalContent.html',
+                        templateUrl: 'partials/welcome.html',
                         controller: ModalInstanceCtrl,
                         size: size,
                         backdrop: backdrop,
