@@ -165,7 +165,7 @@
             <label for="inputSecret" class="col-sm-3 control-label">Bitcoin Private Key</label>
             <div class="col-sm-9">
                 <input data-ng-model="settings.privkey" class="form-control" id="inputSecret" placeholder="" readonly>
-                <!--<a href="#" data-ng-click="generateNewSecret()">Generate a new secret</a>-->
+                <!--<a href="javascript:void(0)" data-ng-click="generateNewSecret()">Generate a new secret</a>-->
             </div>
         </div>
 
@@ -369,7 +369,7 @@
 	        <div id="previous-backups-container"
 	             data-ng-model="backups"
 	             data-ng-repeat="backup in backups">
-	        	<div ng-hide="!backups.length"><a class="col-sm-8" href="/html/backups/{{backup.file_name}}">{{backup.file_name}}</a> &nbsp;&nbsp; <!-- <a href="#" data-ng-click="deleteBackup('{{backup.file_name}}')">Delete</a> --></div>
+	        	<div ng-hide="!backups.length"><a class="col-sm-8" href="/html/backups/{{backup.file_name}}">{{backup.file_name}}</a> &nbsp;&nbsp; <!-- <a href="javascript:void(0)" data-ng-click="deleteBackup('{{backup.file_name}}')">Delete</a> --></div>
 	        	<div ng-hide="backups.length">No backup</div>
 	        </div>
         </div>

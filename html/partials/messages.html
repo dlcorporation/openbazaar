@@ -34,9 +34,9 @@
                 <td width=15><input type="checkbox"/></td>
                 <td style="border-left:none;">{{message.receivedTime * 1000 | date:'medium'}}</td>
                 <td style="border-left:none;"><identicon icon-size="32" hash="message.fromAddress" title="{{message.fromAddress}}"></identicon> {{message.fromAddress}}</td>
-                <td style="border-left:none;"><a href="#"
+                <td style="border-left:none;"><a href="javascript:void(0)"
                     ng-click="view('lg', myself, settings.bitmessage, message)">{{message.subject}}</a></td>
-                <td width="40" style="border-left:none;"><a href="#"
+                <td width="40" style="border-left:none;"><a href="javascript:void(0)"
                     ng-click="compose('lg', myself, settings.bitmessage, message)"><button class="btn btn-info">Reply</button></a></td>
             </tr>
         </table>
