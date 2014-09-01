@@ -35,7 +35,7 @@
                 <th width=75>Price</th>
                 <th></th>
             </tr>
-            <tr data-ng-repeat="contract in contracts">
+            <tr data-ng-repeat="contract in contracts" id="contract-row-{{contract.id}}">
                 <td width=15><input type="checkbox"/></td>
                 <td width=100 style="border-right:none;"><img data-ng-show="contract.item_images" src="{{contract.item_images}}" alt="" class="img-thumbnail" width=100 height=100></td>
                 <td  style="border-left:none;">

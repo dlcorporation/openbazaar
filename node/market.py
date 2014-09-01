@@ -357,7 +357,8 @@ class Market(object):
         for keyword in contract_keywords:
             # Remove keyword from index
             hash_value = hashlib.new('ripemd160')
-            hash_value.update('keyword-%s' % keyword)
+            keyword_key = 'keyword-%s' % keyword
+            hash_value.update(keyword_key.encode('utf-8'))
             keyword_key = hash_value.hexdigest()
 
             self._transport._dht.iterativeStore(self._transport,
