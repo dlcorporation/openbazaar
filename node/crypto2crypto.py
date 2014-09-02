@@ -186,9 +186,15 @@ class CryptoTransportLayer(TransportLayer):
             if not self._connect_to_bitmessage(bm_user, bm_pass, bm_port):
                 self._log.info('Bitmessage not installed or started')
 
+        try:
+            socket.inet_pton(socket.AF_INET6, my_ip)
+            my_uri = "tcp://[%s]:%s" % (my_ip, my_port)
+        except socket.error:
+            my_uri = "tcp://%s:%s" % (my_ip, my_port)
+
         self._market_id = market_id
         self.nick_mapping = {}
-        self._uri = "tcp://[%s]:%s" % (my_ip, my_port)
+        self._uri = my_uri
         self._ip = my_ip
         self._nickname = ""
         self._dev_mode = dev_mode
@@ -231,7 +237,12 @@ class CryptoTransportLayer(TransportLayer):
                 ip = ip.strip(' \t\n\r')
                 if ip != self._ip:
                     self._ip = ip
-                    self._uri = 'tcp://[%s]:%s' % (self._ip, self._port)
+                    try:
+                        socket.inet_pton(socket.AF_INET6, self._ip)
+                        my_uri = 'tcp://[%s]:%s' % (self._ip, self._port)
+                    except socket.error:
+                        my_uri = 'tcp://%s:%s' % (self._ip, self._port)
+                    self._uri = my_uri
                     self.stream.close()
                     self.listen(self.pubkey)
 
@@ -456,7 +467,11 @@ class CryptoTransportLayer(TransportLayer):
 
         # Connect up through seed servers
         for idx, seed in enumerate(seed_peers):
-            seed_peers[idx] = "tcp://[%s]:12345" % seed
+            try:
+                socket.inet_pton(socket.AF_INET6, seed)
+                seed_peers[idx] = "tcp://[%s]:12345" % seed
+            except socket.error:
+                seed_peers[idx] = "tcp://%s:12345" % seed
 
         # Connect to persisted peers
         db_peers = self.get_past_peers()

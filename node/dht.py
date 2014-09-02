@@ -8,6 +8,7 @@ import logging
 import os
 import routingtable
 import time
+import socket
 
 
 class DHT(object):
@@ -610,7 +611,12 @@ class DHT(object):
 
         for node in nodes:
 
-            uri = 'tcp://[%s]:%s' % (node[0], node[1])
+            try:
+                socket.inet_pton(socket.AF_INET6, node[0])
+                uri = 'tcp://[%s]:%s' % (node[0], node[1])
+            except socket.error:
+                uri = 'tcp://%s:%s' % (node[0], node[1])
+
             guid = node[2]
 
             peer = self._routingTable.getContact(guid)
