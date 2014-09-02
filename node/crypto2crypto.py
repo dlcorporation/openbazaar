@@ -93,17 +93,20 @@ class CryptoPeerConnection(PeerConnection):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(5)
             s.connect((self._ip, self._port))
-            s.close()
-            return True
-        except:
+        except socket.error:
             try:
                 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                 s.settimeout(5)
                 s.connect((self._ip, self._port))
-                s.close()
-                return True
-            except:
+            except socket.error as e:
+                self._log.error("socket error on %s: %s" % (self._ip, e))
                 return False
+        except TypeError:
+            self._log.error("tried connecting to invalid address: %s" % self._ip)
+            return False
+
+        s.close()
+        return True
 
     def sign(self, data):
         self._log.info('secret %s' % self._transport.settings['secret'])

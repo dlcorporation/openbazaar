@@ -12,6 +12,7 @@ import traceback
 import zlib
 import zmq
 import socket
+import errno
 
 
 class PeerConnection(object):
@@ -51,7 +52,9 @@ class PeerConnection(object):
             s = self.create_socket()
             try:
                 s.connect(self._address)
-            except:
+            except zmq.ZMQError as e:
+                if e.errno != errno.EINVAL:
+                    raise
                 s.ipv6 = True
                 s.connect(self._address)
 
@@ -77,6 +80,7 @@ class PeerConnection(object):
         except Exception as e:
             self._log.error(e)
             # shouldn't we raise the exception here???? I think not doing this could cause buggy behavior on top
+            raise
 
 
 # Transport layer manages a list of peers
