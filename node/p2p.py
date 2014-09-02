@@ -11,6 +11,7 @@ import network_util
 import traceback
 import zlib
 import zmq
+import socket
 
 
 class PeerConnection(object):
@@ -90,7 +91,13 @@ class TransportLayer(object):
         self._guid = my_guid
         self._market_id = market_id
         self._nickname = nickname
-        self._uri = 'tcp://[%s]:%s' % (self._ip, self._port)
+
+        try:
+            socket.inet_pton(socket.AF_INET6, my_ip)
+            my_uri = 'tcp://[%s]:%s' % (self._ip, self._port)
+        except socket.error:
+            my_uri = 'tcp://%s:%s' % (self._ip, self._port)
+        self._uri = my_uri
 
         self._log = logging.getLogger(
             '[%s] %s' % (market_id, self.__class__.__name__)
