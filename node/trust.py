@@ -1,6 +1,7 @@
 import obelisk
 import logging
 import pybitcointools
+from threading import Thread
 
 # from twisted.internet import reactor
 
@@ -23,7 +24,6 @@ TESTNET = False
 #         unspent_infos.append(
 #             obelisk.OutputInfo(outpoint, value))
 #     return unspent_infos
-
 
 def burnaddr_from_guid(guid_hex):
     _log.debug("burnaddr_from_guid: %s" % guid_hex)
@@ -50,10 +50,8 @@ def burnaddr_from_guid(guid_hex):
 
     return obelisk.bitcoin.EncodeBase58Check(guid)
 
-
 def get_global(guid, callback):
     get_unspent(burnaddr_from_guid(guid), callback)
-
 
 def get_unspent(addr, callback):
     _log.debug('get_unspent call')
@@ -98,10 +96,15 @@ def get_unspent(addr, callback):
 
     # reactor.callFromThread(get_history)
 
-    history = pybitcointools.history(addr)
-    total = 0
+    def get_history():
 
-    for tx in history:
-        total += tx['value']
+        history = pybitcointools.history(addr)
+        total = 0
 
-    callback(total)
+        for tx in history:
+            total += tx['value']
+
+        callback(total)
+
+    t = Thread(target=get_history)
+    t.start()

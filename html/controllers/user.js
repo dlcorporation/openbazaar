@@ -24,6 +24,7 @@ angular.module('app')
             Connection.$on('page', function(e, msg){ $scope.parse_page(msg) });
             Connection.$on('store_products', function(e, msg){ $scope.parse_store_products(msg) });
             Connection.$on('new_listing', function(e, msg){ $scope.parse_new_listing(msg) });
+            Connection.$on('reputation_pledge_update', function(e, msg){ $scope.parse_reputation_pledge_update(msg) });
 
             $scope.load_page = function(msg) {
                 console.log($scope.path)
@@ -48,7 +49,13 @@ angular.module('app')
 
             }
 
-
+            $scope.parse_reputation_pledge_update = function(msg) {
+                console.log('test', $scope.page);
+                $scope.page.reputation_pledge = (msg.value) ? msg.value : 0;
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+            }
 
 
             /**
@@ -95,6 +102,7 @@ angular.module('app')
                 if (!$scope.dashboard) {
                     $scope.currentReviews = $scope.reviews[msg.pubkey]
                     $scope.page = msg
+                    $scope.page.reputation_pledge = 0;
 
                     // Write in store content into the HTML
                     var contentDiv = document.getElementById('page-content')

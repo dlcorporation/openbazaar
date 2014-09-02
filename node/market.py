@@ -63,7 +63,6 @@ class Market(object):
                                        ('peer', self.on_peer),
                                        ('query_page', self.on_query_page),
                                        ('query_listings', self.on_query_listings),
-                                       ('page', self.on_page),
                                        ('negotiate_pubkey', self.on_negotiate_pubkey),
                                        ('proto_response_pubkey', self.on_response_pubkey)])
 
@@ -501,23 +500,16 @@ class Market(object):
 
     def on_page(self, page):
         guid = page.get('senderGUID')
+        self._log.info(page)
 
-        # TODO: allow async calling in different thread
-        def reputation_pledge_retrieved(amount):
-            self._log.debug('Received reputation pledge amount %s for guid %s' % (amount, guid))
-            SATOSHIS_IN_BITCOIN = 100000000
-            bitcoins = float(amount) / SATOSHIS_IN_BITCOIN
-            bitcoins = round(bitcoins, 4)
-            page['reputation_pledge'] = bitcoins
-
-        trust.get_global(guid, reputation_pledge_retrieved)
         sin = page.get('sin')
-        page = page.get('text')
 
         self._log.info("Received store info from node: %s" % page)
 
         if sin and page:
             self.pages[sin] = page
+
+        #trust.get_global(guid, lambda amount, page=page: reputation_pledge_retrieved(amount, page))
 
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
