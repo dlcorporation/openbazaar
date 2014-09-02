@@ -22,8 +22,7 @@ angular.module('app')
             Connection.$on('contracts', function(e, msg){ $scope.parse_contracts(msg) });
 
             $scope.load_page = function(msg) {
-                console.log($scope.path)
-                    console.log('test')
+                console.log($scope.path);
                     $scope.sidebar = false;
                     $scope.queryContracts();
 
@@ -196,6 +195,8 @@ angular.module('app')
                 $scope.toggleItemAdvanced = function() {
                     $scope.itemAdvancedDetails = ($scope.itemAdvancedDetails) ? 0 : 1;
                 }
+
+                $scope.load_page({});
             };
 
         }

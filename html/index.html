@@ -70,22 +70,22 @@
                 <div class="row col-sm-12" style="padding-right:0">
                     <div id="header-navigation">
                         <ul class="nav nav-pills">
-                             <li><a href="#/dashboard">Home</a></li>
-                            <li class="dropdown"><a href="#orders" data-toggle="dropdown" class="dropdown-toggle">Orders <b class="caret"></b></a>
+                             <li><a data-ng-href="#/dashboard">Home</a></li>
+                            <li class="dropdown"><a data-ng-href="#orders" data-toggle="dropdown" class="dropdown-toggle">Orders <b class="caret"></b></a>
                                 <ul class="dropdown-menu" role="menu">
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#/orders/sales">My Sales</a></li>
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#/orders/purchases">My Purchases</a></li>
+                                    <li role="presentation"><a role="menuitem" tabindex="-1" data-ng-href="#/orders/sales">My Sales</a></li>
+                                    <li role="presentation"><a role="menuitem" tabindex="-1" data-ng-href="#/orders/purchases">My Purchases</a></li>
                                 </ul>
                             </li>
-                            <li><a href="#/contracts">Contracts</a></li>
-                            <li class="dropdown"><a href="#arbitration" data-toggle="dropdown" class="dropdown-toggle">Arbitration <b class="caret"></b></a>
+                            <li><a data-ng-href="#/contracts">Contracts</a></li>
+                            <li class="dropdown"><a data-ng-="#arbitration" data-toggle="dropdown" class="dropdown-toggle">Arbitration <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="#" data-ng-click="showDashboardPanel('arbitration', $event)">My Cases</a></li>
-                                    <li><a href="#" data-ng-click="$event.preventDefault()">Find Arbiters/Notaries</a></li>
+                                    <li><a data-ng-href="#" data-ng-click="showDashboardPanel('arbitration', $event)">My Cases</a></li>
+                                    <li><a data-ng-href="#" data-ng-click="$event.preventDefault()">Find Arbiters/Notaries</a></li>
                                 </ul>
                             </li>
-                            <li><a href="#messages" data-ng-click="showDashboardPanel('messages')">Messages <span data-ng-show="BMMessages" class="badge pull-right">1</span></a></li>
-                            <li><a href="#settings">Settings</a></li>
+                            <li><a data-ng-href="#/messages" data-ng-click="showDashboardPanel('messages')">Messages <span data-ng-show="BMMessages" class="badge pull-right">1</span></a></li>
+                            <li><a data-ng-href="#/settings">Settings</a></li>
                             <li><identicon icon-size="30" hash="myself.guid" title="{{myself.guid}}" ></identicon></li>
                         </ul>
 
@@ -140,7 +140,7 @@
         <div class="peers-area" >
             <table id="favorite-peers" class="peers-table table-hover">
                 <tbody>
-                <tr data-ng-repeat="peer in peers" data-ng-click="go('/user/'+peer.guid)">
+                <tr data-ng-repeat="peer in peers" data-ng-click="go('/user/'+peer.guid, peer.guid)">
                     <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
                     <td style="font-size:14px;word-wrap:break-word;word-break:break-all">
                         <span title="{{peer.pubkey}}">

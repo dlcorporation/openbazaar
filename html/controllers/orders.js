@@ -227,5 +227,7 @@ angular.module('app')
                 };
             };
 
+            $scope.load_page({});
+
         }
     ]);

@@ -48,6 +48,7 @@ angular.module('app')
 
             }
 
+
             /**
              * Query the network for a merchant and then
              * show the page
@@ -335,6 +336,10 @@ angular.module('app')
                             $("#orderSuccessAlert").alert('close')
                         }, 5000);
 
+                        if (!$scope.$$phase) {
+                            $scope.$apply();
+                        }
+
                     }, function() {
                         $log.info('Modal dismissed at: ' + new Date());
 
@@ -446,8 +451,10 @@ angular.module('app')
                     window.location = '#/orders/purchases';
                 }
 
-
+                $scope.load_page({});
 
             };
+
+            $scope.load_page({});
         }
     ]);
