@@ -338,16 +338,14 @@ angular.module('app')
                 btc_pubkey,
                 scope) {
 
-                console.log(listing);
-
                 $scope.myself = myself;
                 $scope.merchantPubkey = merchantPubkey;
                 $scope.productTitle = listing.contract_body.Contract.item_title;
-                $scope.productPrice = listing.contract_body.Contract.item_price;
+                $scope.productPrice = (listing.contract_body.Contract.item_price != "") ? +listing.contract_body.Contract.item_price : 0;
                 $scope.productDescription = listing.contract_body.Contract.item_desc;
                 $scope.productImageData = listing.contract_body.Contract.item_images;
-                $scope.shippingPrice = listing.contract_body.Contract.item_delivery.shipping_price;
-                $scope.totalPrice = +$scope.ProductPrice + +$scope.shippingPrice;
+                $scope.shippingPrice = (listing.contract_body.Contract.item_delivery.hasOwnProperty('shipping_price')) ? listing.contract_body.Contract.item_delivery.shipping_price : 0;
+                $scope.totalPrice = +(parseFloat($scope.productPrice) + parseFloat($scope.shippingPrice)).toPrecision(8);
                 $scope.productQuantity = 1;
                 $scope.rawContract = listing.signed_contract_body;
                 $scope.guid = listing.contract_body.Seller.seller_GUID;
@@ -373,7 +371,7 @@ angular.module('app')
                 $scope.updateTotal = function() {
                     var newPrice = $('#itemQuantity').val() * $scope.productPrice;
                     newPrice = Math.round(newPrice * 100000) / 100000
-                    $('#totalPrice').html(newPrice);
+                    $('#totalPrice').html(+(parseFloat(newPrice) + parseFloat($scope.shippingPrice)).toPrecision(8));
                 }
 
                 $scope.gotoStep2 = function() {
@@ -418,7 +416,7 @@ angular.module('app')
                         'sellerGUID': $scope.guid,
                         'listingKey': $scope.key,
                         'orderTotal': $('#totalPrice').html(),
-                        'rawContract': rawContract,
+                        'rawContract': $scope.rawContract,
                         'notary': $scope.order.notary,
                         'btc_pubkey': $scope.order.btc_pubkey,
                         'arbiter': $scope.order.arbiter

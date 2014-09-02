@@ -165,7 +165,7 @@ class Orders(object):
                  "order_id": _order.get('order_id'),
                  "item_price": _order.get('item_price'),
                  "shipping_price": _order.get('shipping_price'),
-                 "shipping_address": _order.get('shipping_address') if _order.get("shipping_address") != "" else "",
+                 "shipping_address": str(_order.get('shipping_address')) if _order.get("shipping_address") != "" else "",
                  "total_price": total_price,
                  "notary": notary,
                  "payment_address": _order.get('payment_address'),
@@ -434,7 +434,7 @@ class Orders(object):
         buyer['Buyer']['buyer_GUID'] = self._transport._guid
         buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
         buyer['Buyer']['buyer_pgp'] = self._transport.settings['PGPPubKey']
-        buyer['Buyer']['buyer_deliveryaddr'] = seller.encrypt(str(json.dumps(self.get_shipping_address()))).encode(
+        buyer['Buyer']['buyer_deliveryaddr'] = seller.encrypt(json.dumps(self.get_shipping_address())).encode(
             'hex')
         buyer['Buyer']['note_for_seller'] = msg['message']
         buyer['Buyer']['buyer_order_id'] = order_id
@@ -475,7 +475,7 @@ class Orders(object):
                 'market_id': self._transport._market_id,
                 'contract_key': contract_key,
                 'signed_contract_body': str(signed_data),
-                'shipping_address': json.dumps(self.get_shipping_address()),
+                'shipping_address': str(json.dumps(self.get_shipping_address())),
                 'state': Orders.State.NEW,
                 'updated': time.time(),
                 'note_for_merchant': msg['message']
@@ -738,6 +738,9 @@ class Orders(object):
 
             buyer_id = str(bid_data_json['Buyer']['buyer_GUID']) + '-' + str(bid_data_json['Buyer']['buyer_order_id'])
 
+            print 'Decrypted Address %s' %  self._transport._myself.decrypt(
+                        bid_data_json['Buyer']['buyer_deliveryaddr'].decode('hex'))
+
             self._db.insertEntry(
                 "orders",
                 {
@@ -780,7 +783,7 @@ class Orders(object):
                     'buyer': bid_data_json['Buyer']['buyer_GUID'],
                     'notary': notary_data_json['Notary']['notary_GUID'],
                     'address': multisig_address,
-                    'shipping_address': self.get_shipping_address(),
+                    'shipping_address': json.dumps(self.get_shipping_address()),
                     'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json[
                         'Contract'] else 0,
                     'shipping_price': offer_data_json['Contract']['item_delivery'][
