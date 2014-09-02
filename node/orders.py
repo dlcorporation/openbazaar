@@ -101,9 +101,6 @@ class Orders(object):
         bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
         end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
 
-        # Find Notary Data in Contract
-        notary_data_index = offer_data.find('"Notary"', end_of_bid_index, len(offer_data))
-
         buyer_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
 
         buyer_data_json = json.loads(buyer_data_json)
