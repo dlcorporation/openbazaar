@@ -14,8 +14,6 @@ OpenBazaar is a decentralized marketplace proof of concept. It is based off of t
 - **Original Presentation at Toronto Hackathon:** https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
 - **Slides from 'Bitcoin in the Beltway' by Brian Hoffman:** http://www.slideshare.net/openbazaar/open-bazaar
 
-**Online Test Drive:** http://seed.openbazaar.org:8888
-
 ## Support
 You can financially support the project by either:
 
