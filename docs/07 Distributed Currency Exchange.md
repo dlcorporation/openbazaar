@@ -19,7 +19,7 @@ To create a currency Ricardian contract for a crypto-crypto exchange, a *seed co
 
 1. Crypto-currency pair (e.g. Litecoin/Bitcoin; LTC/BTC)
 2. Exchange rate for the currency pair (e.g. 0.01637)
-3. Type (i.e buy, sell)
+3. Type (i.e. buy, sell)
 4. Size (i.e. amount of the currency to buy/sell)
 5. Payment address
 
