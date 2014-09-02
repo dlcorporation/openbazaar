@@ -103,7 +103,6 @@ class Orders(object):
 
         # Find Notary Data in Contract
         notary_data_index = offer_data.find('"Notary"', end_of_bid_index, len(offer_data))
-        end_of_notary_index = offer_data.find('-----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data))
 
         buyer_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
 
