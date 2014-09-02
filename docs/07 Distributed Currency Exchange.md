@@ -218,7 +218,7 @@ For a fiat-fiat exchange, the *seed contract* will need the following data field
 
 1. Fiat-fiat currency pair (e.g. Euro/US dollar; EUR/USD)
 2. Exchange rate for the currency pair (e.g. $1.36 EUR/USD)
-3. Type (i.e buy, sell)
+3. Type (i.e. buy, sell)
 4. Size (i.e. amount of the currency to buy/sell)
 5. Bank details (this data field can be blinded until funds are transferred to the bitcoin multisignature escrow address)
 
