@@ -16,18 +16,24 @@
 
     <script src="/html/bower_components/jasny-bootstrap/dist/js/jasny-bootstrap.min.js"></script>
     <!--<script src="/html/js/xlat.js"></script>-->
-    <script src="/html/js/notifier.js" type="text/javascript"></script>
+    <script src="/html/vendors/notifier.js" type="text/javascript"></script>
 
-    <script src="/html/js/ws.js" type="text/javascript"></script>
-    <script src="/html/js/app.js" type="text/javascript"></script>
-    <script src="/html/js/controllers.js" type="text/javascript"></script>
+    <script src="/html/app.js" type="text/javascript"></script>
+    <script src="/html/services/connection.js" type="text/javascript"></script>
+    <script src="/html/controllers/contracts.js" type="text/javascript"></script>
+    <script src="/html/controllers/market.js" type="text/javascript"></script>
+    <script src="/html/controllers/messages.js" type="text/javascript"></script>
+    <script src="/html/controllers/orders.js" type="text/javascript"></script>
+    <script src="/html/controllers/search.js" type="text/javascript"></script>
+    <script src="/html/controllers/settings.js" type="text/javascript"></script>
+    <script src="/html/controllers/user.js" type="text/javascript"></script>
 
     <!-- CSS -->
     <link href="/html/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="/html/bower_components/jasny-bootstrap/dist/css/jasny-bootstrap.min.css" rel="stylesheet" media="screen" />
     <link href="/html/css/dark.css" rel="stylesheet" type="text/css" />
     <link href="/html/css/animate.css" rel="stylesheet" type="text/css" />
-    <link href="/html/less/css/app.css" rel="stylesheet" type="text/css" />
+    <link href="/html/css/app.css" rel="stylesheet" type="text/css" />
     <link href="/html/css/messaging.css" rel="stylesheet" type="text/css" />
 
     <link rel="icon" href="/html/favicon.ico" />
@@ -35,41 +41,6 @@
 
 
 <body data-ng-controller="Market as market" data-ng-init="">
-
-
-<div data-ng-show="settings.welcome">
-    <div data-ng-controller="WelcomeModalCtrl">
-        <script type="text/ng-template" id="myModalContent.html">
-
-            <div class="modal-header">
-                <h3 class="modal-title">Welcome to OpenBazaar</h3>
-            </div>
-
-            <div class="modal-body"  style="text-align:left;">
-                <p style="font-size:110%">
-                    <div role="alert" class="alert alert-danger">
-                        <strong>Stop and read this. Your money and privacy are at risk.</strong>
-                    </div>
-
-                    OpenBazaar is in beta. What this means for you:
-                    <ul>
-                        <li>You are <strong>not anonymous at all</strong> on the OpenBazaar network. Your IP is tied to contracts you sell, buy, or notarize. Malicious parties could use this information against you; protecting your privacy is your own responsibility.</li>
-                        <li>Transactions may fail for technical reasons, and <strong>you can lose your bitcoins</strong>. In early beta we recommend smaller transactions and only using the bitcoin testnet. The OpenBazaar dev team is not responsible for any lost Bitcoin or product issues.</li>
-                        <li>The software functionality will change over time. This means that <strong>you may lose your product listings</strong> or settings when we roll out new releases.</li>
-                        <li>Proof-of-burn address format will change, and <strong>reputation pledges will be lost</strong>. Don't pledge too much on your stores yet!</li>
-                        <li>There will be bugs. Submit a bug report in the <a href="http://forum.openbazaar.org">forums</a> or on Reddit, and please be patient.</li>
-                    </ul>
-
-                </p>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-primary" data-ng-click="ok()">Ok, let&apos;s get started!</button>
-            </div>
-
-        </script>
-    </div>
-</div>
 
 <div class="container" style="min-height: 100%;">
 
@@ -109,8 +80,8 @@
                             <li><a href="#/contracts">Contracts</a></li>
                             <li class="dropdown"><a href="#arbitration" data-toggle="dropdown" class="dropdown-toggle">Arbitration <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="#" data-ng-click="showDashboardPanel('arbitration')">My Cases</a></li>
-                                    <li><a href="#">Find Arbiters/Notaries</a></li>
+                                    <li><a href="#" data-ng-click="showDashboardPanel('arbitration', $event)">My Cases</a></li>
+                                    <li><a href="#" data-ng-click="$event.preventDefault()">Find Arbiters/Notaries</a></li>
                                 </ul>
                             </li>
                             <li><a href="#messages" data-ng-click="showDashboardPanel('messages')">Messages <span data-ng-show="BMMessages" class="badge pull-right">1</span></a></li>
@@ -146,10 +117,15 @@
             <tbody>
             <tr>
                 <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="myself.guid" title="{{myself.guid}}"></identicon></td>
-                <td style="font-size:14px;word-wrap:break-word;word-break:break-all"><span title="{{myself.pubkey}}"><strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong><br>
-                    <span style="font-style:italic;font-size:12px">{{myself.nickname ? myself.nickname : myself.sin}}
-                        <!--<div data-ng-show="myself.uri">{{myself.uri}}</div>-->
-                        </span></span>
+                <td style="font-size:14px;word-wrap:break-word;word-break:break-all">
+                    <span title="{{myself.pubkey}}">
+                        <strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong>
+                        <br>
+                        <span style="font-style:italic;font-size:12px">
+                            {{myself.nickname ? myself.nickname : myself.sin}}
+                            <!--<div data-ng-show="myself.uri">{{myself.uri}}</div>-->
+                        </span>
+                    </span>
                 </td>
 
 
@@ -166,10 +142,16 @@
                 <tbody>
                 <tr data-ng-repeat="peer in peers" data-ng-click="go('/user/'+peer.guid)">
                     <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
-                    <td style="font-size:14px;word-wrap:break-word;word-break:break-all"><strong><span title="{{peer.pubkey}}">{{peer.nick != "" ? peer.nick : peer.uri }}</strong><br>
-                      <span style="font-style:italic;font-size:12px">{{peer.nickname ? peer.nickname : peer.sin}}
-                        <!--<div data-ng-show="peer.uri">{{peer.uri}}</div>-->
-                        </span></span></td>
+                    <td style="font-size:14px;word-wrap:break-word;word-break:break-all">
+                        <span title="{{peer.pubkey}}">
+                            <strong>{{peer.nick != "" ? peer.nick : peer.uri }}</strong>
+                            <br>
+                            <span style="font-style:italic;font-size:12px">
+                                {{peer.nickname ? peer.nickname : peer.sin}}
+                                <!--<div data-ng-show="peer.uri">{{peer.uri}}</div>-->
+                            </span>
+                        </span>
+                    </td>
                 </tr>
                 </tbody>
             </table>
