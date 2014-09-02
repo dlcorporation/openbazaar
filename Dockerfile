@@ -4,13 +4,11 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get install -y python-pip build-essential python-zmq rng-tools
 RUN apt-get install -y python-dev g++ libjpeg-dev zlib1g-dev sqlite3 openssl
-RUN apt-get install -y alien libssl-dev wget python-virtualenv
+RUN apt-get install -y alien libssl-dev wget
 
 ADD . /bazaar
-RUN cd /bazaar && virtualenv env
-ENV PIP /bazaar/env/bin/pip
-RUN cd /bazaar && $PIP install -r requirements.txt &&\
-    $PIP install ./pysqlcipher
+RUN cd /bazaar && pip install -r requirements.txt &&\
+    pip install ./pysqlcipher
 
 EXPOSE 8888 12345
 
