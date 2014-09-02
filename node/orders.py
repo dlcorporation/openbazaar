@@ -176,7 +176,7 @@ class Orders(object):
         # Generate QR code
         print offer_data_json
         qr = self.get_qr_code(offer_data_json['Contract']['item_title'], _order['address'], total_price)
-        merchant_bitmessage = offer_data_json['Seller']['seller_Bitmessage'] if 'Seller' in offer_data_json else ""
+        merchant_bitmessage = offer_data_json.get('Seller').get('seller_Bitmessage') if 'Seller' in offer_data_json else ""
         buyer_bitmessage = buyer_data_json.get('Buyer').get('buyer_Bitmessage') if 'Buyer' in buyer_data_json else ""
 
         # Get order prototype object before storing
