@@ -99,10 +99,13 @@ class Orders(object):
 
         # Find Buyer Data in Contract
         bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
-        end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+        if state in [Orders.State.SENT]:
+            end_of_bid_index = offer_data.find('-----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+        else:
+            end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
 
         buyer_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
-
+        print buyer_data_json
         buyer_data_json = json.loads(buyer_data_json)
 
         return buyer_data_json
@@ -289,6 +292,8 @@ class Orders(object):
         del order['item_image']
         del order['total_price']
         del order['item_title']
+        del order['buyer_bitmessage']
+        del order['merchant_bitmessage']
 
         order['state'] = Orders.State.SHIPPED
         order['payment_address'] = payment_address
@@ -346,6 +351,8 @@ class Orders(object):
         del new_order['item_image']
         del new_order['total_price']
         del new_order['item_title']
+        del new_order['buyer_bitmessage']
+        del new_order['merchant_bitmessage']
 
         self._db.updateEntries("orders", {"order_id": order_id}, new_order)
 
