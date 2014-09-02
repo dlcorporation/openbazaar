@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 usage()
 {
@@ -20,14 +21,16 @@ OPTIONS:
   -c    Bitmessage API port
   -u    Market ID
   -j    Disable upnp
+  -s    List of additional seeds
 EOF
 }
 
-if which python2 2>/dev/null; then
-    PYTHON=python2
-else
-    PYTHON=python
+PYTHON="./env/bin/python"
+if [ ! -x $PYTHON ]; then
+  echo "No python executable found at ${PYTHON}"
 fi
+
+export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
 
 # Default values
 SERVER_PORT=12345
@@ -66,7 +69,7 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hp:l:dn:a:b:c:u:oi:jk:q:" OPTION
+while getopts "hp:l:dn:a:b:c:u:oi:jk:q:s:" OPTION
 do
      case ${OPTION} in
          h)
@@ -112,6 +115,9 @@ do
          q)
              HTTP_PORT=$OPTARG
              ;;
+         s)
+             SEED_URI_ADD=$OPTARG
+             ;;
          ?)
              usage
              exit
@@ -119,6 +125,7 @@ do
      esac
 done
 
+SEED_URI+=" $SEED_URI_ADD"
 HTTP_OPTS="-k $HTTP_IP -q $HTTP_PORT"
 
 if [ -z "$SERVER_IP" ]; then

@@ -49,6 +49,8 @@ angular.module('app')
             }
 
 
+
+
             /**
              * Query the network for a merchant and then
              * show the page
@@ -270,8 +272,8 @@ angular.module('app')
 
             $scope.BuyItemCtrl = function($scope, $modal, $log) {
 
-                $scope.open = function(size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
-                    notaries, arbiters, btc_pubkey, guid) {
+                $scope.open = function(size, myself, merchantPubkey, listing,
+                    notaries, arbiters, btc_pubkey) {
 
                     // Send socket a request for order info
                     //Connection.send('query_order', { orderId: orderId } )
@@ -289,26 +291,8 @@ angular.module('app')
                             myself: function() {
                                 return myself
                             },
-                            productTitle: function() {
-                                return productTitle
-                            },
-                            productPrice: function() {
-                                return productPrice
-                            },
-                            productDescription: function() {
-                                return productDescription
-                            },
-                            productImageData: function() {
-                                return productImageData
-                            },
-                            key: function() {
-                                return key
-                            },
                             btc_pubkey: function() {
                                 return btc_pubkey
-                            },
-                            rawContract: function() {
-                                return rawContract
                             },
                             notaries: function() {
                                 return notaries
@@ -316,8 +300,8 @@ angular.module('app')
                             arbiters: function() {
                                 return arbiters
                             },
-                            guid: function() {
-                                return guid
+                            listing: function() {
+                                return listing
                             },
                             scope: function() {
                                 return $scope
@@ -348,29 +332,30 @@ angular.module('app')
             };
 
 
-            $scope.BuyItemInstanceCtrl = function($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key,
-                rawContract,
+            $scope.BuyItemInstanceCtrl = function($scope, $modalInstance, myself, merchantPubkey, listing,
                 notaries,
                 arbiters,
                 btc_pubkey,
-                guid,
                 scope) {
+
+                console.log(listing);
 
                 $scope.myself = myself;
                 $scope.merchantPubkey = merchantPubkey;
-                $scope.productTitle = productTitle;
-                $scope.productPrice = productPrice;
-                $scope.productDescription = productDescription;
-                $scope.productImageData = productImageData;
-                $scope.totalPrice = productPrice;
+                $scope.productTitle = listing.contract_body.Contract.item_title;
+                $scope.productPrice = listing.contract_body.Contract.item_price;
+                $scope.productDescription = listing.contract_body.Contract.item_desc;
+                $scope.productImageData = listing.contract_body.Contract.item_images;
+                $scope.shippingPrice = listing.contract_body.Contract.item_delivery.shipping_price;
+                $scope.totalPrice = +$scope.ProductPrice + +$scope.shippingPrice;
                 $scope.productQuantity = 1;
-                $scope.rawContract = rawContract;
-                $scope.guid = guid;
+                $scope.rawContract = listing.signed_contract_body;
+                $scope.guid = listing.contract_body.Seller.seller_GUID;
                 $scope.arbiters = arbiters;
 
                 $scope.notaries = notaries
 
-                $scope.key = key;
+                $scope.key = listing.key;
 
                 $scope.update = function(user) {
                     console.log('Updated');
@@ -408,11 +393,11 @@ angular.module('app')
                 $scope.order = {
                     message: '',
                     tx: '',
-                    listingKey: key,
+                    listingKey: listing.key,
                     listingTotal: '',
                     productTotal: '',
                     productQuantity: 1,
-                    rawContract: rawContract,
+                    rawContract: listing.signed_contract_body,
                     btc_pubkey: btc_pubkey
                 }
                 $scope.order.notary = ($scope.notaries.length > 0) ? $scope.notaries[0].guid : "";
@@ -451,10 +436,14 @@ angular.module('app')
                     window.location = '#/orders/purchases';
                 }
 
-                $scope.load_page({});
+
 
             };
 
-            $scope.load_page({});
+            if (Connection.websocket.readyState == 1) {
+                $scope.load_page({});
+            }
+
+
         }
     ]);

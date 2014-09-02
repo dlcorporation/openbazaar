@@ -861,7 +861,6 @@ angular.module('app')
                         'subject': subject.value,
                         'body': body.value
                     }
-                    console.log('sending message with subject ' + subject)
                     Connection.send('send_message', query)
 
                     $modalInstance.close();
@@ -871,7 +870,7 @@ angular.module('app')
                     $modalInstance.dismiss('cancel');
                 };
 
-                $scope.load_page({});
+
             };
 
 

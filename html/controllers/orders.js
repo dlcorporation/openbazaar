@@ -227,7 +227,9 @@ angular.module('app')
                 };
             };
 
-            $scope.load_page({});
+            if (Connection.websocket.readyState == 1) {
+                $scope.load_page({});
+            }
 
         }
     ]);
