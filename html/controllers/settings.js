@@ -6,13 +6,14 @@
  * @constructor
  */
 angular.module('app')
-    .controller('Settings', ['$scope', '$interval', '$routeParams', '$location', 'Connection',
-        function($scope, $interval, $routeParams, $location, Connection) {
+    .controller('Settings', ['$scope', '$interval', '$routeParams', '$location', 'Connection', '$route',
+        function($scope, $interval, $routeParams, $location, Connection, $route) {
 
             $scope.settingsPanel = true;
             $scope.path = $location.path();
             $('#keys-form').siblings().hide();
             $scope.$emit('sidebar', false);
+
 
             /**
              * (These are response handlers when the server talks back to the websocket)
@@ -181,5 +182,7 @@ angular.module('app')
               Notifier.error(msg.detail, 'Could not fetch list of backups, check your backup folder')
             }
             }
+
+            $scope.load_page({});
         }
     ]);

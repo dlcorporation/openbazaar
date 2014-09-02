@@ -26,6 +26,9 @@ angular.module('app')
                 $scope.queryMessages();
             }
 
+            if (Connection.websocket.readyState == 1) {
+                $scope.load_page({});
+            }
 
             $scope.queryMessages = function() {
                 // Query for messages
@@ -54,6 +57,7 @@ angular.module('app')
                     }
                 }
             }
+
 
         }
     ]);

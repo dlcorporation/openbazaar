@@ -13,7 +13,6 @@ angular.module('app')
             $scope.path = $location.path();
             $scope.$emit('sidebar', false);
 
-
             /**
              * Establish message handlers
              * @msg - message from websocket to pass on to handler
@@ -22,17 +21,18 @@ angular.module('app')
             Connection.$on('contracts', function(e, msg){ $scope.parse_contracts(msg) });
 
             $scope.load_page = function(msg) {
-                console.log($scope.path)
-                    console.log('test')
+                console.log($scope.path);
                     $scope.sidebar = false;
                     $scope.queryContracts();
-
             }
 
             $scope.queryContracts = function() {
                 var query = { 'type': 'query_contracts' }
                 Connection.send('query_contracts', query)
             }
+
+            if(Connection.websocket.readyState == 1)
+                $scope.load_page();
 
             $scope.removeContract = function(contract_id) {
                 $('#contract-row-'+contract_id).fadeOut({ "duration": 1000 });
@@ -196,6 +196,7 @@ angular.module('app')
                 $scope.toggleItemAdvanced = function() {
                     $scope.itemAdvancedDetails = ($scope.itemAdvancedDetails) ? 0 : 1;
                 }
+
             };
 
         }
