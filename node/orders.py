@@ -738,9 +738,6 @@ class Orders(object):
 
             buyer_id = str(bid_data_json['Buyer']['buyer_GUID']) + '-' + str(bid_data_json['Buyer']['buyer_order_id'])
 
-            print 'Decrypted Address %s' %  self._transport._myself.decrypt(
-                        bid_data_json['Buyer']['buyer_deliveryaddr'].decode('hex'))
-
             self._db.insertEntry(
                 "orders",
                 {
