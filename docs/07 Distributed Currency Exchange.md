@@ -113,7 +113,7 @@ For a crypto-fiat exchange, the *seed contract* will have the following data fie
 
 1. Crypto-Fiat currency pair (e.g. Bitcoin/US dollar; BTC/USD)
 2. Exchange rate for the currency pair (e.g. 0.00167)
-3. Type (i.e buy, sell)
+3. Type (i.e. buy, sell)
 4. Size (i.e. amount of the currency to buy/sell)
 5. Payment address/bank details (this data field can be blinded until funds are transferred to the bitcoin multisignature escrow address)
 
