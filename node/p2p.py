@@ -144,9 +144,9 @@ class TransportLayer(object):
         else:
             try:
                 self.socket.ipv6 = True
+                self.socket.bind('tcp://[*]:%s' % self._port)
             except AttributeError:
-                pass
-            self.socket.bind('tcp://[*]:%s' % self._port)
+                self.socket.bind('tcp://*:%s' % self._port)
 
         self.stream = zmqstream.ZMQStream(
             self.socket, io_loop=ioloop.IOLoop.current()
