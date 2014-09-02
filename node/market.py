@@ -155,7 +155,7 @@ class Market(object):
         # Refresh market settings
         self.settings = self.get_settings()
 
-        msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'], secret="P@ssw0rd")
+        msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'])
         msg['Seller']['seller_BTC_uncompressed_pubkey'] = self.settings['btc_pubkey']
         msg['Seller']['seller_GUID'] = self.settings['guid']
 
