@@ -50,8 +50,10 @@ def burnaddr_from_guid(guid_hex):
 
     return obelisk.bitcoin.EncodeBase58Check(guid)
 
+
 def get_global(guid, callback):
     get_unspent(burnaddr_from_guid(guid), callback)
+
 
 def get_unspent(addr, callback):
     _log.debug('get_unspent call')

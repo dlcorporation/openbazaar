@@ -23,8 +23,6 @@ from protocol import proto_page, query_page
 from crypto2crypto import CryptoTransportLayer
 from pybitcointools import *
 
-import trust
-
 ioloop.install()
 
 
@@ -498,24 +496,10 @@ class Market(object):
 
         self._transport.send(msg, find_guid, callback)
 
-    def on_page(self, page):
-        guid = page.get('senderGUID')
-        self._log.info(page)
-
-        sin = page.get('sin')
-
-        self._log.info("Received store info from node: %s" % page)
-
-        if sin and page:
-            self.pages[sin] = page
-
-        #trust.get_global(guid, lambda amount, page=page: reputation_pledge_retrieved(amount, page))
-
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
         settings = self.get_settings()
-        # self._log.info(base64.b64encode(self.settings['storeDescription']))
 
         new_peer = self._transport.get_crypto_peer(peer['senderGUID'],
                                                    peer['uri'],
