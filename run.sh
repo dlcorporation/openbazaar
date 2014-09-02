@@ -20,6 +20,7 @@ OPTIONS:
   -c    Bitmessage API port
   -u    Market ID
   -j    Disable upnp
+  -s    List of additional seeds
 EOF
 }
 
@@ -66,7 +67,7 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hp:l:dn:a:b:c:u:oi:jk:q:" OPTION
+while getopts "hp:l:dn:a:b:c:u:oi:jk:q:s:" OPTION
 do
      case ${OPTION} in
          h)
@@ -112,6 +113,9 @@ do
          q)
              HTTP_PORT=$OPTARG
              ;;
+         s)
+             SEED_URI_ADD=$OPTARG
+             ;;
          ?)
              usage
              exit
@@ -119,6 +123,7 @@ do
      esac
 done
 
+SEED_URI+=" $SEED_URI_ADD"
 HTTP_OPTS="-k $HTTP_IP -q $HTTP_PORT"
 
 if [ -z "$SERVER_IP" ]; then
