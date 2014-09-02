@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+# set -x
 
 usage()
 {
@@ -46,7 +46,7 @@ LOGDIR=logs
 DBDIR=db
 DBFILE=ob.db
 DEVELOPMENT=0
-SEED_URI='seed.openbazaar.org seed2.openbazaar.org'
+SEED_URI='seed.openbazaar.org seed2.openbazaar.org seed.openlabs.co seed.bizarre.company'
 LOG_FILE=production.log
 DISABLE_UPNP=0
 
@@ -154,6 +154,8 @@ if [ "$DISABLE_UPNP" == 1 ]; then
 else
     DISABLE_UPNP=""
 fi
+
+echo "OpenBazaar is starting..."
 
 if [ "$SEED_MODE" == 1 ]; then
     echo "Seed Mode $SERVER_IP"
