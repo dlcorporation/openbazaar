@@ -28,6 +28,14 @@ EOF
 PYTHON="./env/bin/python"
 if [ ! -x $PYTHON ]; then
   echo "No python executable found at ${PYTHON}"
+  if which python2 2>/dev/null; then
+    PYTHON=python2
+  elif which python 2>/dev/null; then
+    PYTHON=python
+  else
+    echo "No python executable found anywhere"
+    exit
+  fi
 fi
 
 export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
