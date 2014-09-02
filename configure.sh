@@ -6,14 +6,17 @@
 # If you are a Ubuntu or MacOSX user, you can try executing this script
 # and you already checked out the OpenBazaar sourcecode from the git repository
 # you can try configuring/installing OpenBazaar by simply executing this script
-# instead of following the build instructions in the OpenBazaar Wiki 
+# instead of following the build instructions in the OpenBazaar Wiki
 # https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions
-# 
+#
 # This script will only get better as its tested on more development environments
 # if you can't modify it to make it better, please open an issue with a full
 # error report at https://github.com/OpenBazaar/OpenBazaar/issues/new
 #
 #
+
+#exit on error
+set -e
 
 function installMac {
   #is brew installed?
@@ -29,29 +32,54 @@ function installMac {
     brew prune
   fi
 
-  #is python installed?
-  which -s python
-  if [[ $? != 0 ]] ; then
-    brew install python
+  #is gpg/sqlite3/python/wget installed?
+  for dep in gpg sqlite3 python wget
+  do
+    which -s $dep
+    if [[ $? != 0 ]] ; then
+      brew install $dep
+    fi
+  done
+
+  #more brew prerequisites
+  brew install openssl zmq
+
+  #python prerequisites
+  #python may be owned by root, or it may be owned by the user
+  PYTHON_OWNER=$(stat -n -f %u `which python`)
+  if [ "$PYTHON_OWNER" == "0" ]; then
+    #root owns python
+    EASY_INSTALL="sudo easy_install"
+    PIP="sudo pip"
+  else
+    EASY_INSTALL="easy_install"
+    PIP="pip"
   fi
 
-  #pre-requisites
-  brew install wget gpg zmq
-  brew install openssl
-  brew link openssl --force
-  sudo easy_install pip
+  #setup pip
+  which -s pip
+  if [[ $? != 0 ]] ; then
+    $EASY_INSTALL pip
+  fi
 
-  #python libraries
-  sudo pip install -r requirements.txt
+  #setup virtualenv
+  which -s virtualenv
+  if [[ $? != 0 ]] ; then
+    $PIP install virtualenv
+  fi
 
-  #install sqlite3 from brew and manually link it as brew won't link this for us.
-  brew install sqlite3
-  SQLITE3_LAST_VERSION=`ls -1t /usr/local/Cellar/sqlite | head -1`
-  ln -s /usr/local/Cellar/sqlite/${SQLITE3_LAST_VERSION}/bin/sqlite3 /usr/local/bin/sqlite3
+  #create a virtualenv for OpenBazaar
+  if [ ! -d "./env" ]; then
+    virtualenv env
+  fi
 
-  pushd pysqlcipher
-  sudo python setup.py install
-  popd
+  # set compile flags for brew's openssl instead of using brew link --force
+  export CFLAGS="-I$(brew --prefix openssl)/include"
+  export LDFLAGS="-L$(brew --prefix openssl)/lib"
+
+  #install python deps inside our virtualenv
+  ./env/bin/pip install -r requirements.txt
+  ./env/bin/pip install ./pysqlcipher
 
   doneMessage
 }
@@ -66,17 +94,18 @@ echo ""
 echo ""
 }
 
-
 function installUbuntu {
   sudo apt-get update
   sudo apt-get upgrade
   sudo apt-get install python-pip build-essential python-zmq tor privoxy rng-tools
   sudo apt-get install python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
-  sudo apt-get install alien libssl-dev
-  sudo pip install -r requirements.txt
-  pushd pysqlcipher
-  sudo python setup.py install
-  popd
+  sudo apt-get install alien libssl-dev python-virtualenv
+
+  if [ ! -d "./env" ]; then
+    virtualenv env
+  fi
+  ./env/bin/pip install -r requirements.txt
+  ./env/bin/pip install ./pysqlcipher
 
   doneMessage
 }
@@ -86,4 +115,3 @@ if [[ $OSTYPE == darwin* ]] ; then
 elif [[ $OSTYPE == linux-gnu ]]; then
   installUbuntu
 fi
-
