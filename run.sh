@@ -25,11 +25,12 @@ OPTIONS:
 EOF
 }
 
-if which python2 2>/dev/null; then
-    PYTHON=python2
-else
-    PYTHON=python
+PYTHON="./env/bin/python"
+if [ ! -x $PYTHON ]; then
+  echo "No python executable found at ${PYTHON}"
 fi
+
+export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
 
 # Default values
 SERVER_PORT=12345
