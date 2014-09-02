@@ -28,7 +28,10 @@
             <td width="100" style="font-size:24px;"><strong>&#3647;{{productPrice}}</strong></td>
         </tr>
         <tr>
-            <td colspan="100%" style="font-size:24px;padding:20px 20px 0 20px;text-align:right;font-weight:bold;">Total: &#3647;<span id="totalPrice" ng-model="order.orderTotal">{{totalPrice}}</span></td>
+            <td colspan="100%" style="font-size:16px;padding:20px 20px 0 20px;text-align:right;font-weight:bold;">
+                Shipping: &#3647;<span id="shippingPrice" ng-model="order.shippingPrice">{{shippingPrice}}</span><br/>
+                Total: &#3647;<span id="totalPrice" ng-model="order.orderTotal">{{totalPrice}}</span>
+            </td>
         </tr>
     </table>
 

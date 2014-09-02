@@ -7,8 +7,8 @@
  * @constructor
  */
 angular.module('app')
-    .controller('Market', ['$scope', '$interval', '$routeParams', '$location', 'Connection',
-        function($scope, $interval, $routeParams, $location, Connection) {
+    .controller('Market', ['$scope', '$route', '$interval', '$routeParams', '$location', 'Connection',
+        function($scope, $route, $interval, $routeParams, $location, Connection) {
 
             $scope.newuser = true                   // Should show welcome screen?
             $scope.page = false                     // Market page has been loaded
@@ -46,7 +46,6 @@ angular.module('app')
 
             // Listen for Sidebar mods
             $scope.$on('sidebar', function(event, visible) {
-                console.log(visible);
                 $scope.sidebar = visible
             });
 
@@ -445,6 +444,10 @@ angular.module('app')
 
                 $scope.showDashboardPanel('orders');
 
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+
                 $('#pill-orders').addClass('active').siblings().removeClass('active').blur();
                 $("#orderSuccessAlert").alert();
                 window.setTimeout(function() {
@@ -589,25 +592,47 @@ angular.module('app')
                         break;
 
                 }
+
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+
             }
-
-
-
 
             $scope.getNotaries = function() {
                 console.log('Getting notaries');
                 Connection.send('get_notaries', {});
             }
 
-
-            $scope.go = function (url) {
+            $scope.go = function (url, guid) {
               $location.path(url);
+              if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
             }
 
+            /**
+             * Query the network for a merchant and then
+             * show the page
+             * @guid - GUID of page to load
+             */
+            $scope.queryShop = function(guid) {
 
+                $scope.awaitingShop = guid;
+                console.log('Querying for shop: ', guid);
 
+                var query = {
+                    'type': 'query_page',
+                    'findGUID': guid
+                }
 
+                $scope.page = null
+                Connection.send('query_page', query)
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
 
+            }
 
             $scope.queryMessages = function() {
                 // Query for messages
@@ -836,7 +861,6 @@ angular.module('app')
                         'subject': subject.value,
                         'body': body.value
                     }
-                    console.log('sending message with subject ' + subject)
                     Connection.send('send_message', query)
 
                     $modalInstance.close();
@@ -845,7 +869,10 @@ angular.module('app')
                 $scope.cancel = function() {
                     $modalInstance.dismiss('cancel');
                 };
+
+
             };
+
 
         }
     ]);
