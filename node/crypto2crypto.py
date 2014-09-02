@@ -256,8 +256,8 @@ class CryptoTransportLayer(TransportLayer):
             self._log.error('[Requests] error: %s' % e)
 
     def save_peer_to_db(self, peer_tuple):
-        pubkey = peer_tuple[0]
-        uri = peer_tuple[1]
+        uri = peer_tuple[0]
+        pubkey = peer_tuple[1]
         guid = peer_tuple[2]
         nickname = peer_tuple[3]
 
