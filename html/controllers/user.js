@@ -129,6 +129,15 @@ angular.module('app')
                 }
             }
 
+            $scope.compose_message = function(size, myself, address, subject) {
+                $scope.$broadcast("compose_message", {
+                    size: size,
+                    myself: myself,
+                    bm_address: address,
+                    subject: subject
+                });
+            };
+
             $scope.parse_store_contract = function(msg) {
 
                 contract = msg.contract
@@ -267,6 +276,9 @@ angular.module('app')
 
                 Notifier.success('Success', 'Notary added successfully.');
 
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
 
             }
 

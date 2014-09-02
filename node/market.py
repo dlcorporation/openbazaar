@@ -158,6 +158,7 @@ class Market(object):
         msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'])
         msg['Seller']['seller_BTC_uncompressed_pubkey'] = self.settings['btc_pubkey']
         msg['Seller']['seller_GUID'] = self.settings['guid']
+        msg['Seller']['seller_Bitmessage'] = self.settings['bitmessage']
 
         # Process and crop thumbs for images
         if 'item_images' in msg['Contract']:
@@ -569,7 +570,6 @@ class Market(object):
         self._transport.respond_pubkey_if_mine(nickname, ident_pubkey)
 
     def on_response_pubkey(self, response):
-        self._log.info("got a pubkey!")
         assert "pubkey" in response
         assert "nickname" in response
         assert "signature" in response
