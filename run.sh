@@ -11,8 +11,10 @@ This script starts up the OpenBazaar client and server.
 OPTIONS:
   -h    Help information
   -o    Seed Mode
-  -i    Server IP
-  -p    Server Port
+  -i    Server Public IP
+  -p    Server Public Port (default 12345)
+  -k    Web Interface IP (default 127.0.0.1; use 0.0.0.0 for any)
+  -q    Web Interface Port (default 8888)
   -l    Log file
   -d    Development mode
   -n    Number of Dev nodes to start up
