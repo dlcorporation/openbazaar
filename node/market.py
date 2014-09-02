@@ -23,8 +23,6 @@ from protocol import proto_page, query_page
 from crypto2crypto import CryptoTransportLayer
 from pybitcointools import *
 
-import trust
-
 ioloop.install()
 
 
@@ -63,7 +61,6 @@ class Market(object):
                                        ('peer', self.on_peer),
                                        ('query_page', self.on_query_page),
                                        ('query_listings', self.on_query_listings),
-                                       ('page', self.on_page),
                                        ('negotiate_pubkey', self.on_negotiate_pubkey),
                                        ('proto_response_pubkey', self.on_response_pubkey)])
 
@@ -158,6 +155,7 @@ class Market(object):
         msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'])
         msg['Seller']['seller_BTC_uncompressed_pubkey'] = self.settings['btc_pubkey']
         msg['Seller']['seller_GUID'] = self.settings['guid']
+        msg['Seller']['seller_Bitmessage'] = self.settings['bitmessage']
 
         # Process and crop thumbs for images
         if 'item_images' in msg['Contract']:
@@ -498,31 +496,10 @@ class Market(object):
 
         self._transport.send(msg, find_guid, callback)
 
-    def on_page(self, page):
-        guid = page.get('senderGUID')
-
-        # TODO: allow async calling in different thread
-        def reputation_pledge_retrieved(amount):
-            self._log.debug('Received reputation pledge amount %s for guid %s' % (amount, guid))
-            SATOSHIS_IN_BITCOIN = 100000000
-            bitcoins = float(amount) / SATOSHIS_IN_BITCOIN
-            bitcoins = round(bitcoins, 4)
-            page['reputation_pledge'] = bitcoins
-
-        trust.get_global(guid, reputation_pledge_retrieved)
-        sin = page.get('sin')
-        page = page.get('text')
-
-        self._log.info("Received store info from node: %s" % page)
-
-        if sin and page:
-            self.pages[sin] = page
-
     # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
         self._log.info("Someone is querying for your page")
         settings = self.get_settings()
-        # self._log.info(base64.b64encode(self.settings['storeDescription']))
 
         new_peer = self._transport.get_crypto_peer(peer['senderGUID'],
                                                    peer['uri'],
@@ -569,7 +546,6 @@ class Market(object):
         self._transport.respond_pubkey_if_mine(nickname, ident_pubkey)
 
     def on_response_pubkey(self, response):
-        self._log.info("got a pubkey!")
         assert "pubkey" in response
         assert "nickname" in response
         assert "signature" in response
