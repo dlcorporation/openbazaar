@@ -32,7 +32,7 @@
                 </tr>
                 <tr data-ng-show="page.bitmessage">
                     <td class="col-xs-3">Bitmessage Address</td>
-                    <td style="word-wrap:break-word">{{page.bitmessage}}
+                    <td style="word-wrap:break-word"><a href="" data-ng-click="compose_message('lg', myself, '', null)">{{page.bitmessage}}</a>
                         <!--<button class="btn btn-info" data-ng-click="compose_message('lg', myself, page.bitmessage, null)">Send Message</button>-->
                     </td>
                 </tr>

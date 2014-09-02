@@ -711,13 +711,11 @@ angular.module('app')
 
             $scope.ComposeMessageCtrl = function($scope, $modal, $log) {
 
-
                 $scope.$on("compose_message", function(event, args) {
                     $scope.bm_address = args.bm_address;
                     $scope.size = args.size;
                     $scope.subject = args.subject;
                     $scope.myself = args.myself;
-
 
                     $scope.compose($scope.size, $scope.myself, $scope.bm_address, $scope.subject);
                 });
@@ -751,8 +749,8 @@ angular.module('app')
                         });
                 };
 
-                $scope.view = function(size, myself, my_address, msg) {
-                    console.log(msg)
+                $scope.view = function(size, myself, to_address, msg) {
+
                     viewModal = $modal.open({
                         templateUrl: 'partials/modal/viewMessage.html',
                         controller: $scope.ViewMessageInstanceCtrl,
@@ -760,8 +758,8 @@ angular.module('app')
                             myself: function() {
                                 return myself
                             },
-                            my_address: function() {
-                                return my_address
+                            to_address: function() {
+                                return to_address
                             },
                             msg: function() {
                                 return msg
@@ -779,9 +777,10 @@ angular.module('app')
                 };
             };
 
-            $scope.ViewMessageInstanceCtrl = function($scope, $modalInstance, myself, my_address, msg) {
+            $scope.ViewMessageInstanceCtrl = function($scope, $modalInstance, myself, to_address, msg) {
                 $scope.myself = myself;
-                $scope.my_address = my_address;
+                $scope.my_address = myself.bitmessage;
+                $scope.to_address = to_address;
                 $scope.msg = msg;
 
                 // Fill in form if msg is passed - reply mode

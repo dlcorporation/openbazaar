@@ -6,8 +6,8 @@
  * @constructor
  */
 angular.module('app')
-    .controller('Orders', ['$scope', '$interval', '$routeParams', '$location', 'Connection',
-        function($scope, $interval, $routeParams, $location, Connection) {
+    .controller('Orders', ['$scope', '$interval', '$routeParams', '$location', 'Connection', '$rootScope',
+        function($scope, $interval, $routeParams, $location, Connection, $rootScope) {
 
             $scope.myOrders = []
             $scope.ordersPanel = true;
@@ -54,7 +54,6 @@ angular.module('app')
              */
             $scope.parse_order = function(msg) {
 
-
                 if ($scope.myOrders.hasOwnProperty(msg.id)) {
                     console.log("Updating order!")
                     $scope.myOrders[msg.id].state = msg.state
@@ -77,6 +76,15 @@ angular.module('app')
                     $scope.$apply();
                 }
             }
+
+            $scope.compose_message = function(size, myself, address, subject) {
+                $rootScope.$broadcast("compose_message", {
+                    size: size,
+                    myself: myself,
+                    bm_address: address,
+                    subject: subject
+                });
+            };
 
             /**
              * Parse order message from server for modal
@@ -128,7 +136,7 @@ angular.module('app')
 
             $scope.ViewOrderCtrl = function($scope, $modal, $log) {
 
-                $scope.open = function(size, orderId, settings) {
+                $scope.open = function(size, orderId, settings, order) {
 
                     // Send socket a request for order info
                     Connection.send('query_order', {
@@ -142,6 +150,9 @@ angular.module('app')
                         resolve: {
                             orderId: function() {
                                 return orderId;
+                            },
+                            order: function() {
+                                return order;
                             },
                             settings: function() {
                                 return settings;
@@ -161,10 +172,10 @@ angular.module('app')
             };
 
 
-            var ViewOrderInstanceCtrl = function($scope, $modalInstance, orderId, scope, settings) {
-
+            var ViewOrderInstanceCtrl = function($scope, $modalInstance, orderId, scope, settings, order) {
 
                 $scope.orderId = orderId;
+                $scope.order = order;
                 $scope.Market = scope;
                 $scope.settings = settings;
 
@@ -184,7 +195,6 @@ angular.module('app')
                     }
 
                 }
-
 
                 $scope.markOrderShipped = function(orderId) {
 
