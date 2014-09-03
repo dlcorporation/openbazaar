@@ -13,6 +13,8 @@ import logging
 import signal
 from threading import Thread
 from twisted.internet import reactor
+from util import open_default_webbrowser
+from network_util import get_random_free_tcp_port
 import upnp
 
 
@@ -145,7 +147,10 @@ def start_node(my_market_ip,
     error = True
     p2p_port = 12345
 
-    while error and http_port < 8988:
+    if http_port == -1:
+        http_port = get_random_free_tcp_port(8889,8988)
+
+    while error:
         try:
             application.listen(http_port, http_ip)
             error = False
@@ -159,7 +164,9 @@ def start_node(my_market_ip,
 
     locallogger.info("Started OpenBazaar Web App at http://%s:%s" %
                      (http_ip, http_port))
+
     print "Started OpenBazaar Web App at http://%s:%s" % (http_ip, http_port)
+    open_default_webbrowser('http://%s:%s' % (http_ip, http_port))
 
     # handle shutdown
     def shutdown(x, y):
@@ -194,7 +201,7 @@ if __name__ == "__main__":
                         type=int, default=12345)
     # default secure behavior is to keep HTTP port private
     parser.add_argument("-k", "--http_ip", default="127.0.0.1")
-    parser.add_argument("-q", "--http_port", type=int, default=8888)
+    parser.add_argument("-q", "--http_port", type=int, default=-1)
     parser.add_argument("-l", "--log_file",
                         default='logs/production.log')
     parser.add_argument("-u", "--market_id",

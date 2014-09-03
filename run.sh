@@ -66,7 +66,7 @@ BM_PASSWORD=P@ssw0rd
 BM_PORT=8442
 
 HTTP_IP=127.0.0.1
-HTTP_PORT=8888
+HTTP_PORT=-1
 
 # Tor Information
 # - If you enable Tor here you will be operating a hidden
