@@ -14,7 +14,7 @@ OPTIONS:
   -i    Server Public IP
   -p    Server Public Port (default 12345)
   -k    Web Interface IP (default 127.0.0.1; use 0.0.0.0 for any)
-  -q    Web Interface Port (default 8888)
+  -q    Web Interface Port (default random)
   -l    Log file
   -d    Development mode
   -n    Number of Dev nodes to start up
