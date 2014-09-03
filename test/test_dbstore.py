@@ -61,28 +61,67 @@ class TestDbOperations(unittest.TestCase):
         self.assertEqual(
             review_to_store["pubKey"],
             retrieved_review["pubKey"],
-            "123"
         )
         self.assertEqual(
             review_to_store["subject"],
             retrieved_review["subject"],
-            "A review"
         )
         self.assertEqual(
             review_to_store["signature"],
             retrieved_review["signature"],
-            "a signature"
         )
         self.assertEqual(
             review_to_store["text"],
             retrieved_review["text"],
-            "Very happy to be a customer."
         )
         self.assertEqual(
             review_to_store["rating"],
             retrieved_review["rating"],
-            10
         )
+
+        # Let's do it again with a malicious review.
+        review_to_store = {"pubKey": "321",
+                           "subject": "Devil''''s review",
+                           "signature": "quotes\"\"\"\'\'\'",
+                           "text": 'Very """"happy"""""" to be a customer.',
+                           "rating": 10}
+
+        # Use the insert operation to add it to the db
+        db.insertEntry("reviews", review_to_store)
+
+        # Try to retrieve the record we just added based on the pubkey
+        retrieved_review = db.selectEntries("reviews", "pubkey = '321'")
+
+        # The above statement will return a list with all the
+        # retrieved records as dictionaries
+        self.assertEqual(len(retrieved_review), 1)
+        retrieved_review = retrieved_review[0]
+
+        # Is the retrieved record the same as the one we added before?
+        self.assertEqual(
+            review_to_store["pubKey"],
+            retrieved_review["pubKey"],
+        )
+        self.assertEqual(
+            review_to_store["subject"],
+            retrieved_review["subject"],
+        )
+        self.assertEqual(
+            review_to_store["signature"],
+            retrieved_review["signature"],
+        )
+        self.assertEqual(
+            review_to_store["text"],
+            retrieved_review["text"],
+        )
+        self.assertEqual(
+            review_to_store["rating"],
+            retrieved_review["rating"],
+        )
+
+        # By ommiting the second parameter, we are retrieving all reviews
+        all_reviews = db.selectEntries("reviews")
+        self.assertEqual(len(all_reviews), 2)
 
     def test_update_operation(self):
 
@@ -116,7 +155,6 @@ class TestDbOperations(unittest.TestCase):
         # Looking for this record with will bring nothing
         retrieved_review = db.selectEntries("reviews", "pubkey = '123'")
         self.assertEqual(len(retrieved_review), 0)
-
 
 if __name__ == '__main__':
     # Run tests.
