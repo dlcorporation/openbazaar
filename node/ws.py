@@ -241,16 +241,6 @@ class ProtocolHandler:
         def cb(msg, query_id):
             self._log.info('Received a query page response: %s' % query_id)
 
-            # try:
-            #     self._timeouts.remove(query_id)
-            # except ValueError:
-            #     self._log.error('Cannot find that query id')
-            # if not success:
-            #     self.send_to_client(None, {
-            #         "type": "peers",
-            #         "peers": self.get_peers()
-            #     })
-
         self._market.query_page(
             findGUID,
             lambda msg, query_id=query_id: cb(msg, query_id)
