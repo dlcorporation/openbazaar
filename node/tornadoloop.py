@@ -1,4 +1,3 @@
-import sys
 import argparse
 import tornado.web
 
@@ -16,6 +15,7 @@ from twisted.internet import reactor
 from util import open_default_webbrowser
 from network_util import get_random_free_tcp_port
 import upnp
+import os
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -100,9 +100,12 @@ class MarketApplication(tornado.web.Application):
                result_udp_p2p_mapping
 
     def cleanup_upnp_port_mapping(self):
-        if self.upnp_mapper is not None:
-            print "Cleaning UPnP Port Mapping -> ", \
-                self.upnp_mapper.clean_my_mappings()
+        try:
+            if self.upnp_mapper is not None:
+                print "Cleaning UPnP Port Mapping -> ", \
+                    self.upnp_mapper.clean_my_mappings()
+        except:
+            pass
 
 
 def start_node(my_market_ip,
@@ -181,7 +184,7 @@ def start_node(my_market_ip,
         # we should implement the shutdown of the dht connections, db connection, bitmessage connection
         # maybe this was meant to do all that but nobody ever got around it.
         # application.market.p.kill()
-        sys.exit(0)
+        os._exit(0)
     try:
         signal.signal(signal.SIGTERM, shutdown)
     except ValueError:
