@@ -26,7 +26,7 @@ This process would be used if one or more of the parties are not online at one t
 
 Sam creates the *seed contract*.
 
-```
+```JSON
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
  
@@ -102,7 +102,7 @@ sBPhClPME2wQm96lYTAgbWal1Tm4Ly4AvhWUHTBjsakpSBKeYBTxTnU=
 
 Brian creates a *bid offer* from the *seed contract*.
 
-```
+```JSON
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
@@ -175,6 +175,7 @@ rNTWCkx5MfAKXK96OcSjs9SZBOOC7iNQQJMg4Nx3O/waALe5hqE1z5U5SSAJRjtT
 sBPhClPME2wQm96lYTAgbWal1Tm4Ly4AvhWUHTBjsakpSBKeYBTxTnU=
 =UO2C
 - -----END PGP SIGNATURE-----
+{
     "Buyer": {
         "NymID": "Brian Hoffman",
         "NodeID": "brianhoffman",
@@ -271,7 +272,7 @@ UN3fXcKUSbAT35qUjAqvn1ee1p465QtDBvpJLtZKCHMBN/gdYL1WEgg4MCsQCsY=
 Sam digitally signs Brian's *bid offer* to accept his offer.
 
 
-```
+```JSON
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
@@ -347,6 +348,7 @@ rNTWCkx5MfAKXK96OcSjs9SZBOOC7iNQQJMg4Nx3O/waALe5hqE1z5U5SSAJRjtT
 sBPhClPME2wQm96lYTAgbWal1Tm4Ly4AvhWUHTBjsakpSBKeYBTxTnU=
 =UO2C
 - - -----END PGP SIGNATURE-----
+{
     "Buyer": {
         "NymID": "Brian Hoffman",
         "NodeID": "brianhoffman",
@@ -453,7 +455,7 @@ YbIH4rcahN09gVwlfvfzG1Kw56KAxRVTse5A/em0djOTBTKrZbtxniY7v1fIf7o=
 
 Washington (the arbiter) appends to the double-signed contract the multisignature escrow address and redemption script, and finally digitally signs the *double-signed* contract.
 
-```
+```JSON
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
@@ -532,6 +534,7 @@ rNTWCkx5MfAKXK96OcSjs9SZBOOC7iNQQJMg4Nx3O/waALe5hqE1z5U5SSAJRjtT
 sBPhClPME2wQm96lYTAgbWal1Tm4Ly4AvhWUHTBjsakpSBKeYBTxTnU=
 =UO2C
 - - - -----END PGP SIGNATURE-----
+{
     "Buyer": {
         "NymID": "Brian Hoffman",
         "NodeID": "brianhoffman",

@@ -27,7 +27,7 @@ Bob digitally signs the contract and publishes it to the network.
 
 **Example Loan Contract**
 
-```
+```XML
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
@@ -138,10 +138,10 @@ If Alice wants to change the terms of part of the contract, she can write, sign 
 
 **Example of an Accepted Loan Contract**
 
-```
+```XML
 <?xml version="1.0"?>
 
-<-- Loan Contract -->
+<!-- Loan Contract -->
 	<Loan_offer_hash> 6127dbed6e218567de94dbd26e7c5fa350de3b9c </Loan_offer_hash>
 
 <!-- Lender NYM -->
