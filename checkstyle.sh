@@ -14,7 +14,7 @@ function python_check() {
 }
 
 function js_check() {
-    for file in $(find . -not -path "./env/*" -and '(' -iname "*.js" ')'|grep -v pybitmessage|grep -v '.min.js'|grep -v bower_components); do
+    for file in $(find . -not -path "./env/*" -and '(' -iname "*.js" ')'|grep -v pybitmessage|grep -v '.min.js'|grep -v bower_components|grep -v vendors); do
         echo "Checking JS source: $file"
         if ! jshint $file; then
             ERR=true
