@@ -20,14 +20,14 @@ angular.module('app')
              * Establish message handlers
              * @msg - message from websocket to pass on to handler
              */
-            Connection.$on('load_page', function(e, msg){ $scope.load_page(msg) });
-            Connection.$on('settings_notaries', function(e, msg){ $scope.parse_notaries(msg) });
-            Connection.$on('create_backup_result', function(e, msg){ $scope.onCreateBackupResult(msg) });
-            Connection.$on('on_get_backups_response', function(e, msg){ $scope.onGetBackupsResponse(msg) });
+            Connection.$on('load_page', function(e, msg){ $scope.load_page(msg); });
+            Connection.$on('settings_notaries', function(e, msg){ $scope.parse_notaries(msg); });
+            Connection.$on('create_backup_result', function(e, msg){ $scope.onCreateBackupResult(msg); });
+            Connection.$on('on_get_backups_response', function(e, msg){ $scope.onGetBackupsResponse(msg); });
 
             $scope.load_page = function(msg) {
-                console.log($scope.path)
-                $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
+                console.log($scope.path);
+                $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12');
 
                 switch($scope.path) {
                     case "/settings/keys":
@@ -49,7 +49,7 @@ angular.module('app')
                         $('#notary-form').show();
                         $('#notary-form').siblings().hide();
                         $('#settings-notary').addClass('active');
-                        $scope.getNotaries()
+                        $scope.getNotaries();
                         break;
                     case "/settings/advanced":
                         $('#advanced-form').show();
@@ -57,8 +57,8 @@ angular.module('app')
                         $('#settings-advanced').addClass('active');
                         break;
                     case "/settings/backup":
-                      $('#backup-form').show()
-                      $('#backup-form').siblings().hide()
+                      $('#backup-form').show();
+                      $('#backup-form').siblings().hide();
                       $('#settings-backup').addClass('active');
                       $scope.getBackups();
                       break;
@@ -69,11 +69,11 @@ angular.module('app')
                         break;
                 }
 
-            }
+            };
 
             $scope.addNotary = function(notary) {
 
-                notaryGUID = (notary != '') ? notary : $scope.newNotary;
+                notaryGUID = (notary !== '') ? notary : $scope.newNotary;
                 $scope.newNotary = '';
 
                 if(notaryGUID.length != 40 || !notaryGUID.match(/^[0-9a-z]+$/)) {
@@ -93,7 +93,7 @@ angular.module('app')
                     $scope.$apply();
                 }
 
-            }
+            };
 
             $scope.removeNotary = function(notaryGUID) {
 
@@ -110,12 +110,12 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             $scope.getNotaries = function() {
                 console.log('Getting notaries');
                 Connection.send('get_notaries', {});
-            }
+            };
 
             $scope.generateNewSecret = function(e) {
                 if (e) {
@@ -124,12 +124,12 @@ angular.module('app')
 
                 var query = {
                     'type': 'generate_secret'
-                }
-                console.log('Generating new secret key')
-                Connection.send('generate_secret', query)
-                console.log($scope.myself.settings)
+                };
+                console.log('Generating new secret key');
+                Connection.send('generate_secret', query);
+                console.log($scope.myself.settings);
 
-            }
+            };
 
             /**
              * Load notaries array into the GUI
@@ -137,16 +137,16 @@ angular.module('app')
              */
             $scope.parse_notaries = function(msg) {
                 console.log('Parsing notaries');
-                $scope.settings.notaries = msg.notaries
-                console.log(msg.notaries)
+                $scope.settings.notaries = msg.notaries;
+                console.log(msg.notaries);
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
             
             $scope.createBackup = function() {
-              Connection.send('create_backup',{}) 
-            }
+              Connection.send('create_backup',{});
+            };
             
             $scope.onCreateBackupResult = function(msg) {
               if (msg.result) {
@@ -156,19 +156,19 @@ angular.module('app')
                   Notifier.error(msg.detail,'Couldn\'t create backup.');
                 }
               }
-            }
+            };
             
             $scope.getBackups = function() {
               //console.log("executing getBackups()!")
-              Connection.send('get_backups')
-            }
+              Connection.send('get_backups');
+            };
             
             $scope.onGetBackupsResponse = function (msg) {
               //console.log("executing onGetBackupsResponse!")
             if (msg.result === 'success') {
               //update UI with list of backups. (could be empty list)
               if (msg.backups) {
-                $scope.backups = []
+                $scope.backups = [];
                 //convert list of json objects into JS objects.
                 for (i=0; i < msg.backups.length; i++) {
                   $scope.backups[i] = $.parseJSON(msg.backups[i]);
@@ -179,9 +179,9 @@ angular.module('app')
               }
             } else if (msg.result === 'failure') {
               //console.log('onGetBackupsResponse: failure')
-              Notifier.error(msg.detail, 'Could not fetch list of backups, check your backup folder')
+              Notifier.error(msg.detail, 'Could not fetch list of backups, check your backup folder');
             }
-            }
+            };
 
             $scope.load_page({});
         }
