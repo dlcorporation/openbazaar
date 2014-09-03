@@ -24,6 +24,7 @@ angular.module('app')
             Connection.$on('page', function(e, msg){ $scope.parse_page(msg) });
             Connection.$on('store_products', function(e, msg){ $scope.parse_store_products(msg) });
             Connection.$on('new_listing', function(e, msg){ $scope.parse_new_listing(msg) });
+            Connection.$on('reputation_pledge_update', function(e, msg){ $scope.parse_reputation_pledge_update(msg) });
 
             $scope.load_page = function(msg) {
                 console.log($scope.path)
@@ -47,6 +48,15 @@ angular.module('app')
 
 
             }
+
+            $scope.parse_reputation_pledge_update = function(msg) {
+                console.log('test', $scope.page);
+                $scope.page.reputation_pledge = (msg.value) ? msg.value : 0;
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+            }
+
 
             /**
              * Query the network for a merchant and then
@@ -92,6 +102,7 @@ angular.module('app')
                 if (!$scope.dashboard) {
                     $scope.currentReviews = $scope.reviews[msg.pubkey]
                     $scope.page = msg
+                    $scope.page.reputation_pledge = 0;
 
                     // Write in store content into the HTML
                     var contentDiv = document.getElementById('page-content')
@@ -125,6 +136,15 @@ angular.module('app')
                     $scope.$apply();
                 }
             }
+
+            $scope.compose_message = function(size, myself, address, subject) {
+                $scope.$broadcast("compose_message", {
+                    size: size,
+                    myself: myself,
+                    bm_address: address,
+                    subject: subject
+                });
+            };
 
             $scope.parse_store_contract = function(msg) {
 
@@ -264,13 +284,16 @@ angular.module('app')
 
                 Notifier.success('Success', 'Notary added successfully.');
 
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
 
             }
 
             $scope.BuyItemCtrl = function($scope, $modal, $log) {
 
-                $scope.open = function(size, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key, rawContract,
-                    notaries, arbiters, btc_pubkey, guid) {
+                $scope.open = function(size, myself, merchantPubkey, listing,
+                    notaries, arbiters, btc_pubkey) {
 
                     // Send socket a request for order info
                     //Connection.send('query_order', { orderId: orderId } )
@@ -288,26 +311,8 @@ angular.module('app')
                             myself: function() {
                                 return myself
                             },
-                            productTitle: function() {
-                                return productTitle
-                            },
-                            productPrice: function() {
-                                return productPrice
-                            },
-                            productDescription: function() {
-                                return productDescription
-                            },
-                            productImageData: function() {
-                                return productImageData
-                            },
-                            key: function() {
-                                return key
-                            },
                             btc_pubkey: function() {
                                 return btc_pubkey
-                            },
-                            rawContract: function() {
-                                return rawContract
                             },
                             notaries: function() {
                                 return notaries
@@ -315,8 +320,8 @@ angular.module('app')
                             arbiters: function() {
                                 return arbiters
                             },
-                            guid: function() {
-                                return guid
+                            listing: function() {
+                                return listing
                             },
                             scope: function() {
                                 return $scope
@@ -335,6 +340,10 @@ angular.module('app')
                             $("#orderSuccessAlert").alert('close')
                         }, 5000);
 
+                        if (!$scope.$$phase) {
+                            $scope.$apply();
+                        }
+
                     }, function() {
                         $log.info('Modal dismissed at: ' + new Date());
 
@@ -343,29 +352,28 @@ angular.module('app')
             };
 
 
-            $scope.BuyItemInstanceCtrl = function($scope, $modalInstance, myself, merchantPubkey, productTitle, productPrice, productDescription, productImageData, key,
-                rawContract,
+            $scope.BuyItemInstanceCtrl = function($scope, $modalInstance, myself, merchantPubkey, listing,
                 notaries,
                 arbiters,
                 btc_pubkey,
-                guid,
                 scope) {
 
                 $scope.myself = myself;
                 $scope.merchantPubkey = merchantPubkey;
-                $scope.productTitle = productTitle;
-                $scope.productPrice = productPrice;
-                $scope.productDescription = productDescription;
-                $scope.productImageData = productImageData;
-                $scope.totalPrice = productPrice;
+                $scope.productTitle = listing.contract_body.Contract.item_title;
+                $scope.productPrice = (listing.contract_body.Contract.item_price != "") ? +listing.contract_body.Contract.item_price : 0;
+                $scope.productDescription = listing.contract_body.Contract.item_desc;
+                $scope.productImageData = listing.contract_body.Contract.item_images;
+                $scope.shippingPrice = (listing.contract_body.Contract.item_delivery.hasOwnProperty('shipping_price')) ? listing.contract_body.Contract.item_delivery.shipping_price : 0;
+                $scope.totalPrice = +(parseFloat($scope.productPrice) + parseFloat($scope.shippingPrice)).toPrecision(8);
                 $scope.productQuantity = 1;
-                $scope.rawContract = rawContract;
-                $scope.guid = guid;
+                $scope.rawContract = listing.signed_contract_body;
+                $scope.guid = listing.contract_body.Seller.seller_GUID;
                 $scope.arbiters = arbiters;
 
                 $scope.notaries = notaries
 
-                $scope.key = key;
+                $scope.key = listing.key;
 
                 $scope.update = function(user) {
                     console.log('Updated');
@@ -383,7 +391,7 @@ angular.module('app')
                 $scope.updateTotal = function() {
                     var newPrice = $('#itemQuantity').val() * $scope.productPrice;
                     newPrice = Math.round(newPrice * 100000) / 100000
-                    $('#totalPrice').html(newPrice);
+                    $('#totalPrice').html(+(parseFloat(newPrice) + parseFloat($scope.shippingPrice)).toPrecision(8));
                 }
 
                 $scope.gotoStep2 = function() {
@@ -403,11 +411,11 @@ angular.module('app')
                 $scope.order = {
                     message: '',
                     tx: '',
-                    listingKey: key,
+                    listingKey: listing.key,
                     listingTotal: '',
                     productTotal: '',
                     productQuantity: 1,
-                    rawContract: rawContract,
+                    rawContract: listing.signed_contract_body,
                     btc_pubkey: btc_pubkey
                 }
                 $scope.order.notary = ($scope.notaries.length > 0) ? $scope.notaries[0].guid : "";
@@ -428,7 +436,7 @@ angular.module('app')
                         'sellerGUID': $scope.guid,
                         'listingKey': $scope.key,
                         'orderTotal': $('#totalPrice').html(),
-                        'rawContract': rawContract,
+                        'rawContract': $scope.rawContract,
                         'notary': $scope.order.notary,
                         'btc_pubkey': $scope.order.btc_pubkey,
                         'arbiter': $scope.order.arbiter
@@ -449,5 +457,11 @@ angular.module('app')
 
 
             };
+
+            if (Connection.websocket.readyState == 1) {
+                $scope.load_page({});
+            }
+
+
         }
     ]);

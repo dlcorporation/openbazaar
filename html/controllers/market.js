@@ -7,8 +7,8 @@
  * @constructor
  */
 angular.module('app')
-    .controller('Market', ['$scope', '$interval', '$routeParams', '$location', 'Connection',
-        function($scope, $interval, $routeParams, $location, Connection) {
+    .controller('Market', ['$scope', '$route', '$interval', '$routeParams', '$location', 'Connection',
+        function($scope, $route, $interval, $routeParams, $location, Connection) {
 
             $scope.newuser = true                   // Should show welcome screen?
             $scope.page = false                     // Market page has been loaded
@@ -46,7 +46,6 @@ angular.module('app')
 
             // Listen for Sidebar mods
             $scope.$on('sidebar', function(event, visible) {
-                console.log(visible);
                 $scope.sidebar = visible
             });
 
@@ -445,6 +444,10 @@ angular.module('app')
 
                 $scope.showDashboardPanel('orders');
 
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+
                 $('#pill-orders').addClass('active').siblings().removeClass('active').blur();
                 $("#orderSuccessAlert").alert();
                 window.setTimeout(function() {
@@ -589,25 +592,47 @@ angular.module('app')
                         break;
 
                 }
+
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+
             }
-
-
-
 
             $scope.getNotaries = function() {
                 console.log('Getting notaries');
                 Connection.send('get_notaries', {});
             }
 
-
-            $scope.go = function (url) {
+            $scope.go = function (url, guid) {
               $location.path(url);
+              if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
             }
 
+            /**
+             * Query the network for a merchant and then
+             * show the page
+             * @guid - GUID of page to load
+             */
+            $scope.queryShop = function(guid) {
 
+                $scope.awaitingShop = guid;
+                console.log('Querying for shop: ', guid);
 
+                var query = {
+                    'type': 'query_page',
+                    'findGUID': guid
+                }
 
+                $scope.page = null
+                Connection.send('query_page', query)
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
 
+            }
 
             $scope.queryMessages = function() {
                 // Query for messages
@@ -686,13 +711,11 @@ angular.module('app')
 
             $scope.ComposeMessageCtrl = function($scope, $modal, $log) {
 
-
                 $scope.$on("compose_message", function(event, args) {
                     $scope.bm_address = args.bm_address;
                     $scope.size = args.size;
                     $scope.subject = args.subject;
                     $scope.myself = args.myself;
-
 
                     $scope.compose($scope.size, $scope.myself, $scope.bm_address, $scope.subject);
                 });
@@ -726,8 +749,8 @@ angular.module('app')
                         });
                 };
 
-                $scope.view = function(size, myself, my_address, msg) {
-                    console.log(msg)
+                $scope.view = function(size, myself, to_address, msg) {
+
                     viewModal = $modal.open({
                         templateUrl: 'partials/modal/viewMessage.html',
                         controller: $scope.ViewMessageInstanceCtrl,
@@ -735,8 +758,8 @@ angular.module('app')
                             myself: function() {
                                 return myself
                             },
-                            my_address: function() {
-                                return my_address
+                            to_address: function() {
+                                return to_address
                             },
                             msg: function() {
                                 return msg
@@ -754,9 +777,10 @@ angular.module('app')
                 };
             };
 
-            $scope.ViewMessageInstanceCtrl = function($scope, $modalInstance, myself, my_address, msg) {
+            $scope.ViewMessageInstanceCtrl = function($scope, $modalInstance, myself, to_address, msg) {
                 $scope.myself = myself;
-                $scope.my_address = my_address;
+                $scope.my_address = myself.bitmessage;
+                $scope.to_address = to_address;
                 $scope.msg = msg;
 
                 // Fill in form if msg is passed - reply mode
@@ -836,7 +860,6 @@ angular.module('app')
                         'subject': subject.value,
                         'body': body.value
                     }
-                    console.log('sending message with subject ' + subject)
                     Connection.send('send_message', query)
 
                     $modalInstance.close();
@@ -845,7 +868,10 @@ angular.module('app')
                 $scope.cancel = function() {
                     $modalInstance.dismiss('cancel');
                 };
+
+
             };
+
 
         }
     ]);

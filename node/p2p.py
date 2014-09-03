@@ -11,6 +11,8 @@ import network_util
 import traceback
 import zlib
 import zmq
+import socket
+import errno
 
 
 class PeerConnection(object):
@@ -50,7 +52,9 @@ class PeerConnection(object):
             s = self.create_socket()
             try:
                 s.connect(self._address)
-            except:
+            except zmq.ZMQError as e:
+                if e.errno != errno.EINVAL:
+                    raise
                 s.ipv6 = True
                 s.connect(self._address)
 
@@ -76,6 +80,7 @@ class PeerConnection(object):
         except Exception as e:
             self._log.error(e)
             # shouldn't we raise the exception here???? I think not doing this could cause buggy behavior on top
+            raise
 
 
 # Transport layer manages a list of peers
@@ -90,7 +95,13 @@ class TransportLayer(object):
         self._guid = my_guid
         self._market_id = market_id
         self._nickname = nickname
-        self._uri = 'tcp://[%s]:%s' % (self._ip, self._port)
+
+        try:
+            socket.inet_pton(socket.AF_INET6, my_ip)
+            my_uri = 'tcp://[%s]:%s' % (self._ip, self._port)
+        except socket.error:
+            my_uri = 'tcp://%s:%s' % (self._ip, self._port)
+        self._uri = my_uri
 
         self._log = logging.getLogger(
             '[%s] %s' % (market_id, self.__class__.__name__)
@@ -98,10 +109,12 @@ class TransportLayer(object):
 
     def add_callbacks(self, callbacks):
         for section, callback in callbacks:
+            self._callbacks[section] = []
             self.add_callback(section, callback)
 
     def add_callback(self, section, callback):
-        self._callbacks[section].append(callback)
+        if callback not in self._callbacks[section]:
+            self._callbacks[section].append(callback)
 
     def trigger_callbacks(self, section, *data):
         # Run all callbacks in specified section
@@ -144,9 +157,9 @@ class TransportLayer(object):
         else:
             try:
                 self.socket.ipv6 = True
+                self.socket.bind('tcp://[*]:%s' % self._port)
             except AttributeError:
-                pass
-            self.socket.bind('tcp://[*]:%s' % self._port)
+                self.socket.bind('tcp://*:%s' % self._port)
 
         self.stream = zmqstream.ZMQStream(
             self.socket, io_loop=ioloop.IOLoop.current()

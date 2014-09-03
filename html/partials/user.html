@@ -32,7 +32,7 @@
                 </tr>
                 <tr data-ng-show="page.bitmessage">
                     <td class="col-xs-3">Bitmessage Address</td>
-                    <td style="word-wrap:break-word">{{page.bitmessage}}
+                    <td style="word-wrap:break-word"><a href="" data-ng-click="compose_message('lg', myself, '', null)">{{page.bitmessage}}</a>
                         <!--<button class="btn btn-info" data-ng-click="compose_message('lg', myself, page.bitmessage, null)">Send Message</button>-->
                     </td>
                 </tr>
@@ -121,7 +121,7 @@
 
             <div class="div-listing col-sm-4 col-xs-6" style="padding:5px" data-ng-repeat="listing in store_listings">
 
-                <a href="" data-ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_desc, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, trusted_notaries, settings.trustedArbiters, settings.btc_pubkey, listing.contract_body.Seller.seller_GUID)"><img class="img-thumbnail" src="{{listing.contract_body.Contract.item_images}}" width="100%"/></a>
+                <a href="" data-ng-click="open('lg', myself, page.pubkey, listing, trusted_notaries, settings.trustedArbiters, settings.btc_pubkey)"><img class="img-thumbnail" src="{{listing.contract_body.Contract.item_images}}" width="100%"/></a>
                         <h4 style="margin-bottom:0"><a href="" data-ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_description, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, settings.notaries, settings.trustedArbiters, settings.btc_pubkey, listing.contract_body.Seller.seller_GUID)" class="trim-info">{{listing.contract_body.Contract.item_title}}</a></h4>
                         <span style="font-size:16px;">&#3647;{{listing.contract_body.Contract.item_price}}</span>
             </div>

@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -x
 
 usage()
 {
@@ -10,8 +11,10 @@ This script starts up the OpenBazaar client and server.
 OPTIONS:
   -h    Help information
   -o    Seed Mode
-  -i    Server IP
-  -p    Server Port
+  -i    Server Public IP
+  -p    Server Public Port (default 12345)
+  -k    Web Interface IP (default 127.0.0.1; use 0.0.0.0 for any)
+  -q    Web Interface Port (default random)
   -l    Log file
   -d    Development mode
   -n    Number of Dev nodes to start up
@@ -20,13 +23,24 @@ OPTIONS:
   -c    Bitmessage API port
   -u    Market ID
   -j    Disable upnp
+  -s    List of additional seeds
 EOF
 }
 
-if which python2 2>/dev/null; then
+PYTHON="./env/bin/python"
+if [ ! -x $PYTHON ]; then
+  echo "No python executable found at ${PYTHON}"
+  if which python2 2>/dev/null; then
     PYTHON=python2
-else
+  elif which python 2>/dev/null; then
     PYTHON=python
+  else
+    echo "No python executable found anywhere"
+    exit
+  fi
+fi
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
 fi
 
 # Default values
@@ -35,7 +49,7 @@ LOGDIR=logs
 DBDIR=db
 DBFILE=ob.db
 DEVELOPMENT=0
-SEED_URI='seed.openbazaar.org seed2.openbazaar.org'
+SEED_URI='seed.openbazaar.org seed2.openbazaar.org seed.openlabs.co seed.bizarre.company'
 LOG_FILE=production.log
 DISABLE_UPNP=0
 
@@ -53,7 +67,7 @@ BM_PASSWORD=P@ssw0rd
 BM_PORT=8442
 
 HTTP_IP=127.0.0.1
-HTTP_PORT=8888
+HTTP_PORT=-1
 
 # Tor Information
 # - If you enable Tor here you will be operating a hidden
@@ -66,7 +80,7 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hp:l:dn:a:b:c:u:oi:jk:q:" OPTION
+while getopts "hp:l:dn:a:b:c:u:oi:jk:q:s:" OPTION
 do
      case ${OPTION} in
          h)
@@ -112,6 +126,9 @@ do
          q)
              HTTP_PORT=$OPTARG
              ;;
+         s)
+             SEED_URI_ADD=$OPTARG
+             ;;
          ?)
              usage
              exit
@@ -119,6 +136,7 @@ do
      esac
 done
 
+SEED_URI+=" $SEED_URI_ADD"
 HTTP_OPTS="-k $HTTP_IP -q $HTTP_PORT"
 
 if [ -z "$SERVER_IP" ]; then
@@ -139,6 +157,8 @@ if [ "$DISABLE_UPNP" == 1 ]; then
 else
     DISABLE_UPNP=""
 fi
+
+echo "OpenBazaar is starting..."
 
 if [ "$SEED_MODE" == 1 ]; then
     echo "Seed Mode $SERVER_IP"

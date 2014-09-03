@@ -8,6 +8,7 @@ import logging
 import os
 import routingtable
 import time
+import socket
 
 
 class DHT(object):
@@ -95,7 +96,7 @@ class DHT(object):
 
             for idx, peer in enumerate(self._activePeers):
 
-                active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
+                active_peer_tuple = (peer._address, peer._pub, peer._guid, peer._nickname)
 
                 if active_peer_tuple == peer_tuple:
 
@@ -610,7 +611,12 @@ class DHT(object):
 
         for node in nodes:
 
-            uri = 'tcp://[%s]:%s' % (node[0], node[1])
+            try:
+                socket.inet_pton(socket.AF_INET6, node[0])
+                uri = 'tcp://[%s]:%s' % (node[0], node[1])
+            except socket.error:
+                uri = 'tcp://%s:%s' % (node[0], node[1])
+
             guid = node[2]
 
             peer = self._routingTable.getContact(guid)

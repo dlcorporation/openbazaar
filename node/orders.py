@@ -88,6 +88,28 @@ class Orders(object):
 
         return offer_data_json
 
+    def get_buyer_json(self, raw_contract, state):
+
+        if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
+            start_line = 8
+        else:
+            start_line = 6
+        offer_data = ''.join(raw_contract.split('\n')[start_line:])
+        index_of_seller_signature = offer_data.find('-----BEGIN PGP SIGNATURE-----', 0, len(offer_data))
+
+        # Find Buyer Data in Contract
+        bid_data_index = offer_data.find('"Buyer"', index_of_seller_signature, len(offer_data))
+        if state in [Orders.State.SENT]:
+            end_of_bid_index = offer_data.find('-----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+        else:
+            end_of_bid_index = offer_data.find('- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data))
+
+        buyer_data_json = "{" + offer_data[bid_data_index:end_of_bid_index]
+        print buyer_data_json
+        buyer_data_json = json.loads(buyer_data_json)
+
+        return buyer_data_json
+
     def get_notary_json(self, raw_contract, state):
 
         if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
@@ -128,6 +150,7 @@ class Orders(object):
         total_price = 0
 
         offer_data_json = self.get_offer_json(_order['signed_contract_body'], _order['state'])
+        buyer_data_json = self.get_buyer_json(_order['signed_contract_body'], _order['state'])
 
         if _order['state'] != Orders.State.SENT:
             notary_json = self.get_notary_json(_order['signed_contract_body'], _order['state'])
@@ -154,7 +177,10 @@ class Orders(object):
                 self._log.error('Probably not a number %s' % e)
 
         # Generate QR code
+        print offer_data_json
         qr = self.get_qr_code(offer_data_json['Contract']['item_title'], _order['address'], total_price)
+        merchant_bitmessage = offer_data_json.get('Seller').get('seller_Bitmessage') if 'Seller' in offer_data_json else ""
+        buyer_bitmessage = buyer_data_json.get('Buyer').get('buyer_Bitmessage') if 'Buyer' in buyer_data_json else ""
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -165,8 +191,10 @@ class Orders(object):
                  "order_id": _order.get('order_id'),
                  "item_price": _order.get('item_price'),
                  "shipping_price": _order.get('shipping_price'),
-                 "shipping_address": _order.get('shipping_address') if _order.get("shipping_address") != "" else "",
+                 "shipping_address": str(_order.get('shipping_address')) if _order.get("shipping_address") != "" else "",
                  "total_price": total_price,
+                 "merchant_bitmessage": merchant_bitmessage,
+                 "buyer_bitmessage": buyer_bitmessage,
                  "notary": notary,
                  "payment_address": _order.get('payment_address'),
                  "qrcode": 'data:image/png;base64,' + qr,
@@ -264,6 +292,8 @@ class Orders(object):
         del order['item_image']
         del order['total_price']
         del order['item_title']
+        del order['buyer_bitmessage']
+        del order['merchant_bitmessage']
 
         order['state'] = Orders.State.SHIPPED
         order['payment_address'] = payment_address
@@ -321,6 +351,8 @@ class Orders(object):
         del new_order['item_image']
         del new_order['total_price']
         del new_order['item_title']
+        del new_order['buyer_bitmessage']
+        del new_order['merchant_bitmessage']
 
         self._db.updateEntries("orders", {"order_id": order_id}, new_order)
 
@@ -434,12 +466,11 @@ class Orders(object):
         buyer['Buyer']['buyer_GUID'] = self._transport._guid
         buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
         buyer['Buyer']['buyer_pgp'] = self._transport.settings['PGPPubKey']
-        buyer['Buyer']['buyer_deliveryaddr'] = seller.encrypt(str(json.dumps(self.get_shipping_address()))).encode(
+        buyer['Buyer']['buyer_Bitmessage'] = self._transport.settings['bitmessage']
+        buyer['Buyer']['buyer_deliveryaddr'] = seller.encrypt(json.dumps(self.get_shipping_address())).encode(
             'hex')
         buyer['Buyer']['note_for_seller'] = msg['message']
         buyer['Buyer']['buyer_order_id'] = order_id
-
-        self._log.debug('Buyer: %s' % buyer)
 
         # Add to contract and sign
         seed_contract = msg.get('rawContract')
@@ -475,7 +506,7 @@ class Orders(object):
                 'market_id': self._transport._market_id,
                 'contract_key': contract_key,
                 'signed_contract_body': str(signed_data),
-                'shipping_address': json.dumps(self.get_shipping_address()),
+                'shipping_address': str(json.dumps(self.get_shipping_address())),
                 'state': Orders.State.NEW,
                 'updated': time.time(),
                 'note_for_merchant': msg['message']
@@ -780,7 +811,7 @@ class Orders(object):
                     'buyer': bid_data_json['Buyer']['buyer_GUID'],
                     'notary': notary_data_json['Notary']['notary_GUID'],
                     'address': multisig_address,
-                    'shipping_address': self.get_shipping_address(),
+                    'shipping_address': json.dumps(self.get_shipping_address()),
                     'item_price': offer_data_json['Contract']['item_price'] if 'item_price' in offer_data_json[
                         'Contract'] else 0,
                     'shipping_price': offer_data_json['Contract']['item_delivery'][

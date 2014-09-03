@@ -27,6 +27,7 @@ class ProtocolHandler:
         # register on transport events to forward..
         self._transport.add_callbacks([
             ('peer', self.on_node_peer),
+            ('page', self.on_page),
             ('peer_remove', self.on_node_remove_peer),
             ('node_page', self.on_node_page),
             ('listing_results', self.on_listing_results),
@@ -80,6 +81,29 @@ class ProtocolHandler:
         self._log = logging.getLogger(
             '[%s] %s' % (self._transport._market_id, self.__class__.__name__)
         )
+
+    def on_page(self, page):
+
+        guid = page.get('senderGUID')
+        self._log.info(page)
+
+        sin = page.get('sin')
+
+        self._log.info("Received store info from node: %s" % page)
+
+        if sin and page:
+            self._market.pages[sin] = page
+
+        # TODO: allow async calling in different thread
+        def reputation_pledge_retrieved(amount, page):
+            self._log.debug('Received reputation pledge amount %s for guid %s' % (amount, guid))
+            SATOSHIS_IN_BITCOIN = 100000000
+            bitcoins = float(amount) / SATOSHIS_IN_BITCOIN
+            bitcoins = round(bitcoins, 4)
+            self._market.pages[sin]['reputation_pledge'] = bitcoins
+            self.send_to_client(None, {'type': 'reputation_pledge_update', 'value': bitcoins})
+
+        trust.get_global(guid, lambda amount, page=page: reputation_pledge_retrieved(amount, page))
 
     def send_opening(self):
         peers = self.get_peers()
@@ -216,16 +240,6 @@ class ProtocolHandler:
 
         def cb(msg, query_id):
             self._log.info('Received a query page response: %s' % query_id)
-
-            # try:
-            #     self._timeouts.remove(query_id)
-            # except ValueError:
-            #     self._log.error('Cannot find that query id')
-            # if not success:
-            #     self.send_to_client(None, {
-            #         "type": "peers",
-            #         "peers": self.get_peers()
-            #     })
 
         self._market.query_page(
             findGUID,
@@ -644,7 +658,7 @@ class ProtocolHandler:
         self._log.info('Found Contracts: %s' % type(results))
         self._log.info(results)
 
-        if len(results) > 0 and type(results[0]) == unicode:
+        if len(results) > 0 and type(results['data']) == unicode:
             results = json.loads(results[0])
 
         self._log.info(results)
