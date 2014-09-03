@@ -109,10 +109,12 @@ class TransportLayer(object):
 
     def add_callbacks(self, callbacks):
         for section, callback in callbacks:
+            self._callbacks[section] = []
             self.add_callback(section, callback)
 
     def add_callback(self, section, callback):
-        self._callbacks[section].append(callback)
+        if callback not in self._callbacks[section]:
+            self._callbacks[section].append(callback)
 
     def trigger_callbacks(self, section, *data):
         # Run all callbacks in specified section
