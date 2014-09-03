@@ -11,8 +11,10 @@ This script starts up the OpenBazaar client and server.
 OPTIONS:
   -h    Help information
   -o    Seed Mode
-  -i    Server IP
-  -p    Server Port
+  -i    Server Public IP
+  -p    Server Public Port (default 12345)
+  -k    Web Interface IP (default 127.0.0.1; use 0.0.0.0 for any)
+  -q    Web Interface Port (default random)
   -l    Log file
   -d    Development mode
   -n    Number of Dev nodes to start up
@@ -37,8 +39,9 @@ if [ ! -x $PYTHON ]; then
     exit
   fi
 fi
-
-export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
+fi
 
 # Default values
 SERVER_PORT=12345
@@ -64,7 +67,7 @@ BM_PASSWORD=P@ssw0rd
 BM_PORT=8442
 
 HTTP_IP=127.0.0.1
-HTTP_PORT=8888
+HTTP_PORT=-1
 
 # Tor Information
 # - If you enable Tor here you will be operating a hidden

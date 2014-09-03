@@ -50,7 +50,7 @@ Hash: SHA1
 <!-- Service Details -->
 <service_name> Cupcake delivery </service_name>
 <service_category> Courier </service_category>
-<service_subcategory> Small item (< 5 kg) </service_subcategory>
+<service_subcategory> Small item (&lt; 5 kg) </service_subcategory>
 <service_price> 0-20 mBTC </service_price>
 <service_time> 2014-06-04 07:00-09:00 am </service_time>
 <service_comments> Hi, I'd like to deliver the cupcakes to my co-worker before she
@@ -144,7 +144,7 @@ For example:
 <!-- Service Details -->
 <service_name> Cupcake delivery </service_name>
 <service_category> Courier </service_category>
-<service_subcategory> Small item (< 5 kg) </service_subcategory>
+<service_subcategory> Small item (&lt; 5 kg) </service_subcategory>
 <service_price> 0-20 mBTC </service_price>
 <service_time> 2014-06-04 07:00-09:00 am </service_time>
 <service_comments> Hi, I'd like to deliver the cupcakes to my co-worker before she

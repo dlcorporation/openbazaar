@@ -15,8 +15,7 @@
 #
 #
 
-#exit on error
-set -e
+set -x
 
 function installMac {
   #is brew installed?

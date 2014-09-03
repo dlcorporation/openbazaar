@@ -35,7 +35,7 @@ The contract is saved as an XML file, with the SHA1 hash of the file as part of 
 
 Alice wants to sell a 16 pound watermelon. She creates the contract below, signs it with her nym key (her private PGP key) and distributes/seeds it on the *OpenBazaar* network. 
 
-```
+```XML
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
@@ -215,7 +215,7 @@ To reduce the overall size of the contract at each stage of the process, the nex
 
 For example, the buyer in step (1) can format the contract the following way:
 
-```
+```XML
 <?xml version="1.0"?>
 
 <!-- Seller's Contract Hash -->
@@ -230,7 +230,7 @@ For example, the buyer in step (1) can format the contract the following way:
 <!-- Bitcoin Pubkey -->
 	<btc_addr> 03d728ad6757d4784effea04d47baafa216cf474866c2d4dc99b1e8e3eb936e730 </btc_addr>
 
-<!-- Bitcoin Pubkey -->
+<!-- Buyer's Delivery Addres -->
 	<delivery_addr> 1060 W Addison St, Chicago, IL 60613, United States </delivery_addr>
 
 <!-- Buyer's PGP Key -->
@@ -312,7 +312,7 @@ excS0w19X3r6nX+N6/+x
 
 For even later iterations of the contract, a running tally of the previous hashes can be made in the contract field. For example:
 
-```
+```XML
 <!-- Seller's Contract Hash -->
 	<contract_hash> 4cb658abd0ed7cd1a0531a5f1e839638a8d22d93 </contract_hash>
 	<contract_hash> 3f295f95f4a9abb0dba2cdb026ea551f0fa91507 </contract_hash>
@@ -320,7 +320,7 @@ For even later iterations of the contract, a running tally of the previous hashe
 
 There is also some flexibility in the naming of this field for clarity and simplicity:
 
-```
+```XML
 <!-- Contract Chain -->
 	<seller_signed_contract_hash> 4cb658abd0ed7cd1a0531a5f1e839638a8d22d93 </seller_signed_contract_hash>
 	<buyer_signed_contract_hash> 3f295f95f4a9abb0dba2cdb026ea551f0fa91507 </buyer_signed_contract_hash>
