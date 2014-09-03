@@ -903,7 +903,7 @@ class ProtocolHandler:
             if hasattr(peer, '_address'):
                 peer_item = {'uri': peer._address}
                 if peer._pub:
-                    peer_item['pubkey'] = peer._pub.encode('hex')
+                    peer_item['pubkey'] = peer._pub
                 else:
                     peer_item['pubkey'] = 'unknown'
 
