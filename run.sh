@@ -39,8 +39,9 @@ if [ ! -x $PYTHON ]; then
     exit
   fi
 fi
-
-export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
+fi
 
 # Default values
 SERVER_PORT=12345
