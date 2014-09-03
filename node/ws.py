@@ -48,6 +48,7 @@ class ProtocolHandler:
             "shout": self.client_shout,
             "get_notaries": self.client_get_notaries,
             "add_trusted_notary": self.client_add_trusted_notary,
+            "add_node": self.client_add_guid,
             "remove_trusted_notary": self.client_remove_trusted_notary,
             "query_store_products": self.client_query_store_products,
             "check_order_count": self.client_check_order_count,
@@ -182,6 +183,12 @@ class ProtocolHandler:
         self._log.info('Adding trusted notary %s' % msg)
         self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
         # self.send_to_client(None, {"type": "load_page"})
+
+    def client_add_guid(self, socket_handler, msg):
+        self._log.info('Adding node by guid %s' % msg)
+        def cb(msg):
+            self.get_peers()
+        self._transport._dht.iterativeFindNode(msg.get('guid'), cb)
 
     def client_remove_trusted_notary(self, socket_handler, msg):
         self._log.info('Removing trusted notary %s' % msg)

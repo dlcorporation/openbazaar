@@ -122,7 +122,7 @@
                         <strong>{{settings.nickname ? settings.nickname : 'Your Store'}}</strong>
                         <br>
                         <span style="font-style:italic;font-size:12px">
-                            {{myself.nickname ? myself.nickname : myself.sin}}
+                            {{myself.nickname ? myself.nickname : myself.guid}}
                             <!--<div data-ng-show="myself.uri">{{myself.uri}}</div>-->
                         </span>
                     </span>
@@ -133,7 +133,7 @@
             </tbody>
         </table>
 
-        <h3>Connected Markets</h3>
+        <h3>Connected Markets <button data-ng-controller="AddNodeModalCtrl" class="btn-xs btn btn-primary" data-ng-click="open()">Add Node</button></h3>
 
         <div data-ng-show="peers.length < 1">There are no stores connected to you.</div>
 
@@ -147,7 +147,7 @@
                             <strong>{{peer.nick != "" ? peer.nick : peer.uri }}</strong>
                             <br>
                             <span style="font-style:italic;font-size:12px">
-                                {{peer.nickname ? peer.nickname : peer.sin}}
+                                {{peer.nickname ? peer.nickname : peer.guid}}
                                 <!--<div data-ng-show="peer.uri">{{peer.uri}}</div>-->
                             </span>
                         </span>
