@@ -88,9 +88,6 @@ angular.module('app')
                 $scope.sidebar = true;
             }
 
-
-
-
             /**
              * [LEGACY] Adds review to a page
              * @pubkey -
@@ -619,7 +616,7 @@ angular.module('app')
             $scope.queryShop = function(guid) {
 
                 $scope.awaitingShop = guid;
-                console.log('Querying for shop: ', guid);
+                console.log('Querying for shop [market]: ', guid);
 
                 var query = {
                     'type': 'query_page',
@@ -872,6 +869,47 @@ angular.module('app')
 
             };
 
+            // Modal Code
+            $scope.AddNodeModalCtrl = function($scope, $modal, $log) {
+
+                $scope.open = function(size, backdrop, scope) {
+
+                    backdrop = backdrop ? backdrop : true;
+
+                    var modalInstance = $modal.open({
+                        templateUrl: 'partials/modal/addNode.html',
+                        controller: AddNodeModalInstance,
+                        size: size,
+                        backdrop: backdrop,
+                        resolve: {
+                        }
+                    });
+
+                    modalInstance.result.then(function(selectedItem) {
+                        $scope.selected = selectedItem;
+                    }, function() {
+                        $log.info('Modal dismissed at: ' + new Date());
+                    });
+
+                }
+
+            };
+
+            var AddNodeModalInstance = function($scope, $modalInstance) {
+
+                $scope.addGUID = function(newGUID) {
+
+                    if(newGUID.length == 40 && newGUID.match(/^[A-Za-z0-9]+$/)) {
+                        Connection.send('add_node', { 'type': 'add_guid', 'guid': newGUID });
+                        console.log('Added node by GUID');
+                    }
+                    $modalInstance.dismiss('cancel');
+                };
+
+                $scope.cancel = function() {
+                    $modalInstance.dismiss('cancel');
+                };
+            };
 
         }
     ]);

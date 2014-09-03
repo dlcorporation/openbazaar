@@ -1,0 +1,20 @@
+<div class="modal-header">
+    <h3 class="modal-title">Add Store Node</h3>
+</div>
+
+<div class="modal-body"  style="text-align:left;">
+
+    <form role="form" name="addNodeForm">
+        <div class="form-group">
+            <label for="nodeGUID">Store GUID</label>
+            <input type="text" class="form-control" id="nodeGUID" name="nodeGUID" data-ng-model="newGUID" placeholder="Enter a GUID"/>
+        </div>
+    </form>
+
+</div>
+
+
+<div class="modal-footer">
+    <a class="btn btn-default" ng-show="!order.step2 && !order.confirmation" data-ng-click="cancel()" type="cancel">Cancel</a>
+    <button type="button" class="btn btn-primary" data-ng-click="addGUID(newGUID)">Save</button>
+</div>

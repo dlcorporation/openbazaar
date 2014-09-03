@@ -92,7 +92,6 @@ angular.module('app')
                     $scope.reviews[msg.pubkey] = []
                 }
 
-                console.log($scope.settings);
                 $.each($scope.settings.notaries, function(idx, val) {
                     if (val.guid == msg.senderGUID) {
                        msg.isTrustedNotary = true;

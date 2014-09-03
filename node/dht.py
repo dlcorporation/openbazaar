@@ -702,7 +702,7 @@ class DHT(object):
         @rtype: twisted.internet.defer.Deferred
         """
         self._log.info('Looking for node at: %s' % key)
-        self._iterativeFind(key, callback=callback)
+        self._iterativeFind(key, [], callback=callback)
 
     def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
         """

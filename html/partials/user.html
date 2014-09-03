@@ -11,8 +11,8 @@
 
 
         <ul id="store-tabs" class="nav nav-pills" style="background-color:#ccc;border-bottom:1px solid #aaa;padding:5px;">
-            <li class="{{storeInfoPanel ? 'active' : ''}}"><a href="#/user/{{guid}}">Info</a></li>
-            <li class="{{storeProductsPanel ? 'active' : ''}}"><a href="#/user/{{guid}}/products">Products</a></li>
+            <li class="{{storeProductsPanel ? 'active' : ''}}"><a href="#/user/{{guid}}/products">Store</a></li>
+            <li class="{{storeInfoPanel ? 'active' : ''}}"><a href="#/user/{{guid}}">Details</a></li>
             <!--<li><a href="#storeReviews" data-ng-click="showStorePanel('storeReviews')">Reviews</a></li>-->
             <li data-ng-show="page.arbiter || page.notary" class="{{storeServicesPanel ? 'active' : ''}}"><a href="#/user/{{guid}}/services">Services</a></li>
         </ul>
@@ -23,7 +23,6 @@
 
         <div data-ng-show="storeInfoPanel" class="animated fadeIn">
 
-            <p data-ng-show="page.text" id="page-content" class="lead"></p>
 
             <table class="table table-bordered table-striped" style="font-size:14px;width:100%;table-layout:fixed">
                 <tr data-ng-show="page.email">
@@ -113,6 +112,8 @@
         <!-- Store Products -->
         <div data-ng-show="storeProductsPanel"  class="animated fadeIn">
 
+            <p data-ng-show="page.text" id="page-content" class="lead"></p>
+
             <div data-ng-controller="BuyItemCtrl">
 
             <div id="listing-loader">
@@ -121,7 +122,7 @@
 
             <div class="div-listing col-sm-4 col-xs-6" style="padding:5px" data-ng-repeat="listing in store_listings">
 
-                <a href="" data-ng-click="open('lg', myself, page.pubkey, listing, trusted_notaries, settings.trustedArbiters, settings.btc_pubkey)"><img class="img-thumbnail" src="{{listing.contract_body.Contract.item_images}}" width="100%"/></a>
+                <a href="" data-ng-click="open('lg', myself, page.pubkey, listing, trusted_notaries, settings.trustedArbiters, settings.btc_pubkey)"><img class="img-thumbnail" data-ng-src="{{listing.contract_body.Contract.item_images}}" width="100%"/></a>
                         <h4 style="margin-bottom:0"><a href="" data-ng-click="open('lg', myself, page.pubkey, listing.contract_body.Contract.item_title, listing.contract_body.Contract.item_price, listing.contract_body.Contract.item_description, listing.contract_body.Contract.item_images, listing.key, listing.signed_contract_body, settings.notaries, settings.trustedArbiters, settings.btc_pubkey, listing.contract_body.Seller.seller_GUID)" class="trim-info">{{listing.contract_body.Contract.item_title}}</a></h4>
                         <span style="font-size:16px;">&#3647;{{listing.contract_body.Contract.item_price}}</span>
             </div>
