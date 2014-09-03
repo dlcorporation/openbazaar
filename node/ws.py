@@ -32,6 +32,7 @@ class ProtocolHandler:
             ('node_page', self.on_node_page),
             ('listing_results', self.on_listing_results),
             ('listing_result', self.on_listing_result),
+            ('no_listing_result', self.on_no_listing_result),
             ('release_funds_tx', self.on_release_funds_tx),
             ('all', self.on_node_message)
         ])
@@ -167,6 +168,12 @@ class ProtocolHandler:
         self.send_to_client(None, {
             "type": "store_contracts",
             "products": msg['contracts']
+        })
+
+    def on_no_listing_result(self, msg):
+        self._log.debug('No listings found')
+        self.send_to_client(None, {
+            "type": "no_listings_found"
         })
 
     def on_listing_result(self, msg):
@@ -684,9 +691,6 @@ class ProtocolHandler:
             signature = results['signature']
             self._log.info('Signature: %s' % signature)
 
-            # TODO: Validate signature of listings matches data
-            # self._transport._myself.
-
             # Go get listing metadata and then send it to the GUI
             for contract in contracts:
                 self._transport._dht.iterativeFindValue(
@@ -695,11 +699,6 @@ class ProtocolHandler:
                         msg, key
                     )
                 )
-
-                # self.send_to_client(None, {
-                #     "type": "store_products",
-                #     "products": listings
-                # })
 
     def on_find_products(self, results):
 
