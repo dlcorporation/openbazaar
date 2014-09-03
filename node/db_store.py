@@ -52,7 +52,7 @@ class Obdb():
 
     def _beforeStoring(self, value):
         """ Method called before executing SQL identifiers.
-        """ 
+        """
         return unicode(value).replace("'", "''")
 
     def getOrCreate(self, table, where_clause, data_dict):
