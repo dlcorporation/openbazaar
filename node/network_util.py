@@ -1,7 +1,25 @@
 import re
 import socket
 import struct
+from random import randint
 
+def is_local_tcp_port_listening(port):
+    r = -1
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        r = s.connect_ex(('127.0.01',port))
+        s.close()
+    except:
+        pass
+    return r == 0
+
+def get_random_free_tcp_port(min_port_number=1025, max_port_number=49151):
+    while True:
+        port = randint(min_port_number, max_port_number)
+        print "Checking if port",port,"is free ..."
+        if not is_local_tcp_port_listening(port):
+           print "Port",port,"is free!"
+           return port
 
 def is_loopback_addr(addr):
     return addr.startswith("127.0.0.") or addr == 'localhost'
