@@ -24,6 +24,7 @@ angular.module('app')
             Connection.$on('page', function(e, msg){ $scope.parse_page(msg) });
             Connection.$on('store_products', function(e, msg){ $scope.parse_store_products(msg) });
             Connection.$on('new_listing', function(e, msg){ $scope.parse_new_listing(msg) });
+            Connection.$on('no_listings_found', function(e, msg){ $scope.handle_no_listings() });
             Connection.$on('reputation_pledge_update', function(e, msg){ $scope.parse_reputation_pledge_update(msg) });
 
             $scope.load_page = function(msg) {
@@ -131,6 +132,15 @@ angular.module('app')
                 });
                 $('#listing-loader').hide();
                 console.log('New Listing', $scope.store_listings)
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+            }
+
+            $scope.no_listings = null;
+            $scope.handle_no_listings = function() {
+                $('#listing-loader').hide();
+                $scope.no_listings = true;
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }

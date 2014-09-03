@@ -529,10 +529,14 @@ class Market(object):
         self._log.info("Someone is querying your listings: %s" % peer)
         contracts = self.get_contracts(page)
 
-        for contract in contracts['contracts']:
-            contract = contract
-            contract['type'] = "listing_result"
-            self._transport.send(contract, peer['senderGUID'])
+        if len(contracts['contracts']) == 0:
+            self._transport.send({"type": "no_listing_result"}, peer['senderGUID'])
+            return
+        else:
+            for contract in contracts['contracts']:
+                contract = contract
+                contract['type'] = "listing_result"
+                self._transport.send(contract, peer['senderGUID'])
 
     def on_peer(self, peer):
         pass
