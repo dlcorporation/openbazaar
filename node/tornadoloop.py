@@ -148,7 +148,7 @@ def start_node(my_market_ip,
     p2p_port = 12345
 
     if http_port == -1:
-        http_port = get_random_free_tcp_port(8889,8988)
+        http_port = get_random_free_tcp_port(8889, 8988)
 
     while error:
         try:

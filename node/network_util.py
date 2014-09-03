@@ -7,8 +7,8 @@ import struct
 def is_local_tcp_port_listening(port):
     r = -1
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        r = s.connect_ex(('127.0.01',port))
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        r = s.connect_ex(('127.0.01', port))
         s.close()
     except:
         pass
