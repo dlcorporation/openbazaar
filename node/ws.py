@@ -189,7 +189,7 @@ class ProtocolHandler:
 
         def cb(msg):
             self.get_peers()
-            
+
         self._transport._dht.iterativeFindNode(msg.get('guid'), cb)
 
     def client_remove_trusted_notary(self, socket_handler, msg):
