@@ -8,15 +8,15 @@ RUN apt-get install -y alien libssl-dev wget
 
 ADD . /bazaar
 RUN cd /bazaar && pip install -r requirements.txt &&\
-    pip install ./pysqlcipher
+    pip install pysqlcipher
 
-EXPOSE 8888 12345
+ENV HTTP_PORT 8888
 
 WORKDIR /bazaar
 ENV LOG_PATH /bazaar/logs/production.log
 # touch log file before bash run.sh to keep tail -f work
 RUN mkdir -p /bazaar/logs && touch $LOG_PATH
 CMD IP=$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}') && \
-    bash run.sh -k $IP && tail -f $LOG_PATH
+    bash run.sh -k $IP -q $HTTP_PORT && tail -f $LOG_PATH
 # clean tmp file
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
