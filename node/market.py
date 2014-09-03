@@ -278,7 +278,7 @@ class Market(object):
     def republish_listing(self, msg):
 
         listing_id = msg.get('productID')
-        listing = self._db.selectEntries("products", "id = '%s'" % listing_id)
+        listing = self._db.selectEntries("products", "id = '%s'" % listing_id.replace("'", "''"))
         if listing:
             listing = listing[0]
         else:
@@ -315,7 +315,7 @@ class Market(object):
         # Calculate index of contracts
         contract_ids = self._db.selectEntries("contracts",
                                               "market_id = '%s'" %
-                                              self._transport._market_id)
+                                              self._transport._market_id.replace("'", "''"))
         my_contracts = []
         for contract_id in contract_ids:
             my_contracts.append(contract_id['key'])
@@ -346,7 +346,7 @@ class Market(object):
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
-        contract = self._db.selectEntries("contracts", "id = '%s'" % contract_id)[0]
+        contract = self._db.selectEntries("contracts", "id = '%s'" % contract_id.replace("'", "''"))[0]
         contract_key = contract['key']
 
         contract = json.loads(contract['contract_body'])
@@ -403,7 +403,7 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self._log.info('Getting contracts for market: %s' % self._transport._market_id)
-        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id,
+        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self._transport._market_id.replace("'", "''"),
                                            limit=10,
                                            limit_offset=(page * 10))
         my_contracts = []

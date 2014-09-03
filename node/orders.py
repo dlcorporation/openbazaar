@@ -144,9 +144,9 @@ class Orders(object):
     def get_order(self, order_id, by_buyer_id=False):
 
         if not by_buyer_id:
-            _order = self._db.selectEntries("orders", "order_id = '%s'" % order_id)[0]
+            _order = self._db.selectEntries("orders", "order_id = '%s'" % order_id.replace("'", "''"))[0]
         else:
-            _order = self._db.selectEntries("orders", "buyer_order_id = '%s'" % order_id)[0]
+            _order = self._db.selectEntries("orders", "buyer_order_id = '%s'" % order_id.replace("'", "''"))[0]
         total_price = 0
 
         offer_data_json = self.get_offer_json(_order['signed_contract_body'], _order['state'])
@@ -217,7 +217,7 @@ class Orders(object):
         if merchant is None:
             order_ids = self._db.selectEntries(
                 "orders",
-                "market_id = '%s'" % self._market_id,
+                "market_id = '%s'" % self._market_id.replace("'", "''"),
                 order_field="updated",
                 order="DESC",
                 limit=10,
@@ -233,7 +233,7 @@ class Orders(object):
             if merchant:
                 order_ids = self._db.selectEntries(
                     "orders",
-                    "market_id = '%s' and merchant = '%s'" % (self._market_id, self._transport._guid),
+                    "market_id = '%s' and merchant = '%s'" % (self._market_id.replace("'", "''"), self._transport._guid.replace("'", "''")),
                     order_field="updated",
                     order="DESC",
                     limit=10,
@@ -247,8 +247,8 @@ class Orders(object):
                     self._market_id, self._transport._guid))
             else:
                 order_ids = self._db.selectEntries("orders", "market_id = '%s' and merchant <> '%s'" % (
-                    self._market_id,
-                    self._transport._guid
+                    self._market_id.replace("'", "''"),
+                    self._transport._guid.replace("'", "''")
                 ),
                     order_field="updated",
                     order="DESC", limit=10,
@@ -262,10 +262,10 @@ class Orders(object):
                     self._market_id, self._transport._guid))
 
         for order in orders:
-            buyer = self._db.selectEntries("peers", "guid = '%s'" % order['buyer'])
+            buyer = self._db.selectEntries("peers", "guid = '%s'" % order['buyer'].replace("'", "''"))
             if len(buyer) > 0:
                 order['buyer_nickname'] = buyer[0]['nickname']
-            merchant = self._db.selectEntries("peers", "guid = '%s'" % order['merchant'])
+            merchant = self._db.selectEntries("peers", "guid = '%s'" % order['merchant'].replace("'", "''"))
             if len(merchant) > 0:
                 order['merchant_nickname'] = merchant[0]['nickname']
 
