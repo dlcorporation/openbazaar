@@ -140,7 +140,7 @@
         <div class="peers-area" >
             <table id="favorite-peers" class="peers-table table-hover">
                 <tbody>
-                <tr data-ng-repeat="peer in peers" data-ng-click="go('/user/'+peer.guid, peer.guid)">
+                <tr data-ng-repeat="peer in peers" data-ng-click="go('/user/'+peer.guid+'/products', peer.guid)">
                     <td width="40" style="vertical-align:top"><identicon icon-size="50" hash="peer.guid" title="{{peer.guid}}"></identicon></td>
                     <td style="font-size:14px;word-wrap:break-word;word-break:break-all">
                         <span title="{{peer.pubkey}}">
