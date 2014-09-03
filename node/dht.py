@@ -96,7 +96,7 @@ class DHT(object):
 
             for idx, peer in enumerate(self._activePeers):
 
-                active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
+                active_peer_tuple = (peer._address, peer._pub, peer._guid, peer._nickname)
 
                 if active_peer_tuple == peer_tuple:
 
