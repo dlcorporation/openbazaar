@@ -9,7 +9,10 @@
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the [GPL](http://www.gnu.org/copyleft/gpl.html).
 
 - **Official Site:** http://openbazaar.org
-- **Forums:** http://forum.openbazaar.org
+- **Forums:**
+  - *OpenBazaar*: http://forum.openbazaar.org
+  - *unSYSTEM*: https://forum.unsystem.net/category/projects/openbazaar
+  - *Bitcoin Talk*: https://bitcointalk.org/index.php?topic=768081.0
 - **IRC Chat:** #OpenBazaar on [Freenode](http://webchat.freenode.net/)
 - **Original Presentation at Toronto Hackathon:** https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
 - **Slides from 'Bitcoin in the Beltway' by Brian Hoffman:** http://www.slideshare.net/openbazaar/open-bazaar
