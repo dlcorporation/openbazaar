@@ -412,7 +412,7 @@ class TreeRoutingTable(RoutingTable):
         self._buckets.insert(oldBucketIndex + 1, newBucket)
         # Finally, copy all nodes that belong to the new k-bucket into it...
         for contact in oldBucket._contacts:
-            if newBucket.keyInRange(contact.id):
+            if newBucket.keyInRange(contact._guid):
                 newBucket.addContact(contact)
         # ...and remove them from the old bucket
         for contact in newBucket._contacts:
