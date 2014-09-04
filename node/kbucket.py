@@ -39,7 +39,7 @@ class KBucket(object):
         found = False
 
         for idx, old_contact in enumerate(self._contacts):
-            if contact._guid == old_contact._guid:
+            if contact.guid == old_contact.guid:
                 found = True
                 foundId = idx
                 break
@@ -59,7 +59,7 @@ class KBucket(object):
         self._log.debug('[getContact] %s' % contactID)
         self._log.debug('contacts %s' % self._contacts)
         for contact in self._contacts:
-            if contact._guid == contactID:
+            if contact.guid == contactID:
                 self._log.debug('[getContact] Found %s' % contact)
                 return contact
         self._log.debug('[getContact] No Results')
@@ -127,7 +127,7 @@ class KBucket(object):
         @raise ValueError: The specified contact is not in this bucket
         """
         self._log.debug('Contacts %s %s' % (contact, self._contacts))
-        self._contacts[:] = [x for x in self._contacts if x._guid != contact]
+        self._contacts[:] = [x for x in self._contacts if x.guid != contact]
         self._log.debug('Contacts %s %s' % (contact, self._contacts))
 
     def keyInRange(self, key):

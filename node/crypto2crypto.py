@@ -35,7 +35,7 @@ class CryptoPeerConnection(PeerConnection):
         self._nickname = nickname
         self._sin = sin
         self._connected = False
-        self._guid = guid
+        self.guid = guid
 
         PeerConnection.__init__(self, transport, address)
 
@@ -52,8 +52,8 @@ class CryptoPeerConnection(PeerConnection):
                     msg = json.loads(msg)
 
                     # Update Information
-                    self._guid = msg['senderGUID']
-                    self._sin = self.generate_sin(self._guid)
+                    self.guid = msg['senderGUID']
+                    self._sin = self.generate_sin(self.guid)
                     self._pub = msg['pubkey']
                     self._nickname = msg['senderNick']
 
@@ -61,12 +61,12 @@ class CryptoPeerConnection(PeerConnection):
 
                     # Add this peer to active peers list
                     for idx, peer in enumerate(self._transport._dht._activePeers):
-                        if peer._guid == self._guid or peer._address == self._address:
+                        if peer.guid == self.guid or peer._address == self._address:
                             self._transport._dht._activePeers[idx] = self
                             self._transport._dht.add_peer(self._transport,
                                                           self._address,
                                                           self._pub,
-                                                          self._guid,
+                                                          self.guid,
                                                           self._nickname)
                             return
 
@@ -83,7 +83,7 @@ class CryptoPeerConnection(PeerConnection):
                                       'senderNick': self._transport._nickname}), cb)
 
     def __repr__(self):
-        return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self._guid, self._ip, self._port, self._pub)
+        return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self.guid, self._ip, self._port, self._pub)
 
     def generate_sin(self, guid):
         return obelisk.EncodeBase58Check('\x0F\x02%s' + guid.decode('hex'))
@@ -133,10 +133,10 @@ class CryptoPeerConnection(PeerConnection):
 
     def send(self, data, callback=lambda msg: None):
 
-        if hasattr(self, '_guid'):
+        if hasattr(self, 'guid'):
 
             # Include guid
-            data['guid'] = self._guid
+            data['guid'] = self.guid
             data['senderGUID'] = self._transport.guid
             data['uri'] = self._transport._uri
             data['pubkey'] = self._transport.pubkey
@@ -165,10 +165,10 @@ class CryptoPeerConnection(PeerConnection):
             self._log.error('Cannot send to peer')
 
     def peer_to_tuple(self):
-        return self._ip, self._port, self._guid
+        return self._ip, self._port, self.guid
 
     def get_guid(self):
-        return self._guid
+        return self.guid
 
 
 class CryptoTransportLayer(TransportLayer):
@@ -249,7 +249,7 @@ class CryptoTransportLayer(TransportLayer):
                     self.stream.close()
                     self.listen(self.pubkey)
 
-                    self._dht._iterativeFind(self._guid, [], 'findNode')
+                    self._dht._iterativeFind(self.guid, [], 'findNode')
             else:
                 self._log.error('Could not get IP')
         except Exception as e:
@@ -311,7 +311,7 @@ class CryptoTransportLayer(TransportLayer):
         self._log.info('Check ok')
 
     def get_guid(self):
-        return self._guid
+        return self.guid
 
     def get_dht(self):
         return self._dht
@@ -501,7 +501,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def search_for_my_node(self):
         print 'Searching for myself'
-        self._dht._iterativeFind(self._guid, self._dht._knownNodes, 'findNode')
+        self._dht._iterativeFind(self.guid, self._dht._knownNodes, 'findNode')
 
     def connect_to_peers(self, known_peers):
         for known_peer in known_peers:
@@ -524,11 +524,11 @@ class CryptoTransportLayer(TransportLayer):
         foundOutdatedPeer = False
         for idx, peer in enumerate(self._dht._activePeers):
 
-            if (peer._address, peer._guid, peer._pub) == (peer_to_add._address, peer_to_add._guid, peer_to_add._pub):
+            if (peer._address, peer.guid, peer._pub) == (peer_to_add._address, peer_to_add.guid, peer_to_add._pub):
                 self._log.info('Found existing peer, not adding.')
                 return
 
-            if peer._guid == peer_to_add._guid or peer._pub == peer_to_add._pub or peer._address == peer_to_add._address:
+            if peer.guid == peer_to_add.guid or peer._pub == peer_to_add._pub or peer._address == peer_to_add._address:
 
                 foundOutdatedPeer = True
                 self._log.info('Found an outdated peer')
@@ -536,9 +536,9 @@ class CryptoTransportLayer(TransportLayer):
                 # Update existing peer
                 self._activePeers[idx] = peer_to_add
 
-        if not foundOutdatedPeer and peer_to_add._guid != self._guid:
+        if not foundOutdatedPeer and peer_to_add.guid != self.guid:
             self._log.info('Adding crypto peer at %s' % peer_to_add._nickname)
-            self._dht.add_peer(self, peer_to_add._address, peer_to_add._pub, peer_to_add._guid, peer_to_add._nickname)
+            self._dht.add_peer(self, peer_to_add._address, peer_to_add._pub, peer_to_add.guid, peer_to_add._nickname)
 
     # Return data array with details from the crypto file
     # TODO: This needs to be protected better; potentially encrypted file or DB
@@ -630,8 +630,8 @@ class CryptoTransportLayer(TransportLayer):
 
             for peer in self._dht._activePeers:
                 try:
-                    peer = self._dht._routingTable.getContact(peer._guid)
-                    data['senderGUID'] = self._guid
+                    peer = self._dht._routingTable.getContact(peer.guid)
+                    data['senderGUID'] = self.guid
                     data['pubkey'] = self.pubkey
 
                     def cb(msg):

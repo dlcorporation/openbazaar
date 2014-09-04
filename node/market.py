@@ -144,7 +144,7 @@ class Market(object):
             self._transport._dht.iterativeStore(self._transport,
                                                 keyword_key,
                                                 json.dumps({'keyword_index_add': key}),
-                                                self._transport._guid)
+                                                self._transport.guid)
 
     def save_contract(self, msg):
         contract_id = self.get_contract_id()
@@ -182,7 +182,7 @@ class Market(object):
         self._transport._dht.iterativeStore(self._transport,
                                             contract_key,
                                             str(signed_data),
-                                            self._transport._guid)
+                                            self._transport.guid)
         self.update_listings_index()
 
         # If keywords are present
@@ -251,7 +251,7 @@ class Market(object):
             self._transport._dht.iterativeStore(self._transport,
                                                 listing['key'],
                                                 listing.get('signed_contract_body'),
-                                                self._transport._guid)
+                                                self._transport.guid)
         self.update_listings_index()
 
     def get_notaries(self, online_only=False):
@@ -289,7 +289,7 @@ class Market(object):
         self._transport._dht.iterativeStore(self._transport,
                                             listing_key,
                                             listing.get('signed_contract_body'),
-                                            self._transport._guid)
+                                            self._transport.guid)
         self.update_listings_index()
 
         # If keywords store them in the keyword index
@@ -301,13 +301,13 @@ class Market(object):
         #     hash_value.update('keyword-%s' % keyword)
         #     keyword_key = hash_value.hexdigest()
         #
-        #     self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add': contract_key}), self._transport._guid)
+        #     self._transport._dht.iterativeStore(self._transport, keyword_key, json.dumps({'keyword_index_add': contract_key}), self._transport.guid)
 
     def update_listings_index(self):
 
         # Store to marketplace listing index
         contract_index_key = hashlib.sha1('contracts-%s' %
-                                          self._transport._guid).hexdigest()
+                                          self._transport.guid).hexdigest()
         hashvalue = hashlib.new('ripemd160')
         hashvalue.update(contract_index_key)
         contract_index_key = hashvalue.hexdigest()
@@ -323,18 +323,18 @@ class Market(object):
         self._log.debug('My Contracts: %s' % my_contracts)
 
         # Sign listing index for validation and tamper resistance
-        data_string = str({'guid': self._transport._guid,
+        data_string = str({'guid': self._transport.guid,
                            'contracts': my_contracts})
         signature = CryptoTransportLayer.makeCryptor(self._transport.settings['secret']).sign(data_string).encode('hex')
 
         value = {'signature': signature,
-                 'data': {'guid': self._transport._guid,
+                 'data': {'guid': self._transport.guid,
                           'contracts': my_contracts}}
 
         # Pass off to thread to keep GUI snappy
         self._transport._dht.iterativeStore(self._transport,
                                             contract_index_key,
-                                            value, self._transport._guid)
+                                            value, self._transport.guid)
 
     def remove_contract(self, msg):
         self._log.info("Removing contract: %s" % msg)
@@ -362,7 +362,7 @@ class Market(object):
             self._transport._dht.iterativeStore(self._transport,
                                                 keyword_key,
                                                 json.dumps({'keyword_index_remove': contract_key}),
-                                                self._transport._guid)
+                                                self._transport.guid)
 
     def get_messages(self):
         self._log.info("Listing messages for market: %s" % self._transport._market_id)
@@ -443,12 +443,12 @@ class Market(object):
 
             if msg['notary'] is True:
                 self._log.info('Letting the network know you are now a notary')
-                data = json.dumps({'notary_index_add': self._transport._guid})
-                self._transport._dht.iterativeStore(self._transport, key, data, self._transport._guid)
+                data = json.dumps({'notary_index_add': self._transport.guid})
+                self._transport._dht.iterativeStore(self._transport, key, data, self._transport.guid)
             else:
                 self._log.info('Letting the network know you are not a notary')
-                data = json.dumps({'notary_index_remove': self._transport._guid})
-                self._transport._dht.iterativeStore(self._transport, key, data, self._transport._guid)
+                data = json.dumps({'notary_index_remove': self._transport.guid})
+                self._transport._dht.iterativeStore(self._transport, key, data, self._transport.guid)
 
         # Update nickname
         self._transport._nickname = msg['nickname']

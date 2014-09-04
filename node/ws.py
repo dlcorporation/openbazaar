@@ -268,7 +268,7 @@ class ProtocolHandler:
                 self._log.info('Unreachable Market: %s' % msg)
 
                 for peer in self._transport._dht._activePeers:
-                    if peer._guid == findGUID:
+                    if peer.guid == findGUID:
                         self._transport._dht._activePeers.remove(peer)
 
                 self.refresh_peers()
@@ -813,7 +813,7 @@ class ProtocolHandler:
                     seller = contract_data_json.get('Seller')
                     contract_guid = seller.get('seller_GUID')
 
-                    if contract_guid == self._transport._guid:
+                    if contract_guid == self._transport.guid:
                         nickname = self._transport._nickname
                     else:
                         routing_table = self._transport._dht._routingTable
@@ -846,7 +846,7 @@ class ProtocolHandler:
             self.on_node_peer(results[0])
 
             # Load page for the store
-            self._market.query_page(results[0]._guid)
+            self._market.query_page(results[0].guid)
 
     # messages coming from "the market"
     def on_node_peer(self, peer):
@@ -856,8 +856,8 @@ class ProtocolHandler:
                     'pubkey': peer._pub
                     if peer._pub
                     else 'unknown',
-                    'guid': peer._guid
-                    if peer._guid
+                    'guid': peer.guid
+                    if peer.guid
                     else '',
                     'uri': peer._address}
         self.send_to_client(None, response)
@@ -915,10 +915,10 @@ class ProtocolHandler:
                 else:
                     peer_item['pubkey'] = 'unknown'
 
-                peer_item['guid'] = peer._guid
-                if peer._guid:
+                peer_item['guid'] = peer.guid
+                if peer.guid:
                     peer_item['sin'] = obelisk.EncodeBase58Check(
-                        '\x0F\x02%s' + peer._guid.decode('hex')
+                        '\x0F\x02%s' + peer.guid.decode('hex')
                     )
                 peer_item['nick'] = peer._nickname
                 self._log.info('Peer Nick %s ' % peer)

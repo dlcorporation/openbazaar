@@ -43,13 +43,13 @@ class DHT(object):
         """
         ip = seed_peer._ip
         port = seed_peer._port
-        self.add_known_node((ip, port, seed_peer._guid, seed_peer._nickname))
+        self.add_known_node((ip, port, seed_peer.guid, seed_peer._nickname))
 
         self._log.debug('Starting Seed Peer: %s' % seed_peer._nickname)
         self.add_peer(self._transport,
                       seed_peer._address,
                       seed_peer._pub,
-                      seed_peer._guid,
+                      seed_peer.guid,
                       seed_peer._nickname)
 
         self._iterativeFind(self._settings['guid'], self._knownNodes,
@@ -58,7 +58,7 @@ class DHT(object):
     def find_active_peer(self, uri, pubkey=None, guid=None, nickname=None):
         found_peer = False
         for idx, peer in enumerate(self._activePeers):
-            if (guid, uri, pubkey, nickname) == (peer._guid, peer._address, peer._pub, peer._nickname):
+            if (guid, uri, pubkey, nickname) == (peer.guid, peer._address, peer._pub, peer._nickname):
                 found_peer = peer
         return found_peer
 
@@ -76,7 +76,7 @@ class DHT(object):
         def start_handshake_cb():
             self._knownNodes.append((urlparse(uri).hostname,
                                      urlparse(uri).port,
-                                     new_peer._guid))
+                                     new_peer.guid))
             self._log.debug('Known Nodes: %s' % self._knownNodes)
 
         new_peer.start_handshake(start_handshake_cb)
@@ -96,7 +96,7 @@ class DHT(object):
 
             for idx, peer in enumerate(self._activePeers):
 
-                active_peer_tuple = (peer._address, peer._pub, peer._guid, peer._nickname)
+                active_peer_tuple = (peer._address, peer._pub, peer.guid, peer._nickname)
 
                 if active_peer_tuple == peer_tuple:
 
@@ -109,10 +109,10 @@ class DHT(object):
                     self._log.info('Already in active peer list')
                     return
                 else:
-                    if peer._guid == guid or peer._address == uri:
+                    if peer.guid == guid or peer._address == uri:
                         self._log.debug('Partial Match')
                         # Update peer
-                        peer._guid = guid
+                        peer.guid = guid
                         peer._address = uri
                         peer._pub = pubkey
                         peer._nickname = nickname
@@ -128,9 +128,9 @@ class DHT(object):
 
             def cb():
                 self._log.debug('Back from handshake')
-                self._routingTable.removeContact(new_peer._guid)
+                self._routingTable.removeContact(new_peer.guid)
                 self._routingTable.addContact(new_peer)
-                self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer._guid))
+                self._knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer.guid))
                 self._transport.save_peer_to_db(peer_tuple)
 
             if new_peer.check_port():
@@ -219,7 +219,7 @@ class DHT(object):
 
                 if foundContact:
                     self._log.info('Found the node')
-                    foundNode = (foundContact._guid,
+                    foundNode = (foundContact.guid,
                                  foundContact._address,
                                  foundContact._pub)
                     new_peer.send(
@@ -246,14 +246,14 @@ class DHT(object):
 
             if new_peer is None or new_peer._address != uri:
                 new_peer._address = uri
-                self._routingTable.removeContact(new_peer._guid)
+                self._routingTable.removeContact(new_peer.guid)
                 self._routingTable.addContact(new_peer)
 
     def close_nodes(self, key, guid):
         contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
         contactTriples = []
         for contact in contacts:
-            contactTriples.append((contact._guid, contact._address, contact._pub, contact._nickname))
+            contactTriples.append((contact.guid, contact._address, contact._pub, contact._nickname))
 
         return self.dedupe(contactTriples)
 
@@ -262,11 +262,11 @@ class DHT(object):
         # self._log.info('Received a findNode Response: %s' % msg)
 
         # Update pubkey if necessary - happens for seed server
-        # localPeer = next((peer for peer in self._activePeers if peer._guid == msg['senderGUID']), None)
+        # localPeer = next((peer for peer in self._activePeers if peer.guid == msg['senderGUID']), None)
 
         # Update existing peer's pubkey if active peer
         for idx, peer in enumerate(self._activePeers):
-            if peer._guid == msg['senderGUID']:
+            if peer.guid == msg['senderGUID']:
                 peer._nickname = msg['senderNick']
                 peer._pub = msg['pubkey']
                 self._activePeers[idx] = peer
@@ -291,7 +291,7 @@ class DHT(object):
                 self._log.debug('Found the node you were looking for: %s' % foundNode)
 
                 # Add foundNode to active peers list and routing table
-                if foundNode[2] != self._transport._guid:
+                if foundNode[2] != self._transport.guid:
                     self._log.debug('Found a tuple %s' % foundNode)
                     if len(foundNode) == 3:
                         foundNode.append('')
@@ -331,7 +331,7 @@ class DHT(object):
                     # Extends shortlist if necessary
                     for node in msg['foundNodes']:
                         self._log.info('FOUND NODE: %s' % node)
-                        if node[0] != self._transport._guid and node[2] != self._transport.pubkey \
+                        if node[0] != self._transport.guid and node[2] != self._transport.pubkey \
                                 and node[1] != self._transport._uri:
                             self._log.info('Found it %s %s' % (node[0], self._transport.guid))
                             self.extendShortlist(transport, msg['findID'], [node])
@@ -458,7 +458,7 @@ class DHT(object):
                 continue
 
             for peer in self._activePeers:
-                if node_guid == peer._guid:
+                if node_guid == peer.guid:
                     # Already an active peer or it's myself
                     continue
 
@@ -527,7 +527,7 @@ class DHT(object):
         @type age: int
         """
         if originalPublisherID is None:
-            originalPublisherID = self._transport._guid
+            originalPublisherID = self._transport.guid
 
         # Find appropriate storage nodes and save key value
         if value_to_store:
@@ -727,7 +727,7 @@ class DHT(object):
         if not findValue:
             self._log.info('Looking for node in your active connections list')
             for node in self._activePeers:
-                if node._guid == key:
+                if node.guid == key:
                     return [node]
 
         if startupShortlist == [] or startupShortlist is None:
@@ -737,7 +737,7 @@ class DHT(object):
             shortlist = []
 
             for closeNode in closeNodes:
-                shortlist.append((closeNode._ip, closeNode._port, closeNode._guid))
+                shortlist.append((closeNode._ip, closeNode._port, closeNode.guid))
 
             if len(shortlist) > 0:
                 new_search.add_to_shortlist(shortlist)
@@ -767,12 +767,12 @@ class DHT(object):
         new_search._slowNodeCount[0] = len(new_search._active_probes)
 
         # Sort shortlist from closest to farthest
-        # self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
-        # new_search._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact._guid, targetKey), self._routingTable.distance(secondContact._guid, targetKey)))
+        # self._activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.guid, targetKey), self._routingTable.distance(secondContact.guid, targetKey)))
+        # new_search._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.guid, targetKey), self._routingTable.distance(secondContact.guid, targetKey)))
 
         self._activePeers.sort(lambda firstNode, secondNode, targetKey=new_search._key: cmp(
-            self._routingTable.distance(firstNode._guid, targetKey),
-            self._routingTable.distance(secondNode._guid, targetKey)))
+            self._routingTable.distance(firstNode.guid, targetKey),
+            self._routingTable.distance(secondNode.guid, targetKey)))
 
         # while len(self._pendingIterationCalls):
         # del self._pendingIterationCalls[0]
@@ -797,7 +797,7 @@ class DHT(object):
             closestPeer = self._activePeers[0]
             closestPeer_ip = urlparse(closestPeer._address).hostname
             closestPeer_port = urlparse(closestPeer._address).port
-            new_search._previous_closest_node = (closestPeer_ip, closestPeer_port, closestPeer._guid)
+            new_search._previous_closest_node = (closestPeer_ip, closestPeer_port, closestPeer.guid)
             self._log.debug('Previous Closest Node %s' % (new_search._previous_closest_node,))
 
         # Sort short list again
@@ -821,7 +821,7 @@ class DHT(object):
         # Send findNodes out to all nodes in the shortlist
         for node in new_search._shortlist:
             if node not in new_search._already_contacted:
-                if node[2] != self._transport._guid:
+                if node[2] != self._transport.guid:
 
                     new_search._active_probes.append(node)
                     new_search._already_contacted.append(node)
@@ -831,7 +831,7 @@ class DHT(object):
 
                         msg = {"type": "findNode",
                                "uri": contact._transport._uri,
-                               "senderGUID": self._transport._guid,
+                               "senderGUID": self._transport.guid,
                                "key": new_search._key,
                                "findValue": findValue,
                                "senderNick": self._transport._nickname,

@@ -160,10 +160,10 @@ class TreeRoutingTable(RoutingTable):
         """
 
         # If contact is itself return
-        if contact._guid == self._parentNodeID:
+        if contact.guid == self._parentNodeID:
             return
 
-        bucketIndex = self._kbucketIndex(contact._guid)
+        bucketIndex = self._kbucketIndex(contact.guid)
 
         # If already added then update
         if not self._buckets[bucketIndex].getContact(contact):
@@ -213,7 +213,7 @@ class TreeRoutingTable(RoutingTable):
 
                     # headContact.send({
                     #     "type": "ping",
-                    #     "guid": self._guid,
+                    #     "guid": self.guid,
                     #     "uri": self._uri,
                     #     "findValue": peer['findValue']
                     # })
@@ -412,7 +412,7 @@ class TreeRoutingTable(RoutingTable):
         self._buckets.insert(oldBucketIndex + 1, newBucket)
         # Finally, copy all nodes that belong to the new k-bucket into it...
         for contact in oldBucket._contacts:
-            if newBucket.keyInRange(contact._guid):
+            if newBucket.keyInRange(contact.guid):
                 newBucket.addContact(contact)
         # ...and remove them from the old bucket
         for contact in newBucket._contacts:
@@ -438,18 +438,18 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
         @type contact: kademlia.contact.Contact
         """
 
-        if not contact._guid:
+        if not contact.guid:
             self._log.error('No guid specified')
             return
 
-        if contact._guid == self._parentNodeID:
+        if contact.guid == self._parentNodeID:
             self._log.info('Trying to add yourself. Leaving.')
             return
 
         # Initialize/reset the "successively failed RPC" counter
         contact.failedRPCs = 0
 
-        bucketIndex = self._kbucketIndex(contact._guid)
+        bucketIndex = self._kbucketIndex(contact.guid)
 
         old_contact = self._buckets[bucketIndex].getContact(contact)
 
@@ -489,7 +489,7 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
             if old_contact._address != contact._address:
 
                 self._log.info('Remove contact')
-                self.removeContact(contact._guid)
+                self.removeContact(contact.guid)
 
                 try:
                     self._buckets[bucketIndex].addContact(contact)

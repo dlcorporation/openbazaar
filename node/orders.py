@@ -233,7 +233,7 @@ class Orders(object):
             if merchant:
                 order_ids = self._db.selectEntries(
                     "orders",
-                    "market_id = '%s' and merchant = '%s'" % (self._market_id.replace("'", "''"), self._transport._guid.replace("'", "''")),
+                    "market_id = '%s' and merchant = '%s'" % (self._market_id.replace("'", "''"), self._transport.guid.replace("'", "''")),
                     order_field="updated",
                     order="DESC",
                     limit=10,
@@ -244,11 +244,11 @@ class Orders(object):
                     order = self.get_order(result['order_id'])
                     orders.append(order)
                 total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant = '%s'" % (
-                    self._market_id, self._transport._guid))
+                    self._market_id, self._transport.guid))
             else:
                 order_ids = self._db.selectEntries("orders", "market_id = '%s' and merchant <> '%s'" % (
                     self._market_id.replace("'", "''"),
-                    self._transport._guid.replace("'", "''")
+                    self._transport.guid.replace("'", "''")
                 ),
                     order_field="updated",
                     order="DESC", limit=10,
@@ -259,7 +259,7 @@ class Orders(object):
                     orders.append(order)
 
                 total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant <> '%s'" % (
-                    self._market_id, self._transport._guid))
+                    self._market_id, self._transport.guid))
 
         for order in orders:
             buyer = self._db.selectEntries("peers", "guid = '%s'" % order['buyer'].replace("'", "''"))
@@ -394,7 +394,7 @@ class Orders(object):
                             "shipping_address": json.dumps(self.get_shipping_address()),
                             "updated": time.time(),
                             "merchant": contract_data_json['Seller']['seller_GUID'],
-                            "buyer": self._transport._guid
+                            "buyer": self._transport.guid
                         }
                     )
                 except Exception as e:
@@ -407,7 +407,7 @@ class Orders(object):
 
                 merchant = self._transport._dht._routingTable.getContact(contract_data_json['Seller']['seller_GUID'])
                 order_to_notary['merchantURI'] = merchant._address
-                order_to_notary['merchantGUID'] = merchant._guid
+                order_to_notary['merchantGUID'] = merchant.guid
                 order_to_notary['merchantNickname'] = merchant._nickname
                 order_to_notary['merchantPubkey'] = merchant._pub
 
@@ -463,7 +463,7 @@ class Orders(object):
 
         buyer = {}
         buyer['Buyer'] = {}
-        buyer['Buyer']['buyer_GUID'] = self._transport._guid
+        buyer['Buyer']['buyer_GUID'] = self._transport.guid
         buyer['Buyer']['buyer_BTC_uncompressed_pubkey'] = msg['btc_pubkey']
         buyer['Buyer']['buyer_pgp'] = self._transport.settings['PGPPubKey']
         buyer['Buyer']['buyer_Bitmessage'] = self._transport.settings['bitmessage']
@@ -566,7 +566,7 @@ class Orders(object):
 
         notary = {}
         notary['Notary'] = {
-            'notary_GUID': self._transport._guid,
+            'notary_GUID': self._transport.guid,
             'notary_BTC_uncompressed_pubkey': privkey_to_pubkey(self._transport.settings['privkey']),
             'notary_pgp': self._transport.settings['PGPPubKey'],
             'notary_fee': "1%",
@@ -600,7 +600,7 @@ class Orders(object):
         self._log.info('Order ID: %s' % order_id)
 
         # Push buy order to DHT and node if available
-        # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport._guid)
+        # self._transport._dht.iterativeStore(self._transport, contract_key, str(signed_data), self._transport.guid)
         # self.update_listings_index()
 
         # Find Seller Data in Contract
@@ -759,7 +759,7 @@ class Orders(object):
         hash_value.update(contract_key)
         contract_key = hash_value.hexdigest()
 
-        if seller_GUID == self._transport._guid:
+        if seller_GUID == self._transport.guid:
             self._log.info('I am the seller!')
             state = 'Waiting for Payment'
 

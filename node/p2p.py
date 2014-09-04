@@ -92,7 +92,7 @@ class TransportLayer(object):
         self._timeouts = []
         self._port = my_port
         self._ip = my_ip
-        self._guid = my_guid
+        self.guid = my_guid
         self._market_id = market_id
         self._nickname = nickname
 
@@ -171,7 +171,7 @@ class TransportLayer(object):
             self.stream.send(
                 json.dumps({
                     'type': 'ok',
-                    'senderGUID': self._guid,
+                    'senderGUID': self.guid,
                     'pubkey': pubkey,
                     'senderNick': self._nickname
                 })
@@ -217,7 +217,7 @@ class TransportLayer(object):
         if send_to is not None:
             peer = self._dht._routingTable.getContact(send_to)
             # self._log.debug(
-            #     '%s %s %s' % (peer._guid, peer._address, peer._pub)
+            #     '%s %s %s' % (peer.guid, peer._address, peer._pub)
             # )
             peer.send(data, callback=callback)
             return
@@ -227,7 +227,7 @@ class TransportLayer(object):
 
             for peer in self._dht._activePeers:
                 try:
-                    data['senderGUID'] = self._guid
+                    data['senderGUID'] = self.guid
                     data['pubkey'] = self.pubkey
                     # if peer._pub:
                     #    peer.send(data, callback)
