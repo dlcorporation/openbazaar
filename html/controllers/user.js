@@ -324,7 +324,7 @@ angular.module('app')
                                 return btc_pubkey;
                             },
                             notaries: function() {
-                                return notarie;
+                                return notaries;
                             },
                             arbiters: function() {
                                 return arbiter;
