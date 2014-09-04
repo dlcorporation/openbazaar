@@ -135,7 +135,6 @@ do
          	 case "${OPTARG}" in
          	     disable-open-browser)
                      DISABLE_OPEN_DEFAULT_WEBBROWSER=1
-                     pause
                      ;;
                  *)
                      usage
