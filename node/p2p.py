@@ -19,17 +19,17 @@ class PeerConnection(object):
     def __init__(self, transport, address):
         # timeout in seconds
         self._timeout = 10
-        self._transport = transport
-        self._address = address
-        self._nickname = ""
+        self.transport = transport
+        self.address = address
+        self.nickname = ""
         self._responses_received = {}
-        self._log = logging.getLogger(
-            '[%s] %s' % (self._transport._market_id, self.__class__.__name__)
+        self.log = logging.getLogger(
+            '[%s] %s' % (self.transport.market_id, self.__class__.__name__)
         )
         self._ctx = zmq.Context()
 
     def create_socket(self):
-        self._log.info('Creating Socket')
+        self.log.info('Creating Socket')
         socket = self._ctx.socket(zmq.REQ)
         socket.setsockopt(zmq.LINGER, 0)
         # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
@@ -51,34 +51,34 @@ class PeerConnection(object):
         try:
             s = self.create_socket()
             try:
-                s.connect(self._address)
+                s.connect(self.address)
             except zmq.ZMQError as e:
                 if e.errno != errno.EINVAL:
                     raise
                 s.ipv6 = True
-                s.connect(self._address)
+                s.connect(self.address)
 
             stream = zmqstream.ZMQStream(s, io_loop=ioloop.IOLoop.current())
             stream.send(compressed_data)
 
             def cb(stream, msg):
                 response = json.loads(msg[0])
-                self._log.debug('[send_raw] %s' % pformat(response))
+                self.log.debug('[send_raw] %s' % pformat(response))
 
                 # Update active peer info
 
                 if 'senderNick' in response and\
-                   response['senderNick'] != self._nickname:
-                    self._nickname = response['senderNick']
+                   response['senderNick'] != self.nickname:
+                    self.nickname = response['senderNick']
 
                 if callback is not None:
-                    self._log.debug('%s' % msg)
+                    self.log.debug('%s' % msg)
                     callback(msg)
                 stream.close()
 
             stream.on_recv_stream(cb)
         except Exception as e:
-            self._log.error(e)
+            self.log.error(e)
             # shouldn't we raise the exception here???? I think not doing this could cause buggy behavior on top
             raise
 
@@ -91,19 +91,19 @@ class TransportLayer(object):
         self._callbacks = defaultdict(list)
         self._timeouts = []
         self._port = my_port
-        self._ip = my_ip
+        self.ip = my_ip
         self.guid = my_guid
-        self._market_id = market_id
-        self._nickname = nickname
+        self.market_id = market_id
+        self.nickname = nickname
 
         try:
             socket.inet_pton(socket.AF_INET6, my_ip)
-            my_uri = 'tcp://[%s]:%s' % (self._ip, self._port)
+            my_uri = 'tcp://[%s]:%s' % (self.ip, self._port)
         except socket.error:
-            my_uri = 'tcp://%s:%s' % (self._ip, self._port)
+            my_uri = 'tcp://%s:%s' % (self.ip, self._port)
         self._uri = my_uri
 
-        self._log = logging.getLogger(
+        self.log = logging.getLogger(
             '[%s] %s' % (market_id, self.__class__.__name__)
         )
 
@@ -131,11 +131,11 @@ class TransportLayer(object):
         return hello_request({'uri': self._uri})
 
     def listen(self, pubkey):
-        self._log.info("Listening at: %s:%s" % (self._ip, self._port))
+        self.log.info("Listening at: %s:%s" % (self.ip, self._port))
         self.ctx = zmq.Context()
         self.socket = self.ctx.socket(zmq.REP)
 
-        if network_util.is_loopback_addr(self._ip):
+        if network_util.is_loopback_addr(self.ip):
             try:
                 # we are in local test mode so bind that socket on the
                 # specified IP
@@ -173,14 +173,14 @@ class TransportLayer(object):
                     'type': 'ok',
                     'senderGUID': self.guid,
                     'pubkey': pubkey,
-                    'senderNick': self._nickname
+                    'senderNick': self.nickname
                 })
             )
 
         self.stream.on_recv(handle_recv)
 
     def closed(self, *args):
-        self._log.info("client left")
+        self.log.info("client left")
 
     def _init_peer(self, msg):
         uri = msg['uri']
@@ -189,13 +189,13 @@ class TransportLayer(object):
             self._peers[uri] = PeerConnection(self, uri)
 
     def remove_peer(self, uri, guid):
-        self._log.info("Removing peer %s", uri)
+        self.log.info("Removing peer %s", uri)
         ip = urlparse(uri).hostname
         port = urlparse(uri).port
         if (ip, port, guid) in self._shortlist:
             self._shortlist.remove((ip, port, guid))
 
-        self._log.info('Removed')
+        self.log.info('Removed')
 
         # try:
         # del self._peers[uri]
@@ -206,18 +206,18 @@ class TransportLayer(object):
         #     self.trigger_callbacks(msg['type'], msg)
         #
         # except KeyError:
-        #     self._log.info("Peer %s was already removed", uri)
+        #     self.log.info("Peer %s was already removed", uri)
 
     def send(self, data, send_to=None, callback=lambda msg: None):
 
-        self._log.info("Outgoing Data: %s %s" % (data, send_to))
-        data['senderNick'] = self._nickname
+        self.log.info("Outgoing Data: %s %s" % (data, send_to))
+        data['senderNick'] = self.nickname
 
         # Directed message
         if send_to is not None:
             peer = self._dht._routingTable.getContact(send_to)
-            # self._log.debug(
-            #     '%s %s %s' % (peer.guid, peer._address, peer._pub)
+            # self.log.debug(
+            #     '%s %s %s' % (peer.guid, peer.address, peer._pub)
             # )
             peer.send(data, callback=callback)
             return
@@ -225,7 +225,7 @@ class TransportLayer(object):
         else:
             # FindKey and then send
 
-            for peer in self._dht._activePeers:
+            for peer in self._dht.activePeers:
                 try:
                     data['senderGUID'] = self.guid
                     data['pubkey'] = self.pubkey
@@ -240,11 +240,11 @@ class TransportLayer(object):
                     peer.send(data, cb)
 
                 except:
-                    self._log.info("Error sending over peer!")
+                    self.log.info("Error sending over peer!")
                     traceback.print_exc()
 
     def broadcast_goodbye(self):
-        self._log.info("Broadcast goodbye")
+        self.log.info("Broadcast goodbye")
         msg = goodbye({'uri': self._uri})
         self.send(msg)
 
@@ -252,7 +252,7 @@ class TransportLayer(object):
 
         # here goes the application callbacks
         # we get a "clean" msg which is a dict holding whatever
-        self._log.info("[On Message] Data received: %s" % msg)
+        self.log.info("[On Message] Data received: %s" % msg)
 
         # if not self._routingTable.getContact(msg['senderGUID']):
         # Add to contacts if doesn't exist yet
@@ -261,11 +261,11 @@ class TransportLayer(object):
             self.trigger_callbacks(msg['type'], msg)
 
     def _on_raw_message(self, serialized):
-        self._log.info("connected " + str(len(serialized)))
+        self.log.info("connected " + str(len(serialized)))
         try:
             msg = json.loads(serialized[0])
         except:
-            self._log.info("incorrect msg! " + serialized)
+            self.log.info("incorrect msg! " + serialized)
             return
 
         msg_type = msg.get('type')
@@ -289,7 +289,7 @@ class TransportLayer(object):
 
         if network_util.is_private_ip_address(self_addr):
             if not network_util.is_private_ip_address(other_addr):
-                self._log.warning(('Trying to connect to external '
+                self.log.warning(('Trying to connect to external '
                                    'network with a private ip address.'))
         else:
             if network_util.is_private_ip_address(other_addr):

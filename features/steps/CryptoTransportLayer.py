@@ -49,7 +49,7 @@ def step_impl(context, i, j):
     iLayer = context.layers[i]
     jLayer = context.layers[j]
 
-    assert((ip_address(j), port, jLayer.guid, nickname(j)) in iLayer._dht._knownNodes)
+    assert((ip_address(j), port, jLayer.guid, nickname(j)) in iLayer._dht.knownNodes)
 
     # j is not necessarily in the database of i
     # db_peers = iLayer._db.selectEntries("peers")

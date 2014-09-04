@@ -63,7 +63,7 @@ class DictDataStore(DataStore):
         # Dictionary format:
         # { <key>: (<value>, <lastPublished>, <originallyPublished> <originalPublisherID>) }
         self._dict = {}
-        self._log = logging.getLogger(self.__class__.__name__)
+        self.log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):
         """ Return a list of the keys in this data store """
@@ -112,7 +112,7 @@ class MongoDataStore(DataStore):
     """
     def __init__(self, db_connection):
         self._db = db_connection
-        self._log = logging.getLogger(self.__class__.__name__)
+        self.log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):
         """ Return a list of the keys in this data store """
@@ -124,7 +124,7 @@ class MongoDataStore(DataStore):
                 keys.append(row['key'].decode('hex'))
 
         finally:
-            # self._log.info('Keys: %s' % keys)
+            # self.log.info('Keys: %s' % keys)
             return keys
 
     def lastPublished(self, key):
@@ -185,7 +185,7 @@ class SqliteDataStore(DataStore):
     """
     def __init__(self, db_connection):
         self._db = db_connection
-        self._log = logging.getLogger(self.__class__.__name__)
+        self.log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):
         """ Return a list of the keys in this data store """
@@ -197,7 +197,7 @@ class SqliteDataStore(DataStore):
                 keys.append(row['key'].decode('hex'))
 
         finally:
-            # self._log.info('Keys: %s' % keys)
+            # self.log.info('Keys: %s' % keys)
             return keys
 
     def lastPublished(self, key):
