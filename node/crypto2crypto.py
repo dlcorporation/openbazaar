@@ -180,7 +180,7 @@ class CryptoTransportLayer(TransportLayer):
         requests_log.setLevel(logging.WARNING)
 
         # Connect to database
-        self._db = db
+        self.db = db
 
         self._bitmessage_api = None
         if (bm_user, bm_pass, bm_port) != (None, None, None):
@@ -203,7 +203,7 @@ class CryptoTransportLayer(TransportLayer):
         # Set up
         self._setup_settings()
 
-        self._dht = DHT(self, self.market_id, self.settings, self._db)
+        self._dht = DHT(self, self.market_id, self.settings, self.db)
 
         # self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'),
         #                       privkey=self.secret.decode('hex'),
@@ -260,12 +260,12 @@ class CryptoTransportLayer(TransportLayer):
         nickname = peer_tuple[3]
 
         # Update query
-        self._db.deleteEntries("peers", {"uri": uri, "guid": guid}, "OR")
+        self.db.deleteEntries("peers", {"uri": uri, "guid": guid}, "OR")
         # if len(results) > 0:
-        #     self._db.updateEntries("peers", {"id": results[0]['id']}, {"market_id": self.market_id, "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname})
+        #     self.db.updateEntries("peers", {"id": results[0]['id']}, {"market_id": self.market_id, "uri": uri, "pubkey": pubkey, "guid": guid, "nickname": nickname})
         # else:
         if guid is not None:
-            self._db.insertEntry("peers", {
+            self.db.insertEntry("peers", {
                 "uri": uri,
                 "pubkey": pubkey,
                 "guid": guid,
@@ -347,10 +347,10 @@ class CryptoTransportLayer(TransportLayer):
 
     def _setup_settings(self):
 
-        self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))
+        self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))
         if len(self.settings) == 0:
             self.settings = None
-            self._db.insertEntry("settings", {"market_id": self.market_id, "welcome": "enable"})
+            self.db.insertEntry("settings", {"market_id": self.market_id, "welcome": "enable"})
         else:
             self.settings = self.settings[0]
 
@@ -370,7 +370,7 @@ class CryptoTransportLayer(TransportLayer):
 
                 pubkey_text = gpg.export_keys(key.fingerprint)
                 pgp_dict = {"PGPPubKey": pubkey_text, "PGPPubkeyFingerprint": key.fingerprint}
-                self._db.updateEntries("settings", {"market_id": self.market_id}, pgp_dict)
+                self.db.updateEntries("settings", {"market_id": self.market_id}, pgp_dict)
                 if self.settings:
                     self.settings.update(pgp_dict)
 
@@ -403,7 +403,7 @@ class CryptoTransportLayer(TransportLayer):
             if self._bitmessage_api is not None:
                 self._generate_new_bitmessage_address()
 
-            self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
+            self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
 
         self.log.debug('Retrieved Settings: \n%s', pformat(self.settings))
 
@@ -438,7 +438,7 @@ class CryptoTransportLayer(TransportLayer):
         self.guid = ripe_hash.digest().encode('hex')
         self.sin = obelisk.EncodeBase58Check('\x0F\x02%s' + ripe_hash.digest())
 
-        self._db.updateEntries("settings", {"market_id": self.market_id}, {"secret": self.secret,
+        self.db.updateEntries("settings", {"market_id": self.market_id}, {"secret": self.secret,
                                                                             "pubkey": self.pubkey,
                                                                             "privkey": self.privkey,
                                                                             "guid": self.guid,
@@ -452,7 +452,7 @@ class CryptoTransportLayer(TransportLayer):
             1.05,
             1.1111
         )
-        self._db.updateEntries(
+        self.db.updateEntries(
             "settings", {
                 "market_id": self.market_id
             }, {
@@ -492,7 +492,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def get_past_peers(self):
         peers = []
-        result = self._db.selectEntries("peers", "market_id = '%s'" % self.market_id.replace("'", "''"))
+        result = self.db.selectEntries("peers", "market_id = '%s'" % self.market_id.replace("'", "''"))
         for peer in result:
             peers.append(peer['uri'])
         return peers
@@ -556,7 +556,7 @@ class CryptoTransportLayer(TransportLayer):
     def get_profile(self):
         peers = {}
 
-        self.settings = self._db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
+        self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
 
         for uri, peer in self._peers.iteritems():
             if peer.pub:

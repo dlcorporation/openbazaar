@@ -19,10 +19,10 @@ ioloop.install()
 
 class ProtocolHandler:
     def __init__(self, transport, market, handler, db, loop_instance):
-        self._market = market
+        self.market = market
         self.transport = transport
-        self._handler = handler
-        self._db = db
+        self.handler = handler
+        self.db = db
 
         # register on transport events to forward..
         self.transport.add_callbacks([
@@ -75,7 +75,7 @@ class ProtocolHandler:
             "get_backups": self.get_backups,
         }
 
-        self._timeouts = []
+        self.timeouts = []
 
         # unused for now, wipe it if you want later.
         self.loop = loop_instance
@@ -94,7 +94,7 @@ class ProtocolHandler:
         self.log.info("Received store info from node: %s" % page)
 
         if sin and page:
-            self._market.pages[sin] = page
+            self.market.pages[sin] = page
 
         # TODO: allow async calling in different thread
         def reputation_pledge_retrieved(amount, page):
@@ -102,7 +102,7 @@ class ProtocolHandler:
             SATOSHIS_IN_BITCOIN = 100000000
             bitcoins = float(amount) / SATOSHIS_IN_BITCOIN
             bitcoins = round(bitcoins, 4)
-            self._market.pages[sin]['reputation_pledge'] = bitcoins
+            self.market.pages[sin]['reputation_pledge'] = bitcoins
             self.send_to_client(None, {'type': 'reputation_pledge_update', 'value': bitcoins})
 
         trust.get_global(guid, lambda amount, page=page: reputation_pledge_retrieved(amount, page))
@@ -114,7 +114,7 @@ class ProtocolHandler:
         for country in pycountry.countries:
             countryCodes.append({"code": country.alpha2, "name": country.name})
 
-        settings = self._market.get_settings()
+        settings = self.market.get_settings()
         # globalTrust = trust.getTrust(self.transport.guid)
 
         # print(trust.get(self.transport.guid))
@@ -150,12 +150,12 @@ class ProtocolHandler:
         trust.get_unspent(burnAddr, found_unspent)
 
     def client_read_log(self, socket_handler, msg):
-        self._market.p = subprocess.Popen(
+        self.market.p = subprocess.Popen(
             ["tail", "-f", "logs/development.log", "logs/production.log"],
             stdout=subprocess.PIPE)
 
         self.stream = tornado.iostream.PipeIOStream(
-            self._market.p.stdout.fileno()
+            self.market.p.stdout.fileno()
         )
         self.stream.read_until("\n", self.line_from_nettail)
 
@@ -188,7 +188,7 @@ class ProtocolHandler:
 
     def client_add_trusted_notary(self, socket_handler, msg):
         self.log.info('Adding trusted notary %s' % msg)
-        self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
+        self.market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
         # self.send_to_client(None, {"type": "load_page"})
 
     def client_add_guid(self, socket_handler, msg):
@@ -201,11 +201,11 @@ class ProtocolHandler:
 
     def client_remove_trusted_notary(self, socket_handler, msg):
         self.log.info('Removing trusted notary %s' % msg)
-        self._market.remove_trusted_notary(msg.get('guid'))
+        self.market.remove_trusted_notary(msg.get('guid'))
 
     def client_get_notaries(self, socket_handler, msg):
         self.log.debug('Retrieving notaries')
-        notaries = self._market.get_notaries()
+        notaries = self.market.get_notaries()
         self.log.debug('Getting notaries %s' % notaries)
         self.send_to_client(None, {
             "type": "settings_notaries",
@@ -214,11 +214,11 @@ class ProtocolHandler:
 
     def client_clear_dht_data(self, socket_handler, msg):
         self.log.debug('Clearing DHT Data')
-        self._db.deleteEntries("datastore")
+        self.db.deleteEntries("datastore")
 
     def client_clear_peers_data(self, socket_handler, msg):
         self.log.debug('Clearing Peers Data')
-        self._db.deleteEntries("peers")
+        self.db.deleteEntries("peers")
 
     # Requests coming from the client
     def client_connect(self, socket_handler, msg):
@@ -231,13 +231,13 @@ class ProtocolHandler:
         self.send_to_client(None, {"type": "peers", "peers": self.get_peers()})
 
     def client_welcome_dismissed(self, socket_handler, msg):
-        self._market.disable_welcome_screen()
+        self.market.disable_welcome_screen()
 
     def client_check_order_count(self, socket_handler, msg):
         self.log.debug('Checking order count')
         self.send_to_client(None, {
             "type": "order_count",
-            "count": self._db.numEntries(
+            "count": self.db.numEntries(
                 "orders",
                 "market_id = '%s' and state = '%s'" %
                 (self.transport.market_id, "Waiting for Payment")
@@ -252,19 +252,19 @@ class ProtocolHandler:
         findGUID = msg['findGUID']
 
         query_id = random.randint(0, 1000000)
-        self._timeouts.append(query_id)
+        self.timeouts.append(query_id)
 
         def cb(msg, query_id):
             self.log.info('Received a query page response: %s' % query_id)
 
-        self._market.query_page(
+        self.market.query_page(
             findGUID,
             lambda msg, query_id=query_id: cb(msg, query_id)
         )
 
         def unreachable_market(query_id):
             self.log.info('Cannot reach market, try port forwarding')
-            if query_id in self._timeouts:
+            if query_id in self.timeouts:
                 self.log.info('Unreachable Market: %s' % msg)
 
                 for peer in self.transport._dht.activePeers:
@@ -289,11 +289,11 @@ class ProtocolHandler:
 
         if msg is not None and 'merchant' in msg:
             if msg['merchant'] == 1:
-                orders = self._market.orders.get_orders(page, True)
+                orders = self.market.orders.get_orders(page, True)
             else:
-                orders = self._market.orders.get_orders(page, False)
+                orders = self.market.orders.get_orders(page, False)
         else:
-            orders = self._market.orders.get_orders(page)
+            orders = self.market.orders.get_orders(page)
 
         self.send_to_client(None, {
             "type": "myorders",
@@ -307,7 +307,7 @@ class ProtocolHandler:
         self.log.info("Querying for Contracts")
 
         page = msg['page'] if 'page' in msg else 0
-        contracts = self._market.get_contracts(page)
+        contracts = self.market.get_contracts(page)
 
         self.send_to_client(None, {
             "type": "contracts",
@@ -319,7 +319,7 @@ class ProtocolHandler:
         self.log.info("Querying for Messages")
 
         # Query bitmessage for messages
-        messages = self._market.get_messages()
+        messages = self.market.get_messages()
         self.log.info('Bitmessages: %s' % messages)
 
         self.send_to_client(None, {"type": "messages", "messages": messages})
@@ -329,23 +329,23 @@ class ProtocolHandler:
         self.log.info("Sending message")
 
         # Send message with market's bitmessage
-        self._market.send_message(msg)
+        self.market.send_message(msg)
 
     def client_republish_contracts(self, socket_handler, msg):
 
         self.log.info("Republishing contracts")
-        self._market.republish_contracts()
+        self.market.republish_contracts()
 
     def client_import_raw_contract(self, socket_handler, contract):
         self.log.info(
             "Importing New Contract "
             "(NOT IMPLEMENTED! TODO: Market.import_contract(contract)"
         )
-        # self._market.import_contract(contract)
+        # self.market.import_contract(contract)
 
     # Get a single order's info
     def client_query_order(self, socket_handler, msg):
-        order = self._market.orders.get_order(msg['orderId'])
+        order = self.market.orders.get_order(msg['orderId'])
         self.send_to_client(None, {"type": "orderinfo", "order": order})
 
     def client_update_settings(self, socket_handler, msg):
@@ -353,41 +353,41 @@ class ProtocolHandler:
         self.send_to_client(None, {"type": "settings", "values": msg})
         if msg['settings'].get('btc_pubkey'):
             del msg['settings']['btc_pubkey']
-        self._market.save_settings(msg['settings'])
+        self.market.save_settings(msg['settings'])
 
     def client_create_contract(self, socket_handler, contract):
         self.log.info("New Contract: %s" % contract)
-        self._market.save_contract(contract)
+        self.market.save_contract(contract)
 
     def client_remove_contract(self, socket_handler, msg):
         self.log.info("Remove contract: %s" % msg)
-        self._market.remove_contract(msg)
+        self.market.remove_contract(msg)
 
     def client_pay_order(self, socket_handler, msg):
 
         self.log.info("Marking Order as Paid: %s" % msg)
-        order = self._market.orders.get_order(msg['orderId'])
+        order = self.market.orders.get_order(msg['orderId'])
 
-        order['shipping_address'] = self._market.shipping_address()
+        order['shipping_address'] = self.market.shipping_address()
 
         # Send to exchange partner
-        self._market.orders.pay_order(order, msg['orderId'])
+        self.market.orders.pay_order(order, msg['orderId'])
 
     def client_ship_order(self, socket_handler, msg):
 
         self.log.info("Shipping order out: %s" % msg)
 
-        order = self._market.orders.get_order(msg['orderId'])
+        order = self.market.orders.get_order(msg['orderId'])
 
         # Send to exchange partner
-        self._market.orders.ship_order(
+        self.market.orders.ship_order(
             order, msg['orderId'], msg['paymentAddress']
         )
 
     def client_release_payment(self, socket_handler, msg):
         self.log.info('Releasing payment to Merchant %s' % msg)
 
-        order = self._market.orders.get_order(msg['orderId'])
+        order = self.market.orders.get_order(msg['orderId'])
         contract = order['signed_contract_body']
 
         # Find Seller Data in Contract
@@ -445,7 +445,7 @@ class ProtocolHandler:
                 # Debug
                 # self.log.info('%s %s' % (ec, history))
 
-                settings = self._market.get_settings()
+                settings = self.market.get_settings()
                 private_key = settings.get('privkey')
 
                 if ec is not None:
@@ -484,7 +484,7 @@ class ProtocolHandler:
 
                 print signatures
 
-                self._market.release_funds_to_merchant(buyer['buyer_order_id'], tx, script, signatures, order.get('merchant'))
+                self.market.release_funds_to_merchant(buyer['buyer_order_id'], tx, script, signatures, order.get('merchant'))
 
             def get_history():
                 client.fetch_history(multi_address, lambda ec, history, order=order: cb(ec, history, order))
@@ -498,7 +498,7 @@ class ProtocolHandler:
         self.log.info('Receiving signed tx from buyer')
 
         buyer_order_id = str(msg['senderGUID']) + '-' + str(msg['buyer_order_id'])
-        order = self._market.orders.get_order(buyer_order_id, by_buyer_id=True)
+        order = self.market.orders.get_order(buyer_order_id, by_buyer_id=True)
         contract = order['signed_contract_body']
 
         # Find Seller Data in Contract
@@ -585,13 +585,13 @@ class ProtocolHandler:
         self.send_opening()
 
     def client_order(self, socket_handler, msg):
-        self._market.orders.on_order(msg)
+        self.market.orders.on_order(msg)
 
     def client_review(self, socket_handler, msg):
         pubkey = msg['pubkey'].decode('hex')
         text = msg['text']
         rating = msg['rating']
-        self._market.reputation.create_review(pubkey, text, rating)
+        self.market.reputation.create_review(pubkey, text, rating)
 
     # Search for markets ATM
     # TODO: multi-faceted search support
@@ -603,7 +603,7 @@ class ProtocolHandler:
         )
         # self.log.info('Result: %s' % result)
 
-        # response = self._market.lookup(msg)
+        # response = self.market.lookup(msg)
         # if response:
         #     self.log.info(response)
         # self.send_to_client(*response)
@@ -846,7 +846,7 @@ class ProtocolHandler:
             self.on_node_peer(results[0])
 
             # Load page for the store
-            self._market.query_page(results[0].guid)
+            self.market.query_page(results[0].guid)
 
     # messages coming from "the market"
     def on_node_peer(self, peer):
@@ -884,7 +884,7 @@ class ProtocolHandler:
         }
         if error:
             response["error"] = error
-        self._handler.queue_response(response)
+        self.handler.queue_response(response)
 
     def send_ok(self):
         self.send_to_client(None, {"type": "ok"})

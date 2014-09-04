@@ -111,14 +111,14 @@ class MongoDataStore(DataStore):
     """ Example of a MongoDB database-based datastore
     """
     def __init__(self, db_connection):
-        self._db = db_connection
+        self.db = db_connection
         self.log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):
         """ Return a list of the keys in this data store """
         keys = []
         try:
-            db_keys = self._db.selectEntries("datastore")
+            db_keys = self.db.selectEntries("datastore")
 
             for row in db_keys:
                 keys.append(row['key'].decode('hex'))
@@ -150,12 +150,12 @@ class MongoDataStore(DataStore):
 
     def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id=1):
 
-        rows = self._db.selectEntries("datastore", "key = '%s' and market_id = '%s'" % (key, market_id.replace("'", "''")))
+        rows = self.db.selectEntries("datastore", "key = '%s' and market_id = '%s'" % (key, market_id.replace("'", "''")))
         if len(rows) == 0:
             # FIXME: Wrap text.
-            self._db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
+            self.db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
         else:
-            self._db.updateEntries("datastore", {'key': key, 'market_id': market_id}, {'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
+            self.db.updateEntries("datastore", {'key': key, 'market_id': market_id}, {'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
 
         # if self._cursor.fetchone() == None:
         #     self._cursor.execute('INSERT INTO data(key, value, lastPublished, originallyPublished, originalPublisherID) VALUES (?, ?, ?, ?, ?)', (encodedKey, buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID))
@@ -163,7 +163,7 @@ class MongoDataStore(DataStore):
         #     self._cursor.execute('UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?', (buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID, encodedKey))
 
     def _dbQuery(self, key, columnName):
-        row = self._db.selectEntries("datastore", "key = '%s'" % key.replace("'", "''"))
+        row = self.db.selectEntries("datastore", "key = '%s'" % key.replace("'", "''"))
 
         if len(row) != 0:
             value = row[0][columnName]
@@ -177,21 +177,21 @@ class MongoDataStore(DataStore):
         return self._dbQuery(key, 'value')
 
     def __delitem__(self, key):
-        self._db.deleteEntries("datastore", {"key": key.encode("hex")})
+        self.db.deleteEntries("datastore", {"key": key.encode("hex")})
 
 
 class SqliteDataStore(DataStore):
     """ Sqlite database-based datastore
     """
     def __init__(self, db_connection):
-        self._db = db_connection
+        self.db = db_connection
         self.log = logging.getLogger(self.__class__.__name__)
 
     def keys(self):
         """ Return a list of the keys in this data store """
         keys = []
         try:
-            db_keys = self._db.selectEntries("datastore")
+            db_keys = self.db.selectEntries("datastore")
 
             for row in db_keys:
                 keys.append(row['key'].decode('hex'))
@@ -223,12 +223,12 @@ class SqliteDataStore(DataStore):
 
     def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id=1):
 
-        rows = self._db.selectEntries("datastore", "key = '%s' and market_id = '%s'" % (key, market_id.replace("'", "''")))
+        rows = self.db.selectEntries("datastore", "key = '%s' and market_id = '%s'" % (key, market_id.replace("'", "''")))
         if len(rows) == 0:
             # FIXME: Wrap text.
-            self._db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
+            self.db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
         else:
-            self._db.updateEntries("datastore", {'key': key, 'market_id': market_id}, {'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
+            self.db.updateEntries("datastore", {'key': key, 'market_id': market_id}, {'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
 
         # if self._cursor.fetchone() == None:
         #     self._cursor.execute('INSERT INTO data(key, value, lastPublished, originallyPublished, originalPublisherID) VALUES (?, ?, ?, ?, ?)', (encodedKey, buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID))
@@ -236,7 +236,7 @@ class SqliteDataStore(DataStore):
         #     self._cursor.execute('UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?', (buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID, encodedKey))
 
     def _dbQuery(self, key, columnName):
-        row = self._db.selectEntries("datastore", "key = '%s'" % key.replace("'", "''"))
+        row = self.db.selectEntries("datastore", "key = '%s'" % key.replace("'", "''"))
 
         if len(row) != 0:
             value = row[0][columnName]
@@ -250,4 +250,4 @@ class SqliteDataStore(DataStore):
         return self._dbQuery(key, 'value')
 
     def __delitem__(self, key):
-        self._db.deleteEntries("datastore", {"key": key.encode("hex")})
+        self.db.deleteEntries("datastore", {"key": key.encode("hex")})

@@ -89,7 +89,7 @@ class TransportLayer(object):
 
         self._peers = {}
         self._callbacks = defaultdict(list)
-        self._timeouts = []
+        self.timeouts = []
         self.port = my_port
         self.ip = my_ip
         self.guid = my_guid

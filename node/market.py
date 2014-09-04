@@ -44,7 +44,7 @@ class Market(object):
         self.market_id = transport.get_market_id()
         # self._myself = transport.get_myself()
         self._peers = self._dht.getActivePeers()
-        self._db = db
+        self.db = db
         self.orders = Orders(transport, self.market_id, db)
         self.pages = {}
         self.mypage = None
@@ -80,7 +80,7 @@ class Market(object):
         self.nickname = nickname
 
     def disable_welcome_screen(self):
-        self._db.updateEntries("settings",
+        self.db.updateEntries("settings",
                                {'market_id': self.transport.market_id},
                                {"welcome": "disable"})
 
@@ -125,7 +125,7 @@ class Market(object):
         return hash_value.hexdigest()
 
     def save_contract_to_db(self, contract_id, body, signed_body, key):
-        self._db.insertEntry("contracts", {"id": contract_id,
+        self.db.insertEntry("contracts", {"id": contract_id,
                                            "market_id": self.transport.market_id,
                                            "contract_body": json.dumps(body),
                                            "signed_contract_body": str(signed_body),
@@ -225,7 +225,7 @@ class Market(object):
         if 'btc_pubkey' in self.settings:
             del self.settings['btc_pubkey']
 
-        self._db.updateEntries("settings",
+        self.db.updateEntries("settings",
                                {'market_id': self.transport.market_id},
                                self.settings)
 
@@ -241,12 +241,12 @@ class Market(object):
 
         self.settings['notaries'] = json.dumps(notaries)
 
-        self._db.updateEntries("settings",
+        self.db.updateEntries("settings",
                                {'market_id': self.transport.market_id},
                                self.settings)
 
     def republish_contracts(self):
-        listings = self._db.selectEntries("contracts")
+        listings = self.db.selectEntries("contracts")
         for listing in listings:
             self.transport._dht.iterativeStore(self.transport,
                                                 listing['key'],
@@ -278,7 +278,7 @@ class Market(object):
     def republish_listing(self, msg):
 
         listing_id = msg.get('productID')
-        listing = self._db.selectEntries("products", "id = '%s'" % listing_id.replace("'", "''"))
+        listing = self.db.selectEntries("products", "id = '%s'" % listing_id.replace("'", "''"))
         if listing:
             listing = listing[0]
         else:
@@ -313,7 +313,7 @@ class Market(object):
         contract_index_key = hashvalue.hexdigest()
 
         # Calculate index of contracts
-        contract_ids = self._db.selectEntries("contracts",
+        contract_ids = self.db.selectEntries("contracts",
                                               "market_id = '%s'" %
                                               self.transport.market_id.replace("'", "''"))
         my_contracts = []
@@ -342,11 +342,11 @@ class Market(object):
         # Remove from DHT keyword indices
         self.remove_from_keyword_indexes(msg['contract_id'])
 
-        self._db.deleteEntries("contracts", {"id": msg["contract_id"]})
+        self.db.deleteEntries("contracts", {"id": msg["contract_id"]})
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
-        contract = self._db.selectEntries("contracts", "id = '%s'" % contract_id.replace("'", "''"))[0]
+        contract = self.db.selectEntries("contracts", "id = '%s'" % contract_id.replace("'", "''"))[0]
         contract_key = contract['key']
 
         contract = json.loads(contract['contract_body'])
@@ -403,7 +403,7 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self.log.info('Getting contracts for market: %s' % self.transport.market_id)
-        contracts = self._db.selectEntries("contracts", "market_id = '%s'" % self.transport.market_id.replace("'", "''"),
+        contracts = self.db.selectEntries("contracts", "market_id = '%s'" % self.transport.market_id.replace("'", "''"),
                                            limit=10,
                                            limit_offset=(page * 10))
         my_contracts = []
@@ -428,7 +428,7 @@ class Market(object):
                 self.log.error('Problem loading the contract body JSON')
 
         return {"contracts": my_contracts, "page": page,
-                "total_contracts": self._db.numEntries("contracts")}
+                "total_contracts": self.db.numEntries("contracts")}
 
     # SETTINGS
     def save_settings(self, msg):
@@ -459,12 +459,12 @@ class Market(object):
             del msg['burnAddr']
 
         # Update local settings
-        self._db.updateEntries("settings", {'market_id': self.transport.market_id}, msg)
+        self.db.updateEntries("settings", {'market_id': self.transport.market_id}, msg)
 
     def get_settings(self):
 
         self.log.info('Getting settings info for Market %s' % self.transport.market_id)
-        settings = self._db.getOrCreate("settings", "market_id = '%s'" % self.transport.market_id, {"market_id": self.transport.market_id})
+        settings = self.db.getOrCreate("settings", "market_id = '%s'" % self.transport.market_id, {"market_id": self.transport.market_id})
 
         if settings['arbiter'] == 1:
             settings['arbiter'] = True
