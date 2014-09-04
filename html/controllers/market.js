@@ -764,7 +764,7 @@ angular.module('app')
                         },
                         size: size
                     });
-                    afterFunc = function() {
+                    var afterFunc = function() {
                         $scope.showDashboardPanel('messages');
                     };
                     viewModal.result.then(
@@ -792,7 +792,7 @@ angular.module('app')
                     }
                     $scope.subject = sj;
                     // Quote message
-                    quote_re = /^(.*?)/mg;
+                    var quote_re = /^(.*?)/mg;
                     var quote_msg = msg.message.replace(quote_re, "> $1");
                     $scope.body = "\n" + quote_msg;
                 }
@@ -839,7 +839,7 @@ angular.module('app')
                     }
                     $scope.subject = sj;
                     // Quote message
-                    quote_re = /^(.*?)/mg;
+                    var quote_re = /^(.*?)/mg;
                     var quote_msg = msg.message.replace(quote_re, "> $1");
                     $scope.body = "\n" + quote_msg;
                 }
