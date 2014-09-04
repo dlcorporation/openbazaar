@@ -186,7 +186,7 @@ angular.module('app')
 
                 console.log(msg);
 
-                page = msg.page;
+                var page = msg.page;
 
                 $scope.contracts = msg.contracts.contracts;
 
@@ -466,7 +466,7 @@ angular.module('app')
                 order.state = 'Sent';
                 Connection.send('order', order);
 
-                scope.queryMyOrder(0);
+                $scope.queryMyOrder(0);
 
                 if (!$scope.$$phase) {
                     $scope.$apply();
@@ -480,7 +480,7 @@ angular.module('app')
             };
 
             $scope.addArbiter = function(arbiter) {
-                arbiterGUID = (arbiter !== '') ? arbiter : $('#inputArbiterGUID').val();
+                var arbiterGUID = (arbiter !== '') ? arbiter : $('#inputArbiterGUID').val();
                 $('#inputArbiterGUID').val('');
 
                 // TODO: Check for valid arbiter GUID
@@ -497,7 +497,9 @@ angular.module('app')
                 // Dedupe arbiter GUIDs
                 var uniqueArbiters = [];
                 $.each($scope.settings.trustedArbiters, function(i, el) {
-                    if ($.inArray(el, uniqueArbiters) === -1) uniqueArbiters.push(el);
+                    if ($.inArray(el, uniqueArbiters) === -1) {
+                        uniqueArbiters.push(el);
+                    }
                 });
 
                 $scope.settings.trustedArbiters = uniqueArbiters;
@@ -511,7 +513,9 @@ angular.module('app')
                 // Dedupe arbiter GUIDs
                 var uniqueArbiters = $scope.settings.trustedArbiters;
                 $.each($scope.settings.trustedArbiters, function(i, el) {
-                    if (el == arbiterGUID) uniqueArbiters.splice(i, 1);
+                    if (el == arbiterGUID) {
+                        uniqueArbiters.splice(i, 1);
+                    }
                 });
 
                 $scope.settings.trustedArbiters = uniqueArbiters;
@@ -719,8 +723,7 @@ angular.module('app')
 
 
                 $scope.compose = function(size, myself, to_address, msg) {
-
-                    composeModal = $modal.open({
+                    var composeModal = $modal.open({
                         templateUrl: 'partials/modal/composeMessage.html',
                         controller: $scope.ComposeMessageInstanceCtrl,
                         resolve: {
@@ -736,19 +739,20 @@ angular.module('app')
                         },
                         size: size
                     });
-                    afterFunc = function() {
+                    var afterFunc = function() {
                         $scope.showDashboardPanel('messages');
                     };
-                    composeModal.result.then(afterFunc,
+                    composeModal.result.then(
+                        afterFunc,
                         function() {
                             $scope.queryMessages();
                             $log.info('Modal dismissed at: ' + new Date());
-                        });
+                        }
+                    );
                 };
 
                 $scope.view = function(size, myself, to_address, msg) {
-
-                    viewModal = $modal.open({
+                    var viewModal = $modal.open({
                         templateUrl: 'partials/modal/viewMessage.html',
                         controller: $scope.ViewMessageInstanceCtrl,
                         resolve: {
@@ -764,13 +768,15 @@ angular.module('app')
                         },
                         size: size
                     });
-                    afterFunc = function() {
+                    var afterFunc = function() {
                         $scope.showDashboardPanel('messages');
                     };
-                    viewModal.result.then(afterFunc,
+                    viewModal.result.then(
+                        afterFunc,
                         function() {
                             $log.info('Modal dismissed at: ' + new Date());
-                        });
+                        }
+                    );
                 };
             };
 
@@ -790,7 +796,7 @@ angular.module('app')
                     }
                     $scope.subject = sj;
                     // Quote message
-                    quote_re = /^(.*?)/mg;
+                    var quote_re = /^(.*?)/mg;
                     var quote_msg = msg.message.replace(quote_re, "> $1");
                     $scope.body = "\n" + quote_msg;
                 }
@@ -837,7 +843,7 @@ angular.module('app')
                     }
                     $scope.subject = sj;
                     // Quote message
-                    quote_re = /^(.*?)/mg;
+                    var quote_re = /^(.*?)/mg;
                     var quote_msg = msg.message.replace(quote_re, "> $1");
                     $scope.body = "\n" + quote_msg;
                 }

@@ -1,7 +1,7 @@
 angular.module('app')
   .service('Connection', ['$rootScope', function($rootScope){
     var Connection = function(onMessage) {
-      socket_uri = document.URL.replace(/https?:(.*)\/html\/.*/, "ws:$1/ws");
+      var socket_uri = document.URL.replace(/https?:(.*)\/html\/.*/, "ws:$1/ws");
       var websocket = new WebSocket(socket_uri);
 
       websocket.onopen = function(evt) {
