@@ -1,3 +1,25 @@
+"""
+    This file is part of OpenBazaar.
+
+    OpenBazaar is an open source project to create a decentralized network for
+    commerce online that has no fees and cannot be censored.
+
+    Copyright (C) 2014  The OpenBazaar Team
+
+    OpenBazaar is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    OpenBazaar is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import logging
 from six import string_types
 import constants
@@ -108,7 +130,12 @@ class KBucket(object):
             contactList = self._contacts[0:count]
 
         if excludeContact in contactList:
-            contactList.remove(excludeContact)
+            try:
+                contactList.remove(excludeContact)
+            except ValueError:
+                print('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
+                self._log.debug('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
+                pass
 
         return contactList
 
