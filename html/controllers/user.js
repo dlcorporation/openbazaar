@@ -324,10 +324,10 @@ angular.module('app')
                                 return btc_pubkey;
                             },
                             notaries: function() {
-                                return notarie;
+                                return notaries;
                             },
                             arbiters: function() {
-                                return arbiter;
+                                return arbiters;
                             },
                             listing: function() {
                                 return listing;

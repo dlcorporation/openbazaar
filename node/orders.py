@@ -144,9 +144,9 @@ class Orders(object):
     def get_order(self, order_id, by_buyer_id=False):
 
         if not by_buyer_id:
-            _order = self._db.selectEntries("orders", "order_id = '%s'" % order_id.replace("'", "''"))[0]
+            _order = self._db.selectEntries("orders", "order_id = '%s'" % str(order_id).replace("'", "''"))[0]
         else:
-            _order = self._db.selectEntries("orders", "buyer_order_id = '%s'" % order_id.replace("'", "''"))[0]
+            _order = self._db.selectEntries("orders", "buyer_order_id = '%s'" % str(order_id).replace("'", "''"))[0]
         total_price = 0
 
         offer_data_json = self.get_offer_json(_order['signed_contract_body'], _order['state'])
