@@ -497,7 +497,9 @@ angular.module('app')
                 // Dedupe arbiter GUIDs
                 var uniqueArbiters = [];
                 $.each($scope.settings.trustedArbiters, function(i, el) {
-                    if ($.inArray(el, uniqueArbiters) === -1) uniqueArbiters.push(el);
+                    if ($.inArray(el, uniqueArbiters) === -1) {
+                        uniqueArbiters.push(el);
+                    }
                 });
 
                 $scope.settings.trustedArbiters = uniqueArbiters;
@@ -511,7 +513,9 @@ angular.module('app')
                 // Dedupe arbiter GUIDs
                 var uniqueArbiters = $scope.settings.trustedArbiters;
                 $.each($scope.settings.trustedArbiters, function(i, el) {
-                    if (el == arbiterGUID) uniqueArbiters.splice(i, 1);
+                    if (el == arbiterGUID) {
+                        uniqueArbiters.splice(i, 1);
+                    }
                 });
 
                 $scope.settings.trustedArbiters = uniqueArbiters;

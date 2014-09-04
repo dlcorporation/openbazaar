@@ -88,8 +88,9 @@ angular.module('app')
                 msg.senderNick = msg.senderNick.substring(0, 120);
                 msg.text = msg.text.substring(0, 2048);
 
-                if (msg.senderGUID != $scope.awaitingShop)
+                if (msg.senderGUID != $scope.awaitingShop) {
                     return;
+                }
                 if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
                     $scope.reviews[msg.pubkey] = [];
                 }
