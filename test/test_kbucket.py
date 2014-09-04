@@ -2,8 +2,8 @@ import unittest
 from node.kbucket import KBucket
 from node.contact import Contact
 
-class Test(unittest.TestCase):
 
+class Test(unittest.TestCase):
 
     def setUp(self):
         self.bucket = KBucket(1, 20, market_id=1)
@@ -27,38 +27,37 @@ class Test(unittest.TestCase):
         self.bucket.addContact(Contact(18, 'http://foo/18'))
         self.bucket.addContact(Contact(19, 'http://foo/19'))
         self.bucket.addContact(Contact(20, 'http://foo/20'))
-        pass
-
 
     def tearDown(self):
         pass
 
     def testCantAddContacts(self):
-        self.assertEqual(len(self.bucket.getContacts()), 20, "Unexpected contact count")
-        pass
+        self.assertEqual(len(self.bucket.getContacts()), 20,
+                         "Unexpected contact count")
 
     def testGetContacts(self):
         allContacts = self.bucket.getContacts()
         self.assertEqual(len(allContacts), 20, "Unexpected contact count")
-        
-        #test it will exclude contact
+
+        # test it will exclude contact
         c18 = Contact(18, 'http://foo/18')
         excluding18 = self.bucket.getContacts(excludeContact=c18)
-        
-        #check size of contact list
-        self.assertEqual(19, len(excluding18), "list size is not 19, should be 20")
-        
-        #check it did exclude the contact we asked
-        self.assertEqual(True, c18 not in excluding18, "getContact() did not exclude the contact we asked for")
-        
-        #test it won't choke if I tell it to exclude a contact that is not there yet
-        self.bucket.getContacts(excludeContact=Contact(21,'http://foo/21'))
-        
-        pass
-    
+
+        # check size of contact list
+        self.assertEqual(19, len(excluding18),
+                         "list size is not 19, should be 20")
+
+        # check it did exclude the contact we asked
+        self.assertEqual(True, c18 not in excluding18,
+                         "getContact() did not exclude the contact we asked for")
+
+        # test it won't choke if I tell it to exclude a contact that is not there yet
+        self.bucket.getContacts(excludeContact=Contact(21, 'http://foo/21'))
+
     def testGetContact(self):
         c14 = Contact(14, 'http://foo/14')
-        self.assertEqual(self.bucket.getContact(14), c14,"did not find requested contact.")
+        self.assertEqual(self.bucket.getContact(14), c14,
+                         "did not find requested contact.")
 
 if __name__ == "__main__":
     unittest.main()
