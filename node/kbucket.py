@@ -1,5 +1,5 @@
 import logging
-
+from six import string_types
 import constants
 
 
@@ -138,8 +138,8 @@ class KBucket(object):
                  if not.
         @rtype: bool
         """
-        if isinstance(key, str):
-            key = long(key.encode('hex'), 32)
+        if isinstance(key, string_types):
+            key = long(key, 16)
         return self.rangeMin <= key < self.rangeMax
 
     def __len__(self):
