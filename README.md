@@ -103,6 +103,7 @@ Here are some screenshots of the *alpha* UI so far:
   - [What’s in a Word? DarkMarket Becomes OpenBazaar](https://cointelegraph.com/news/111332/what_s_in_a_word_darkmarket_becomes_openbazaar#.U2IWgfl_tqU)
   - [OpenBazaar Auctions: A decentralized eBay alternative](http://cointelegraph.com/news/111685/openbazaar_auctions_a_decentralized_ebay_alternative)
   - [OpenBazaar Explains Proof Of Burn As It Nears Beta Release](http://cointelegraph.com/news/112388/openbazaar-explains-proof-of-burn-as-it-nears-beta-release)
+  - [OpenBazaar, the untouchable online market, inches closer to game time](http://cointelegraph.com/news/112430/openbazaar-the-untouchable-online-market-inches-closer-to-game-time)
 - **Coindesk**
   - [How OpenBazaar is Using Bitcoin to Build a Decentralized eBay](https://www.coindesk.com/openbazaar-bitcoin-build-decentralised-ebay/)
 - **Let's Talk Bitcoin: Beyond Bitcoin**
