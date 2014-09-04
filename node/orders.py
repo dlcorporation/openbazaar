@@ -34,10 +34,10 @@ class Orders(object):
         # self._priv = transport._myself
         self.market_id = market_id
 
-        self._gpg = gnupg.GPG()
+        self.gpg = gnupg.GPG()
         self.db = db
-        self._orders = self.get_orders()
-        self.orders = self._orders
+        self.orders = self.get_orders()
+        self.orders = self.orders
 
         self.transport.add_callback('order', self.on_order)
 
@@ -377,8 +377,8 @@ class Orders(object):
         try:
             self.log.debug('%s' % contract_data_json)
             seller_pgp = contract_data_json['Seller']['seller_PGP']
-            self._gpg.import_keys(seller_pgp)
-            v = self._gpg.verify(contract)
+            self.gpg.import_keys(seller_pgp)
+            v = self.gpg.verify(contract)
 
             if v:
                 self.log.info('Verified Contract')
@@ -475,7 +475,7 @@ class Orders(object):
         # Add to contract and sign
         seed_contract = msg.get('rawContract')
 
-        gpg = self._gpg
+        gpg = self.gpg
 
         # Prepare contract body
         json_string = json.dumps(buyer, indent=0)
@@ -559,8 +559,8 @@ class Orders(object):
         bidder_pgp = contract_stripped[bidder_pgp_start_index + 13:bidder_pgp_end_index]
         self.log.info(bidder_pgp)
 
-        self._gpg.import_keys(bidder_pgp)
-        v = self._gpg.verify(contract)
+        self.gpg.import_keys(bidder_pgp)
+        v = self.gpg.verify(contract)
         if v:
             self.log.info('Sellers contract verified')
 
@@ -575,7 +575,7 @@ class Orders(object):
 
         self.log.debug('Notary: %s' % notary)
 
-        gpg = self._gpg
+        gpg = self.gpg
 
         # Prepare contract body
         json_string = json.dumps(notary, indent=0)
