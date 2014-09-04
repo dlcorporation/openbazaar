@@ -36,7 +36,10 @@ class Obdb():
         """ Close the db connection
         """
         if self.con:
-            self.con.close()
+            try:
+                self.con.close()
+            except Exception:
+                pass
         self.con = False
 
     def _dictFactory(self, cursor, row):
