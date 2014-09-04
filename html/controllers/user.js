@@ -34,6 +34,7 @@ angular.module('app')
 
                     case "/user/"+$scope.guid+"/products":
                         $scope.queryShop($scope.guid);
+                        $scope.store_listings = [];
                         $scope.storeProductsPanel = true;
                         $scope.showStorePanel('storeProducts');
                         break;
