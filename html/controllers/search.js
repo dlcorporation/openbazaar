@@ -17,14 +17,14 @@ angular.module('app')
              * Establish message handlers
              * @msg - message from websocket to pass on to handler
              */
-            Connection.$on('load_page', function(e, msg){ $scope.load_page(msg) });
-            Connection.$on('global_search_result', function(e, msg){ $scope.parse_search_result(msg) });
+            Connection.$on('load_page', function(e, msg){ $scope.load_page(msg); });
+            Connection.$on('global_search_result', function(e, msg){ $scope.parse_search_result(msg); });
 
             $scope.load_page = function(msg) {
-                console.log($location.search())
-                $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12')
-                $scope.searchNetwork()
-            }
+                console.log($location.search());
+                $('#dashboard-container').removeClass('col-sm-8').addClass('col-sm-12');
+                $scope.searchNetwork();
+            };
 
             function getJsonFromUrl() {
                 var query = location.search.substr(1);
@@ -37,7 +37,7 @@ angular.module('app')
             }
 
             url_json = getJsonFromUrl();
-            $scope.search = url_json.searchterm
+            $scope.search = url_json.searchterm;
 
             $scope.searchNetwork = function() {
 
@@ -54,7 +54,7 @@ angular.module('app')
                 $scope.search = ""
                 $scope.showDashboardPanel('search');
                 */
-            }
+            };
 
             $scope.search_results = [];
             $scope.parse_search_result = function(msg) {
@@ -63,7 +63,7 @@ angular.module('app')
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
                 contract_data.nickname = msg.nickname;
-                $scope.search_results.push(contract_data)
+                $scope.search_results.push(contract_data);
                 $scope.search_results = jQuery.unique($scope.search_results);
                 $.each($scope.search_results, function(index, contract) {
                     if (jQuery.isEmptyObject(contract.Contract.item_images)) {
@@ -72,12 +72,12 @@ angular.module('app')
                     }
                 });
 
-                console.log('Search Results', $scope.search_results)
+                console.log('Search Results', $scope.search_results);
 
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             if (Connection.websocket.readyState == 1) {
                 $scope.load_page({});
