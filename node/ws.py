@@ -934,18 +934,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     listen_lock = threading.Lock()
 
     def initialize(self, transport, market, db):
-        self._loop = tornado.ioloop.IOLoop.instance()
+        self.loop = tornado.ioloop.IOLoop.instance()
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info("Initialize websockethandler")
-        self._app_handler = ProtocolHandler(
-            transport, market, self, db, self._loop
+        self.app_handler = ProtocolHandler(
+            transport, market, self, db, self.loop
         )
         self.market = market
         self.transport = transport
 
     def open(self):
         self.log.info('Websocket open')
-        self._app_handler.send_opening()
+        self.app_handler.send_opening()
         with WebSocketHandler.listen_lock:
             self.listeners.add(self)
         self.connected = True
@@ -958,7 +958,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             'params': []
         }
         self.connected = False
-        self._app_handler.handle_request(self, disconnect_msg)
+        self.app_handler.handle_request(self, disconnect_msg)
         with WebSocketHandler.listen_lock:
             try:
                 self.listeners.remove(self)
@@ -982,7 +982,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         if not self._check_request(request):
             logging.error("Malformed request: %s", request, exc_info=True)
             return
-        if self._app_handler.handle_request(self, request):
+        if self.app_handler.handle_request(self, request):
             return
 
     def _send_response(self, response):
@@ -1002,6 +1002,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         try:
             # calling write_message or the socket is not thread safe
-            self._loop.current().add_callback(send_response)
+            self.loop.current().add_callback(send_response)
         except:
             logging.error("Error adding callback", exc_info=True)
