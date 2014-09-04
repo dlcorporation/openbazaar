@@ -122,7 +122,7 @@ function installArch {
 
 if [[ $OSTYPE == darwin* ]] ; then
   installMac
-elif [[ $OSTYPE == linux-gnu -o $OSTYPE == linux-gnueabihf]]; then
+elif [[ $OSTYPE == linux-gnu || $OSTYPE == linux-gnueabihf ]]; then
   if [ -f /etc/arch-release ]; then
     installArch
   else
