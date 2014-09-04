@@ -9,21 +9,22 @@ usage: $0 options
 This script starts up the OpenBazaar client and server.
 
 OPTIONS:
-  -h    Help information
-  -o    Seed Mode
-  -i    Server Public IP
-  -p    Server Public Port (default 12345)
-  -k    Web Interface IP (default 127.0.0.1; use 0.0.0.0 for any)
-  -q    Web Interface Port (default random)
-  -l    Log file
-  -d    Development mode
-  -n    Number of Dev nodes to start up
-  -a    Bitmessage API username
-  -b    Bitmessage API password
-  -c    Bitmessage API port
-  -u    Market ID
-  -j    Disable upnp
-  -s    List of additional seeds
+  -h                        Help information
+  -o                        Seed Mode
+  -i                        Server Public IP
+  -p                        Server Public Port (default 12345)
+  -k                        Web Interface IP (default 127.0.0.1; use 0.0.0.0 for any)
+  -q                        Web Interface Port (default random)
+  -l                        Log file
+  -d                        Development mode
+  -n                        Number of Dev nodes to start up
+  -a                        Bitmessage API username
+  -b                        Bitmessage API password
+  -c                        Bitmessage API port
+  -u                        Market ID
+  -j                        Disable upnp
+  -s                        List of additional seeds
+  --disable-open-browser    Don't open the default web browser when OpenBazaar starts
 EOF
 }
 
@@ -52,6 +53,7 @@ DEVELOPMENT=0
 SEED_URI='seed.openbazaar.org seed2.openbazaar.org seed.openlabs.co seed.bizarre.company'
 LOG_FILE=production.log
 DISABLE_UPNP=0
+DISABLE_OPEN_DEFAULT_WEBBROWSER=0
 
 # CRITICAL   50
 # ERROR      40
@@ -80,7 +82,7 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hp:l:dn:a:b:c:u:oi:jk:q:s:" OPTION
+while getopts "hp:l:dn:a:b:c:u:oi:jk:q:s-:" OPTION
 do
      case ${OPTION} in
          h)
@@ -129,6 +131,17 @@ do
          s)
              SEED_URI_ADD=$OPTARG
              ;;
+         -)
+         	 case "${OPTARG}" in
+         	     disable-open-browser)
+                     DISABLE_OPEN_DEFAULT_WEBBROWSER=1
+                     pause
+                     ;;
+                 *)
+                     usage
+                     exit
+                     ;;
+             esac;;
          ?)
              usage
              exit
@@ -158,6 +171,12 @@ else
     DISABLE_UPNP=""
 fi
 
+if [ "$DISABLE_OPEN_DEFAULT_WEBBROWSER" == 1 ]; then
+    DISABLE_OPEN_DEFAULT_WEBBROWSER="--disable_open_browser 1"
+else
+    DISABLE_OPEN_DEFAULT_WEBBROWSER="--disable_open_browser 0"
+fi
+
 echo "OpenBazaar is starting..."
 
 if [ "$SEED_MODE" == 1 ]; then
@@ -169,7 +188,7 @@ if [ "$SEED_MODE" == 1 ]; then
        wait
     fi
 
-    $PYTHON node/tornadoloop.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
+    $PYTHON node/tornadoloop.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
 
 elif [ "$DEVELOPMENT" == 0 ]; then
     echo "Production Mode"
@@ -181,7 +200,7 @@ elif [ "$DEVELOPMENT" == 0 ]; then
        wait
     fi
 
-	$PYTHON node/tornadoloop.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL &
+	$PYTHON node/tornadoloop.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
 
 else
 	# Primary Market - No SEED_URI specified
@@ -194,7 +213,7 @@ else
        wait
     fi
 
-	$PYTHON node/tornadoloop.py 127.0.0.1 $HTTP_OPTS $DISABLE_UPNP --database db/ob-dev.db -s 1 --bmuser $BM_USERNAME -d --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 --log_level $LOG_LEVEL &
+	$PYTHON node/tornadoloop.py 127.0.0.1 $HTTP_OPTS $DISABLE_UPNP --database db/ob-dev.db -s 1 --bmuser $BM_USERNAME -d --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
     ((NODES=NODES+1))
     i=2
     while [[ $i -le $NODES ]]
@@ -206,7 +225,7 @@ else
            $PYTHON node/setup_db.py db/ob-dev-$i.db
            wait
         fi
-	    $PYTHON node/tornadoloop.py 127.0.0.$i $HTTP_OPTS $DISABLE_UPNP --database db/ob-dev-$i.db -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL &
+	    $PYTHON node/tornadoloop.py 127.0.0.$i $HTTP_OPTS $DISABLE_UPNP --database db/ob-dev-$i.db -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
 	    ((i=i+1))
     done
 fi

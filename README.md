@@ -9,7 +9,10 @@
 OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and protected by the [GPL](http://www.gnu.org/copyleft/gpl.html).
 
 - **Official Site:** http://openbazaar.org
-- **Forums:** http://forum.openbazaar.org
+- **Forums:**
+  - *OpenBazaar*: http://forum.openbazaar.org
+  - *unSYSTEM*: https://forum.unsystem.net/category/projects/openbazaar
+  - *Bitcoin Talk*: https://bitcointalk.org/index.php?topic=768081.0
 - **IRC Chat:** #OpenBazaar on [Freenode](http://webchat.freenode.net/)
 - **Original Presentation at Toronto Hackathon:** https://www.youtube.com/watch?v=lHVqH8XO1Pk#t=86
 - **Slides from 'Bitcoin in the Beltway' by Brian Hoffman:** http://www.slideshare.net/openbazaar/open-bazaar
@@ -100,6 +103,7 @@ Here are some screenshots of the *alpha* UI so far:
   - [What’s in a Word? DarkMarket Becomes OpenBazaar](https://cointelegraph.com/news/111332/what_s_in_a_word_darkmarket_becomes_openbazaar#.U2IWgfl_tqU)
   - [OpenBazaar Auctions: A decentralized eBay alternative](http://cointelegraph.com/news/111685/openbazaar_auctions_a_decentralized_ebay_alternative)
   - [OpenBazaar Explains Proof Of Burn As It Nears Beta Release](http://cointelegraph.com/news/112388/openbazaar-explains-proof-of-burn-as-it-nears-beta-release)
+  - [OpenBazaar, the untouchable online market, inches closer to game time](http://cointelegraph.com/news/112430/openbazaar-the-untouchable-online-market-inches-closer-to-game-time)
 - **Coindesk**
   - [How OpenBazaar is Using Bitcoin to Build a Decentralized eBay](https://www.coindesk.com/openbazaar-bitcoin-build-decentralised-ebay/)
 - **Let's Talk Bitcoin: Beyond Bitcoin**
