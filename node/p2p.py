@@ -90,7 +90,7 @@ class TransportLayer(object):
         self._peers = {}
         self._callbacks = defaultdict(list)
         self._timeouts = []
-        self._port = my_port
+        self.port = my_port
         self.ip = my_ip
         self.guid = my_guid
         self.market_id = market_id
@@ -98,9 +98,9 @@ class TransportLayer(object):
 
         try:
             socket.inet_pton(socket.AF_INET6, my_ip)
-            my_uri = 'tcp://[%s]:%s' % (self.ip, self._port)
+            my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
         except socket.error:
-            my_uri = 'tcp://%s:%s' % (self.ip, self._port)
+            my_uri = 'tcp://%s:%s' % (self.ip, self.port)
         self._uri = my_uri
 
         self.log = logging.getLogger(
@@ -131,7 +131,7 @@ class TransportLayer(object):
         return hello_request({'uri': self._uri})
 
     def listen(self, pubkey):
-        self.log.info("Listening at: %s:%s" % (self.ip, self._port))
+        self.log.info("Listening at: %s:%s" % (self.ip, self.port))
         self.ctx = zmq.Context()
         self.socket = self.ctx.socket(zmq.REP)
 
@@ -157,9 +157,9 @@ class TransportLayer(object):
         else:
             try:
                 self.socket.ipv6 = True
-                self.socket.bind('tcp://[*]:%s' % self._port)
+                self.socket.bind('tcp://[*]:%s' % self.port)
             except AttributeError:
-                self.socket.bind('tcp://*:%s' % self._port)
+                self.socket.bind('tcp://*:%s' % self.port)
 
         self.stream = zmqstream.ZMQStream(
             self.socket, io_loop=ioloop.IOLoop.current()
@@ -192,8 +192,8 @@ class TransportLayer(object):
         self.log.info("Removing peer %s", uri)
         ip = urlparse(uri).hostname
         port = urlparse(uri).port
-        if (ip, port, guid) in self._shortlist:
-            self._shortlist.remove((ip, port, guid))
+        if (ip, port, guid) in self.shortlist:
+            self.shortlist.remove((ip, port, guid))
 
         self.log.info('Removed')
 

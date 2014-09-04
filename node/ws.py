@@ -948,7 +948,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self._app_handler.send_opening()
         with WebSocketHandler.listen_lock:
             self.listeners.add(self)
-        self._connected = True
+        self.connected = True
 
     def on_close(self):
         self.log.info("Websocket closed")
@@ -957,7 +957,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             'id': 0,
             'params': []
         }
-        self._connected = False
+        self.connected = False
         self._app_handler.handle_request(self, disconnect_msg)
         with WebSocketHandler.listen_lock:
             try:

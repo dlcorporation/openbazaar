@@ -6,9 +6,7 @@ from urlparse import urlparse
 from zmq.eventloop import ioloop
 from zmq.eventloop.ioloop import PeriodicCallback
 import gnupg
-import hashlib
 import xmlrpclib
-import json
 import logging
 import pyelliptic as ec
 import requests
@@ -31,10 +29,10 @@ class CryptoPeerConnection(PeerConnection):
         # self._priv = transport._myself
         self.pub = pub
         self.ip = urlparse(address).hostname
-        self._port = urlparse(address).port
+        self.port = urlparse(address).port
         self.nickname = nickname
-        self._sin = sin
-        self._connected = False
+        self.sin = sin
+        self.connected = False
         self.guid = guid
 
         PeerConnection.__init__(self, transport, address)
@@ -53,7 +51,7 @@ class CryptoPeerConnection(PeerConnection):
 
                     # Update Information
                     self.guid = msg['senderGUID']
-                    self._sin = self.generate_sin(self.guid)
+                    self.sin = self.generate_sin(self.guid)
                     self.pub = msg['pubkey']
                     self.nickname = msg['senderNick']
 
@@ -83,7 +81,7 @@ class CryptoPeerConnection(PeerConnection):
                                       'senderNick': self.transport.nickname}), cb)
 
     def __repr__(self):
-        return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self.guid, self.ip, self._port, self.pub)
+        return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self.guid, self.ip, self.port, self.pub)
 
     def generate_sin(self, guid):
         return obelisk.EncodeBase58Check('\x0F\x02%s' + guid.decode('hex'))
@@ -92,12 +90,12 @@ class CryptoPeerConnection(PeerConnection):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(5)
-            s.connect((self.ip, self._port))
+            s.connect((self.ip, self.port))
         except socket.error:
             try:
                 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                 s.settimeout(5)
-                s.connect((self.ip, self._port))
+                s.connect((self.ip, self.port))
             except socket.error as e:
                 self.log.error("socket error on %s: %s" % (self.ip, e))
                 return False
@@ -165,7 +163,7 @@ class CryptoPeerConnection(PeerConnection):
             self.log.error('Cannot send to peer')
 
     def peer_to_tuple(self):
-        return self.ip, self._port, self.guid
+        return self.ip, self.port, self.guid
 
     def get_guid(self):
         return self.guid
@@ -242,9 +240,9 @@ class CryptoTransportLayer(TransportLayer):
                     self.ip = ip
                     try:
                         socket.inet_pton(socket.AF_INET6, self.ip)
-                        my_uri = 'tcp://[%s]:%s' % (self.ip, self._port)
+                        my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
                     except socket.error:
-                        my_uri = 'tcp://%s:%s' % (self.ip, self._port)
+                        my_uri = 'tcp://%s:%s' % (self.ip, self.port)
                     self._uri = my_uri
                     self.stream.close()
                     self.listen(self.pubkey)

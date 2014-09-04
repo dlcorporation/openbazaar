@@ -42,7 +42,7 @@ class DHT(object):
         :param seed_peer: (CryptoPeerConnection) for seed peer
         """
         ip = seed_peer.ip
-        port = seed_peer._port
+        port = seed_peer.port
         self.add_known_node((ip, port, seed_peer.guid, seed_peer.nickname))
 
         self.log.debug('Starting Seed Peer: %s' % seed_peer.nickname)
@@ -276,10 +276,10 @@ class DHT(object):
             self.log.debug('Found the key-value pair. Executing callback.')
 
             for idx, s in enumerate(self.searches):
-                if s._findID == msg['findID']:
-                    s._callback(msg['foundKey'])
+                if s.findID == msg['findID']:
+                    s.callback(msg['foundKey'])
                     del self.searches[idx]
-                    # self.searches[msg['findID']]._callback(msg['foundKey'])
+                    # self.searches[msg['findID']].callback(msg['foundKey'])
 
                     # Remove active search
 
@@ -298,11 +298,11 @@ class DHT(object):
                     self.add_peer(self.transport, foundNode[1], foundNode[2], foundNode[0], foundNode[3])
 
                 for idx, search in enumerate(self.searches):
-                    if search._findID == msg['findID']:
+                    if search.findID == msg['findID']:
 
                         # Execute callback
-                        if search._callback is not None:
-                            search._callback((foundNode[2], foundNode[1], foundNode[0], foundNode[3]))
+                        if search.callback is not None:
+                            search.callback((foundNode[2], foundNode[1], foundNode[0], foundNode[3]))
 
                         # Clear search
                         del self.searches[idx]
@@ -316,7 +316,7 @@ class DHT(object):
                 search = ""
                 findID = msg['findID']
                 for s in self.searches:
-                    if s._findID == findID:
+                    if s.findID == findID:
                         search = s
                         foundSearch = True
 
@@ -326,7 +326,7 @@ class DHT(object):
                 else:
 
                     # Get current shortlist length
-                    shortlist_length = len(search._shortlist)
+                    shortlist_length = len(search.shortlist)
 
                     # Extends shortlist if necessary
                     for node in msg['foundNodes']:
@@ -341,24 +341,24 @@ class DHT(object):
                     search_port = urlparse(msg['uri']).port
                     search_guid = msg['senderGUID']
                     search_tuple = (search_ip, search_port, search_guid)
-                    for idx, probe in enumerate(search._active_probes):
+                    for idx, probe in enumerate(search.active_probes):
                         if probe == search_tuple:
-                            del search._active_probes[idx]
-                    self.log.debug('Find Node Response - Active Probes After: %s' % search._active_probes)
+                            del search.active_probes[idx]
+                    self.log.debug('Find Node Response - Active Probes After: %s' % search.active_probes)
 
                     # Add this to already contacted list
-                    if search_tuple not in search._already_contacted:
-                        search._already_contacted.append(search_tuple)
-                    self.log.debug('Already Contacted: %s' % search._already_contacted)
+                    if search_tuple not in search.already_contacted:
+                        search.already_contacted.append(search_tuple)
+                    self.log.debug('Already Contacted: %s' % search.already_contacted)
 
                     # If we added more to shortlist then keep searching
-                    if len(search._shortlist) > shortlist_length:
+                    if len(search.shortlist) > shortlist_length:
                         self.log.info('Lets keep searching')
                         self._searchIteration(search)
                     else:
                         self.log.info('Shortlist is empty')
-                        if search._callback is not None:
-                            search._callback(search._shortlist)
+                        if search.callback is not None:
+                            search.callback(search.shortlist)
 
     def _refreshNode(self):
         """ Periodically called to perform k-bucket refreshes and data
@@ -433,7 +433,7 @@ class DHT(object):
 
         foundSearch = False
         for s in self.searches:
-            if s._findID == findID:
+            if s.findID == findID:
                 search = s
                 foundSearch = True
 
@@ -441,7 +441,7 @@ class DHT(object):
             self.log.error('There was no search found for this ID')
             return
 
-        self.log.debug('Short list before: %s' % search._shortlist)
+        self.log.debug('Short list before: %s' % search.shortlist)
 
         for node in foundNodes:
 
@@ -450,7 +450,7 @@ class DHT(object):
             node_port = urlparse(node_uri).port
 
             # Add to shortlist
-            if (node_ip, node_port, node_guid, node_nick) not in search._shortlist:
+            if (node_ip, node_port, node_guid, node_nick) not in search.shortlist:
                 search.add_to_shortlist([(node_ip, node_port, node_guid, node_nick)])
 
             # Skip ourselves if returned
@@ -466,7 +466,7 @@ class DHT(object):
                 self.log.debug('Adding new peer to active peers list: %s' % node)
                 self.add_peer(self.transport, node_uri, node_pubkey, node_guid, node_nick)
 
-        self.log.debug('Short list after: %s' % search._shortlist)
+        self.log.debug('Short list after: %s' % search.shortlist)
 
     def find_listings(self, transport, key, listingFilter=None, callback=None):
         """ Send a get product listings call to the node in question and then cache those listings locally
@@ -737,7 +737,7 @@ class DHT(object):
             shortlist = []
 
             for closeNode in closeNodes:
-                shortlist.append((closeNode.ip, closeNode._port, closeNode.guid))
+                shortlist.append((closeNode.ip, closeNode.port, closeNode.guid))
 
             if len(shortlist) > 0:
                 new_search.add_to_shortlist(shortlist)
@@ -747,7 +747,7 @@ class DHT(object):
                 self._routingTable.touchKBucket(key)
 
             # Abandon the search if the shortlist has no nodes
-            if len(new_search._shortlist) == 0:
+            if len(new_search.shortlist) == 0:
                 self.log.info('Out of nodes to search, stopping search')
                 if callback is not None:
                     callback([])
@@ -757,39 +757,39 @@ class DHT(object):
         else:
             # On startup of the server the shortlist is pulled from the DB
             # TODO: Right now this is just hardcoded to be seed URIs but should pull from db
-            new_search._shortlist = startupShortlist
+            new_search.shortlist = startupShortlist
 
         self._searchIteration(new_search, findValue=findValue)
 
     def _searchIteration(self, new_search, findValue=False):
 
         # Update slow nodes count
-        new_search._slowNodeCount[0] = len(new_search._active_probes)
+        new_search.slowNodeCount[0] = len(new_search.active_probes)
 
         # Sort shortlist from closest to farthest
         # self.activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.guid, targetKey), self._routingTable.distance(secondContact.guid, targetKey)))
-        # new_search._shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.guid, targetKey), self._routingTable.distance(secondContact.guid, targetKey)))
+        # new_search.shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.guid, targetKey), self._routingTable.distance(secondContact.guid, targetKey)))
 
-        self.activePeers.sort(lambda firstNode, secondNode, targetKey=new_search._key: cmp(
+        self.activePeers.sort(lambda firstNode, secondNode, targetKey=new_search.key: cmp(
             self._routingTable.distance(firstNode.guid, targetKey),
             self._routingTable.distance(secondNode.guid, targetKey)))
 
-        # while len(self._pendingIterationCalls):
-        # del self._pendingIterationCalls[0]
+        # while len(self.pendingIterationCalls):
+        # del self.pendingIterationCalls[0]
 
         # TODO: Put this in the callback
-        # if new_search._key in new_search._find_value_result:
-        # return new_search._find_value_result
-        # elif len(new_search._shortlist) and findValue is False:
+        # if new_search.key in new_search.find_value_result:
+        # return new_search.find_value_result
+        # elif len(new_search.shortlist) and findValue is False:
         #
         # # If you have more k amount of nodes in your shortlist then stop
         # # or ...
-        # if (len(new_search._shortlist) >= constants.k) or (
-        # new_search._shortlist[0] == new_search._previous_closest_node and len(
-        # new_search._active_probes) ==
-        # new_search._slowNodeCount[0]):
-        # if new_search._callback is not None:
-        # new_search._callback(new_search._shortlist)
+        # if (len(new_search.shortlist) >= constants.k) or (
+        # new_search.shortlist[0] == new_search.previous_closest_node and len(
+        # new_search.active_probes) ==
+        # new_search.slowNodeCount[0]):
+        # if new_search.callback is not None:
+        # new_search.callback(new_search.shortlist)
         # return
 
         # Update closest node
@@ -797,34 +797,34 @@ class DHT(object):
             closestPeer = self.activePeers[0]
             closestPeer_ip = urlparse(closestPeer.address).hostname
             closestPeer_port = urlparse(closestPeer.address).port
-            new_search._previous_closest_node = (closestPeer_ip, closestPeer_port, closestPeer.guid)
-            self.log.debug('Previous Closest Node %s' % (new_search._previous_closest_node,))
+            new_search.previous_closest_node = (closestPeer_ip, closestPeer_port, closestPeer.guid)
+            self.log.debug('Previous Closest Node %s' % (new_search.previous_closest_node,))
 
         # Sort short list again
-        if len(new_search._shortlist) > 1:
-            self.log.info('Short List: %s' % new_search._shortlist)
+        if len(new_search.shortlist) > 1:
+            self.log.info('Short List: %s' % new_search.shortlist)
 
             # Remove dupes
-            new_search._shortlist = self.dedupe(new_search._shortlist)
+            new_search.shortlist = self.dedupe(new_search.shortlist)
 
-            new_search._shortlist.sort(lambda firstNode, secondNode, targetKey=new_search._key: cmp(
+            new_search.shortlist.sort(lambda firstNode, secondNode, targetKey=new_search.key: cmp(
                 self._routingTable.distance(firstNode[2], targetKey),
                 self._routingTable.distance(secondNode[2], targetKey)))
 
-            new_search._prevShortlistLength = len(new_search._shortlist)
+            new_search.prevShortlistLength = len(new_search.shortlist)
 
         # See if search was cancelled
-        if not self.activeSearchExists(new_search._findID):
+        if not self.activeSearchExists(new_search.findID):
             self.log.info('Active search does not exist')
             return
 
         # Send findNodes out to all nodes in the shortlist
-        for node in new_search._shortlist:
-            if node not in new_search._already_contacted:
+        for node in new_search.shortlist:
+            if node not in new_search.already_contacted:
                 if node[2] != self.transport.guid:
 
-                    new_search._active_probes.append(node)
-                    new_search._already_contacted.append(node)
+                    new_search.active_probes.append(node)
+                    new_search.already_contacted.append(node)
                     contact = self._routingTable.getContact(node[2])
 
                     if contact:
@@ -832,27 +832,27 @@ class DHT(object):
                         msg = {"type": "findNode",
                                "uri": contact.transport._uri,
                                "senderGUID": self.transport.guid,
-                               "key": new_search._key,
+                               "key": new_search.key,
                                "findValue": findValue,
                                "senderNick": self.transport.nickname,
-                               "findID": new_search._findID,
+                               "findID": new_search.findID,
                                "pubkey": contact.transport.pubkey}
                         self.log.debug('Sending findNode to: %s %s' % (contact.address, msg))
 
                         contact.send(msg)
-                        new_search._contactedNow += 1
+                        new_search.contactedNow += 1
 
                     else:
                         self.log.error('No contact was found for this guid: %s' % node[2])
 
-            if new_search._contactedNow == constants.alpha:
+            if new_search.contactedNow == constants.alpha:
                 break
 
     def activeSearchExists(self, findID):
 
         activeSearchExists = False
         for search in self.searches:
-            if findID == search._findID:
+            if findID == search.findID:
                 return True
         if not activeSearchExists:
             return False
@@ -876,31 +876,31 @@ class DHT(object):
 
 class DHTSearch(object):
     def __init__(self, market_id, key, call="findNode", callback=None):
-        self._key = key  # Key to search for
-        self._call = call  # Either findNode or findValue depending on search
-        self._callback = callback  # Callback for when search finishes
-        self._shortlist = []  # List of nodes that are being searched against
-        self._active_probes = []  #
-        self._already_contacted = []  # Nodes are added to this list when they've been sent a findXXX action
-        self._previous_closest_node = None  # This is updated to be the closest node found during search
-        self._find_value_result = {}  # If a findValue search is found this is the value
-        self._pendingIterationCalls = []  #
-        self._slowNodeCount = [0]  #
-        self._contactedNow = 0  # Counter for how many nodes have been contacted
-        self._dhtCallbacks = []  # Callback list
-        self._prevShortlistLength = 0
+        self.key = key  # Key to search for
+        self.call = call  # Either findNode or findValue depending on search
+        self.callback = callback  # Callback for when search finishes
+        self.shortlist = []  # List of nodes that are being searched against
+        self.active_probes = []  #
+        self.already_contacted = []  # Nodes are added to this list when they've been sent a findXXX action
+        self.previous_closest_node = None  # This is updated to be the closest node found during search
+        self.find_value_result = {}  # If a findValue search is found this is the value
+        self.pendingIterationCalls = []  #
+        self.slowNodeCount = [0]  #
+        self.contactedNow = 0  # Counter for how many nodes have been contacted
+        self.dhtCallbacks = []  # Callback list
+        self.prevShortlistLength = 0
 
         self.log = logging.getLogger('[%s] %s' % (market_id,
                                                    self.__class__.__name__))
 
         # Create a unique ID (SHA1) for this _iterativeFind request to support parallel searches
-        self._findID = hashlib.sha1(os.urandom(128)).hexdigest()
+        self.findID = hashlib.sha1(os.urandom(128)).hexdigest()
 
     def add_to_shortlist(self, additions):
 
         self.log.debug('Additions: %s' % additions)
         for item in additions:
-            if item not in self._shortlist:
-                self._shortlist.append(item)
+            if item not in self.shortlist:
+                self.shortlist.append(item)
 
-        self.log.debug('Updated short list: %s' % self._shortlist)
+        self.log.debug('Updated short list: %s' % self.shortlist)
