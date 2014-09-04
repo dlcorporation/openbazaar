@@ -72,8 +72,7 @@ angular.module('app')
             };
 
             $scope.addNotary = function(notary) {
-
-                notaryGUID = (notary !== '') ? notary : $scope.newNotary;
+                var notaryGUID = (notary !== '') ? notary : $scope.newNotary;
                 $scope.newNotary = '';
 
                 if(notaryGUID.length != 40 || !notaryGUID.match(/^[0-9a-z]+$/)) {
@@ -170,12 +169,12 @@ angular.module('app')
               if (msg.backups) {
                 $scope.backups = [];
                 //convert list of json objects into JS objects.
-                for (i=0; i < msg.backups.length; i++) {
+                for (var i=0; i < msg.backups.length; i++) {
                   $scope.backups[i] = $.parseJSON(msg.backups[i]);
                 }
                 if (!$scope.$$phase) {
-                            $scope.$apply();
-                        }
+                  $scope.$apply();
+                }
               }
             } else if (msg.result === 'failure') {
               //console.log('onGetBackupsResponse: failure')

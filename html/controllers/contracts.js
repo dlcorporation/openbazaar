@@ -31,8 +31,9 @@ angular.module('app')
                 Connection.send('query_contracts', query);
             };
 
-            if(Connection.websocket.readyState == 1)
+            if(Connection.websocket.readyState == 1) {
                 $scope.load_page();
+            }
 
             $scope.removeContract = function(contract_id) {
                 $('#contract-row-'+contract_id).fadeOut({ "duration": 1000 });
@@ -102,7 +103,7 @@ angular.module('app')
                     if (contract.contract) {
 
                         // Imported JSON format contract
-                        jsonContract = $scope.contract.rawText;
+                        var jsonContract = $scope.contract.rawText;
                         console.log(jsonContract);
 
                         Connection.send("import_raw_contract", {
@@ -141,9 +142,11 @@ angular.module('app')
                             }
                         };
 
-                        keywords = ($scope.contract.productKeywords) ? $scope.contract.productKeywords.split(',') : [];
+                        var keywords = ($scope.contract.productKeywords) ? $scope.contract.productKeywords.split(',') : [];
                         $.each(keywords, function(i, el) {
-                            if ($.inArray(el.trim(), contract.Contract.item_keywords) === -1 && el.trim() !== '') contract.Contract.item_keywords.push(el.trim());
+                            if ($.inArray(el.trim(), contract.Contract.item_keywords) === -1 && el.trim() !== '') {
+                                contract.Contract.item_keywords.push(el.trim());
+                            }
                         });
 
                         var imgUpload = document.getElementById('inputProductImage').files[0];
