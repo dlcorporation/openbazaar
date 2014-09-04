@@ -209,17 +209,3 @@ class Obdb():
             self._log.debug('Query: %s' % query)
             cur.execute(query, dels)
         self._disconnectFromDb()
-
-    def numEntries(self, table, where_clause="'1'='1'"):
-        self._connectToDb()
-        with self.con:
-            cur = self.con.cursor()
-
-            query = "SELECT count(*) as count FROM %s WHERE %s" \
-                    % (table, where_clause)
-            self._log.debug('query: %s' % query)
-            cur.execute(query)
-            rows = cur.fetchall()
-        self._disconnectFromDb()
-
-        return rows[0]['count']

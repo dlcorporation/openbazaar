@@ -427,7 +427,7 @@ class Market(object):
                 self._log.error('Problem loading the contract body JSON')
 
         return {"contracts": my_contracts, "page": page,
-                "total_contracts": self._db.numEntries("contracts")}
+                "total_contracts": len(self._db.selectEntries("contracts"))}
 
     # SETTINGS
     def save_settings(self, msg):

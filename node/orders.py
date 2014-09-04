@@ -228,7 +228,7 @@ class Orders(object):
                 order = self.get_order(result['order_id'])
                 orders.append(order)
 
-            total_orders = self._db.numEntries("orders", "market_id = '%s'" % self._market_id)
+            total_orders = len(self._db.selectEntries("orders", {"market_id": self._market_id}))
         else:
             if merchant:
                 order_ids = self._db.selectEntries(
@@ -243,8 +243,7 @@ class Orders(object):
                 for result in order_ids:
                     order = self.get_order(result['order_id'])
                     orders.append(order)
-                total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant = '%s'" % (
-                    self._market_id, self._transport._guid))
+                total_orders = len(self._db.selectEntries("orders", {"market_id": self._market_id, "merchant": self._transport._guid}))
             else:
                 order_ids = self._db.selectEntries("orders", {"market_id": self._market_id},
                     order_field="updated",
@@ -256,8 +255,7 @@ class Orders(object):
                         order = self.get_order(result['order_id'])
                         orders.append(order)
 
-                total_orders = self._db.numEntries("orders", "market_id = '%s' and merchant <> '%s'" % (
-                    self._market_id, self._transport._guid))
+                total_orders = len(self._db.selectEntries("orders", {"market_id":self._market_id, "merchant": self._transport._guid}))
 
         for order in orders:
             buyer = self._db.selectEntries("peers", {"guid": order['buyer']})
@@ -333,7 +331,7 @@ class Orders(object):
 
         new_order['address'] = self._multisig.address
 
-        if self._db.numEntries("order", {"order_id": new_order['id']}) > 0:
+        if len(self._db.selectEntries("orders", {"order_id": new_order['id']})) > 0:
             self._db.updateEntries("orders", {"order_id": new_order['id']}, {new_order})
         else:
             self._db.insertEntry("orders", new_order)
@@ -424,7 +422,7 @@ class Orders(object):
         new_order['state'] = Orders.State.RECEIVED
 
         order_id = random.randint(0, 1000000)
-        while self._db.numEntries("orders", {'id': order_id}) > 0:
+        while len(self._db.selectEntries("orders", {'id': order_id})) > 0:
             order_id = random.randint(0, 1000000)
 
         new_order['order_id'] = order_id
@@ -454,7 +452,7 @@ class Orders(object):
 
         # Save order locally in database
         order_id = random.randint(0, 1000000)
-        while self._db.numEntries("orders", "id = '%s'" % order_id) > 0:
+        while (len(self._db.selectEntries("orders", {"id": order_id}))) > 0:
             order_id = random.randint(0, 1000000)
 
         seller = self._transport._dht._routingTable.getContact(msg['sellerGUID'])
@@ -535,7 +533,7 @@ class Orders(object):
 
         # Generate unique id for this bid
         order_id = random.randint(0, 1000000)
-        while self._db.numEntries("contracts", "id = '%s'" % order_id) > 0:
+        while len(self._db.selectEntries("contracts", {"id": order_id})) > 0:
             order_id = random.randint(0, 1000000)
 
         # Add to contract and sign
@@ -762,7 +760,7 @@ class Orders(object):
             state = 'Waiting for Payment'
 
             merchant_order_id = random.randint(0, 1000000)
-            while self._db.numEntries("orders", "id = '%s'" % order_id) > 0:
+            while len(self._db.selectEntries("orders", {"id": order_id})) > 0:
                 merchant_order_id = random.randint(0, 1000000)
 
             buyer_id = str(bid_data_json['Buyer']['buyer_GUID']) + '-' + str(bid_data_json['Buyer']['buyer_order_id'])
