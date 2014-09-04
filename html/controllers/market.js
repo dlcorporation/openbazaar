@@ -891,7 +891,7 @@ angular.module('app')
                         $log.info('Modal dismissed at: ' + new Date());
                     });
 
-                }
+                };
 
             };
 

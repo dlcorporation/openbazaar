@@ -144,7 +144,7 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             $scope.compose_message = function(size, myself, address, subject) {
                 $scope.$broadcast("compose_message", {
