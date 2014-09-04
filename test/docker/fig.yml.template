@@ -1,0 +1,34 @@
+node1:
+  image: test/ob
+  hostname: node1
+  ports:
+    - "8081:8888"
+    - "12341:12345"
+node2:
+  image: test/ob
+  hostname: node2
+  ports:
+    - "8082:8888"
+    - "12342:12345"
+node3:
+  image: test/ob
+  hostname: node3
+  ports:
+    - "8083:8888"
+    - "12343:12345"
+seed1:
+  image: test/ob
+  hostname: seed1
+  environment:
+    -  RUNSH_ARGS=-q 8888 -p 12345 -o
+  ports:
+    - "8091:8888"
+    - "12351:12345"
+seed2:
+  image: test/ob
+  hostname: seed2
+  environment:
+    -  RUNSH_ARGS=-q 8888 -p 12345 -o
+  ports:
+    - "8092:8888"
+    - "12352:12345"
