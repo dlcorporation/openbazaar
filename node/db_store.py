@@ -143,7 +143,7 @@ class Obdb():
         if lastrowid:
             return lastrowid
 
-    def selectEntries(self, table, where_clause="'1'='1'", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
+    def selectEntries(self, table, where_dict={"\"1\"":"1"}, operator="AND", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
         """ A wrapper for the SQL SELECT operation. It will always return all the
             attributes for the selected rows.
         @param table: The table to search to
@@ -153,24 +153,30 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            if limit is not None and limit_offset is None:
-                limit_clause = "LIMIT %s" % limit
-            elif limit is not None and limit_offset is not None:
-                limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
-            else:
-                limit_clause = ""
+            first = True
+            wheres = ()
+            for key, value in where_dict.iteritems():
+                key = self._beforeStoring(key)
+                value = self._beforeStoring(value)
+                wheres = wheres + (value, )
+                if first:
+                    where_part = "%s = ?" % (key)
+                    first = False
+                else:
+                    where_part = where_part + "%s %s = ?" % (operator, key)
 
-            if select_fields is not "*":
-                columns = ",".join(select_fields)
-            else:
-                columns = "*"
+                if limit != None and limit_offset is None:
+                    limit_clause = "LIMIT %s" % limit
+                elif limit != None and limit_offset is not None:
+                      limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
+                else:
+                    limit_clause = ""
 
-            query = "SELECT %s FROM %s WHERE %s ORDER BY %s %s %s" \
-                    % (columns, table, where_clause, order_field, order, limit_clause)
 
-            print query
-            self._log.debug("query: %s " % query)
-            cur.execute(query)
+            query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
+                    % (table, where_part, order_field, order, limit_clause)
+            self._log.debug("query: %s "% query)
+            cur.execute(query, wheres)
             rows = cur.fetchall()
         self._disconnectFromDb()
         return rows
