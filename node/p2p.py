@@ -87,7 +87,7 @@ class PeerConnection(object):
 class TransportLayer(object):
     def __init__(self, market_id, my_ip, my_port, my_guid, nickname=None):
 
-        self._peers = {}
+        self.peers = {}
         self._callbacks = defaultdict(list)
         self.timeouts = []
         self.port = my_port
@@ -185,8 +185,8 @@ class TransportLayer(object):
     def _init_peer(self, msg):
         uri = msg['uri']
 
-        if uri not in self._peers:
-            self._peers[uri] = PeerConnection(self, uri)
+        if uri not in self.peers:
+            self.peers[uri] = PeerConnection(self, uri)
 
     def remove_peer(self, uri, guid):
         self.log.info("Removing peer %s", uri)
@@ -198,7 +198,7 @@ class TransportLayer(object):
         self.log.info('Removed')
 
         # try:
-        # del self._peers[uri]
+        # del self.peers[uri]
         # msg = {
         # 'type': 'peer_remove',
         # 'uri': uri
@@ -215,7 +215,7 @@ class TransportLayer(object):
 
         # Directed message
         if send_to is not None:
-            peer = self._dht._routingTable.getContact(send_to)
+            peer = self.dht._routingTable.getContact(send_to)
             # self.log.debug(
             #     '%s %s %s' % (peer.guid, peer.address, peer._pub)
             # )
@@ -225,7 +225,7 @@ class TransportLayer(object):
         else:
             # FindKey and then send
 
-            for peer in self._dht.activePeers:
+            for peer in self.dht.activePeers:
                 try:
                     data['senderGUID'] = self.guid
                     data['pubkey'] = self.pubkey

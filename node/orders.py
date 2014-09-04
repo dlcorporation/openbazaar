@@ -405,7 +405,7 @@ class Orders(object):
                 order_to_notary['rawContract'] = contract
                 order_to_notary['state'] = Orders.State.BID
 
-                merchant = self.transport._dht._routingTable.getContact(contract_data_json['Seller']['seller_GUID'])
+                merchant = self.transport.dht._routingTable.getContact(contract_data_json['Seller']['seller_GUID'])
                 order_to_notary['merchantURI'] = merchant.address
                 order_to_notary['merchantGUID'] = merchant.guid
                 order_to_notary['merchantNickname'] = merchant.nickname
@@ -459,7 +459,7 @@ class Orders(object):
         while self.db.numEntries("orders", "id = '%s'" % order_id) > 0:
             order_id = random.randint(0, 1000000)
 
-        seller = self.transport._dht._routingTable.getContact(msg['sellerGUID'])
+        seller = self.transport.dht._routingTable.getContact(msg['sellerGUID'])
 
         buyer = {}
         buyer['Buyer'] = {}
@@ -600,7 +600,7 @@ class Orders(object):
         self.log.info('Order ID: %s' % order_id)
 
         # Push buy order to DHT and node if available
-        # self.transport._dht.iterativeStore(self.transport, contract_key, str(signed_data), self.transport.guid)
+        # self.transport.dht.iterativeStore(self.transport, contract_key, str(signed_data), self.transport.guid)
         # self.update_listings_index()
 
         # Find Seller Data in Contract

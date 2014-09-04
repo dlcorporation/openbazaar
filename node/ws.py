@@ -197,7 +197,7 @@ class ProtocolHandler:
         def cb(msg):
             self.get_peers()
 
-        self.transport._dht.iterativeFindNode(msg.get('guid'), cb)
+        self.transport.dht.iterativeFindNode(msg.get('guid'), cb)
 
     def client_remove_trusted_notary(self, socket_handler, msg):
         self.log.info('Removing trusted notary %s' % msg)
@@ -267,9 +267,9 @@ class ProtocolHandler:
             if query_id in self.timeouts:
                 self.log.info('Unreachable Market: %s' % msg)
 
-                for peer in self.transport._dht.activePeers:
+                for peer in self.transport.dht.activePeers:
                     if peer.guid == findGUID:
-                        self.transport._dht.activePeers.remove(peer)
+                        self.transport.dht.activePeers.remove(peer)
 
                 self.refresh_peers()
 
@@ -598,7 +598,7 @@ class ProtocolHandler:
     def client_search(self, socket_handler, msg):
 
         self.log.info("[Search] %s" % msg)
-        self.transport._dht.iterativeFindValue(
+        self.transport.dht.iterativeFindValue(
             msg['key'], callback=self.on_node_search_value
         )
         # self.log.info('Result: %s' % result)
@@ -612,7 +612,7 @@ class ProtocolHandler:
 
         self.log.info("Querying for Contracts %s" % msg)
 
-        self.transport._dht.find_listings_by_keyword(
+        self.transport.dht.find_listings_by_keyword(
             self.transport,
             msg['key'].upper(),
             callback=self.on_find_products
@@ -621,7 +621,7 @@ class ProtocolHandler:
     def client_query_store_products(self, socket_handler, msg):
         self.log.info("Searching network for contracts")
 
-        self.transport._dht.find_listings(
+        self.transport.dht.find_listings(
             self.transport,
             msg['key'],
             callback=self.on_find_products_by_store
@@ -693,7 +693,7 @@ class ProtocolHandler:
 
             # Go get listing metadata and then send it to the GUI
             for contract in contracts:
-                self.transport._dht.iterativeFindValue(
+                self.transport.dht.iterativeFindValue(
                     contract,
                     callback=lambda msg, key=contract: self.on_node_search_value(
                         msg, key
@@ -717,7 +717,7 @@ class ProtocolHandler:
 
                 # Go get listing metadata and then send it to the GUI
                 for contract in results['listings']:
-                    self.transport._dht.iterativeFindValue(
+                    self.transport.dht.iterativeFindValue(
                         contract,
                         callback=lambda msg, key=contract: self.on_global_search_value(
                             msg, key
@@ -816,7 +816,7 @@ class ProtocolHandler:
                     if contract_guid == self.transport.guid:
                         nickname = self.transport.nickname
                     else:
-                        routing_table = self.transport._dht._routingTable
+                        routing_table = self.transport.dht._routingTable
                         peer = routing_table.getContact(contract_guid)
                         nickname = peer.nickname if peer is not None else ""
 
@@ -904,7 +904,7 @@ class ProtocolHandler:
     def get_peers(self):
         peers = []
 
-        for peer in self.transport._dht.activePeers:
+        for peer in self.transport.dht.activePeers:
 
             self.log.debug('get peer %s' % peer)
 

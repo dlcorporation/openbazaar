@@ -43,7 +43,7 @@ class MarketApplication(tornado.web.Application):
         self.market = Market(self.transport, db)
 
         def post_joined():
-            self.transport._dht._refreshNode()
+            self.transport.dht._refreshNode()
             self.market.republish_contracts()
 
         peers = seed_peers if seed_mode == 0 else []

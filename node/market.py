@@ -33,17 +33,17 @@ class Market(object):
 
         Attributes:
           transport (CryptoTransportLayer): Transport layer for messaging between nodes.
-          _dht (DHT): For storage across the network.
+          dht (DHT): For storage across the network.
           market_id (int): Indicates which local market we're working with.
 
         """
 
         # Current
         self.transport = transport
-        self._dht = transport.get_dht()
+        self.dht = transport.get_dht()
         self.market_id = transport.get_market_id()
         # self._myself = transport.get_myself()
-        self._peers = self._dht.getActivePeers()
+        self.peers = self.dht.getActivePeers()
         self.db = db
         self.orders = Orders(transport, self.market_id, db)
         self.pages = {}
@@ -68,7 +68,7 @@ class Market(object):
 
         # Periodically refresh buckets
         loop = tornado.ioloop.IOLoop.instance()
-        refreshCB = tornado.ioloop.PeriodicCallback(self._dht._refreshNode,
+        refreshCB = tornado.ioloop.PeriodicCallback(self.dht._refreshNode,
                                                     constants.refreshTimeout,
                                                     io_loop=loop)
         refreshCB.start()
@@ -141,7 +141,7 @@ class Market(object):
             hash_value.update(keyword_key.encode('utf-8'))
             keyword_key = hash_value.hexdigest()
 
-            self.transport._dht.iterativeStore(self.transport,
+            self.transport.dht.iterativeStore(self.transport,
                                                 keyword_key,
                                                 json.dumps({'keyword_index_add': key}),
                                                 self.transport.guid)
@@ -179,7 +179,7 @@ class Market(object):
         self.save_contract_to_db(contract_id, msg, signed_data, contract_key)
 
         # Store listing
-        self.transport._dht.iterativeStore(self.transport,
+        self.transport.dht.iterativeStore(self.transport,
                                             contract_key,
                                             str(signed_data),
                                             self.transport.guid)
@@ -248,7 +248,7 @@ class Market(object):
     def republish_contracts(self):
         listings = self.db.selectEntries("contracts")
         for listing in listings:
-            self.transport._dht.iterativeStore(self.transport,
+            self.transport.dht.iterativeStore(self.transport,
                                                 listing['key'],
                                                 listing.get('signed_contract_body'),
                                                 self.transport.guid)
@@ -263,7 +263,7 @@ class Market(object):
         if online_only:
             notaries = {}
             for n in settings['notaries']:
-                peer = self._dht._routingTable.getContact(n.guid)
+                peer = self.dht._routingTable.getContact(n.guid)
             if peer is not None and peer.check_port():
                 notaries.append(n)
             return notaries
@@ -286,7 +286,7 @@ class Market(object):
 
         listing_key = listing['key']
 
-        self.transport._dht.iterativeStore(self.transport,
+        self.transport.dht.iterativeStore(self.transport,
                                             listing_key,
                                             listing.get('signed_contract_body'),
                                             self.transport.guid)
@@ -301,7 +301,7 @@ class Market(object):
         #     hash_value.update('keyword-%s' % keyword)
         #     keyword_key = hash_value.hexdigest()
         #
-        #     self.transport._dht.iterativeStore(self.transport, keyword_key, json.dumps({'keyword_index_add': contract_key}), self.transport.guid)
+        #     self.transport.dht.iterativeStore(self.transport, keyword_key, json.dumps({'keyword_index_add': contract_key}), self.transport.guid)
 
     def update_listings_index(self):
 
@@ -332,7 +332,7 @@ class Market(object):
                           'contracts': my_contracts}}
 
         # Pass off to thread to keep GUI snappy
-        self.transport._dht.iterativeStore(self.transport,
+        self.transport.dht.iterativeStore(self.transport,
                                             contract_index_key,
                                             value, self.transport.guid)
 
@@ -359,7 +359,7 @@ class Market(object):
             hash_value.update(keyword_key.encode('utf-8'))
             keyword_key = hash_value.hexdigest()
 
-            self.transport._dht.iterativeStore(self.transport,
+            self.transport.dht.iterativeStore(self.transport,
                                                 keyword_key,
                                                 json.dumps({'keyword_index_remove': contract_key}),
                                                 self.transport.guid)
@@ -444,11 +444,11 @@ class Market(object):
             if msg['notary'] is True:
                 self.log.info('Letting the network know you are now a notary')
                 data = json.dumps({'notary_index_add': self.transport.guid})
-                self.transport._dht.iterativeStore(self.transport, key, data, self.transport.guid)
+                self.transport.dht.iterativeStore(self.transport, key, data, self.transport.guid)
             else:
                 self.log.info('Letting the network know you are not a notary')
                 data = json.dumps({'notary_index_remove': self.transport.guid})
-                self.transport._dht.iterativeStore(self.transport, key, data, self.transport.guid)
+                self.transport.dht.iterativeStore(self.transport, key, data, self.transport.guid)
 
         # Update nickname
         self.transport.nickname = msg['nickname']

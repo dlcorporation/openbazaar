@@ -58,18 +58,18 @@ class CryptoPeerConnection(PeerConnection):
                     self._peer_alive = True
 
                     # Add this peer to active peers list
-                    for idx, peer in enumerate(self.transport._dht.activePeers):
+                    for idx, peer in enumerate(self.transport.dht.activePeers):
                         if peer.guid == self.guid or peer.address == self.address:
-                            self.transport._dht.activePeers[idx] = self
-                            self.transport._dht.add_peer(self.transport,
+                            self.transport.dht.activePeers[idx] = self
+                            self.transport.dht.add_peer(self.transport,
                                                           self.address,
                                                           self.pub,
                                                           self.guid,
                                                           self.nickname)
                             return
 
-                    self.transport._dht.activePeers.append(self)
-                    self.transport._dht._routingTable.addContact(self)
+                    self.transport.dht.activePeers.append(self)
+                    self.transport.dht._routingTable.addContact(self)
 
                     if handshake_cb is not None:
                         handshake_cb()
@@ -203,7 +203,7 @@ class CryptoTransportLayer(TransportLayer):
         # Set up
         self._setup_settings()
 
-        self._dht = DHT(self, self.market_id, self.settings, self.db)
+        self.dht = DHT(self, self.market_id, self.settings, self.db)
 
         # self._myself = ec.ECC(pubkey=self.pubkey.decode('hex'),
         #                       privkey=self.secret.decode('hex'),
@@ -247,7 +247,7 @@ class CryptoTransportLayer(TransportLayer):
                     self.stream.close()
                     self.listen(self.pubkey)
 
-                    self._dht._iterativeFind(self.guid, [], 'findNode')
+                    self.dht._iterativeFind(self.guid, [], 'findNode')
             else:
                 self.log.error('Could not get IP')
         except Exception as e:
@@ -312,7 +312,7 @@ class CryptoTransportLayer(TransportLayer):
         return self.guid
 
     def get_dht(self):
-        return self._dht
+        return self.dht
 
     def get_bitmessage_api(self):
         return self._bitmessage_api
@@ -337,13 +337,13 @@ class CryptoTransportLayer(TransportLayer):
         #     }))
 
     def _store_value(self, msg):
-        self._dht._on_storeValue(msg)
+        self.dht._on_storeValue(msg)
 
     def _find_node(self, msg):
-        self._dht.on_find_node(msg)
+        self.dht.on_find_node(msg)
 
     def _find_node_response(self, msg):
-        self._dht.on_findNodeResponse(self, msg)
+        self.dht.on_findNodeResponse(self, msg)
 
     def _setup_settings(self):
 
@@ -499,11 +499,11 @@ class CryptoTransportLayer(TransportLayer):
 
     def search_for_my_node(self):
         print 'Searching for myself'
-        self._dht._iterativeFind(self.guid, self._dht.knownNodes, 'findNode')
+        self.dht._iterativeFind(self.guid, self.dht.knownNodes, 'findNode')
 
     def connect_to_peers(self, known_peers):
         for known_peer in known_peers:
-            t = Thread(target=self._dht.add_peer, args=(self, known_peer,))
+            t = Thread(target=self.dht.add_peer, args=(self, known_peer,))
             t.start()
 
     def get_crypto_peer(self, guid=None, uri=None, pubkey=None, nickname=None,
@@ -520,7 +520,7 @@ class CryptoTransportLayer(TransportLayer):
     def addCryptoPeer(self, peer_to_add):
 
         foundOutdatedPeer = False
-        for idx, peer in enumerate(self._dht.activePeers):
+        for idx, peer in enumerate(self.dht.activePeers):
 
             if (peer.address, peer.guid, peer.pub) == (peer_to_add.address, peer_to_add.guid, peer_to_add.pub):
                 self.log.info('Found existing peer, not adding.')
@@ -536,7 +536,7 @@ class CryptoTransportLayer(TransportLayer):
 
         if not foundOutdatedPeer and peer_to_add.guid != self.guid:
             self.log.info('Adding crypto peer at %s' % peer_to_add.nickname)
-            self._dht.add_peer(self, peer_to_add.address, peer_to_add.pub, peer_to_add.guid, peer_to_add.nickname)
+            self.dht.add_peer(self, peer_to_add.address, peer_to_add.pub, peer_to_add.guid, peer_to_add.nickname)
 
     # Return data array with details from the crypto file
     # TODO: This needs to be protected better; potentially encrypted file or DB
@@ -558,7 +558,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
 
-        for uri, peer in self._peers.iteritems():
+        for uri, peer in self.peers.iteritems():
             if peer.pub:
                 peers[uri] = peer.pub.encode('hex')
         return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'), 'nickname': self.nickname,
@@ -582,7 +582,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def pubkey_exists(self, pub):
 
-        for uri, peer in self._peers.iteritems():
+        for uri, peer in self.peers.iteritems():
             self.log.info('PEER: %s Pub: %s' %
                            (peer.pub.encode('hex'), pub.encode('hex')))
             if peer.pub.encode('hex') == pub.encode('hex'):
@@ -597,10 +597,10 @@ class CryptoTransportLayer(TransportLayer):
 
         # Create the peer if public key is not already in the peer list
         # if not self.pubkey_exists(pub):
-        self._peers[uri] = CryptoPeerConnection(self, uri, pub, node_guid)
+        self.peers[uri] = CryptoPeerConnection(self, uri, pub, node_guid)
 
         # Call 'peer' callbacks on listeners
-        self.trigger_callbacks('peer', self._peers[uri])
+        self.trigger_callbacks('peer', self.peers[uri])
 
         # else:
         #    print 'Pub Key is already in peer list'
@@ -612,7 +612,7 @@ class CryptoTransportLayer(TransportLayer):
         # Directed message
         if send_to is not None:
 
-            peer = self._dht._routingTable.getContact(send_to)
+            peer = self.dht._routingTable.getContact(send_to)
             # peer = CryptoPeerConnection(msg['uri'])
             if peer:
                 self.log.debug('Directed Data (%s): %s' % (send_to, data))
@@ -626,9 +626,9 @@ class CryptoTransportLayer(TransportLayer):
         else:
             # FindKey and then send
 
-            for peer in self._dht.activePeers:
+            for peer in self.dht.activePeers:
                 try:
-                    peer = self._dht._routingTable.getContact(peer.guid)
+                    peer = self.dht._routingTable.getContact(peer.guid)
                     data['senderGUID'] = self.guid
                     data['pubkey'] = self.pubkey
 
@@ -642,7 +642,7 @@ class CryptoTransportLayer(TransportLayer):
                     traceback.print_exc()
 
     def send_enc(self, uri, msg):
-        peer = self._peers[uri]
+        peer = self.peers[uri]
         pub = peer.pub
 
         # Now send a hello message to the peer
@@ -654,7 +654,7 @@ class CryptoTransportLayer(TransportLayer):
             # Will send clear profile on initial if no pub
             self.log.info("Sending unencrypted [%s] message to %s"
                            % (msg['type'], uri))
-            self._peers[uri].send_raw(json.dumps(msg))
+            self.peers[uri].send_raw(json.dumps(msg))
 
     def _init_peer(self, msg):
 
@@ -668,7 +668,7 @@ class CryptoTransportLayer(TransportLayer):
             self.log.error("Invalid Peer: %s " % uri)
             return
 
-        if uri not in self._peers:
+        if uri not in self.peers:
             # Unknown peer
             self.log.info('Add New Peer: %s' % uri)
             self.create_peer(uri, pub, guid)
@@ -682,17 +682,17 @@ class CryptoTransportLayer(TransportLayer):
             # Known peer
             if pub:
                 # test if we have to update the pubkey
-                if not self._peers[uri].pub:
+                if not self.peers[uri].pub:
                     self.log.info("Setting public key for seed node")
-                    self._peers[uri].pub = pub.decode('hex')
-                    self.trigger_callbacks('peer', self._peers[uri])
+                    self.peers[uri].pub = pub.decode('hex')
+                    self.trigger_callbacks('peer', self.peers[uri])
 
-                if self._peers[uri].pub != pub.decode('hex'):
+                if self.peers[uri].pub != pub.decode('hex'):
                     self.log.info("Updating public key for node")
-                    self._peers[uri].nickname = nickname
-                    self._peers[uri].pub = pub.decode('hex')
+                    self.peers[uri].nickname = nickname
+                    self.peers[uri].pub = pub.decode('hex')
 
-                    self.trigger_callbacks('peer', self._peers[uri])
+                    self.trigger_callbacks('peer', self.peers[uri])
 
             if msg_type == 'hello_request':
                 # reply only if necessary
@@ -711,10 +711,10 @@ class CryptoTransportLayer(TransportLayer):
         guid = msg.get('senderGUID')
         nickname = msg.get('senderNick')[:120]
 
-        self._dht.add_known_node((ip, port, guid, nickname))
+        self.dht.add_known_node((ip, port, guid, nickname))
         self.log.info('ON MESSAGE %s' % msg)
 
-        self._dht.add_peer(self, uri, pubkey, guid, nickname)
+        self.dht.add_peer(self, uri, pubkey, guid, nickname)
 
         self.trigger_callbacks(msg['type'], msg)
 
