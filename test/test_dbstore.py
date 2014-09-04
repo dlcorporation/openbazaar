@@ -50,7 +50,7 @@ class TestDbOperations(unittest.TestCase):
         db.insertEntry("reviews", review_to_store)
 
         # Try to retrieve the record we just added based on the pubkey
-        retrieved_review = db.selectEntries("reviews", "pubkey = '123'")
+        retrieved_review = db.selectEntries("reviews", {"pubkey": "123"})
 
         # The above statement will return a list with all the
         # retrieved records as dictionaries
@@ -90,7 +90,7 @@ class TestDbOperations(unittest.TestCase):
         db.insertEntry("reviews", review_to_store)
 
         # Try to retrieve the record we just added based on the pubkey
-        retrieved_review = db.selectEntries("reviews", "pubkey = '321'")
+        retrieved_review = db.selectEntries("reviews", {"pubkey": "321"})
 
         # The above statement will return a list with all the
         # retrieved records as dictionaries
@@ -129,7 +129,7 @@ class TestDbOperations(unittest.TestCase):
         db = Obdb(TEST_DB_PATH)
 
         # Retrieve the record with pubkey equal to '123'
-        retrieved_review = db.selectEntries("reviews", "pubkey = '123'")[0]
+        retrieved_review = db.selectEntries("reviews", {"pubkey": "321"})[0]
 
         # Check that the rating is still '10' as expected
         self.assertEqual(retrieved_review["rating"], 10)
@@ -139,7 +139,7 @@ class TestDbOperations(unittest.TestCase):
         db.updateEntries("reviews", {"pubkey": "123"}, {"rating": 9})
 
         # Retrieve the same record again
-        retrieved_review = db.selectEntries("reviews", "pubkey = '123'")[0]
+        retrieved_review = db.selectEntries("reviews", {"pubkey": "123"})[0]
 
         # Test that the rating has been updated succesfully
         self.assertEqual(retrieved_review["rating"], 9)
@@ -153,7 +153,7 @@ class TestDbOperations(unittest.TestCase):
         db.deleteEntries("reviews", {"pubkey": "123"})
 
         # Looking for this record with will bring nothing
-        retrieved_review = db.selectEntries("reviews", "pubkey = '123'")
+        retrieved_review = db.selectEntries("reviews", {"pubkey": "123"})
         self.assertEqual(len(retrieved_review), 0)
 
 if __name__ == '__main__':
