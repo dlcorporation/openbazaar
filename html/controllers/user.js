@@ -327,7 +327,7 @@ angular.module('app')
                                 return notaries;
                             },
                             arbiters: function() {
-                                return arbiter;
+                                return arbiters;
                             },
                             listing: function() {
                                 return listing;
