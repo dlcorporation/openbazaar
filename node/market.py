@@ -489,7 +489,7 @@ class Market(object):
 
         self.log.info('Searching network for node: %s' % find_guid)
         msg = query_page(find_guid)
-        msg['uri'] = self.transport._uri
+        msg['uri'] = self.transport.uri
         msg['senderGUID'] = self.transport.guid
         msg['sin'] = self.transport.sin
         msg['pubkey'] = self.transport.pubkey
@@ -507,7 +507,7 @@ class Market(object):
                                                    nickname=peer['senderNick'])
         new_peer.start_handshake()
 
-        new_peer.send(proto_page(self.transport._uri,
+        new_peer.send(proto_page(self.transport.uri,
                                  self.transport.pubkey,
                                  self.transport.guid,
                                  settings['storeDescription'],

@@ -22,21 +22,21 @@ class PeerConnection(object):
         self.transport = transport
         self.address = address
         self.nickname = ""
-        self._responses_received = {}
+        self.responses_received = {}
         self.log = logging.getLogger(
             '[%s] %s' % (self.transport.market_id, self.__class__.__name__)
         )
-        self._ctx = zmq.Context()
+        self.ctx = zmq.Context()
 
     def create_socket(self):
         self.log.info('Creating Socket')
-        socket = self._ctx.socket(zmq.REQ)
+        socket = self.ctx.socket(zmq.REQ)
         socket.setsockopt(zmq.LINGER, 0)
         # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
         return socket
 
     def cleanup_context(self):
-        self._ctx.destroy()
+        self.ctx.destroy()
 
     def cleanup_socket(self):
         self._socket.close(0)
@@ -101,7 +101,7 @@ class TransportLayer(object):
             my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
         except socket.error:
             my_uri = 'tcp://%s:%s' % (self.ip, self.port)
-        self._uri = my_uri
+        self.uri = my_uri
 
         self.log = logging.getLogger(
             '[%s] %s' % (market_id, self.__class__.__name__)
@@ -128,7 +128,7 @@ class TransportLayer(object):
                 cb(*data)
 
     def get_profile(self):
-        return hello_request({'uri': self._uri})
+        return hello_request({'uri': self.uri})
 
     def listen(self, pubkey):
         self.log.info("Listening at: %s:%s" % (self.ip, self.port))
@@ -139,10 +139,10 @@ class TransportLayer(object):
             try:
                 # we are in local test mode so bind that socket on the
                 # specified IP
-                self.socket.bind(self._uri)
+                self.socket.bind(self.uri)
             except Exception as e:
                 error_message = "\n\nTransportLayer.listen() error!!!: "
-                error_message += "Could not bind socket to " + self._uri
+                error_message += "Could not bind socket to " + self.uri
                 error_message += " (" + str(e) + ")"
                 import platform
                 if platform.system() == 'Darwin':
@@ -245,7 +245,7 @@ class TransportLayer(object):
 
     def broadcast_goodbye(self):
         self.log.info("Broadcast goodbye")
-        msg = goodbye({'uri': self._uri})
+        msg = goodbye({'uri': self.uri})
         self.send(msg)
 
     def _on_message(self, msg):
@@ -277,7 +277,7 @@ class TransportLayer(object):
     def valid_peer_uri(self, uri):
         try:
             [self_protocol, self_addr, self_port] = \
-                network_util.uri_parts(self._uri)
+                network_util.uri_parts(self.uri)
             [other_protocol, other_addr, other_port] = \
                 network_util.uri_parts(uri)
         except RuntimeError:

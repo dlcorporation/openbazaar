@@ -126,7 +126,7 @@ class ProtocolHandler:
             'settings': settings,
             'guid': self.transport.guid,
             'sin': self.transport.sin,
-            'uri': self.transport._uri,
+            'uri': self.transport.uri,
             'countryCodes': countryCodes,
             # 'globalTrust': globalTrust
         }
@@ -730,7 +730,7 @@ class ProtocolHandler:
                 # })
 
     def client_shout(self, socket_handler, msg):
-        msg['uri'] = self.transport._uri
+        msg['uri'] = self.transport.uri
         msg['pubkey'] = self.transport.pubkey
         msg['senderGUID'] = self.transport.guid
         msg['senderNick'] = self.transport.nickname

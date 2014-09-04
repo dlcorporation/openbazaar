@@ -194,7 +194,7 @@ class DHT(object):
                     new_peer.send(
                         {"type": "findNodeResponse",
                          "senderGUID": self.transport.guid,
-                         "uri": self.transport._uri,
+                         "uri": self.transport.uri,
                          "pubkey": self.transport.pubkey,
                          "foundKey": self._dataStore[key],
                          "senderNick": self.transport.nickname,
@@ -208,7 +208,7 @@ class DHT(object):
                         {"type": "findNodeResponse",
                          "senderGUID": self.transport.guid,
                          "senderNick": self.transport.nickname,
-                         "uri": self.transport._uri,
+                         "uri": self.transport.uri,
                          "pubkey": self.transport.pubkey,
                          "foundNodes": contacts,
                          "findID": findID})
@@ -226,7 +226,7 @@ class DHT(object):
                         {"type": "findNodeResponse",
                          "senderGUID": self.transport.guid,
                          "senderNick": self.transport.nickname,
-                         "uri": self.transport._uri,
+                         "uri": self.transport.uri,
                          "pubkey": self.transport.pubkey,
                          "foundNode": foundNode,
                          "findID": findID})
@@ -239,7 +239,7 @@ class DHT(object):
                         {"type": "findNodeResponse",
                          "senderGUID": self.transport.guid,
                          "senderNick": self.transport.nickname,
-                         "uri": self.transport._uri,
+                         "uri": self.transport.uri,
                          "pubkey": self.transport.pubkey,
                          "foundNodes": contacts,
                          "findID": findID})
@@ -332,7 +332,7 @@ class DHT(object):
                     for node in msg['foundNodes']:
                         self.log.info('FOUND NODE: %s' % node)
                         if node[0] != self.transport.guid and node[2] != self.transport.pubkey \
-                                and node[1] != self.transport._uri:
+                                and node[1] != self.transport.uri:
                             self.log.info('Found it %s %s' % (node[0], self.transport.guid))
                             self.extendShortlist(transport, msg['findID'], [node])
 
@@ -830,7 +830,7 @@ class DHT(object):
                     if contact:
 
                         msg = {"type": "findNode",
-                               "uri": contact.transport._uri,
+                               "uri": contact.transport.uri,
                                "senderGUID": self.transport.guid,
                                "key": new_search.key,
                                "findValue": findValue,

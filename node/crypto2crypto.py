@@ -76,7 +76,7 @@ class CryptoPeerConnection(PeerConnection):
 
             self.send_raw(json.dumps({'type': 'hello',
                                       'pubkey': self.transport.pubkey,
-                                      'uri': self.transport._uri,
+                                      'uri': self.transport.uri,
                                       'senderGUID': self.transport.guid,
                                       'senderNick': self.transport.nickname}), cb)
 
@@ -136,7 +136,7 @@ class CryptoPeerConnection(PeerConnection):
             # Include guid
             data['guid'] = self.guid
             data['senderGUID'] = self.transport.guid
-            data['uri'] = self.transport._uri
+            data['uri'] = self.transport.uri
             data['pubkey'] = self.transport.pubkey
             data['senderNick'] = self.transport.nickname
 
@@ -195,7 +195,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self.market_id = market_id
         self.nick_mapping = {}
-        self._uri = my_uri
+        self.uri = my_uri
         self.ip = my_ip
         self.nickname = ""
         self._dev_mode = dev_mode
@@ -243,7 +243,7 @@ class CryptoTransportLayer(TransportLayer):
                         my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
                     except socket.error:
                         my_uri = 'tcp://%s:%s' % (self.ip, self.port)
-                    self._uri = my_uri
+                    self.uri = my_uri
                     self.stream.close()
                     self.listen(self.pubkey)
 
@@ -331,7 +331,7 @@ class CryptoTransportLayer(TransportLayer):
         # pinger.send_raw(json.dumps(
         #     {"type": "hello_response",
         #      "senderGUID": self.guid,
-        #      "uri": self._uri,
+        #      "uri": self.uri,
         #      "senderNick": self.nickname,
         #      "pubkey": self.pubkey,
         #     }))
@@ -561,7 +561,7 @@ class CryptoTransportLayer(TransportLayer):
         for uri, peer in self.peers.iteritems():
             if peer.pub:
                 peers[uri] = peer.pub.encode('hex')
-        return {'uri': self._uri, 'pub': self._myself.get_pubkey().encode('hex'), 'nickname': self.nickname,
+        return {'uri': self.uri, 'pub': self._myself.get_pubkey().encode('hex'), 'nickname': self.nickname,
                 'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
