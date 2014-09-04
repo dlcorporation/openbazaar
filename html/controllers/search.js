@@ -41,7 +41,7 @@ angular.module('app')
 
             $scope.searchNetwork = function() {
 
-                <!--
+                /*
                 var query = {
                     'type': 'search',
                     'key': url_json.searchterm
@@ -53,7 +53,7 @@ angular.module('app')
                 Connection.send('search', query)
                 $scope.search = ""
                 $scope.showDashboardPanel('search');
-                -->
+                */
             }
 
             $scope.search_results = [];
