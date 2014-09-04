@@ -18,17 +18,17 @@ angular.module('app')
              * Establish message handlers
              * @msg - message from websocket to pass on to handler
              */
-            Connection.$on('load_page', function(e, msg){ $scope.load_page(msg) });
-            Connection.$on('store_contracts', function(e, msg){ $scope.parse_store_listings(msg) });
-            Connection.$on('store_contract', function(e, msg){ $scope.parse_store_contract(msg) });
-            Connection.$on('page', function(e, msg){ $scope.parse_page(msg) });
-            Connection.$on('store_products', function(e, msg){ $scope.parse_store_products(msg) });
-            Connection.$on('new_listing', function(e, msg){ $scope.parse_new_listing(msg) });
-            Connection.$on('no_listings_found', function(e, msg){ $scope.handle_no_listings() });
-            Connection.$on('reputation_pledge_update', function(e, msg){ $scope.parse_reputation_pledge_update(msg) });
+            Connection.$on('load_page', function(e, msg){ $scope.load_page(msg); });
+            Connection.$on('store_contracts', function(e, msg){ $scope.parse_store_listings(msg); });
+            Connection.$on('store_contract', function(e, msg){ $scope.parse_store_contract(msg); });
+            Connection.$on('page', function(e, msg){ $scope.parse_page(msg); });
+            Connection.$on('store_products', function(e, msg){ $scope.parse_store_products(msg); });
+            Connection.$on('new_listing', function(e, msg){ $scope.parse_new_listing(msg); });
+            Connection.$on('no_listings_found', function(e, msg){ $scope.handle_no_listings(); });
+            Connection.$on('reputation_pledge_update', function(e, msg){ $scope.parse_reputation_pledge_update(msg); });
 
             $scope.load_page = function(msg) {
-                console.log($scope.path)
+                console.log($scope.path);
 
                 switch($scope.path) {
 
@@ -43,12 +43,12 @@ angular.module('app')
                         $scope.showStorePanel('storeServices');
                         break;
                     default:
-                        $scope.queryShop($scope.guid)
+                        $scope.queryShop($scope.guid);
                         $scope.showStorePanel('storeInfo');
                 }
 
 
-            }
+            };
 
             $scope.parse_reputation_pledge_update = function(msg) {
                 console.log('test', $scope.page);
@@ -56,7 +56,7 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
 
             /**
@@ -72,25 +72,25 @@ angular.module('app')
                 var query = {
                     'type': 'query_page',
                     'findGUID': guid
-                }
+                };
 
-                $scope.page = null
-                Connection.send('query_page', query)
+                $scope.page = null;
+                Connection.send('query_page', query);
 
-            }
+            };
 
             $scope.parse_page = function(msg) {
 
-                $scope.page_loading = null
-                console.log('Received a page for: ', msg)
+                $scope.page_loading = null;
+                console.log('Received a page for: ', msg);
 
                 msg.senderNick = msg.senderNick.substring(0, 120);
                 msg.text = msg.text.substring(0, 2048);
 
                 if (msg.senderGUID != $scope.awaitingShop)
-                    return
+                    return;
                 if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
-                    $scope.reviews[msg.pubkey] = []
+                    $scope.reviews[msg.pubkey] = [];
                 }
 
                 $.each($scope.settings.notaries, function(idx, val) {
@@ -100,19 +100,19 @@ angular.module('app')
                 });
 
                 if (!$scope.dashboard) {
-                    $scope.currentReviews = $scope.reviews[msg.pubkey]
-                    $scope.page = msg
+                    $scope.currentReviews = $scope.reviews[msg.pubkey];
+                    $scope.page = msg;
                     $scope.page.reputation_pledge = 0;
 
                     // Write in store content into the HTML
-                    var contentDiv = document.getElementById('page-content')
+                    var contentDiv = document.getElementById('page-content');
                     contentDiv.innerHTML = msg.text;
 
                     if (!$scope.$$phase) {
                         $scope.$apply();
                     }
                 }
-            }
+            };
 
             // A listing has shown up from the network
             $scope.store_listings = [];
@@ -122,7 +122,7 @@ angular.module('app')
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
                 contract_data.nickname = msg.nickname;
-                $scope.store_listings.push(contract_data)
+                $scope.store_listings.push(contract_data);
                 $scope.store_listings = jQuery.unique($scope.store_listings);
                 $.each($scope.store_listings, function(index, contract) {
                     if (jQuery.isEmptyObject(contract.Contract.item_images)) {
@@ -131,11 +131,11 @@ angular.module('app')
                     }
                 });
                 $('#listing-loader').hide();
-                console.log('New Listing', $scope.store_listings)
+                console.log('New Listing', $scope.store_listings);
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             $scope.no_listings = null;
             $scope.handle_no_listings = function() {
@@ -144,7 +144,7 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             $scope.compose_message = function(size, myself, address, subject) {
                 $scope.$broadcast("compose_message", {
@@ -157,10 +157,10 @@ angular.module('app')
 
             $scope.parse_store_contract = function(msg) {
 
-                contract = msg.contract
-                console.log(contract)
+                contract = msg.contract;
+                console.log(contract);
 
-                $scope.store_listings.push(contract)
+                $scope.store_listings.push(contract);
 
                 $scope.store_listings = jQuery.unique($scope.store_listings);
                 $.each($scope.store_listings, function(index, contract) {
@@ -171,20 +171,20 @@ angular.module('app')
 
 
                 $('#listing-loader').hide();
-                console.log('New Listing', $scope.store_listings)
+                console.log('New Listing', $scope.store_listings);
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             $scope.parse_store_listings = function(msg) {
 
-                contracts = msg.products
+                contracts = msg.product;
 
-                $scope.store_listings = []
+                $scope.store_listings = [];
                 $.each(contracts, function(key, value) {
-                    console.log('value', value)
-                    $scope.store_listings.push(value.contract_body)
+                    console.log('value', value);
+                    $scope.store_listings.push(value.contract_body);
                 });
 
                 //$scope.store_listings = jQuery.unique($scope.store_listings);
@@ -196,16 +196,16 @@ angular.module('app')
 
 
                 $('#listing-loader').hide();
-                console.log('New Listing', $scope.store_listings)
+                console.log('New Listing', $scope.store_listings);
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             $scope.store_products = {};
             $scope.parse_store_products = function(msg) {
 
-                console.log(msg)
+                console.log(msg);
                 $scope.store_products = msg.products;
 
 
@@ -217,13 +217,13 @@ angular.module('app')
                 //
                 // })
 
-            }
+            };
             $scope.parse_listing_results = function(msg) {
                 $scope.store_products = msg.contracts;
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             function resetStorePanels() {
                 $scope.storeInfoPanel = false;
@@ -262,7 +262,7 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             // Query for product listings from this store
             $scope.queryStoreProducts = function(storeID) {
@@ -272,10 +272,10 @@ angular.module('app')
                 var query = {
                     'type': 'query_store_products',
                     'key': storeID
-                }
+                };
                 Connection.send('query_store_products', query);
 
-            }
+            };
 
             $scope.addNotary = function(guid, nickname) {
 
@@ -283,7 +283,7 @@ angular.module('app')
                 //    alert('Incorrect format for GUID');
                 //    return;
                 //}
-                $scope.page.isTrustedNotary = true
+                $scope.page.isTrustedNotary = true;
 
                 Connection.send('add_trusted_notary', { 'type': 'add_trusted_notary',
                     'guid': guid,
@@ -297,7 +297,7 @@ angular.module('app')
                     $scope.$apply();
                 }
 
-            }
+            };
 
             $scope.BuyItemCtrl = function($scope, $modal, $log) {
 
@@ -315,25 +315,25 @@ angular.module('app')
                         controller: $scope.BuyItemInstanceCtrl,
                         resolve: {
                             merchantPubkey: function() {
-                                return merchantPubkey
+                                return merchantPubkey;
                             },
                             myself: function() {
-                                return myself
+                                return myself;
                             },
                             btc_pubkey: function() {
-                                return btc_pubkey
+                                return btc_pubkey;
                             },
                             notaries: function() {
-                                return notaries
+                                return notarie;
                             },
                             arbiters: function() {
-                                return arbiters
+                                return arbiter;
                             },
                             listing: function() {
-                                return listing
+                                return listing;
                             },
                             scope: function() {
-                                return $scope
+                                return $scope;
                             }
                         },
                         size: size
@@ -346,7 +346,7 @@ angular.module('app')
                         $('#pill-orders').addClass('active').siblings().removeClass('active').blur();
                         $("#orderSuccessAlert").alert();
                         window.setTimeout(function() {
-                            $("#orderSuccessAlert").alert('close')
+                            $("#orderSuccessAlert").alert('close');
                         }, 5000);
 
                         if (!$scope.$$phase) {
@@ -370,7 +370,7 @@ angular.module('app')
                 $scope.myself = myself;
                 $scope.merchantPubkey = merchantPubkey;
                 $scope.productTitle = listing.contract_body.Contract.item_title;
-                $scope.productPrice = (listing.contract_body.Contract.item_price != "") ? +listing.contract_body.Contract.item_price : 0;
+                $scope.productPrice = (listing.contract_body.Contract.item_price !== "") ? +listing.contract_body.Contract.item_price : 0;
                 $scope.productDescription = listing.contract_body.Contract.item_desc;
                 $scope.productImageData = listing.contract_body.Contract.item_images;
                 $scope.shippingPrice = (listing.contract_body.Contract.item_delivery.hasOwnProperty('shipping_price')) ? listing.contract_body.Contract.item_delivery.shipping_price : 0;
@@ -380,7 +380,7 @@ angular.module('app')
                 $scope.guid = listing.contract_body.Seller.seller_GUID;
                 $scope.arbiters = arbiters;
 
-                $scope.notaries = notaries
+                $scope.notaries = notaries;
 
                 $scope.key = listing.key;
 
@@ -399,23 +399,23 @@ angular.module('app')
 
                 $scope.updateTotal = function() {
                     var newPrice = $('#itemQuantity').val() * $scope.productPrice;
-                    newPrice = Math.round(newPrice * 100000) / 100000
+                    newPrice = Math.round(newPrice * 100000) / 100000;
                     $('#totalPrice').html(+(parseFloat(newPrice) + parseFloat($scope.shippingPrice)).toPrecision(8));
-                }
+                };
 
                 $scope.gotoStep2 = function() {
                     $scope.order.step2 = 1;
                     if (!$scope.$$phase) {
                         $scope.$apply();
                     }
-                }
+                };
 
                 $scope.gotoStep1 = function() {
                     $scope.order.step2 = '';
                     if (!$scope.$$phase) {
                         $scope.$apply();
                     }
-                }
+                };
 
                 $scope.order = {
                     message: '',
@@ -426,7 +426,7 @@ angular.module('app')
                     productQuantity: 1,
                     rawContract: listing.signed_contract_body,
                     btc_pubkey: btc_pubkey
-                }
+                };
                 $scope.order.notary = ($scope.notaries.length > 0) ? $scope.notaries[0].guid : "";
                 $scope.order.arbiter = $scope.arbiters[0];
 
@@ -449,19 +449,19 @@ angular.module('app')
                         'notary': $scope.order.notary,
                         'btc_pubkey': $scope.order.btc_pubkey,
                         'arbiter': $scope.order.arbiter
-                    }
+                    };
                     console.log(newOrder);
                     Connection.send('order', newOrder);
                     $scope.sentOrder = true;
 
 
 
-                }
+                };
 
                 $scope.closeConfirmation = function() {
                     $modalInstance.close();
                     window.location = '#/orders/purchases';
-                }
+                };
 
 
 

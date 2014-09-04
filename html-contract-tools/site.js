@@ -146,7 +146,7 @@ function form_gen_create_list(){
         //Add teh link using this element details, and gettin the type
         form_gen_add_link_line(o);
     });
-};
+}
 
 
 
@@ -266,11 +266,11 @@ function gen_parse_values(v){
     
     //get the type from the drop down box
     var type=$("#option_contract_format").val();
+    var resultData = "";
     
     //For XML Data
     if(type==="XML"){
         //Prepare a var for holding data
-        var resultData = "";
         $.each(v,function( index,value ) {
                         resultData = resultData + "<"+index+">" + value + "</"+index+">\r\n";
         });
@@ -283,7 +283,6 @@ function gen_parse_values(v){
     
     //Else parse in HTML type format
     else{
-        var resultData = "";
         $.each(v,function( index,value ) {
                         resultData = resultData + index + " : " + value + "\r\n";
         });
@@ -301,7 +300,7 @@ function gen_check_con(){
     var required_inputs_check = gen_check_inputs_required();
     
     //Prepare an array for storing the result of checking all values
-    var valid_checks = new Array();
+    var valid_checks = [];
     //for each input that is present, Run the validation check
     $("#form_gen_fields").find('input[name="gen_input_field[]"]').each(function(){
         //Change the form appearance
@@ -341,7 +340,9 @@ function gen_form_data_change(obj){
     
     //log an entry so we can see what is happening
     //If the result is false, something failed spectaculy,
-    if(validation===false)alert("Error validating Data, please make sure there are no modifications to the code")
+    if (validation===false){
+        alert("Error validating Data, please make sure there are no modifications to the code");
+    }
     else if (validation===true){
         gen_form_input_msg(obj,'','success');
         return true;
@@ -352,9 +353,7 @@ function gen_form_data_change(obj){
         return validation.join("<br>");
     }
     //else alert that something went wrong, 
-    else{
-        alert("something went wrong validating the data")
-    }
+    alert("something went wrong validating the data");
 }
 
 
@@ -387,6 +386,7 @@ function gen_form_input_msg(element,msgTxt,status){
 function data_validation(inputObj){
     //Get the element details
     var el = form_gen_get_element($(inputObj).attr("id"));
+    var re;
     
     //if el is false, return false
     if(el===false || el===undefined)return false;
@@ -406,7 +406,7 @@ function data_validation(inputObj){
     var val = $(inputObj).val();
     
     //prepare a var for storing any error messages
-    var errors = new Array();
+    var errors = [];
     
     //min_len:26
     //max_len:33
@@ -439,13 +439,13 @@ function data_validation(inputObj){
    
     //If element regex is set
     if(el.regex_validation_rule !==undefined){
-        var re = new RegExp(el.regex_validation_rule,'i');
+        re = new RegExp(el.regex_validation_rule,'i');
         
         if(re.test(val)===false)errors.push(el.regex_validation_msg.replace("~field~",el.name)+". Invalid match " + val + "\r\n");
     }
     //else if the type regex is set
     if(type.regex_validation_rule !==undefined){
-        var re = new RegExp(type.regex_validation_rule,'i');
+        re = new RegExp(type.regex_validation_rule,'i');
         
         if(re.test(val)===false)errors.push(type.regex_validation_msg.replace("~field~",el.name)+"  Invalid match " + val + "\r\n");
     }
@@ -498,18 +498,19 @@ function gen_sign_con(){
 
 function gen_check_inputs_required(){
     //Prepare a var for storing messages in 
-    var msgs = new Array();
+    var msgs = [];
     
     //For each available input field,
      $.each(form_gen_elements,function(c,el){
-         var dat = $("#"+el.dataID).html
+         var dat = $("#"+el.dataID).html;
          
          //If the field does not exist in the html form
-         if(dat===undefined)
-             if(el.required===true)
+         if(dat===undefined) {
+             if(el.required===true) {
                 //add the error to the array
                 msgs.push("You must include the " + el.name + " field in your contract");
-         
+             }
+         }
     });
     //If the msgs string is set, return it, 
     if(msgs.length >= 1)return msgs;
