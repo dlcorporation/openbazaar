@@ -32,6 +32,7 @@ class ProtocolHandler:
             ('node_page', self.on_node_page),
             ('listing_results', self.on_listing_results),
             ('listing_result', self.on_listing_result),
+            ('no_listing_result', self.on_no_listing_result),
             ('release_funds_tx', self.on_release_funds_tx),
             ('all', self.on_node_message)
         ])
@@ -48,6 +49,7 @@ class ProtocolHandler:
             "shout": self.client_shout,
             "get_notaries": self.client_get_notaries,
             "add_trusted_notary": self.client_add_trusted_notary,
+            "add_node": self.client_add_guid,
             "remove_trusted_notary": self.client_remove_trusted_notary,
             "query_store_products": self.client_query_store_products,
             "check_order_count": self.client_check_order_count,
@@ -168,6 +170,12 @@ class ProtocolHandler:
             "products": msg['contracts']
         })
 
+    def on_no_listing_result(self, msg):
+        self._log.debug('No listings found')
+        self.send_to_client(None, {
+            "type": "no_listings_found"
+        })
+
     def on_listing_result(self, msg):
         self._log.debug('Found result %s' % msg)
         self.send_to_client(None, {
@@ -182,6 +190,14 @@ class ProtocolHandler:
         self._log.info('Adding trusted notary %s' % msg)
         self._market.add_trusted_notary(msg.get('guid'), msg.get('nickname'))
         # self.send_to_client(None, {"type": "load_page"})
+
+    def client_add_guid(self, socket_handler, msg):
+        self._log.info('Adding node by guid %s' % msg)
+
+        def cb(msg):
+            self.get_peers()
+
+        self._transport._dht.iterativeFindNode(msg.get('guid'), cb)
 
     def client_remove_trusted_notary(self, socket_handler, msg):
         self._log.info('Removing trusted notary %s' % msg)
@@ -240,16 +256,6 @@ class ProtocolHandler:
 
         def cb(msg, query_id):
             self._log.info('Received a query page response: %s' % query_id)
-
-            # try:
-            #     self._timeouts.remove(query_id)
-            # except ValueError:
-            #     self._log.error('Cannot find that query id')
-            # if not success:
-            #     self.send_to_client(None, {
-            #         "type": "peers",
-            #         "peers": self.get_peers()
-            #     })
 
         self._market.query_page(
             findGUID,
@@ -685,9 +691,6 @@ class ProtocolHandler:
             signature = results['signature']
             self._log.info('Signature: %s' % signature)
 
-            # TODO: Validate signature of listings matches data
-            # self._transport._myself.
-
             # Go get listing metadata and then send it to the GUI
             for contract in contracts:
                 self._transport._dht.iterativeFindValue(
@@ -696,11 +699,6 @@ class ProtocolHandler:
                         msg, key
                     )
                 )
-
-                # self.send_to_client(None, {
-                #     "type": "store_products",
-                #     "products": listings
-                # })
 
     def on_find_products(self, results):
 
@@ -913,7 +911,7 @@ class ProtocolHandler:
             if hasattr(peer, '_address'):
                 peer_item = {'uri': peer._address}
                 if peer._pub:
-                    peer_item['pubkey'] = peer._pub.encode('hex')
+                    peer_item['pubkey'] = peer._pub
                 else:
                     peer_item['pubkey'] = 'unknown'
 

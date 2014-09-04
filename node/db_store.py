@@ -50,6 +50,11 @@ class Obdb():
                 d[col[0]] = row[idx]
         return d
 
+    def _beforeStoring(self, value):
+        """ Method called before executing SQL identifiers.
+        """
+        return unicode(value)
+
     def getOrCreate(self, table, where_clause, data_dict):
         """ This method attempts to grab the record first. If it fails to find it,
         it will create it.
@@ -72,32 +77,34 @@ class Obdb():
         with self.con:
             cur = self.con.cursor()
             first = True
+            sets = ()
+            wheres = ()
             for key, value in set_dict.iteritems():
-                key = unicode(key).replace("'", "''")
-
                 if type(value) == bool:
                     value = bool(value)
-                else:
-                    value = unicode(value).replace("'", "''")
+                key = self._beforeStoring(key)
+                value = self._beforeStoring(value)
 
+                sets = sets + (value, )
                 if first:
-                    set_part = "%s = '%s'" % (key, value)
+                    set_part = "%s = ?" % (key)
                     first = False
                 else:
-                    set_part = set_part + ", %s = '%s'" % (key, value)
+                    set_part = set_part + ", %s = ?" % (key)
             first = True
             for key, value in where_dict.iteritems():
-                key = unicode(key).replace("'", "''")
-                value = unicode(value).replace("'", "''")
+                key = self._beforeStoring(key)
+                value = self._beforeStoring(value)
+                wheres = wheres + (value, )
                 if first:
-                    where_part = "%s = '%s'" % (key, value)
+                    where_part = "%s = ?" % (key)
                     first = False
                 else:
-                    where_part = where_part + "%s %s = '%s'" % (operator, key, value)
+                    where_part = where_part + "%s %s = ?" % (operator, key)
             query = "UPDATE %s SET %s WHERE %s" \
                     % (table, set_part, where_part)
             self._log.debug('query: %s' % query)
-            cur.execute(query)
+            cur.execute(query, sets + wheres)
         self._disconnectFromDb()
 
     def insertEntry(self, table, update_dict):
@@ -109,24 +116,24 @@ class Obdb():
         with self.con:
             cur = self.con.cursor()
             first = True
+            sets = ()
             for key, value in update_dict.iteritems():
-                key = unicode(key).replace("'", "''")
 
                 if type(value) == bool:
                     value = bool(value)
-                else:
-                    value = unicode(value).replace("'", "''")
-
+                key = self._beforeStoring(key)
+                value = self._beforeStoring(value)
+                sets = sets + (value,)
                 if first:
                     updatefield_part = "%s" % (key)
-                    setfield_part = "'%s'" % (value)
+                    setfield_part = "?"
                     first = False
                 else:
                     updatefield_part = updatefield_part + ", %s" % (key)
-                    setfield_part = setfield_part + ", '%s'" % (value)
+                    setfield_part = setfield_part + ", ?"
             query = "INSERT INTO %s(%s) VALUES(%s)"  \
                     % (table, updatefield_part, setfield_part)
-            cur.execute(query)
+            cur.execute(query, sets)
             lastrowid = cur.lastrowid
             self._log.debug("query: %s " % query)
         self._disconnectFromDb()
@@ -143,7 +150,6 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-
             if limit is not None and limit_offset is None:
                 limit_clause = "LIMIT %s" % limit
             elif limit is not None and limit_offset is not None:
@@ -179,18 +185,20 @@ class Obdb():
         with self.con:
             cur = self.con.cursor()
             first = True
+            dels = ()
             for key, value in where_dict.iteritems():
-                key = unicode(key).replace("'", "''")
-                value = unicode(value).replace("'", "''")
+                key = self._beforeStoring(key)
+                value = self._beforeStoring(value)
+                dels = dels + (value, )
                 if first:
-                    where_part = "%s = '%s'" % (key, value)
+                    where_part = "%s = ?" % (key)
                     first = False
                 else:
-                    where_part = where_part + "%s %s = '%s'" % (operator, key, value)
+                    where_part = where_part + "%s %s = ?" % (operator, key)
             query = "DELETE FROM %s WHERE %s" \
                     % (table, where_part)
             self._log.debug('Query: %s' % query)
-            cur.execute(query)
+            cur.execute(query, dels)
         self._disconnectFromDb()
 
     def numEntries(self, table, where_clause="'1'='1'"):

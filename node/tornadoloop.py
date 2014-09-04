@@ -1,4 +1,3 @@
-import sys
 import argparse
 import tornado.web
 
@@ -16,6 +15,7 @@ from twisted.internet import reactor
 from util import open_default_webbrowser
 from network_util import get_random_free_tcp_port
 import upnp
+import os
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -100,9 +100,13 @@ class MarketApplication(tornado.web.Application):
                result_udp_p2p_mapping
 
     def cleanup_upnp_port_mapping(self):
-        if self.upnp_mapper is not None:
-            print "Cleaning UPnP Port Mapping -> ", \
-                self.upnp_mapper.clean_my_mappings()
+        try:
+            if self.upnp_mapper is not None:
+                print "Cleaning UPnP Port Mapping -> ", \
+                    self.upnp_mapper.clean_my_mappings()
+        except AttributeError:
+            print "[openbazaar] MarketApplication.clean_upnp_port_mapping() failed!"
+            pass
 
 
 def start_node(my_market_ip,
@@ -119,7 +123,8 @@ def start_node(my_market_ip,
                dev_mode=False,
                log_level=None,
                database='db/ob.db',
-               disable_upnp=False):
+               disable_upnp=False,
+               disable_open_browser=False):
 
     logging.basicConfig(level=int(log_level),
                         format='%(asctime)s - %(name)s -  \
@@ -166,7 +171,9 @@ def start_node(my_market_ip,
                      (http_ip, http_port))
 
     print "Started OpenBazaar Web App at http://%s:%s" % (http_ip, http_port)
-    open_default_webbrowser('http://%s:%s' % (http_ip, http_port))
+
+    if disable_open_browser == "0":
+        open_default_webbrowser('http://%s:%s' % (http_ip, http_port))
 
     # handle shutdown
     def shutdown(x, y):
@@ -181,7 +188,7 @@ def start_node(my_market_ip,
         # we should implement the shutdown of the dht connections, db connection, bitmessage connection
         # maybe this was meant to do all that but nobody ever got around it.
         # application.market.p.kill()
-        sys.exit(0)
+        os._exit(0)
     try:
         signal.signal(signal.SIGTERM, shutdown)
     except ValueError:
@@ -224,6 +231,9 @@ if __name__ == "__main__":
                         default=10, help="Numeric value for logging level")
     parser.add_argument("--disable_upnp",
                         action='store_true')
+    parser.add_argument("--disable_open_browser",
+                        default=False)
+
     args = parser.parse_args()
     start_node(args.my_market_ip,
                args.my_market_port,
@@ -239,4 +249,5 @@ if __name__ == "__main__":
                args.dev_mode,
                args.log_level,
                args.database,
-               args.disable_upnp)
+               args.disable_upnp,
+               args.disable_open_browser)

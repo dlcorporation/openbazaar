@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ui.bootstrap', 'ngRoute'])
+var app = angular.module('app', ['ui.bootstrap', 'ngRoute']);
 
 app.config(['$routeProvider',
   function($routeProvider) {
@@ -78,12 +78,12 @@ angular.module('app').directive('identicon', function() {
                 // Watch for hash changes
             scope.$watch('hash', function() {
                 if (scope.hash) {
-                    var tohash = scope.hash.substring(32, 64)
+                    var tohash = scope.hash.substring(32, 64);
                     createFromHex(tohash);
                 }
-            })
+            });
         }
-    }
+    };
 });
 
 app.directive('numberOnlyInput', function () {

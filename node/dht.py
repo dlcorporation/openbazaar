@@ -96,7 +96,7 @@ class DHT(object):
 
             for idx, peer in enumerate(self._activePeers):
 
-                active_peer_tuple = (peer._pub, peer._address, peer._guid, peer._nickname)
+                active_peer_tuple = (peer._address, peer._pub, peer._guid, peer._nickname)
 
                 if active_peer_tuple == peer_tuple:
 
@@ -702,7 +702,7 @@ class DHT(object):
         @rtype: twisted.internet.defer.Deferred
         """
         self._log.info('Looking for node at: %s' % key)
-        self._iterativeFind(key, callback=callback)
+        self._iterativeFind(key, [], callback=callback)
 
     def _iterativeFind(self, key, startupShortlist=None, call='findNode', callback=None):
         """
