@@ -1,7 +1,8 @@
-#
-# 8050 : logstash lumberjack port
+# 
 # 9200 : elasticsearch http api
-# 80 : kibana http 
+# 80 : nginx/kibana http 
+# 25826 : collectd udp port
+# 9300 : logstash node port
 #
 elk:
   image: obtest/elk
@@ -10,7 +11,6 @@ elk:
     - "9280:80"
     - "9200:9200"
   expose:
-    - "8050"
     - "9200"
     - "9300"
     - "80"

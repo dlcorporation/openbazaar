@@ -23,23 +23,26 @@ RUN apt-get install -y alien libssl-dev wget
 ADD requirements.txt /opt/ob/requirements.txt
 RUN pip install -r /opt/ob/requirements.txt
 #
-# collectd conf and run script
+# collectd install
 #
 RUN apt-get install -y collectd
 ENV CTDCONF /opt/collectd/collectd.conf
-ADD collectd.conf $CTDCONF
 ENV CTD_RUN /etc/service/collectd/run
-ADD collectd.sh $CTD_RUN
-RUN chmod +x $CTD_RUN
 #
-# logstash 
+# logstash install
 #
 # Download version 1.4.2 of logstash
 RUN wget -qO- https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz | tar xvz -C /tmp && \
     mv /tmp/logstash-* /opt/logstash
-
 ENV LS_CONF /opt/logstash.conf
 ENV LS_RUN /etc/service/logstash/run
+#
+# conf inject
+#
+ADD collectd.conf $CTDCONF
+ADD collectd.sh $CTD_RUN
+RUN chmod +x $CTD_RUN
+
 ADD logstash.sh $LS_RUN
 RUN chmod +x $LS_RUN
 
