@@ -12,24 +12,38 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get install -yq curl wget git golang python
 RUN apt-get install -yq openjdk-7-jre-headless
+
+# 
+# prebuild for OB
+#
+RUN apt-get -y update
+RUN apt-get install -y python-pip build-essential python-zmq rng-tools
+RUN apt-get install -y python-dev g++ libjpeg-dev zlib1g-dev sqlite3 openssl
+RUN apt-get install -y alien libssl-dev wget
+ADD requirements.txt /opt/ob/requirements.txt
+RUN pip install -r /opt/ob/requirements.txt
+#
+# collectd conf and run script
+#
 RUN apt-get install -y collectd
-
-# build logstash-forwarder
-ENV LFSCONF /opt/logstash-forwarder/lfs.json
-RUN mkdir -p /opt/logstash-forwarder/bin/
-RUN git clone git://github.com/elasticsearch/logstash-forwarder.git /tmp/logstash-forwarder
-RUN cd /tmp/logstash-forwarder && go build && \
-    mv logstash-forwarder /opt/logstash-forwarder/bin/
-
 ENV CTDCONF /opt/collectd/collectd.conf
 ADD collectd.conf $CTDCONF
 ENV CTD_RUN /etc/service/collectd/run
 ADD collectd.sh $CTD_RUN
 RUN chmod +x $CTD_RUN
+#
+# logstash 
+#
+# Download version 1.4.2 of logstash
+RUN wget -qO- https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz | tar xvz -C /tmp && \
+    mv /tmp/logstash-* /opt/logstash
 
-ENV LFS_RUN /etc/service/lfs/run
-ADD lfs.sh $LFS_RUN
-RUN chmod +x $LFS_RUN
+ENV LS_CONF /opt/logstash.conf
+ENV LS_RUN /etc/service/logstash/run
+ADD logstash.sh $LS_RUN
+RUN chmod +x $LS_RUN
+
+ENV JAVA_HOME  /usr/lib/jvm/java-7-openjdk-amd64/
 
 CMD ["/sbin/my_init"]
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

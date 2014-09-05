@@ -12,11 +12,13 @@ RUN cd /bazaar && pip install -r requirements.txt &&\
 
 ENV RUNSH_ARGS -q 8888 -p 12345
 
-ADD lfs.json $LFSCONF
+ADD logstash.conf $LS_CONF
 
 ENV OB_RUN /etc/service/openbazaar/run
 ADD ob.sh $OB_RUN
 RUN chmod +x $OB_RUN
+
+ADD ob.pattern /opt/logstash/patterns/ob
 
 CMD ["/sbin/my_init"]
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
