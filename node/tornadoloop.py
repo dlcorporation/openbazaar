@@ -26,6 +26,7 @@ class MainHandler(tornado.web.RequestHandler):
 class OpenBazaarStaticHandler(tornado.web.StaticFileHandler):
     def set_extra_headers(self, path):
         self.set_header("X-Frame-Options", "DENY")
+        self.set_header("X-Content-Type-Options", "nosniff")
 
 
 class MarketApplication(tornado.web.Application):
