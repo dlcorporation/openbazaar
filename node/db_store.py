@@ -146,7 +146,7 @@ class Obdb():
         if lastrowid:
             return lastrowid
 
-    def selectEntries(self, table, where_dict={"\"1\"":"1"}, operator="AND", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
+    def selectEntries(self, table, where_dict={"\"1\"": "1"}, operator="AND", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
         """ A wrapper for the SQL SELECT operation. It will always return all the
             attributes for the selected rows.
         @param table: The table to search to
@@ -168,17 +168,16 @@ class Obdb():
                 else:
                     where_part = where_part + "%s %s = ?" % (operator, key)
 
-                if limit != None and limit_offset is None:
+                if limit is not None and limit_offset is None:
                     limit_clause = "LIMIT %s" % limit
-                elif limit != None and limit_offset is not None:
-                      limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
+                elif limit is not None and limit_offset is not None:
+                    limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
                 else:
                     limit_clause = ""
 
-
             query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
                     % (table, where_part, order_field, order, limit_clause)
-            self._log.debug("query: %s "% query)
+            self._log.debug("query: %s " % query)
             cur.execute(query, wheres)
             rows = cur.fetchall()
         self._disconnectFromDb()

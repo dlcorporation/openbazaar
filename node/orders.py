@@ -217,7 +217,7 @@ class Orders(object):
         if merchant is None:
             order_ids = self._db.selectEntries(
                 "orders",
-                {"market_id" : self._market_id},
+                {"market_id": self._market_id},
                 order_field="updated",
                 order="DESC",
                 limit=10,
@@ -245,7 +245,9 @@ class Orders(object):
                     orders.append(order)
                 total_orders = len(orders)
             else:
-                order_ids = self._db.selectEntries("orders", {"market_id": self._market_id},
+                order_ids = self._db.selectEntries(
+                    "orders",
+                    {"market_id": self._market_id},
                     order_field="updated",
                     order="DESC", limit=10,
                     limit_offset=page * 10
