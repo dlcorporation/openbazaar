@@ -58,16 +58,19 @@ class Obdb():
         """
         return unicode(value)
 
-    def getOrCreate(self, table, where_clause, data_dict):
+    def getOrCreate(self, table, where_dict, data_dict=False):
         """ This method attempts to grab the record first. If it fails to find it,
         it will create it.
         @param table: The table to search to
         @param get_where_dict: A dictionary with the WHERE/SET clauses
         """
-        entries = self.selectEntries(table, where_clause)
+        if not data_dict:
+            data_dict = where_dict
+
+        entries = self.selectEntries(table, where_dict)
         if len(entries) == 0:
             self.insertEntry(table, data_dict)
-        return self.selectEntries(table, where_clause)[0]
+        return self.selectEntries(table, where_dict)[0]
 
     def updateEntries(self, table, where_dict, set_dict, operator="AND"):
         """ A wrapper for the SQL UPDATE operation

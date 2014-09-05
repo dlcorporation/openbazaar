@@ -463,7 +463,7 @@ class Market(object):
     def get_settings(self):
 
         self._log.info('Getting settings info for Market %s' % self._transport._market_id)
-        settings = self._db.getOrCreate("settings", "market_id = '%s'" % self._transport._market_id, {"market_id": self._transport._market_id})
+        settings = self._db.getOrCreate("settings", {"market_id": self._transport._market_id})
 
         if settings['arbiter'] == 1:
             settings['arbiter'] = True
