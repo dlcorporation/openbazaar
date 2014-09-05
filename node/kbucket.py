@@ -21,9 +21,9 @@ class KBucket(object):
         self.lastAccessed = 0
         self.rangeMin = rangeMin
         self.rangeMax = rangeMax
-        self._contacts = list()
+        self.contacts = list()
 
-        self._log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
+        self.log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
     def addContact(self, contact):
         """ Add contact to _contact list in the right order. This will move the
@@ -38,8 +38,8 @@ class KBucket(object):
         """
         found = False
 
-        for idx, old_contact in enumerate(self._contacts):
-            if contact._guid == old_contact._guid:
+        for idx, old_contact in enumerate(self.contacts):
+            if contact.guid == old_contact.guid:
                 found = True
                 foundId = idx
                 break
@@ -47,22 +47,22 @@ class KBucket(object):
         if found:
             # Move the existing contact to the end of the list
             # - using the new contact to allow add-on data (e.g. optimization-specific stuff) to be updated as well
-            del self._contacts[foundId]
-            self._contacts.append(contact)
-        elif len(self._contacts) < constants.k:
-            self._contacts.append(contact)
+            del self.contacts[foundId]
+            self.contacts.append(contact)
+        elif len(self.contacts) < constants.k:
+            self.contacts.append(contact)
         else:
             raise BucketFull("No space in bucket to insert contact")
 
     def getContact(self, contactID):
         """ Get the contact specified node ID"""
-        self._log.debug('[getContact] %s' % contactID)
-        self._log.debug('contacts %s' % self._contacts)
-        for contact in self._contacts:
-            if contact._guid == contactID:
-                self._log.debug('[getContact] Found %s' % contact)
+        self.log.debug('[getContact] %s' % contactID)
+        self.log.debug('contacts %s' % self.contacts)
+        for contact in self.contacts:
+            if contact.guid == contactID:
+                self.log.debug('[getContact] Found %s' % contact)
                 return contact
-        self._log.debug('[getContact] No Results')
+        self.log.debug('[getContact] No Results')
 
     def getContacts(self, count=-1, excludeContact=None):
         """ Returns a list containing up to the first count number of contacts
@@ -86,10 +86,10 @@ class KBucket(object):
         """
         # Return all contacts in bucket
         if count <= 0:
-            count = len(self._contacts)
+            count = len(self.contacts)
 
         # Get current contact number
-        currentLen = len(self._contacts)
+        currentLen = len(self.contacts)
 
         # If count greater than k - return only k contacts
         if count > constants.k:
@@ -102,13 +102,18 @@ class KBucket(object):
 
         # length of list less than requested amount
         elif currentLen < count:
-            contactList = self._contacts[0:currentLen]
+            contactList = self.contacts[0:currentLen]
         # enough contacts in list
         else:
-            contactList = self._contacts[0:count]
+            contactList = self.contacts[0:count]
 
         if excludeContact in contactList:
-            contactList.remove(excludeContact)
+            try:
+                contactList.remove(excludeContact)
+            except ValueError:
+                print('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
+                self.log.debug('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
+                pass
 
         return contactList
 
@@ -121,9 +126,9 @@ class KBucket(object):
 
         @raise ValueError: The specified contact is not in this bucket
         """
-        self._log.debug('Contacts %s %s' % (contact, self._contacts))
-        self._contacts[:] = [x for x in self._contacts if x._guid != contact]
-        self._log.debug('Contacts %s %s' % (contact, self._contacts))
+        self.log.debug('Contacts %s %s' % (contact, self.contacts))
+        self.contacts[:] = [x for x in self.contacts if x.guid != contact]
+        self.log.debug('Contacts %s %s' % (contact, self.contacts))
 
     def keyInRange(self, key):
         """ Tests whether the specified key (i.e. node ID) is in the range
@@ -143,4 +148,4 @@ class KBucket(object):
         return self.rangeMin <= key < self.rangeMax
 
     def __len__(self):
-        return len(self._contacts)
+        return len(self.contacts)

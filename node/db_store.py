@@ -18,7 +18,7 @@ class Obdb():
     def __init__(self, db_path):
         self.db_path = db_path
         self.con = False
-        self._log = logging.getLogger('DB')
+        self.log = logging.getLogger('DB')
 
     def _connectToDb(self):
         """ Opens a db connection
@@ -106,7 +106,7 @@ class Obdb():
                     where_part = where_part + "%s %s = ?" % (operator, key)
             query = "UPDATE %s SET %s WHERE %s" \
                     % (table, set_part, where_part)
-            self._log.debug('query: %s' % query)
+            self.log.debug('query: %s' % query)
             cur.execute(query, sets + wheres)
         self._disconnectFromDb()
 
@@ -138,7 +138,7 @@ class Obdb():
                     % (table, updatefield_part, setfield_part)
             cur.execute(query, sets)
             lastrowid = cur.lastrowid
-            self._log.debug("query: %s " % query)
+            self.log.debug("query: %s " % query)
         self._disconnectFromDb()
         if lastrowid:
             return lastrowid
@@ -169,7 +169,7 @@ class Obdb():
                     % (columns, table, where_clause, order_field, order, limit_clause)
 
             print query
-            self._log.debug("query: %s " % query)
+            self.log.debug("query: %s " % query)
             cur.execute(query)
             rows = cur.fetchall()
         self._disconnectFromDb()
@@ -200,7 +200,7 @@ class Obdb():
                     where_part = where_part + "%s %s = ?" % (operator, key)
             query = "DELETE FROM %s WHERE %s" \
                     % (table, where_part)
-            self._log.debug('Query: %s' % query)
+            self.log.debug('Query: %s' % query)
             cur.execute(query, dels)
         self._disconnectFromDb()
 
@@ -211,7 +211,7 @@ class Obdb():
 
             query = "SELECT count(*) as count FROM %s WHERE %s" \
                     % (table, where_clause)
-            self._log.debug('query: %s' % query)
+            self.log.debug('query: %s' % query)
             cur.execute(query)
             rows = cur.fetchall()
         self._disconnectFromDb()
