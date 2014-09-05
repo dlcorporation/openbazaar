@@ -29,18 +29,13 @@ class Orders(object):
         WAITING_FOR_PAYMENT = 'Waiting for Payment'
 
     def __init__(self, transport, market_id, db):
-
         self.transport = transport
         # self._priv = transport._myself
         self.market_id = market_id
-
         self.gpg = gnupg.GPG()
         self.db = db
         self.orders = self.get_orders()
-        self.orders = self.orders
-
         self.transport.add_callback('order', self.on_order)
-
         self.log = logging.getLogger('[%s] %s' % (self.market_id, self.__class__.__name__))
 
     def get_offer_json(self, raw_contract, state):
