@@ -1,0 +1,52 @@
+# 
+# 9200 : elasticsearch http api
+# 80 : nginx/kibana http 
+# 25826 : collectd udp port
+# 9300 : logstash node port
+#
+elk:
+  image: obtest/elk
+  hostname: elk
+  ports:
+    - "9280:80"
+    - "9200:9200"
+  expose:
+    - "9200"
+    - "9300"
+    - "80"
+    - "25826"
+
+ob1:
+  image: obtest/ob
+  hostname: ob1
+  ports:
+    - "8081:8888"
+    - "12341:12345"
+  links:
+    - elk
+  expose:
+    - "9300"
+
+ob2:
+  image: obtest/ob
+  hostname: ob2
+  ports:
+    - "8082:8888"
+    - "12342:12345"
+  links:
+    - elk
+  expose:
+    - "9300"
+
+seed1:
+  image: obtest/ob
+  hostname: seed1
+  ports:
+    - "8091:8888"
+    - "12351:12345"
+  links:
+    - elk
+  expose:
+    - "9300"
+  environment:
+    -  RUNSH_ARGS=-q 8888 -p 12345 -o

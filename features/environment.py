@@ -33,7 +33,7 @@ def after_scenario(context, scenario):
     if (context.feature.name == 'CryptoTransportLayer'):
         # reset database peers
         for layer in context.layers:
-            layer._db.deleteEntries('peers')
+            layer.db.deleteEntries('peers')
     elif (context.feature.name == 'Websocket Client Interface'):
         # reset database peers
         for i in range(len(context.app)):

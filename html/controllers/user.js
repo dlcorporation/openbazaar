@@ -88,8 +88,9 @@ angular.module('app')
                 msg.senderNick = msg.senderNick.substring(0, 120);
                 msg.text = msg.text.substring(0, 2048);
 
-                if (msg.senderGUID != $scope.awaitingShop)
+                if (msg.senderGUID != $scope.awaitingShop) {
                     return;
+                }
                 if (!$scope.reviews.hasOwnProperty(msg.pubkey)) {
                     $scope.reviews[msg.pubkey] = [];
                 }
@@ -119,7 +120,7 @@ angular.module('app')
             $scope.store_listings = [];
             $scope.parse_new_listing = function(msg) {
                 console.log(msg.data);
-                contract_data = msg.data;
+                var contract_data = msg.data;
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
                 contract_data.nickname = msg.nickname;
@@ -157,8 +158,7 @@ angular.module('app')
             };
 
             $scope.parse_store_contract = function(msg) {
-
-                contract = msg.contract;
+                var contract = msg.contract;
                 console.log(contract);
 
                 $scope.store_listings.push(contract);
@@ -179,8 +179,7 @@ angular.module('app')
             };
 
             $scope.parse_store_listings = function(msg) {
-
-                contracts = msg.product;
+                var contracts = msg.product;
 
                 $scope.store_listings = [];
                 $.each(contracts, function(key, value) {
@@ -311,7 +310,7 @@ angular.module('app')
                     notaries = $scope.settings.notaries;
 
 
-                    modalInstance = $modal.open({
+                    var modalInstance = $modal.open({
                         templateUrl: 'partials/modal/buyItem.html',
                         controller: $scope.BuyItemInstanceCtrl,
                         resolve: {
