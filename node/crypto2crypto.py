@@ -613,6 +613,12 @@ class CryptoTransportLayer(TransportLayer):
         if send_to is not None:
 
             peer = self.dht._routingTable.getContact(send_to)
+            if not peer:
+                for activePeer in self.dht.activePeers:
+                    if activePeer._guid == send_to:
+                        peer = activePeer
+                        break
+
             # peer = CryptoPeerConnection(msg['uri'])
             if peer:
                 self.log.debug('Directed Data (%s): %s' % (send_to, data))
