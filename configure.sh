@@ -35,7 +35,7 @@ function installMac {
   else
     echo "updating, upgrading, checking brew..."
     brew update
-    #brew upgrade
+    brew upgrade
     if ! brew doctor; then
       echo ""
       echo "'brew doctor' did not exit cleanly! This may be okay. Read above."
