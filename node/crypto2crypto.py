@@ -91,15 +91,17 @@ class CryptoPeerConnection(PeerConnection):
     def check_port(self):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(5)
+            s.settimeout(1)
             s.connect((self._ip, self._port))
         except socket.error:
             try:
                 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-                s.settimeout(5)
+                s.settimeout(1)
                 s.connect((self._ip, self._port))
             except socket.error as e:
                 self._log.error("socket error on %s: %s" % (self._ip, e))
+                self._transport._dht.remove_active_peer(self._address)
+                #self._transport._dht._routingTable.removeContact(self._guid)
                 return False
         except TypeError:
             self._log.error("tried connecting to invalid address: %s" % self._ip)
@@ -159,8 +161,8 @@ class CryptoPeerConnection(PeerConnection):
                             self._log.error('Cannot reach this peer to send raw')
                     else:
                         self._log.error('Data was empty')
-                except Exception:
-                    self._log.error("Was not able to encode empty data: %e")
+                except Exception as e:
+                    self._log.error("Was not able to encode empty data: %s" % e)
         else:
             self._log.error('Cannot send to peer')
 
@@ -535,6 +537,7 @@ class CryptoTransportLayer(TransportLayer):
 
                 # Update existing peer
                 self._activePeers[idx] = peer_to_add
+                self._dht.add_peer(self, peer_to_add._address, peer_to_add._pub, peer_to_add._guid, peer_to_add._nickname)
 
         if not foundOutdatedPeer and peer_to_add._guid != self._guid:
             self._log.info('Adding crypto peer at %s' % peer_to_add._nickname)

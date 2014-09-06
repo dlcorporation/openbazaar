@@ -205,6 +205,7 @@ class Market(object):
     def add_trusted_notary(self, guid, nickname=""):
         self._log.debug('%s %s' % (guid, nickname))
         notaries = self.settings.get('notaries')
+        self._log.debug('notaries: %s' % notaries)
         if notaries == "" or notaries == []:
             notaries = []
         else:
@@ -346,7 +347,7 @@ class Market(object):
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
-        contract = self._db.selectEntries("contracts", "id = '%s'" % contract_id.replace("'", "''"))[0]
+        contract = self._db.selectEntries("contracts", "id = '%s'" % contract_id)[0]
         contract_key = contract['key']
 
         contract = json.loads(contract['contract_body'])
