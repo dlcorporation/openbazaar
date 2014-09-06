@@ -615,7 +615,7 @@ class CryptoTransportLayer(TransportLayer):
             peer = self.dht._routingTable.getContact(send_to)
             if not peer:
                 for activePeer in self.dht.activePeers:
-                    if activePeer._guid == send_to:
+                    if activePeer.guid == send_to:
                         peer = activePeer
                         break
 
