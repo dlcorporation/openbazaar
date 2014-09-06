@@ -57,8 +57,8 @@ h4 {
 .peers-area {
   text-align: left;
   margin-bottom:5px;
-  height:500px;
-  overflow:auto;
+  max-height:500px;
+  overflow-y:auto;
 }
 .anon-profile-area {
   text-align: left;
@@ -117,3 +117,8 @@ h4 {
 
       position: relative;
    }
+
+.store-count-box {
+    padding:8px 10px;
+    margin:0 0 5px 0
+}
