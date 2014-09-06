@@ -9,6 +9,7 @@ import os
 import routingtable
 import time
 import socket
+from threading import Thread
 
 
 class DHT(object):
@@ -79,7 +80,8 @@ class DHT(object):
                                      new_peer.guid))
             self.log.debug('Known Nodes: %s' % self.knownNodes)
 
-        new_peer.start_handshake(start_handshake_cb)
+        t = Thread(target=new_peer.start_handshake, args=(start_handshake_cb,))
+        t.start()
 
     def add_peer(self, transport, uri, pubkey=None, guid=None, nickname=None):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
@@ -133,8 +135,8 @@ class DHT(object):
                 self.knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer.guid))
                 self.transport.save_peer_to_db(peer_tuple)
 
-            if new_peer.check_port():
-                new_peer.start_handshake(handshake_cb=cb)
+            t = Thread(target=new_peer.start_handshake, args=(cb,))
+            t.start()
 
         else:
             self.log.debug('Missing peer attributes')
@@ -477,9 +479,8 @@ class DHT(object):
         peer = self._routingTable.getContact(key)
 
         if peer:
-            if peer.check_port():
-                peer.send({'type': 'query_listings', 'key': key})
-                return
+            peer.send({'type': 'query_listings', 'key': key})
+            return
 
         # Check cache in DHT if peer not available
         listing_index_key = hashlib.sha1('contracts-%s' % key).hexdigest()

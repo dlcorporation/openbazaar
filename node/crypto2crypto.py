@@ -89,15 +89,16 @@ class CryptoPeerConnection(PeerConnection):
     def check_port(self):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(5)
+            s.settimeout(1)
             s.connect((self.ip, self.port))
         except socket.error:
             try:
                 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-                s.settimeout(5)
+                s.settimeout(1)
                 s.connect((self.ip, self.port))
             except socket.error as e:
                 self.log.error("socket error on %s: %s" % (self.ip, e))
+                self.transport.dht.remove_active_peer(self.address)
                 return False
         except TypeError:
             self.log.error("tried connecting to invalid address: %s" % self.ip)
@@ -151,14 +152,11 @@ class CryptoPeerConnection(PeerConnection):
                 try:
                     if data is not None:
                         encoded_data = data.encode('hex')
-                        if self.check_port():
-                            self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
-                        else:
-                            self.log.error('Cannot reach this peer to send raw')
+                        self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
                     else:
-                        self.log.error('Data was empty')
-                except Exception:
-                    self.log.error("Was not able to encode empty data: %e")
+                        self._log.error('Data was empty')
+                except Exception as e:
+                    self._log.error("Was not able to encode empty data: %s" % e)
         else:
             self.log.error('Cannot send to peer')
 
@@ -532,7 +530,8 @@ class CryptoTransportLayer(TransportLayer):
                 self.log.info('Found an outdated peer')
 
                 # Update existing peer
-                self.activePeers[idx] = peer_to_add
+                self._activePeers[idx] = peer_to_add
+                self._dht.add_peer(self, peer_to_add._address, peer_to_add._pub, peer_to_add._guid, peer_to_add._nickname)
 
         if not foundOutdatedPeer and peer_to_add.guid != self.guid:
             self.log.info('Adding crypto peer at %s' % peer_to_add.nickname)

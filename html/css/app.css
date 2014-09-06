@@ -57,6 +57,8 @@ h4 {
 .peers-area {
   text-align: left;
   margin-bottom:5px;
+  height:500px;
+  overflow:auto;
 }
 .anon-profile-area {
   text-align: left;
