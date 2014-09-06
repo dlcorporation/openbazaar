@@ -15,27 +15,40 @@
 #
 #
 
-set -x
+#exit on error
+set -e
+
+function command_exists {
+  #this should be a very portable way of checking if something is on the path
+  #usage: "if command_exists foo; then echo it exists; fi"
+  type "$1" &> /dev/null
+}
 
 function installMac {
-  #is brew installed?
-  which -s brew
-  if [[ $? != 0 ]] ; then
+  #print commands (useful for debugging)
+  #set -x  #disabled because the echos and stdout are verbose enough to see progress
+
+  #install brew if it is not installed, otherwise upgrade it
+  if ! command_exists brew ; then
     echo "installing brew..."
     ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
   else
     echo "updating, upgrading, checking brew..."
     brew update
+    if ! brew doctor; then
+      echo ""
+      echo "'brew doctor' did not exit cleanly! This may be okay. Read above."
+      echo ""
+      read -p "Press [Enter] to continue anyway or [ctrl + c] to exit and do what the doctor says..."
+    fi
     brew upgrade
-    brew doctor
     brew prune
   fi
 
-  #is gpg/sqlite3/python/wget installed?
+  #install gpg/sqlite3/python/wget if they aren't installed
   for dep in gpg sqlite3 python wget
   do
-    which -s $dep
-    if [[ $? != 0 ]] ; then
+    if ! command_exists $dep ; then
       brew install $dep
     fi
   done
@@ -55,15 +68,13 @@ function installMac {
     PIP="pip"
   fi
 
-  #setup pip
-  which -s pip
-  if [[ $? != 0 ]] ; then
+  #install pip if it is not installed
+  if ! command_exists pip ; then
     $EASY_INSTALL pip
   fi
 
-  #setup virtualenv
-  which -s virtualenv
-  if [[ $? != 0 ]] ; then
+  #install python's virtualenv if it is not installed
+  if ! command_exists virtualenv ; then
     $PIP install virtualenv
   fi
 
@@ -94,6 +105,9 @@ echo ""
 }
 
 function installUbuntu {
+  #print commands
+  set -x
+
   sudo apt-get update
   sudo apt-get upgrade
   sudo apt-get install python-pip build-essential python-zmq rng-tools
@@ -110,6 +124,9 @@ function installUbuntu {
 }
 
 function installArch {
+  #print commands
+  set -x
+
   sudo pacman -Sy
   sudo pacman -S base-devel python2 python2-pip python2-pyzmq rng-tools
   sudo pacman -S gcc libjpeg zlib sqlite3 openssl
