@@ -9,6 +9,3 @@ install:
     - npm install -g jshint
 
 script: make
-
-notifications:
-    irc: "chat.freenode.net#openbazaar"

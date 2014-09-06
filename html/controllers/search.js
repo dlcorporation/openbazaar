@@ -36,7 +36,7 @@ angular.module('app')
                 return result;
             }
 
-            url_json = getJsonFromUrl();
+            var url_json = getJsonFromUrl();
             $scope.search = url_json.searchterm;
 
             $scope.searchNetwork = function() {
@@ -59,7 +59,7 @@ angular.module('app')
             $scope.search_results = [];
             $scope.parse_search_result = function(msg) {
                 console.log(msg);
-                contract_data = msg.data;
+                var contract_data = msg.data;
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
                 contract_data.nickname = msg.nickname;

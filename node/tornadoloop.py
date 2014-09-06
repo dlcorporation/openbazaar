@@ -23,6 +23,12 @@ class MainHandler(tornado.web.RequestHandler):
         self.redirect("/html/index.html")
 
 
+class OpenBazaarStaticHandler(tornado.web.StaticFileHandler):
+    def set_extra_headers(self, path):
+        self.set_header("X-Frame-Options", "DENY")
+        self.set_header("X-Content-Type-Options", "nosniff")
+
+
 class MarketApplication(tornado.web.Application):
     def __init__(self, market_ip, market_port, market_id=1,
                  bm_user=None, bm_pass=None, bm_port=None, seed_peers=[],
@@ -43,7 +49,7 @@ class MarketApplication(tornado.web.Application):
         self.market = Market(self.transport, db)
 
         def post_joined():
-            self.transport._dht._refreshNode()
+            self.transport.dht._refreshNode()
             self.market.republish_contracts()
 
         peers = seed_peers if seed_mode == 0 else []
@@ -54,7 +60,7 @@ class MarketApplication(tornado.web.Application):
         handlers = [
             (r"/", MainHandler),
             (r"/main", MainHandler),
-            (r"/html/(.*)", tornado.web.StaticFileHandler, {'path': './html'}),
+            (r"/html/(.*)", OpenBazaarStaticHandler, {'path': './html'}),
             (r"/ws", WebSocketHandler,
                 dict(transport=self.transport, market=self.market, db=db))
         ]

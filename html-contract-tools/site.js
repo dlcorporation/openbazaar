@@ -79,9 +79,10 @@ function set_option(opt){
     var options = {};
     
     //if there is already local options stored,
-    if(localStorage.options!==undefined)
+    if(localStorage.options!==undefined) {
         //parse the data to the options var
         options = JSON.parse(localStorage.options);
+    }
     
     
     //Set the option into the array
@@ -154,13 +155,17 @@ function form_gen_create_list(){
 function form_gen_get_type(type){
     var gen_type_obj ;
     $.each(form_gen_types,function(co,t){
-        if(type===t.name)gen_type_obj = form_gen_types[co];
+        if(type===t.name) {
+            gen_type_obj = form_gen_types[co];
+        }
     });
     
-    if(gen_type_obj!==undefined)return gen_type_obj;
-    
-    else console.log("Could not find element type" + type);
-    
+    if(gen_type_obj!==undefined) {
+        return gen_type_obj;
+    }
+    else {
+        console.log("Could not find element type" + type);
+    }
 }
 
     
@@ -171,12 +176,18 @@ function form_gen_get_element(elementname){
     //For each element in the array
     $.each(form_gen_elements,function(c,e){
         //If the element name === the element type, set the var as this element
-        if(elementname===e.dataID)gen_el_obj = form_gen_elements[c];
+        if(elementname===e.dataID) {
+            gen_el_obj = form_gen_elements[c];
+        }
         
     });
     
-    if(gen_el_obj!==undefined)return gen_el_obj;
-    else console.log("Could not find element " + elementname);
+    if(gen_el_obj!==undefined) {
+        return gen_el_obj;
+    }
+    else {
+        console.log("Could not find element " + elementname);
+    }
 }
 
 
@@ -209,7 +220,9 @@ function gen_add_el(elname){
     var inputHtml = $("#form_input_template_"+type.type).html();
     
     //If the HTMl is undefined, it means there is no template HTML set for this kind of field
-    if(inputHtml === undefined)console.log("Error getting template input format #form_input_template_"+type.type);
+    if(inputHtml === undefined) {
+        console.log("Error getting template input format #form_input_template_"+type.type);
+    }
     
     //Replace the various elements of the html
     inputHtml = inputHtml.replace("field_id",element.dataID).replace("field_id",element.dataID).replace("fieldname",element.name).replace("fieldtype",type.type);
@@ -222,8 +235,9 @@ function gen_add_el(elname){
     $("#form_gen_fields :last div input").addClass(type.class);
     
     //If a default value is set, set it in the input feild
-    if(element.default_value !== undefined)
+    if(element.default_value !== undefined) {
         $("#form_gen_fields").children(":last").children('div').children('.form_gen_input').val(element.default_value);
+    }
         
     
 }
@@ -247,7 +261,9 @@ function gen_create_con(){
     var checks = gen_check_con();
     
     //If the checks did not return true, 
-    if(checks!==true && checks !==undefined)$("#xml_contract").html(checks).show();
+    if(checks!==true && checks !==undefined) {
+        $("#xml_contract").html(checks).show();
+    }
     
     //If all values are correct ,then show the sign and encrypt modal
     else {
@@ -278,18 +294,17 @@ function gen_parse_values(v){
         //Once completed, return result data
         return resultData;
     }
-    else if(type==="JSON")
+    else if(type==="JSON") {
         return JSON.stringify(v);
+    }
     
     //Else parse in HTML type format
-    else{
-        $.each(v,function( index,value ) {
-                        resultData = resultData + index + " : " + value + "\r\n";
-        });
-        
-        //Once completed, return result data
-        return resultData;
-    }
+    $.each(v,function( index,value ) {
+                    resultData = resultData + index + " : " + value + "\r\n";
+    });
+    
+    //Once completed, return result data
+    return resultData;
 }
 
 //function to check the submitted contract fields
@@ -307,24 +322,25 @@ function gen_check_con(){
         var res = gen_form_data_change(this);
         
         //If the result is not true, then add it to the errors list
-        if(res!==true)
+        if(res!==true) {
             valid_checks.push(res);
+        }
     });
     
     
     
     //If we have errors in the required_inputs_check result, return text/html error
-    if(required_inputs_check.length > 0)
+    if(required_inputs_check.length > 0) {
         return "Not all required fields are present : <p> " + required_inputs_check.join("<br>") + "</p>";
+    }
     
     
     //If we have errors in the valid_checks result, return text/html error
-    else if(valid_checks.length > 0 )
+    else if(valid_checks.length > 0 ) {
         return "Found some errors with Fields :<p> " + valid_checks.join("<br>") + "</p>";
+    }
     
-    //Else return true :)
-    else return true;
-    
+    return true;
         
 }
 
@@ -374,7 +390,9 @@ function gen_form_input_msg(element,msgTxt,status){
     $(par).append('<span class="help-block">'+msgTxt+'</span>');
     
     //if the status is not false, set the new class
-    if(status!==false)$(par).addClass("has-"+status);
+    if(status!==false) {
+        $(par).addClass("has-"+status);
+    }
     
     
 }
@@ -389,18 +407,23 @@ function data_validation(inputObj){
     var re;
     
     //if el is false, return false
-    if(el===false || el===undefined)return false;
+    if(el===false || el===undefined) {
+        return false;
+    }
     
     //Make sure the object exists in the form
     var dat = $(inputObj).html();
-    if(dat===undefined)
+    if(dat===undefined) {
        return "The " + el.name + " field does not exist on the form, can not validate non-existant data";
+    }
    
     //Get the type for the field
     var type = form_gen_get_type(el.type);
     
     //if not type, ,return false
-    if(type===false || type===undefined)return false;
+    if(type===false || type===undefined) {
+        return false;
+    }
     
     //Get the value to a var
     var val = $(inputObj).val();
@@ -417,42 +440,55 @@ function data_validation(inputObj){
     if(el.min_len !==undefined){
         
         //Check the value
-        if(val < el.min_len)errors.push(el.name + " must be at least " + el.min_len + " characters long \r\n");
+        if(val < el.min_len) {
+            errors.push(el.name + " must be at least " + el.min_len + " characters long \r\n");
+        }
     }
     //Else check if the type has a minimum length
     else if(type.min_len !==undefined){
         //Check the value
-        if(val < type.min_len)errors.push(el.name + " must be at least " + type.min_len + " characters long \r\n");
+        if(val < type.min_len) {
+            errors.push(el.name + " must be at least " + type.min_len + " characters long \r\n");
+        }
     }
    
     //if element max length is set, 
     if(el.max_len !==undefined){
         //Check the value
-        if(val > el.max_len)errors.push(el.name + " must be less than or equal to " + el.min_len + " characters long \r\n");
+        if(val > el.max_len) {
+            errors.push(el.name + " must be less than or equal to " + el.min_len + " characters long \r\n");
+        }
     }
    
     //else if the type max length is set, 
     else if(type.max_len !==undefined){
         //Check the value
-        if(val > type.max_len)errors.push(el.name + " must be less than or equal to " + type.min_len + " characters long \r\n");
+        if(val > type.max_len) {
+            errors.push(el.name + " must be less than or equal to " + type.min_len + " characters long \r\n");
+        }
     }
    
     //If element regex is set
     if(el.regex_validation_rule !==undefined){
         re = new RegExp(el.regex_validation_rule,'i');
         
-        if(re.test(val)===false)errors.push(el.regex_validation_msg.replace("~field~",el.name)+". Invalid match " + val + "\r\n");
+        if(re.test(val)===false) {
+            errors.push(el.regex_validation_msg.replace("~field~",el.name)+". Invalid match " + val + "\r\n");
+        }
     }
     //else if the type regex is set
     if(type.regex_validation_rule !==undefined){
         re = new RegExp(type.regex_validation_rule,'i');
         
-        if(re.test(val)===false)errors.push(type.regex_validation_msg.replace("~field~",el.name)+"  Invalid match " + val + "\r\n");
+        if(re.test(val)===false) {
+            errors.push(type.regex_validation_msg.replace("~field~",el.name)+"  Invalid match " + val + "\r\n");
+        }
     }
     
-    if(errors.length < 1)return true;
-    else return errors;
-    
+    if(errors.length < 1) {
+        return true;
+    }
+    return errors;
 }
 
 function gen_sign_con(){
@@ -513,7 +549,8 @@ function gen_check_inputs_required(){
          }
     });
     //If the msgs string is set, return it, 
-    if(msgs.length >= 1)return msgs;
-    //Else return true
-    else return true;
+    if(msgs.length >= 1) {
+        return msgs;
+    }
+    return true;
 }

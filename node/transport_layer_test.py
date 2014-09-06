@@ -82,7 +82,7 @@ class TestTransportLayerMessageHandling(unittest.TestCase):
     # A hello message with no uri should not add a peer
     def test_on_raw_message_hello_no_uri(self):
         self.tl._on_raw_message([json.dumps(protocol.hello_request({}))])
-        self.assertEqual(0, len(self.tl._peers))
+        self.assertEqual(0, len(self.tl.peers))
 
     # A hello message with a uri should result in a new peer
     def test_on_raw_message_hello_with_uri(self):
@@ -90,7 +90,7 @@ class TestTransportLayerMessageHandling(unittest.TestCase):
             'uri': 'tcp://localhost:12345'
         })
         self.tl._on_raw_message([json.dumps(request)])
-        self.assertEqual(1, len(self.tl._peers))
+        self.assertEqual(1, len(self.tl.peers))
 
 
 class TestTransportLayerProfile(unittest.TestCase):
