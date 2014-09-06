@@ -96,7 +96,7 @@ angular.module('app')
 
             $scope.stopServer = function() {
                 Connection.send('stop_server', { 'type': 'stop_server' });
-            }
+            };
 
             $scope.removeNotary = function(notaryGUID) {
 
