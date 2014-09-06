@@ -187,7 +187,7 @@ hr { border-top:#bbb; }
 #header-navigation { width:100%; text-align:right; float:right; margin-top:10px; }
 
 
-#page-content { word-break:break-all; }
+#page-content { word-break:normal; }
 
 ul.pagination { margin: 10px 0 }
 
