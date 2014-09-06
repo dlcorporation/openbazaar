@@ -133,9 +133,14 @@
             </tbody>
         </table>
 
-        <h3>Connected Markets <button data-ng-controller="AddNodeModalCtrl" class="btn-xs btn btn-primary" data-ng-click="open()">Add Node</button></h3>
+        <h3>Connected Markets</h3>
+        <div class="alert-warning alert store-count-box">
+            <span data-ng-show="peers.length > 0"><strong>{{peers.length}}</strong> stores connected.</span>
+            <span data-ng-show="peers.length < 1">There are no stores connected to you.</span>
+            <button data-ng-controller="AddNodeModalCtrl" class="btn-xs btn btn-primary" data-ng-click="open()" style="">Add Node</button>
+        </div>
 
-        <div data-ng-show="peers.length < 1">There are no stores connected to you.</div>
+
 
         <div class="peers-area" >
             <table id="favorite-peers" class="peers-table table-hover">

@@ -206,7 +206,7 @@ class Market(object):
     def add_trusted_notary(self, guid, nickname=""):
         self.log.debug('%s %s' % (guid, nickname))
         notaries = self.settings.get('notaries')
-        self._log.debug('notaries: %s' % notaries)
+        self.log.debug('notaries: %s' % notaries)
         if notaries == "" or notaries == []:
             notaries = []
         else:
