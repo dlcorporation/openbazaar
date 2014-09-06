@@ -80,7 +80,7 @@ class DHT(object):
                                      new_peer.guid))
             self.log.debug('Known Nodes: %s' % self.knownNodes)
 
-        t = Thread(target=new_peer.start_handshake, args=(self, start_handshake_cb,))
+        t = Thread(target=new_peer.start_handshake, args=(start_handshake_cb,))
         t.start()
 
 
@@ -136,7 +136,9 @@ class DHT(object):
                 self.knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer.guid))
                 self.transport.save_peer_to_db(peer_tuple)
 
-            new_peer.start_handshake(handshake_cb=cb)
+            t = Thread(target=new_peer.start_handshake, args=(cb,))
+            t.start()
+
 
         else:
             self.log.debug('Missing peer attributes')
