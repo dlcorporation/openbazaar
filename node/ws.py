@@ -55,6 +55,7 @@ class ProtocolHandler:
             "check_order_count": self.client_check_order_count,
             "query_orders": self.client_query_orders,
             "query_contracts": self.client_query_contracts,
+            "stop_server": self.client_stop_server,
             "query_messages": self.client_query_messages,
             "send_message": self.client_send_message,
             "update_settings": self.client_update_settings,
@@ -182,6 +183,10 @@ class ProtocolHandler:
             "type": "store_contract",
             "contract": msg
         })
+
+    def client_stop_server(self, socket_handler, msg):
+        self.log.error('Killing OpenBazaar')
+        os._exit(0)
 
     def client_load_page(self, socket_handler, msg):
         self.send_to_client(None, {"type": "load_page"})
