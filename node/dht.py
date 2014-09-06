@@ -83,7 +83,6 @@ class DHT(object):
         t = Thread(target=new_peer.start_handshake, args=(start_handshake_cb,))
         t.start()
 
-
     def add_peer(self, transport, uri, pubkey=None, guid=None, nickname=None):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
         peers list if it doesn't already reside there.
@@ -138,7 +137,6 @@ class DHT(object):
 
             t = Thread(target=new_peer.start_handshake, args=(cb,))
             t.start()
-
 
         else:
             self.log.debug('Missing peer attributes')
