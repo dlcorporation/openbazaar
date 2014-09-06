@@ -152,10 +152,10 @@ class CryptoPeerConnection(PeerConnection):
                 try:
                     if data is not None:
                         encoded_data = data.encode('hex')
-                        if self.check_port():
-                            self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
-                        else:
-                            self.log.error('Cannot reach this peer to send raw')
+                        #if self.check_port():
+                        self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
+                        # else:
+                        #     self.log.error('Cannot reach this peer to send raw')
                     else:
                         self._log.error('Data was empty')
                 except Exception as e:

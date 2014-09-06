@@ -136,8 +136,7 @@ class DHT(object):
                 self.knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer.guid))
                 self.transport.save_peer_to_db(peer_tuple)
 
-            if new_peer.check_port():
-                new_peer.start_handshake(handshake_cb=cb)
+            new_peer.start_handshake(handshake_cb=cb)
 
         else:
             self.log.debug('Missing peer attributes')
@@ -480,9 +479,8 @@ class DHT(object):
         peer = self._routingTable.getContact(key)
 
         if peer:
-            if peer.check_port():
-                peer.send({'type': 'query_listings', 'key': key})
-                return
+            peer.send({'type': 'query_listings', 'key': key})
+            return
 
         # Check cache in DHT if peer not available
         listing_index_key = hashlib.sha1('contracts-%s' % key).hexdigest()

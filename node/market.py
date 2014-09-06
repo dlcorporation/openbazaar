@@ -22,6 +22,7 @@ from orders import Orders
 from protocol import proto_page, query_page
 from crypto2crypto import CryptoTransportLayer
 from pybitcointools import *
+from threading import Thread
 
 ioloop.install()
 
@@ -265,7 +266,8 @@ class Market(object):
             notaries = {}
             for n in settings['notaries']:
                 peer = self.dht._routingTable.getContact(n.guid)
-            if peer is not None and peer.check_port():
+            if peer is not None:
+                peer.start_handshake()
                 notaries.append(n)
             return notaries
         # End of untested code
@@ -506,22 +508,27 @@ class Market(object):
                                                    peer['uri'],
                                                    pubkey=peer['pubkey'],
                                                    nickname=peer['senderNick'])
-        new_peer.start_handshake()
 
-        new_peer.send(proto_page(self.transport.uri,
-                                 self.transport.pubkey,
-                                 self.transport.guid,
-                                 settings['storeDescription'],
-                                 self.signature,
-                                 settings['nickname'],
-                                 settings['PGPPubKey'] if 'PGPPubKey' in settings else '',
-                                 settings['email'] if 'email' in settings else '',
-                                 settings['bitmessage'] if 'bitmessage' in settings else '',
-                                 settings['arbiter'] if 'arbiter' in settings else '',
-                                 settings['notary'] if 'notary' in settings else '',
-                                 settings['arbiterDescription'] if 'arbiterDescription' in settings else '',
-                                 self.transport.sin)
-                      )
+        def send_page_query():
+            new_peer.start_handshake()
+
+            new_peer.send(proto_page(self.transport.uri,
+                                     self.transport.pubkey,
+                                     self.transport.guid,
+                                     settings['storeDescription'],
+                                     self.signature,
+                                     settings['nickname'],
+                                     settings['PGPPubKey'] if 'PGPPubKey' in settings else '',
+                                     settings['email'] if 'email' in settings else '',
+                                     settings['bitmessage'] if 'bitmessage' in settings else '',
+                                     settings['arbiter'] if 'arbiter' in settings else '',
+                                     settings['notary'] if 'notary' in settings else '',
+                                     settings['arbiterDescription'] if 'arbiterDescription' in settings else '',
+                                     self.transport.sin)
+                          )
+
+        t = Thread(target=send_page_query)
+        t.start()
 
     def on_query_myorders(self, peer):
         self.log.info("Someone is querying for your page: %s" % peer)
