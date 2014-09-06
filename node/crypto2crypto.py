@@ -90,15 +90,15 @@ class CryptoPeerConnection(PeerConnection):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(1)
-            s.connect((self._ip, self._port))
+            s.connect((self.ip, self.port))
         except socket.error:
             try:
                 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                 s.settimeout(1)
-                s.connect((self._ip, self._port))
+                s.connect((self.ip, self.port))
             except socket.error as e:
-                self._log.error("socket error on %s: %s" % (self._ip, e))
-                self._transport._dht.remove_active_peer(self._address)
+                self.log.error("socket error on %s: %s" % (self.ip, e))
+                self.transport.dht.remove_active_peer(self.address)
                 return False
         except TypeError:
             self.log.error("tried connecting to invalid address: %s" % self.ip)

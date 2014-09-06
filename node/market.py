@@ -347,7 +347,7 @@ class Market(object):
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
-        contract = self.db.selectEntries("contracts", "id = '%s'" % contract_id.replace("'", "''"))[0]
+        contract = self.db.selectEntries("contracts", "id = '%s'" % contract_id)[0]
         contract_key = contract['key']
 
         contract = json.loads(contract['contract_body'])

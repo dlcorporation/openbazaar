@@ -9,6 +9,7 @@ import os
 import routingtable
 import time
 import socket
+from threading import Thread
 
 
 class DHT(object):
@@ -79,7 +80,9 @@ class DHT(object):
                                      new_peer.guid))
             self.log.debug('Known Nodes: %s' % self.knownNodes)
 
-        new_peer.start_handshake(start_handshake_cb)
+        t = Thread(target=new_peer.start_handshake, args=(self, start_handshake_cb,))
+        t.start()
+
 
     def add_peer(self, transport, uri, pubkey=None, guid=None, nickname=None):
         """ This takes a tuple (pubkey, URI, guid) and adds it to the active
