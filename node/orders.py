@@ -32,11 +32,11 @@ class Orders(object):
         self.transport = transport
         # self._priv = transport._myself
         self.market_id = market_id
+        self.log = logging.getLogger('[%s] %s' % (self.market_id, self.__class__.__name__))
         self.gpg = gnupg.GPG()
         self.db = db
         self.orders = self.get_orders()
         self.transport.add_callback('order', self.on_order)
-        self.log = logging.getLogger('[%s] %s' % (self.market_id, self.__class__.__name__))
 
     def get_offer_json(self, raw_contract, state):
 
