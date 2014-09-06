@@ -62,7 +62,7 @@ class MarketApplication(tornado.web.Application):
             (r"/main", MainHandler),
             (r"/html/(.*)", OpenBazaarStaticHandler, {'path': './html'}),
             (r"/ws", WebSocketHandler,
-                dict(transport=self.transport, market=self.market, db=db))
+                dict(transport=self.transport, market_application=self, db=db))
         ]
 
         # TODO: Move debug settings to configuration location
@@ -113,6 +113,18 @@ class MarketApplication(tornado.web.Application):
         except AttributeError:
             print "[openbazaar] MarketApplication.clean_upnp_port_mapping() failed!"
             pass
+
+    def shutdown(self,x=None,y=None):
+        print "MarketApplication.shutdown!"
+        locallogger = logging.getLogger('[%s] %s' % (self.market.market_id, 'root'))
+        locallogger.info("Received TERMINATE, exiting...")
+
+        # application.get_transport().broadcast_goodbye()
+        self.cleanup_upnp_port_mapping()
+        tornado.ioloop.IOLoop.instance().stop()
+
+        self.transport.shutdown()
+        os._exit(0)
 
 
 def start_node(my_market_ip,
@@ -181,22 +193,8 @@ def start_node(my_market_ip,
     if disable_open_browser == "0":
         open_default_webbrowser('http://%s:%s' % (http_ip, http_port))
 
-    # handle shutdown
-    def shutdown(x, y):
-        locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
-        locallogger.info("Received TERMINATE, exiting...")
-
-        # application.get_transport().broadcast_goodbye()
-        application.cleanup_upnp_port_mapping()
-        tornado.ioloop.IOLoop.instance().stop()
-
-        # TODO:
-        # we should implement the shutdown of the dht connections, db connection, bitmessage connection
-        # maybe this was meant to do all that but nobody ever got around it.
-        # application.market.p.kill()
-        os._exit(0)
     try:
-        signal.signal(signal.SIGTERM, shutdown)
+        signal.signal(signal.SIGTERM, application.shutdown)
     except ValueError:
         # not the main thread
         pass

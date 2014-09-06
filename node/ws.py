@@ -18,8 +18,9 @@ ioloop.install()
 
 
 class ProtocolHandler:
-    def __init__(self, transport, market, handler, db, loop_instance):
-        self.market = market
+    def __init__(self, transport, market_application, handler, db, loop_instance):
+        self.market_application = market_application
+        self.market = self.market_application.market
         self.transport = transport
         self.handler = handler
         self.db = db
@@ -186,7 +187,7 @@ class ProtocolHandler:
 
     def client_stop_server(self, socket_handler, msg):
         self.log.error('Killing OpenBazaar')
-        os._exit(0)
+        self.market_application.shutdown()
 
     def client_load_page(self, socket_handler, msg):
         self.send_to_client(None, {"type": "load_page"})
@@ -938,14 +939,17 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     # Protects listeners
     listen_lock = threading.Lock()
 
-    def initialize(self, transport, market, db):
+    def initialize(self, transport, market_application, db):
         self.loop = tornado.ioloop.IOLoop.instance()
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info("Initialize websockethandler")
+        self.market_application = market_application
+        self.market = self.market_application.market
         self.app_handler = ProtocolHandler(
-            transport, market, self, db, self.loop
+            transport,
+            self.market_application,
+            self, db, self.loop
         )
-        self.market = market
         self.transport = transport
 
     def open(self):

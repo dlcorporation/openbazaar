@@ -372,7 +372,7 @@ class Market(object):
         settings = self.get_settings()
         try:
             # Request all messages for our address
-            inboxmsgs = json.loads(self.transport._bitmessage_api.getInboxMessagesByReceiver(
+            inboxmsgs = json.loads(self.transport.bitmessage_api.getInboxMessagesByReceiver(
                 settings['bitmessage']))
             for m in inboxmsgs['inboxMessages']:
                 # Base64 decode subject and content
@@ -394,7 +394,7 @@ class Market(object):
             self.log.info("Encoding message: {}".format(msg))
             subject = b64encode(msg['subject'])
             body = b64encode(msg['body'])
-            result = self.transport._bitmessage_api.sendMessage(msg['to'],
+            result = self.transport.bitmessage_api.sendMessage(msg['to'],
                                                                  settings['bitmessage'],
                                                                  subject, body)
             self.log.info("Send message result: {}".format(result))

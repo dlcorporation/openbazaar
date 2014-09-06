@@ -79,6 +79,8 @@ class CryptoPeerConnection(PeerConnection):
                                       'uri': self.transport.uri,
                                       'senderGUID': self.transport.guid,
                                       'senderNick': self.transport.nickname}), cb)
+        else:
+            self.log.error('CryptoPeerConnection.check_port() failed.')
 
     def __repr__(self):
         return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self.guid, self.ip, self.port, self.pub)
@@ -180,7 +182,7 @@ class CryptoTransportLayer(TransportLayer):
         # Connect to database
         self.db = db
 
-        self._bitmessage_api = None
+        self.bitmessage_api = None
         if (bm_user, bm_pass, bm_port) != (None, None, None):
             if not self._connect_to_bitmessage(bm_user, bm_pass, bm_port):
                 self.log.info('Bitmessage not installed or started')
@@ -277,13 +279,13 @@ class CryptoTransportLayer(TransportLayer):
         result = False
         try:
             self.log.info('[_connect_to_bitmessage] Connecting to Bitmessage on port %s' % bm_port)
-            self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
-            result = self._bitmessage_api.add(2, 3)
+            self.bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
+            result = self.bitmessage_api.add(2, 3)
             self.log.info("[_connect_to_bitmessage] Bitmessage API is live".format(result))
         # If we failed, fall back to starting our own
         except Exception as e:
             self.log.info("Failed to connect to bitmessage instance: {}".format(e))
-            self._bitmessage_api = None
+            self.bitmessage_api = None
             # self._log.info("Spawning internal bitmessage instance")
             # # Add bitmessage submodule path
             # sys.path.insert(0, os.path.join(
@@ -313,7 +315,7 @@ class CryptoTransportLayer(TransportLayer):
         return self.dht
 
     def get_bitmessage_api(self):
-        return self._bitmessage_api
+        return self.bitmessage_api
 
     def get_market_id(self):
         return self.market_id
@@ -398,7 +400,7 @@ class CryptoTransportLayer(TransportLayer):
             self._generate_new_keypair()
 
             # Generate Bitmessage address
-            if self._bitmessage_api is not None:
+            if self.bitmessage_api is not None:
                 self._generate_new_bitmessage_address()
 
             self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
@@ -444,7 +446,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _generate_new_bitmessage_address(self):
         # Use the guid generated previously as the key
-        self.bitmessage = self._bitmessage_api.createRandomAddress(
+        self.bitmessage = self.bitmessage_api.createRandomAddress(
             self.guid.encode('base64'),
             False,
             1.05,
@@ -799,3 +801,19 @@ class CryptoTransportLayer(TransportLayer):
             self._on_message(msg)
         else:
             self.log.error('Received a message with no type')
+
+    def shutdown(self):
+        print "CryptoTransportLayer.shutdown() : TODO: Not implemented."
+        # shutdown DHT?
+        # release sockets and shutdown all connections to peers
+        
+        try:
+            self.bitmessage_api.close()
+        except Exception, e:
+            #might not even be open, not much more we can do on our way out if exception thrown here.
+            self.log.error("Could not shutdown bitmessage_api's ServerProxy. " + e.message)
+            pass
+        
+        
+        
+        pass
