@@ -82,8 +82,8 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            sets = ()
-            wheres = ()
+            sets = []
+            wheres = []
             where_part = []
             set_part = []
             for key, value in set_dict.iteritems():
@@ -91,19 +91,19 @@ class Obdb():
                     value = bool(value)
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-                sets = sets + (value, )
+                sets.append(value)
                 set_part.append("%s = ?" % key)
             set_part = ",".join(set_part)
             for key, value in where_dict.iteritems():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-                wheres = wheres + (value, )
+                wheres.append(value)
                 where_part.append("%s = ?" % (key))
             where_part = operator.join(where_part)
             query = "UPDATE %s SET %s WHERE %s" \
                     % (table, set_part, where_part)
             self.log.debug('query: %s' % query)
-            cur.execute(query, sets + wheres)
+            cur.execute(query, tuple(sets + wheres))
         self._disconnectFromDb()
 
     def insertEntry(self, table, update_dict):
@@ -114,7 +114,7 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            sets = ()
+            sets = []
             updatefield_part = []
             setfield_part = []
             for key, value in update_dict.iteritems():
@@ -123,14 +123,14 @@ class Obdb():
                     value = bool(value)
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-                sets = sets + (value,)
+                sets.append(value)
                 updatefield_part.append(key)
                 setfield_part.append("?")
             updatefield_part = ",".join(updatefield_part)
             setfield_part = ",".join(setfield_part)
             query = "INSERT INTO %s(%s) VALUES(%s)"  \
                     % (table, updatefield_part, setfield_part)
-            cur.execute(query, sets)
+            cur.execute(query, tuple(sets))
             lastrowid = cur.lastrowid
             self.log.debug("query: %s " % query)
         self._disconnectFromDb()
@@ -147,12 +147,12 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            wheres = ()
+            wheres = []
             where_part = []
             for key, value in where_dict.iteritems():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-                wheres = wheres + (value, )
+                wheres.append(value)
                 where_part.append("%s = ?" % (key) )
                 if limit is not None and limit_offset is None:
                     limit_clause = "LIMIT %s" % limit
@@ -164,7 +164,7 @@ class Obdb():
             query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
                     % (table, where_part, order_field, order, limit_clause)
             self.log.debug("query: %s " % query)
-            cur.execute(query, wheres)
+            cur.execute(query, tuple(wheres))
             rows = cur.fetchall()
         self._disconnectFromDb()
         return rows
@@ -181,12 +181,12 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            dels = ()
+            dels = []
             where_part = []
             for key, value in where_dict.iteritems():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-                dels = dels + (value, )
+                dels.append(value)
                 where_part.append("%s = ?" % (key))
             where_part = operator.join(where_part)
             query = "DELETE FROM %s WHERE %s" \
