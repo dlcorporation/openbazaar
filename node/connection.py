@@ -39,9 +39,6 @@ class PeerConnection(object):
     def cleanup_context(self):
         self.ctx.destroy()
 
-    def cleanup_socket(self):
-        self._socket.close(0)
-
     def send(self, data, callback):
         self.send_raw(json.dumps(data), callback)
 
