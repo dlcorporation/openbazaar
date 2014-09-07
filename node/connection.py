@@ -8,10 +8,9 @@ import socket
 import zlib
 import obelisk
 import arithmetic
-import json
 import zmq
 import errno
-from pybitcointools import *
+import json
 
 ioloop.install()
 

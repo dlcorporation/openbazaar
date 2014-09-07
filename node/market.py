@@ -4,9 +4,6 @@ This module manages all market related activities
 from StringIO import StringIO
 import ast
 from base64 import b64decode, b64encode
-import hashlib
-import json
-import random
 import logging
 import string
 import traceback
@@ -17,12 +14,16 @@ import tornado
 from zmq.eventloop import ioloop
 
 import constants
+from pybitcointools.main import privkey_to_pubkey
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
 from transport import CryptoTransportLayer
 from threading import Thread
-from pybitcointools import *
+
+import random
+import json
+import hashlib
 
 ioloop.install()
 

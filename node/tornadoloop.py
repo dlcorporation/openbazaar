@@ -1,6 +1,5 @@
 import argparse
 import tornado.web
-
 from zmq.eventloop import ioloop
 ioloop.install()
 

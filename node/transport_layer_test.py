@@ -1,8 +1,6 @@
 import json
 import unittest
-
 import mock
-
 from transport import TransportLayer
 import protocol
 

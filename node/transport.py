@@ -1,16 +1,23 @@
 import connection
 from dht import DHT
-from protocol import hello_request, hello_response, goodbye, proto_response_pubkey
+from protocol import hello_request
+from protocol import hello_response
+from protocol import goodbye
+from protocol import proto_response_pubkey
 from urlparse import urlparse
 from zmq.eventloop import ioloop, zmqstream
 from zmq.eventloop.ioloop import PeriodicCallback
 from collections import defaultdict
 from pprint import pformat
+from pybitcointools.main import privkey_to_pubkey
+from pybitcointools.main import privtopub
+from pybitcointools.main import random_key
 import gnupg
 import xmlrpclib
 import logging
 import pyelliptic as ec
 import requests
+import json
 import socket
 import traceback
 from threading import Thread
@@ -19,8 +26,8 @@ import obelisk
 import arithmetic
 import network_util
 import zmq
-import json
-from pybitcointools import *
+import random
+import hashlib
 
 
 ioloop.install()

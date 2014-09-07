@@ -8,10 +8,8 @@
 import time
 import random
 import logging
-
 import constants
 import kbucket
-# from protocol import TimeoutError
 
 
 class RoutingTable(object):
@@ -548,3 +546,6 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
             self.log.debug(
                 'Contacts: %s' % self.buckets[bucketIndex].contacts
             )
+
+class TimeoutError(Exception):
+    """ Raised when a RPC times out """
