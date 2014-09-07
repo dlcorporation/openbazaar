@@ -1,13 +1,13 @@
 from pprint import pformat
 from urlparse import urlparse
 from zmq.eventloop import ioloop, zmqstream
-import transport
+from crypto_util import makePrivCryptor
+from crypto_util import hexToPubkey
 import logging
 import pyelliptic as ec
 import socket
 import zlib
 import obelisk
-import arithmetic
 import zmq
 import errno
 import json
@@ -91,7 +91,7 @@ class CryptoPeerConnection(PeerConnection):
         self.port = urlparse(address).port
         self.nickname = nickname
         self.sin = sin
-        self.peer_alive = False # not used for any logic, might remove it later if unnecessary
+        self.peer_alive = False  # not used for any logic, might remove it later if unnecessary
         self.guid = guid
 
         PeerConnection.__init__(self, transport, address)
@@ -170,19 +170,14 @@ class CryptoPeerConnection(PeerConnection):
 
     def sign(self, data):
         self.log.info('secret %s' % self.transport.settings['secret'])
-        cryptor = transport.CryptoTransportLayer.makeCryptor(self.transport.settings['secret'])
+        cryptor = makePrivCryptor(self.transport.settings['secret'])
         return cryptor.sign(data)
-
-    @staticmethod
-    def hexToPubkey(pubkey):
-        pubkey_raw = arithmetic.changebase(pubkey[2:], 16, 256, minlen=64)
-        pubkey_bin = '\x02\xca\x00 ' + pubkey_raw[:32] + '\x00 ' + pubkey_raw[32:]
-        return pubkey_bin
 
     def encrypt(self, data):
         try:
             if self.pub is not None:
-                result = ec.ECC(curve='secp256k1').encrypt(data, CryptoPeerConnection.hexToPubkey(self.pub))
+                result = ec.ECC(curve='secp256k1').encrypt(data,
+                                                           hexToPubkey(self.pub))
 
                 return result
             else:

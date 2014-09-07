@@ -12,6 +12,9 @@ from pprint import pformat
 from pybitcointools.main import privkey_to_pubkey
 from pybitcointools.main import privtopub
 from pybitcointools.main import random_key
+from crypto_util import pubkey_to_pyelliptic
+from crypto_util import makePrivCryptor
+from crypto_util import makePubCryptor
 import gnupg
 import xmlrpclib
 import logging
@@ -23,7 +26,6 @@ import traceback
 from threading import Thread
 import zlib
 import obelisk
-import arithmetic
 import network_util
 import zmq
 import random
@@ -167,7 +169,7 @@ class TransportLayer(object):
         if send_to is not None:
             peer = self.dht.routingTable.getContact(send_to)
             # self.log.debug(
-            #     '%s %s %s' % (peer.guid, peer.address, peer._pub)
+            #     '%s %s %s' % (peer.guid, peer.address, peer.pub)
             # )
             peer.send(data, callback=callback)
             return
@@ -179,7 +181,7 @@ class TransportLayer(object):
                 try:
                     data['senderGUID'] = self.guid
                     data['pubkey'] = self.pubkey
-                    # if peer._pub:
+                    # if peer.pub:
                     #    peer.send(data, callback)
                     # else:
                     print 'test %s' % peer
@@ -468,7 +470,7 @@ class CryptoTransportLayer(TransportLayer):
             self.bitmessage = self.settings['bitmessage'] if 'bitmessage' in self.settings else ""
 
             self._myself = ec.ECC(
-                pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).decode('hex'),
+                pubkey=pubkey_to_pyelliptic(self.pubkey).decode('hex'),
                 raw_privkey=self.secret.decode('hex'),
                 curve='secp256k1'
             )
@@ -485,19 +487,6 @@ class CryptoTransportLayer(TransportLayer):
             self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
 
         self.log.debug('Retrieved Settings: \n%s', pformat(self.settings))
-
-    @staticmethod
-    def pubkey_to_pyelliptic(pubkey):
-        # Strip 04
-        pubkey = pubkey[2:]
-
-        # Split it in half
-        pub_x = pubkey[0:len(pubkey) / 2]
-        pub_y = pubkey[len(pubkey) / 2:]
-
-        # Add pyelliptic content
-        print "02ca0020" + pub_x + "0020" + pub_y
-        return "02ca0020" + pub_x + "0020" + pub_y
 
     def _generate_new_keypair(self):
         secret = str(random.randrange(2 ** 256))
@@ -591,57 +580,63 @@ class CryptoTransportLayer(TransportLayer):
             self.log.error('Cannot get CryptoPeerConnection for your own node')
             return
 
-        self.log.debug('Getting CryptoPeerConnection\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' % (guid, uri, pubkey, nickname))
+        self.log.debug('Getting CryptoPeerConnection' +
+                       '\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' %
+                       (guid, uri, pubkey, nickname))
 
-        return connection.CryptoPeerConnection(self, uri, pubkey, guid=guid,
-                                    nickname=nickname, callback=callback)
+        return connection.CryptoPeerConnection(self,
+                                               uri,
+                                               pubkey,
+                                               guid=guid,
+                                               nickname=nickname,
+                                               callback=callback)
 
     def addCryptoPeer(self, peer_to_add):
 
         foundOutdatedPeer = False
         for idx, peer in enumerate(self.dht.activePeers):
 
-            if (peer.address, peer.guid, peer.pub) == (peer_to_add.address, peer_to_add.guid, peer_to_add.pub):
+            if (peer.address, peer.guid, peer.pub) == \
+               (peer_to_add.address, peer_to_add.guid, peer_to_add.pub):
                 self.log.info('Found existing peer, not adding.')
                 return
 
-            if peer.guid == peer_to_add.guid or peer.pub == peer_to_add.pub or peer.address == peer_to_add.address:
+            if peer.guid == peer_to_add.guid or \
+               peer.pub == peer_to_add.pub or \
+               peer.address == peer_to_add.address:
 
                 foundOutdatedPeer = True
                 self.log.info('Found an outdated peer')
 
                 # Update existing peer
-                self._activePeers[idx] = peer_to_add
-                self._dht.add_peer(self, peer_to_add._address, peer_to_add._pub, peer_to_add._guid, peer_to_add._nickname)
+                self.activePeers[idx] = peer_to_add
+                self.dht.add_peer(self,
+                                  peer_to_add.address,
+                                  peer_to_add.pub,
+                                  peer_to_add.guid,
+                                  peer_to_add.nickname)
 
         if not foundOutdatedPeer and peer_to_add.guid != self.guid:
             self.log.info('Adding crypto peer at %s' % peer_to_add.nickname)
-            self.dht.add_peer(self, peer_to_add.address, peer_to_add.pub, peer_to_add.guid, peer_to_add.nickname)
-
-    # Return data array with details from the crypto file
-    # TODO: This needs to be protected better; potentially encrypted file or DB
-    @staticmethod
-    def load_crypto_details(store_file):
-        with open(store_file) as f:
-            data = json.loads(f.read())
-        assert "nickname" in data
-        assert "secret" in data
-        assert "pubkey" in data
-        assert len(data["secret"]) == 2 * 32
-        assert len(data["pubkey"]) == 2 * 33
-
-        return data["nickname"], data["secret"].decode("hex"), \
-            data["pubkey"].decode("hex")
+            self.dht.add_peer(self,
+                              peer_to_add.address,
+                              peer_to_add.pub,
+                              peer_to_add.guid,
+                              peer_to_add.nickname)
 
     def get_profile(self):
         peers = {}
 
-        self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
+        self.settings = \
+            self.db.selectEntries("settings", "market_id = '%s'" %
+                                  self.market_id.replace("'", "''"))[0]
 
         for uri, peer in self.peers.iteritems():
             if peer.pub:
                 peers[uri] = peer.pub.encode('hex')
-        return {'uri': self.uri, 'pub': self._myself.get_pubkey().encode('hex'), 'nickname': self.nickname,
+        return {'uri': self.uri,
+                'pub': self._myself.get_pubkey().encode('hex'),
+                'nickname': self.nickname,
                 'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
@@ -804,21 +799,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self.trigger_callbacks(msg['type'], msg)
 
-    @staticmethod
-    def makeCryptor(privkey):
-        privkey_bin = '\x02\xca\x00 ' + arithmetic.changebase(privkey, 16, 256, minlen=32)
-        pubkey = arithmetic.changebase(arithmetic.privtopub(privkey), 16, 256, minlen=65)[1:]
-        pubkey_bin = '\x02\xca\x00 ' + pubkey[:32] + '\x00 ' + pubkey[32:]
-        cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
-        return cryptor
-
-    @staticmethod
-    def makePubCryptor(pubkey):
-        pubkey_bin = connection.CryptoPeerConnection.hexToPubkey(pubkey)
-        return ec.ECC(curve='secp256k1', pubkey=pubkey_bin)
-
     def _on_raw_message(self, serialized):
-
         try:
 
             # Decompress message
@@ -833,8 +814,7 @@ class CryptoTransportLayer(TransportLayer):
                 sig = msg.get('sig').decode('hex')
 
                 try:
-
-                    cryptor = CryptoTransportLayer.makeCryptor(self.secret)
+                    cryptor = makePrivCryptor(self.secret)
 
                     try:
                         data = cryptor.decrypt(data)
@@ -846,7 +826,7 @@ class CryptoTransportLayer(TransportLayer):
 
                     # Check signature
                     data_json = json.loads(data)
-                    sigCryptor = CryptoTransportLayer.makePubCryptor(data_json['pubkey'])
+                    sigCryptor = makePubCryptor(data_json['pubkey'])
                     if sigCryptor.verify(sig, data):
                         self.log.info('Verified')
                     else:

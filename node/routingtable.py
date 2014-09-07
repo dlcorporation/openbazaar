@@ -547,5 +547,6 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
                 'Contacts: %s' % self.buckets[bucketIndex].contacts
             )
 
+
 class TimeoutError(Exception):
     """ Raised when a RPC times out """

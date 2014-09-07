@@ -88,6 +88,8 @@ class DHT(object):
         peers list if it doesn't already reside there.
 
         :param transport: (CryptoTransportLayer) so we can get a new CryptoPeer
+
+        TODO: Refactor to just pass a peer object. evil tuples.
         """
 
         assert(uri)
