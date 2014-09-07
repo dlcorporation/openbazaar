@@ -4,7 +4,7 @@ import tornado.web
 from zmq.eventloop import ioloop
 ioloop.install()
 
-from crypto2crypto import CryptoTransportLayer
+from transport import CryptoTransportLayer
 from db_store import Obdb
 from market import Market
 from ws import WebSocketHandler

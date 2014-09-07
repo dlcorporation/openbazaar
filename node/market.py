@@ -6,8 +6,8 @@ import ast
 from base64 import b64decode, b64encode
 import hashlib
 import json
-import logging
 import random
+import logging
 import string
 import traceback
 
@@ -20,9 +20,9 @@ import constants
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
-from crypto2crypto import CryptoTransportLayer
-from pybitcointools import *
+from transport import CryptoTransportLayer
 from threading import Thread
+from pybitcointools import *
 
 ioloop.install()
 
