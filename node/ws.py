@@ -826,7 +826,7 @@ class ProtocolHandler:
                     if contract_guid == self.transport.guid:
                         nickname = self.transport.nickname
                     else:
-                        routing_table = self.transport.dht._routingTable
+                        routing_table = self.transport.dht.routingTable
                         peer = routing_table.getContact(contract_guid)
                         nickname = peer.nickname if peer is not None else ""
 
@@ -962,6 +962,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         with WebSocketHandler.listen_lock:
             self.listeners.add(self)
         self.connected = True
+        # self.connected not used for any logic, might remove if unnecessary
 
     def on_close(self):
         self.log.info("Websocket closed")

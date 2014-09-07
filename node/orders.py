@@ -400,7 +400,7 @@ class Orders(object):
                 order_to_notary['rawContract'] = contract
                 order_to_notary['state'] = Orders.State.BID
 
-                merchant = self.transport.dht._routingTable.getContact(contract_data_json['Seller']['seller_GUID'])
+                merchant = self.transport.dht.routingTable.getContact(contract_data_json['Seller']['seller_GUID'])
                 order_to_notary['merchantURI'] = merchant.address
                 order_to_notary['merchantGUID'] = merchant.guid
                 order_to_notary['merchantNickname'] = merchant.nickname
@@ -454,7 +454,7 @@ class Orders(object):
         while self.db.numEntries("orders", "id = '%s'" % order_id) > 0:
             order_id = random.randint(0, 1000000)
 
-        seller = self.transport.dht._routingTable.getContact(msg['sellerGUID'])
+        seller = self.transport.dht.routingTable.getContact(msg['sellerGUID'])
 
         buyer = {}
         buyer['Buyer'] = {}

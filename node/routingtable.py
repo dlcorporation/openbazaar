@@ -8,10 +8,8 @@
 import time
 import random
 import logging
-
 import constants
 import kbucket
-# from protocol import TimeoutError
 
 
 class RoutingTable(object):
@@ -38,7 +36,7 @@ class RoutingTable(object):
         exists, its status will be updated
 
         @param contact: The contact to add to this node's k-buckets
-        @type contact: p2p.PeerConnection
+        @type contact: connection.PeerConnection
         """
 
     @staticmethod
@@ -156,7 +154,7 @@ class TreeRoutingTable(RoutingTable):
         exists, its status will be updated
 
         @param contact: The contact to add to this node's k-buckets
-        @type contact: p2p.PeerConnection
+        @type contact: connection.PeerConnection
         """
 
         # If contact is itself return
@@ -548,3 +546,7 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
             self.log.debug(
                 'Contacts: %s' % self.buckets[bucketIndex].contacts
             )
+
+
+class TimeoutError(Exception):
+    """ Raised when a RPC times out """

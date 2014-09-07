@@ -1,9 +1,7 @@
 import json
 import unittest
-
 import mock
-
-from p2p import TransportLayer
+from transport import TransportLayer
 import protocol
 
 
