@@ -30,7 +30,7 @@ def setUpModule():
 def tearDownModule():
     # Cleanup.
     print "Cleaning up."
-    print os.remove(TEST_DB_PATH)
+    os.remove(TEST_DB_PATH)
 
 
 class TestDbOperations(unittest.TestCase):
