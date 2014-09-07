@@ -16,12 +16,12 @@ import errno
 
 
 class PeerConnection(object):
-    def __init__(self, transport, address):
+    def __init__(self, transport, address, nickname=""):
         # timeout in seconds
         self._timeout = 10
         self.transport = transport
         self.address = address
-        self.nickname = ""
+        self.nickname = nickname
         self.responses_received = {}
         self.log = logging.getLogger(
             '[%s] %s' % (self.transport.market_id, self.__class__.__name__)

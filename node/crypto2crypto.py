@@ -99,7 +99,7 @@ class CryptoPeerConnection(PeerConnection):
                 s.settimeout(1)
                 s.connect((self.ip, self.port))
             except socket.error as e:
-                self.log.error("socket error on %s: %s" % (self.ip, e))
+                self.log.error("socket error on %s:%i %s" % (self.ip, self.port, e))
                 self.transport.dht.remove_active_peer(self.address)
                 return False
         except TypeError:
@@ -156,9 +156,9 @@ class CryptoPeerConnection(PeerConnection):
                         encoded_data = data.encode('hex')
                         self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
                     else:
-                        self._log.error('Data was empty')
+                        self.log.error('Data was empty')
                 except Exception as e:
-                    self._log.error("Was not able to encode empty data: %s" % e)
+                    self.log.error("Was not able to encode empty data: %s" % e)
         else:
             self.log.error('Cannot send to peer')
 
