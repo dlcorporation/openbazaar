@@ -6,7 +6,15 @@
 <div data-ng-show="page">
 
     <div>
-        <h2><identicon icon-size="64" hash="page.senderGUID" title="{{page.senderGUID}}"></identicon> {{page.nickname ? page.nickname : "No nickname"}}</h2>
+        <h2 class="row">
+            <div class="col-sm-1">
+                <identicon icon-size="64" hash="page.senderGUID" title="{{page.senderGUID}}"></identicon>
+            </div>
+            <div class="col-sm-11" ng-controller="ComposeMessageCtrl">
+                {{page.nickname ? page.nickname : "No nickname"}}<br/>
+                <button data-ng-show="page.bitmessage != '' && settings.bitmessage != ''" class="btn btn-sm btn-info" data-ng-click="compose_message('lg', myself, page.bitmessage, null)">Bitmessage Me</button>
+            </div>
+        </h2>
 
 
 
@@ -65,7 +73,7 @@
                 </div>
                 <div class="panel-body">
                     <div data-ng-show="page.arbiter_description">
-                        <p>{{page.arbiter_description}}</p>
+                        <p data-ng-bind="page.arbiter_description"></p>
                     </div>
 
                     <div data-ng-show="!page.arbiter_description">
@@ -84,7 +92,7 @@
                 </div>
                 <div class="panel-body">
                     <div data-ng-show="page.notary_description">
-                        <p>{{page.notary_description}}</p>
+                        <p data-ng-bind="page.notary_description"></p>
                     </div>
 
                     <div data-ng-show="!page.notary_description">
@@ -112,7 +120,7 @@
         <!-- Store Products -->
         <div data-ng-show="storeProductsPanel"  class="animated fadeIn">
 
-            <p data-ng-show="page.text" id="page-content" class="lead"></p>
+            <p data-ng-show="page.text" id="page-content" data-ng-bind="page.text" class="lead"></p>
 
             <div data-ng-controller="BuyItemCtrl">
 

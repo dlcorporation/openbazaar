@@ -6,8 +6,8 @@
  * @constructor
  */
 angular.module('app')
-    .controller('User', ['$scope', '$interval', '$routeParams', '$location', 'Connection',
-        function($scope, $interval, $routeParams, $location, Connection) {
+    .controller('User', ['$scope', '$interval', '$routeParams', '$location', '$rootScope', 'Connection',
+        function($scope, $interval, $routeParams, $location, $rootScope, Connection) {
 
             $scope.page_loading = true;
             $scope.path = $location.path();
@@ -59,6 +59,14 @@ angular.module('app')
                 }
             };
 
+            $scope.compose_message = function(size, myself, address, subject) {
+                $rootScope.$broadcast("compose_message", {
+                    size: size,
+                    myself: myself,
+                    bm_address: address,
+                    subject: subject
+                });
+            };
 
             /**
              * Query the network for a merchant and then
@@ -106,10 +114,6 @@ angular.module('app')
                     $scope.page = msg;
                     $scope.page.reputation_pledge = 0;
 
-                    // Write in store content into the HTML
-                    var contentDiv = document.getElementById('page-content');
-                    contentDiv.innerHTML = msg.text;
-
                     if (!$scope.$$phase) {
                         $scope.$apply();
                     }
@@ -146,15 +150,6 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            };
-
-            $scope.compose_message = function(size, myself, address, subject) {
-                $scope.$broadcast("compose_message", {
-                    size: size,
-                    myself: myself,
-                    bm_address: address,
-                    subject: subject
-                });
             };
 
             $scope.parse_store_contract = function(msg) {

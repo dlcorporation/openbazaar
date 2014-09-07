@@ -114,7 +114,7 @@ class MarketApplication(tornado.web.Application):
             print "[openbazaar] MarketApplication.clean_upnp_port_mapping() failed!"
             pass
 
-    def shutdown(self,x=None,y=None):
+    def shutdown(self, x=None, y=None):
         print "MarketApplication.shutdown!"
         locallogger = logging.getLogger('[%s] %s' % (self.market.market_id, 'root'))
         locallogger.info("Received TERMINATE, exiting...")
