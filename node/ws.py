@@ -75,6 +75,7 @@ class ProtocolHandler:
             "read_log": self.client_read_log,
             "create_backup": self.client_create_backup,
             "get_backups": self.get_backups,
+            "undo_remove_contract": self.client_undo_remove_contract,
         }
 
         self.timeouts = []
@@ -238,6 +239,9 @@ class ProtocolHandler:
 
     def client_welcome_dismissed(self, socket_handler, msg):
         self.market.disable_welcome_screen()
+
+    def client_undo_remove_contract(self, socket_handler, msg):
+        self.market.undo_remove_contract(msg.get('contract_id'))
 
     def client_check_order_count(self, socket_handler, msg):
         self.log.debug('Checking order count')

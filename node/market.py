@@ -131,6 +131,7 @@ class Market(object):
                                            "contract_body": json.dumps(body),
                                            "signed_contract_body": str(signed_body),
                                            "state": "seed",
+                                           "deleted": 0,
                                            "key": key})
 
     def update_keywords_on_network(self, key, keywords):
@@ -345,7 +346,7 @@ class Market(object):
         # Remove from DHT keyword indices
         self.remove_from_keyword_indexes(msg['contract_id'])
 
-        self.db.deleteEntries("contracts", {"id": msg["contract_id"]})
+        self.db.updateEntries("contracts", {"id": msg["contract_id"]}, {"deleted": 1})
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
@@ -406,12 +407,13 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self.log.info('Getting contracts for market: %s' % self.transport.market_id)
-        contracts = self.db.selectEntries("contracts", "market_id = '%s'" % self.transport.market_id.replace("'", "''"),
+        contracts = self.db.selectEntries("contracts", "market_id == '%s' and deleted == 0" % self.transport.market_id.replace("'", "''"),
                                            limit=10,
                                            limit_offset=(page * 10))
         my_contracts = []
         for contract in contracts:
             try:
+                print contract
                 contract_body = json.loads(u"%s" % contract['contract_body'])
                 item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
                 shipping_price = contract_body.get('Contract').get('item_delivery').get('shipping_price') if contract_body.get('Contract').get('item_delivery').get('shipping_price') > 0 else 0
@@ -421,6 +423,7 @@ class Market(object):
                                      "signed_contract_body": contract['signed_contract_body'] if 'signed_contract_body' in contract else "",
                                      "contract_body": contract_body,
                                      "unit_price": item_price,
+                                     "deleted": contract.get('deleted'),
                                      "shipping_price": shipping_price,
                                      "item_title": contract_body.get('Contract').get('item_title'),
                                      "item_desc": contract_body.get('Contract').get('item_desc'),
@@ -432,6 +435,12 @@ class Market(object):
 
         return {"contracts": my_contracts, "page": page,
                 "total_contracts": self.db.numEntries("contracts")}
+
+    def undo_remove_contract(self, contract_id):
+        self.log.info('Undo remove contract: %s' % contract_id)
+        self.db.updateEntries("contracts",
+                              {"market_id": self.transport.market_id.replace("'", "''"), "id": contract_id},
+                              {"deleted": "0"})
 
     # SETTINGS
     def save_settings(self, msg):

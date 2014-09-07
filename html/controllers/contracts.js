@@ -35,12 +35,28 @@ angular.module('app')
                 $scope.load_page();
             }
 
+            $scope.undoRemoveContract = function(contract_id) {
+                Connection.send("undo_remove_contract", {
+                    "contract_id": contract_id
+                });
+                $scope.undo_remove = null;
+                Connection.send("query_contracts", {});
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
+            };
+
             $scope.removeContract = function(contract_id) {
                 $('#contract-row-'+contract_id).fadeOut({ "duration": 1000 });
+                $scope.undo_remove = true;
+                $scope.undo_contract_id = contract_id;
                 Connection.send("remove_contract", {
                     "contract_id": contract_id
                 });
                 Connection.send("query_contracts", {});
+                if (!$scope.$$phase) {
+                    $scope.$apply();
+                }
             };
 
             $scope.republishContracts = function() {
