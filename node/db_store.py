@@ -78,7 +78,6 @@ class Obdb():
         @param whereDict: A dictionary with the WHERE clauses
         @param setDict: A dictionary with the SET clauses
         """
-
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
@@ -99,6 +98,7 @@ class Obdb():
                 value = self._beforeStoring(value)
                 wheres.append(value)
                 where_part.append("%s = ?" % (key))
+            operator = " " + operator + " "
             where_part = operator.join(where_part)
             query = "UPDATE %s SET %s WHERE %s" \
                     % (table, set_part, where_part)
@@ -160,6 +160,7 @@ class Obdb():
                     limit_clause = "LIMIT %s, %s" % (limit_offset, limit)
                 else:
                     limit_clause = ""
+            operator = " " + operator + " "
             where_part = operator.join(where_part)
             query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
                     % (table, where_part, order_field, order, limit_clause)
@@ -188,6 +189,7 @@ class Obdb():
                 value = self._beforeStoring(value)
                 dels.append(value)
                 where_part.append("%s = ?" % (key))
+            operator = " " + operator + " "
             where_part = operator.join(where_part)
             query = "DELETE FROM %s WHERE %s" \
                     % (table, where_part)
