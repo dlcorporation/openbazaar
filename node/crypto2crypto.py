@@ -806,14 +806,12 @@ class CryptoTransportLayer(TransportLayer):
         print "CryptoTransportLayer.shutdown() : TODO: Not implemented."
         # shutdown DHT?
         # release sockets and shutdown all connections to peers
-        
+
         try:
             self.bitmessage_api.close()
         except Exception, e:
-            #might not even be open, not much more we can do on our way out if exception thrown here.
+            # might not even be open, not much more we can do on our way out if exception thrown here.
             self.log.error("Could not shutdown bitmessage_api's ServerProxy. " + e.message)
             pass
-        
-        
-        
+
         pass
