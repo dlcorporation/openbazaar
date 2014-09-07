@@ -153,7 +153,7 @@ class Obdb():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
                 wheres.append(value)
-                where_part.append("%s = ?" % (key) )
+                where_part.append("%s = ?" % (key))
                 if limit is not None and limit_offset is None:
                     limit_clause = "LIMIT %s" % limit
                 elif limit is not None and limit_offset is not None:
