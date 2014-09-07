@@ -185,6 +185,7 @@ class TransportLayer(object):
                     #    peer.send(data, callback)
                     # else:
                     print 'test %s' % peer
+
                     def cb(msg):
                         print msg
                     peer.send(data, cb)
