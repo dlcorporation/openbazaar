@@ -18,7 +18,6 @@ from pybitcointools.main import privkey_to_pubkey
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
-from transport import CryptoTransportLayer
 from threading import Thread
 from crypto_util import makePrivCryptor
 
