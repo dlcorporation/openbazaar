@@ -9,7 +9,7 @@
 .idea
 .vagrant
 blockchain
-db/
+db/*.db
 env/
 gpg/random_seed
 html/backups/
