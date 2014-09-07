@@ -1,170 +1,253 @@
+import connection
 from dht import DHT
-from p2p import PeerConnection, TransportLayer
-from pprint import pformat
-from protocol import hello_request, hello_response, proto_response_pubkey
+from protocol import hello_request
+from protocol import hello_response
+from protocol import goodbye
+from protocol import proto_response_pubkey
 from urlparse import urlparse
-from zmq.eventloop import ioloop
+from zmq.eventloop import ioloop, zmqstream
 from zmq.eventloop.ioloop import PeriodicCallback
+from collections import defaultdict
+from pprint import pformat
+from pybitcointools.main import privkey_to_pubkey
+from pybitcointools.main import privtopub
+from pybitcointools.main import random_key
+from crypto_util import pubkey_to_pyelliptic
+from crypto_util import makePrivCryptor
+from crypto_util import makePubCryptor
 import gnupg
 import xmlrpclib
 import logging
 import pyelliptic as ec
 import requests
+import json
 import socket
 import traceback
 from threading import Thread
 import zlib
 import obelisk
-import arithmetic
-from pybitcointools import *
+import network_util
+import zmq
+import random
+import hashlib
+
 
 ioloop.install()
 
 
-class CryptoPeerConnection(PeerConnection):
+class TransportLayer(object):
+    # Transport layer manages a list of peers
+    def __init__(self, market_id, my_ip, my_port, my_guid, nickname=None):
 
-    def __init__(self, transport, address, pub=None, guid=None, nickname=None,
-                 sin=None, callback=lambda msg: None):
-
-        # self._priv = transport._myself
-        self.pub = pub
-        self.ip = urlparse(address).hostname
-        self.port = urlparse(address).port
+        self.peers = {}
+        self.callbacks = defaultdict(list)
+        self.timeouts = []
+        self.port = my_port
+        self.ip = my_ip
+        self.guid = my_guid
+        self.market_id = market_id
         self.nickname = nickname
-        self.sin = sin
-        self.connected = False
-        self.guid = guid
 
-        PeerConnection.__init__(self, transport, address)
-
-        self.log = logging.getLogger('[%s] %s' % (transport.market_id,
-                                                   self.__class__.__name__))
-
-    def start_handshake(self, handshake_cb=None):
-        if self.check_port():
-            def cb(msg):
-                if msg:
-
-                    self.log.debug('ALIVE PEER %s' % msg[0])
-                    msg = msg[0]
-                    msg = json.loads(msg)
-
-                    # Update Information
-                    self.guid = msg['senderGUID']
-                    self.sin = self.generate_sin(self.guid)
-                    self.pub = msg['pubkey']
-                    self.nickname = msg['senderNick']
-
-                    self._peer_alive = True
-
-                    # Add this peer to active peers list
-                    for idx, peer in enumerate(self.transport.dht.activePeers):
-                        if peer.guid == self.guid or peer.address == self.address:
-                            self.transport.dht.activePeers[idx] = self
-                            self.transport.dht.add_peer(self.transport,
-                                                          self.address,
-                                                          self.pub,
-                                                          self.guid,
-                                                          self.nickname)
-                            return
-
-                    self.transport.dht.activePeers.append(self)
-                    self.transport.dht._routingTable.addContact(self)
-
-                    if handshake_cb is not None:
-                        handshake_cb()
-
-            self.send_raw(json.dumps({'type': 'hello',
-                                      'pubkey': self.transport.pubkey,
-                                      'uri': self.transport.uri,
-                                      'senderGUID': self.transport.guid,
-                                      'senderNick': self.transport.nickname}), cb)
-
-    def __repr__(self):
-        return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self.guid, self.ip, self.port, self.pub)
-
-    def generate_sin(self, guid):
-        return obelisk.EncodeBase58Check('\x0F\x02%s' + guid.decode('hex'))
-
-    def check_port(self):
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1)
-            s.connect((self.ip, self.port))
+            socket.inet_pton(socket.AF_INET6, my_ip)
+            my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
         except socket.error:
+            my_uri = 'tcp://%s:%s' % (self.ip, self.port)
+        self.uri = my_uri
+
+        self.log = logging.getLogger(
+            '[%s] %s' % (market_id, self.__class__.__name__)
+        )
+
+    def add_callbacks(self, callbacks):
+        for section, callback in callbacks:
+            self.callbacks[section] = []
+            self.add_callback(section, callback)
+
+    def add_callback(self, section, callback):
+        if callback not in self.callbacks[section]:
+            self.callbacks[section].append(callback)
+
+    def trigger_callbacks(self, section, *data):
+        # Run all callbacks in specified section
+        for cb in self.callbacks[section]:
+            cb(*data)
+
+        # Run all callbacks registered under the 'all' section. Don't duplicate
+        # calls if the specified section was 'all'.
+        if not section == 'all':
+            for cb in self.callbacks['all']:
+                cb(*data)
+
+    def get_profile(self):
+        return hello_request({'uri': self.uri})
+
+    def listen(self, pubkey):
+        self.log.info("Listening at: %s:%s" % (self.ip, self.port))
+        self.ctx = zmq.Context()
+        self.socket = self.ctx.socket(zmq.REP)
+
+        if network_util.is_loopback_addr(self.ip):
             try:
-                s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-                s.settimeout(1)
-                s.connect((self.ip, self.port))
-            except socket.error as e:
-                self.log.error("socket error on %s: %s" % (self.ip, e))
-                self.transport.dht.remove_active_peer(self.address)
-                return False
-        except TypeError:
-            self.log.error("tried connecting to invalid address: %s" % self.ip)
+                # we are in local test mode so bind that socket on the
+                # specified IP
+                self.socket.bind(self.uri)
+            except Exception as e:
+                error_message = "\n\nTransportLayer.listen() error!!!: "
+                error_message += "Could not bind socket to " + self.uri
+                error_message += " (" + str(e) + ")"
+                import platform
+                if platform.system() == 'Darwin':
+                    error_message += "\n\nPerhaps you have not added a "\
+                                     "loopback alias yet.\n"
+                    error_message += "Try this on your terminal and restart "\
+                                     "OpenBazaar in development mode again:\n"
+                    error_message += "\n\t$ sudo ifconfig lo0 alias 127.0.0.2"
+                    error_message += "\n\n"
+                raise Exception(error_message)
+
+        else:
+            try:
+                self.socket.ipv6 = True
+                self.socket.bind('tcp://[*]:%s' % self.port)
+            except AttributeError:
+                self.socket.bind('tcp://*:%s' % self.port)
+
+        self.stream = zmqstream.ZMQStream(
+            self.socket, io_loop=ioloop.IOLoop.current()
+        )
+
+        def handle_recv(message):
+            for msg in message:
+                self._on_raw_message(msg)
+            self.stream.send(
+                json.dumps({
+                    'type': 'ok',
+                    'senderGUID': self.guid,
+                    'pubkey': pubkey,
+                    'senderNick': self.nickname
+                })
+            )
+
+        self.stream.on_recv(handle_recv)
+
+    def closed(self, *args):
+        self.log.info("client left")
+
+    def _init_peer(self, msg):
+        uri = msg['uri']
+
+        if uri not in self.peers:
+            self.peers[uri] = connection.PeerConnection(self, uri)
+
+    def remove_peer(self, uri, guid):
+        self.log.info("Removing peer %s", uri)
+        ip = urlparse(uri).hostname
+        port = urlparse(uri).port
+        if (ip, port, guid) in self.shortlist:
+            self.shortlist.remove((ip, port, guid))
+
+        self.log.info('Removed')
+
+        # try:
+        # del self.peers[uri]
+        # msg = {
+        # 'type': 'peer_remove',
+        # 'uri': uri
+        #     }
+        #     self.trigger_callbacks(msg['type'], msg)
+        #
+        # except KeyError:
+        #     self.log.info("Peer %s was already removed", uri)
+
+    def send(self, data, send_to=None, callback=lambda msg: None):
+
+        self.log.info("Outgoing Data: %s %s" % (data, send_to))
+        data['senderNick'] = self.nickname
+
+        # Directed message
+        if send_to is not None:
+            peer = self.dht.routingTable.getContact(send_to)
+            # self.log.debug(
+            #     '%s %s %s' % (peer.guid, peer.address, peer.pub)
+            # )
+            peer.send(data, callback=callback)
+            return
+
+        else:
+            # FindKey and then send
+
+            for peer in self.dht.activePeers:
+                try:
+                    data['senderGUID'] = self.guid
+                    data['pubkey'] = self.pubkey
+                    # if peer.pub:
+                    #    peer.send(data, callback)
+                    # else:
+                    print 'test %s' % peer
+
+                    def cb(msg):
+                        print msg
+                    peer.send(data, cb)
+
+                except:
+                    self.log.info("Error sending over peer!")
+                    traceback.print_exc()
+
+    def broadcast_goodbye(self):
+        self.log.info("Broadcast goodbye")
+        msg = goodbye({'uri': self.uri})
+        self.send(msg)
+
+    def _on_message(self, msg):
+
+        # here goes the application callbacks
+        # we get a "clean" msg which is a dict holding whatever
+        self.log.info("[On Message] Data received: %s" % msg)
+
+        # if not self.routingTable.getContact(msg['senderGUID']):
+        # Add to contacts if doesn't exist yet
+        # self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
+        if msg['type'] != 'ok':
+            self.trigger_callbacks(msg['type'], msg)
+
+    def _on_raw_message(self, serialized):
+        self.log.info("connected " + str(len(serialized)))
+        try:
+            msg = json.loads(serialized[0])
+        except:
+            self.log.info("incorrect msg! " + serialized)
+            return
+
+        msg_type = msg.get('type')
+        if msg_type == 'hello_request' and msg.get('uri'):
+            self._init_peer(msg)
+>>>>>>> upstream/master:node/transport.py
+        else:
+            self._on_message(msg)
+
+    def valid_peer_uri(self, uri):
+        try:
+            [self_protocol, self_addr, self_port] = \
+                network_util.uri_parts(self.uri)
+            [other_protocol, other_addr, other_port] = \
+                network_util.uri_parts(uri)
+        except RuntimeError:
             return False
 
-        s.close()
-        return True
+        if not network_util.is_valid_protocol(other_protocol) \
+                or not network_util.is_valid_port(other_port):
+            return False
 
-    def sign(self, data):
-        self.log.info('secret %s' % self.transport.settings['secret'])
-        cryptor = CryptoTransportLayer.makeCryptor(self.transport.settings['secret'])
-        return cryptor.sign(data)
-
-    @staticmethod
-    def hexToPubkey(pubkey):
-        pubkey_raw = arithmetic.changebase(pubkey[2:], 16, 256, minlen=64)
-        pubkey_bin = '\x02\xca\x00 ' + pubkey_raw[:32] + '\x00 ' + pubkey_raw[32:]
-        return pubkey_bin
-
-    def encrypt(self, data):
-        try:
-            if self.pub is not None:
-                result = ec.ECC(curve='secp256k1').encrypt(data, CryptoPeerConnection.hexToPubkey(self.pub))
-
-                return result
-            else:
-                self.log.error('Public Key is missing')
-                return False
-        except Exception as e:
-            self.log.error('Encryption failed. %s' % e)
-
-    def send(self, data, callback=lambda msg: None):
-
-        if hasattr(self, 'guid'):
-
-            # Include guid
-            data['guid'] = self.guid
-            data['senderGUID'] = self.transport.guid
-            data['uri'] = self.transport.uri
-            data['pubkey'] = self.transport.pubkey
-            data['senderNick'] = self.transport.nickname
-
-            self.log.debug('Sending to peer: %s %s' % (self.ip, pformat(data)))
-
-            if self.pub == '':
-                self.log.info('There is no public key for encryption')
-            else:
-                signature = self.sign(json.dumps(data))
-                data = self.encrypt(json.dumps(data))
-
-                try:
-                    if data is not None:
-                        encoded_data = data.encode('hex')
-                        self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
-                    else:
-                        self.log.error('Data was empty')
-                except Exception as e:
-                    self.log.error("Was not able to encode empty data: %s" % e)
+        if network_util.is_private_ip_address(self_addr):
+            if not network_util.is_private_ip_address(other_addr):
+                self.log.warning(('Trying to connect to external '
+                                   'network with a private ip address.'))
         else:
-            self.log.error('Cannot send to peer')
+            if network_util.is_private_ip_address(other_addr):
+                return False
 
-    def peer_to_tuple(self):
-        return self.ip, self.port, self.guid
-
-    def get_guid(self):
-        return self.guid
+        return True
 
 
 class CryptoTransportLayer(TransportLayer):
@@ -180,7 +263,7 @@ class CryptoTransportLayer(TransportLayer):
         # Connect to database
         self.db = db
 
-        self._bitmessage_api = None
+        self.bitmessage_api = None
         if (bm_user, bm_pass, bm_port) != (None, None, None):
             if not self._connect_to_bitmessage(bm_user, bm_pass, bm_port):
                 self.log.info('Bitmessage not installed or started')
@@ -277,13 +360,13 @@ class CryptoTransportLayer(TransportLayer):
         result = False
         try:
             self.log.info('[_connect_to_bitmessage] Connecting to Bitmessage on port %s' % bm_port)
-            self._bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
-            result = self._bitmessage_api.add(2, 3)
+            self.bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
+            result = self.bitmessage_api.add(2, 3)
             self.log.info("[_connect_to_bitmessage] Bitmessage API is live".format(result))
         # If we failed, fall back to starting our own
         except Exception as e:
             self.log.info("Failed to connect to bitmessage instance: {}".format(e))
-            self._bitmessage_api = None
+            self.bitmessage_api = None
             # self._log.info("Spawning internal bitmessage instance")
             # # Add bitmessage submodule path
             # sys.path.insert(0, os.path.join(
@@ -313,7 +396,7 @@ class CryptoTransportLayer(TransportLayer):
         return self.dht
 
     def get_bitmessage_api(self):
-        return self._bitmessage_api
+        return self.bitmessage_api
 
     def get_market_id(self):
         return self.market_id
@@ -387,7 +470,7 @@ class CryptoTransportLayer(TransportLayer):
             self.bitmessage = self.settings['bitmessage'] if 'bitmessage' in self.settings else ""
 
             self._myself = ec.ECC(
-                pubkey=CryptoTransportLayer.pubkey_to_pyelliptic(self.pubkey).decode('hex'),
+                pubkey=pubkey_to_pyelliptic(self.pubkey).decode('hex'),
                 raw_privkey=self.secret.decode('hex'),
                 curve='secp256k1'
             )
@@ -398,25 +481,12 @@ class CryptoTransportLayer(TransportLayer):
             self._generate_new_keypair()
 
             # Generate Bitmessage address
-            if self._bitmessage_api is not None:
+            if self.bitmessage_api is not None:
                 self._generate_new_bitmessage_address()
 
             self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})[0]
 
         self.log.debug('Retrieved Settings: \n%s', pformat(self.settings))
-
-    @staticmethod
-    def pubkey_to_pyelliptic(pubkey):
-        # Strip 04
-        pubkey = pubkey[2:]
-
-        # Split it in half
-        pub_x = pubkey[0:len(pubkey) / 2]
-        pub_y = pubkey[len(pubkey) / 2:]
-
-        # Add pyelliptic content
-        print "02ca0020" + pub_x + "0020" + pub_y
-        return "02ca0020" + pub_x + "0020" + pub_y
 
     def _generate_new_keypair(self):
         secret = str(random.randrange(2 ** 256))
@@ -444,7 +514,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _generate_new_bitmessage_address(self):
         # Use the guid generated previously as the key
-        self.bitmessage = self._bitmessage_api.createRandomAddress(
+        self.bitmessage = self.bitmessage_api.createRandomAddress(
             self.guid.encode('base64'),
             False,
             1.05,
@@ -510,57 +580,60 @@ class CryptoTransportLayer(TransportLayer):
             self.log.error('Cannot get CryptoPeerConnection for your own node')
             return
 
-        self.log.debug('Getting CryptoPeerConnection\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' % (guid, uri, pubkey, nickname))
+        self.log.debug('Getting CryptoPeerConnection' +
+                       '\nGUID:%s\nURI:%s\nPubkey:%s\nNickname:%s' %
+                       (guid, uri, pubkey, nickname))
 
-        return CryptoPeerConnection(self, uri, pubkey, guid=guid,
-                                    nickname=nickname, callback=callback)
+        return connection.CryptoPeerConnection(self,
+                                               uri,
+                                               pubkey,
+                                               guid=guid,
+                                               nickname=nickname,
+                                               callback=callback)
 
     def addCryptoPeer(self, peer_to_add):
 
         foundOutdatedPeer = False
         for idx, peer in enumerate(self.dht.activePeers):
 
-            if (peer.address, peer.guid, peer.pub) == (peer_to_add.address, peer_to_add.guid, peer_to_add.pub):
+            if (peer.address, peer.guid, peer.pub) == \
+               (peer_to_add.address, peer_to_add.guid, peer_to_add.pub):
                 self.log.info('Found existing peer, not adding.')
                 return
 
-            if peer.guid == peer_to_add.guid or peer.pub == peer_to_add.pub or peer.address == peer_to_add.address:
+            if peer.guid == peer_to_add.guid or \
+               peer.pub == peer_to_add.pub or \
+               peer.address == peer_to_add.address:
 
                 foundOutdatedPeer = True
                 self.log.info('Found an outdated peer')
 
                 # Update existing peer
-                self._activePeers[idx] = peer_to_add
-                self._dht.add_peer(self, peer_to_add._address, peer_to_add._pub, peer_to_add._guid, peer_to_add._nickname)
+                self.activePeers[idx] = peer_to_add
+                self.dht.add_peer(self,
+                                  peer_to_add.address,
+                                  peer_to_add.pub,
+                                  peer_to_add.guid,
+                                  peer_to_add.nickname)
 
         if not foundOutdatedPeer and peer_to_add.guid != self.guid:
             self.log.info('Adding crypto peer at %s' % peer_to_add.nickname)
-            self.dht.add_peer(self, peer_to_add.address, peer_to_add.pub, peer_to_add.guid, peer_to_add.nickname)
-
-    # Return data array with details from the crypto file
-    # TODO: This needs to be protected better; potentially encrypted file or DB
-    @staticmethod
-    def load_crypto_details(store_file):
-        with open(store_file) as f:
-            data = json.loads(f.read())
-        assert "nickname" in data
-        assert "secret" in data
-        assert "pubkey" in data
-        assert len(data["secret"]) == 2 * 32
-        assert len(data["pubkey"]) == 2 * 33
-
-        return data["nickname"], data["secret"].decode("hex"), \
-            data["pubkey"].decode("hex")
+            self.dht.add_peer(self,
+                              peer_to_add.address,
+                              peer_to_add.pub,
+                              peer_to_add.guid,
+                              peer_to_add.nickname)
 
     def get_profile(self):
         peers = {}
 
         self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})[0]
-
         for uri, peer in self.peers.iteritems():
             if peer.pub:
                 peers[uri] = peer.pub.encode('hex')
-        return {'uri': self.uri, 'pub': self._myself.get_pubkey().encode('hex'), 'nickname': self.nickname,
+        return {'uri': self.uri,
+                'pub': self._myself.get_pubkey().encode('hex'),
+                'nickname': self.nickname,
                 'peers': peers}
 
     def respond_pubkey_if_mine(self, nickname, ident_pubkey):
@@ -596,7 +669,7 @@ class CryptoTransportLayer(TransportLayer):
 
         # Create the peer if public key is not already in the peer list
         # if not self.pubkey_exists(pub):
-        self.peers[uri] = CryptoPeerConnection(self, uri, pub, node_guid)
+        self.peers[uri] = connection.CryptoPeerConnection(self, uri, pub, node_guid)
 
         # Call 'peer' callbacks on listeners
         self.trigger_callbacks('peer', self.peers[uri])
@@ -611,7 +684,7 @@ class CryptoTransportLayer(TransportLayer):
         # Directed message
         if send_to is not None:
 
-            peer = self.dht._routingTable.getContact(send_to)
+            peer = self.dht.routingTable.getContact(send_to)
             if not peer:
                 for activePeer in self.dht.activePeers:
                     if activePeer.guid == send_to:
@@ -633,7 +706,7 @@ class CryptoTransportLayer(TransportLayer):
 
             for peer in self.dht.activePeers:
                 try:
-                    peer = self.dht._routingTable.getContact(peer.guid)
+                    peer = self.dht.routingTable.getContact(peer.guid)
                     data['senderGUID'] = self.guid
                     data['pubkey'] = self.pubkey
 
@@ -723,21 +796,7 @@ class CryptoTransportLayer(TransportLayer):
 
         self.trigger_callbacks(msg['type'], msg)
 
-    @staticmethod
-    def makeCryptor(privkey):
-        privkey_bin = '\x02\xca\x00 ' + arithmetic.changebase(privkey, 16, 256, minlen=32)
-        pubkey = arithmetic.changebase(arithmetic.privtopub(privkey), 16, 256, minlen=65)[1:]
-        pubkey_bin = '\x02\xca\x00 ' + pubkey[:32] + '\x00 ' + pubkey[32:]
-        cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
-        return cryptor
-
-    @staticmethod
-    def makePubCryptor(pubkey):
-        pubkey_bin = CryptoPeerConnection.hexToPubkey(pubkey)
-        return ec.ECC(curve='secp256k1', pubkey=pubkey_bin)
-
     def _on_raw_message(self, serialized):
-
         try:
 
             # Decompress message
@@ -752,8 +811,7 @@ class CryptoTransportLayer(TransportLayer):
                 sig = msg.get('sig').decode('hex')
 
                 try:
-
-                    cryptor = CryptoTransportLayer.makeCryptor(self.secret)
+                    cryptor = makePrivCryptor(self.secret)
 
                     try:
                         data = cryptor.decrypt(data)
@@ -765,7 +823,7 @@ class CryptoTransportLayer(TransportLayer):
 
                     # Check signature
                     data_json = json.loads(data)
-                    sigCryptor = CryptoTransportLayer.makePubCryptor(data_json['pubkey'])
+                    sigCryptor = makePubCryptor(data_json['pubkey'])
                     if sigCryptor.verify(sig, data):
                         self.log.info('Verified')
                     else:
@@ -799,3 +857,17 @@ class CryptoTransportLayer(TransportLayer):
             self._on_message(msg)
         else:
             self.log.error('Received a message with no type')
+
+    def shutdown(self):
+        print "CryptoTransportLayer.shutdown() : TODO: Not implemented."
+        # shutdown DHT?
+        # release sockets and shutdown all connections to peers
+
+        try:
+            self.bitmessage_api.close()
+        except Exception, e:
+            # might not even be open, not much more we can do on our way out if exception thrown here.
+            self.log.error("Could not shutdown bitmessage_api's ServerProxy. " + e.message)
+            pass
+
+        pass

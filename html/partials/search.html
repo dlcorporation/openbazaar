@@ -4,7 +4,9 @@
     <h4>Search Results</h4>
 
     <div data-ng-show="search_results.length == 0" class="alert alert-info" role="alert">
-        <div >No results found yet for <strong>{{search}}</strong>.</div>
+        <div>No results found yet{{search.length > 0 ?
+            " for " + search + "." :
+             "."}}
     </div>
 
 

@@ -4,10 +4,7 @@ This module manages all market related activities
 from StringIO import StringIO
 import ast
 from base64 import b64decode, b64encode
-import hashlib
-import json
 import logging
-import random
 import string
 import traceback
 
@@ -17,12 +14,16 @@ import tornado
 from zmq.eventloop import ioloop
 
 import constants
+from pybitcointools.main import privkey_to_pubkey
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
-from crypto2crypto import CryptoTransportLayer
-from pybitcointools import *
+from transport import CryptoTransportLayer
 from threading import Thread
+
+import random
+import json
+import hashlib
 
 ioloop.install()
 
@@ -131,6 +132,7 @@ class Market(object):
                                            "contract_body": json.dumps(body),
                                            "signed_contract_body": str(signed_body),
                                            "state": "seed",
+                                           "deleted": 0,
                                            "key": key})
 
     def update_keywords_on_network(self, key, keywords):
@@ -265,7 +267,7 @@ class Market(object):
         if online_only:
             notaries = {}
             for n in settings['notaries']:
-                peer = self.dht._routingTable.getContact(n.guid)
+                peer = self.dht.routingTable.getContact(n.guid)
             if peer is not None:
                 peer.start_handshake()
                 notaries.append(n)
@@ -345,7 +347,7 @@ class Market(object):
         # Remove from DHT keyword indices
         self.remove_from_keyword_indexes(msg['contract_id'])
 
-        self.db.deleteEntries("contracts", {"id": msg["contract_id"]})
+        self.db.updateEntries("contracts", {"id": msg["contract_id"]}, {"deleted": 1})
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
@@ -372,7 +374,7 @@ class Market(object):
         settings = self.get_settings()
         try:
             # Request all messages for our address
-            inboxmsgs = json.loads(self.transport._bitmessage_api.getInboxMessagesByReceiver(
+            inboxmsgs = json.loads(self.transport.bitmessage_api.getInboxMessagesByReceiver(
                 settings['bitmessage']))
             for m in inboxmsgs['inboxMessages']:
                 # Base64 decode subject and content
@@ -394,7 +396,7 @@ class Market(object):
             self.log.info("Encoding message: {}".format(msg))
             subject = b64encode(msg['subject'])
             body = b64encode(msg['body'])
-            result = self.transport._bitmessage_api.sendMessage(msg['to'],
+            result = self.transport.bitmessage_api.sendMessage(msg['to'],
                                                                  settings['bitmessage'],
                                                                  subject, body)
             self.log.info("Send message result: {}".format(result))
@@ -406,12 +408,13 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self.log.info('Getting contracts for market: %s' % self.transport.market_id)
-        contracts = self.db.selectEntries("contracts", {"market_id": self.transport.market_id},
+        contracts = self.db.selectEntries("contracts", {"market_id": self.transport.market_id, "deleted":0},
                                            limit=10,
                                            limit_offset=(page * 10))
         my_contracts = []
         for contract in contracts:
             try:
+                print contract
                 contract_body = json.loads(u"%s" % contract['contract_body'])
                 item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
                 shipping_price = contract_body.get('Contract').get('item_delivery').get('shipping_price') if contract_body.get('Contract').get('item_delivery').get('shipping_price') > 0 else 0
@@ -421,6 +424,7 @@ class Market(object):
                                      "signed_contract_body": contract['signed_contract_body'] if 'signed_contract_body' in contract else "",
                                      "contract_body": contract_body,
                                      "unit_price": item_price,
+                                     "deleted": contract.get('deleted'),
                                      "shipping_price": shipping_price,
                                      "item_title": contract_body.get('Contract').get('item_title'),
                                      "item_desc": contract_body.get('Contract').get('item_desc'),
@@ -432,6 +436,12 @@ class Market(object):
 
         return {"contracts": my_contracts, "page": page,
                 "total_contracts": len(self.db.selectEntries("contracts"))}
+
+    def undo_remove_contract(self, contract_id):
+        self.log.info('Undo remove contract: %s' % contract_id)
+        self.db.updateEntries("contracts",
+                              {"market_id": self.transport.market_id.replace("'", "''"), "id": contract_id},
+                              {"deleted": "0"})
 
     # SETTINGS
     def save_settings(self, msg):

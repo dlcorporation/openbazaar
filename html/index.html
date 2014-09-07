@@ -133,9 +133,14 @@
             </tbody>
         </table>
 
-        <h3>Connected Markets <button data-ng-controller="AddNodeModalCtrl" class="btn-xs btn btn-primary" data-ng-click="open()">Add Node</button></h3>
+        <h3>Connected Markets</h3>
+        <div class="alert-warning alert store-count-box">
+            <span data-ng-show="peers.length > 0"><strong>{{peers.length}}</strong> stores connected.</span>
+            <span data-ng-show="peers.length < 1">There are no stores connected to you.</span>
+            <button data-ng-controller="AddNodeModalCtrl" class="btn-xs btn btn-primary" data-ng-click="open()" style="">Add Node</button>
+        </div>
 
-        <div data-ng-show="peers.length < 1">There are no stores connected to you.</div>
+
 
         <div class="peers-area" >
             <table id="favorite-peers" class="peers-table table-hover">
@@ -185,7 +190,8 @@
 
 <div class="navbar navbar-fixed-bottom">
     <strong>OpenBazaar</strong> &middot; <a href="https://openbazaar.org" target="_blank">Website</a> &middot; <a href="https://blog.openbazaar.org" target="_blank">Blog</a> &middot;
-    <a href="http://forum.openbazaar.org" target="_blank">Forum</a> &middot; <a href="bitcoin:16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt?label=OpenBazaar%20Donation">16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt</a>
+    <a href="http://forum.openbazaar.org" target="_blank">Forum</a> &middot; <a href="bitcoin:16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt?label=OpenBazaar%20Donation">16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt</a> &middot;
+    <a href="http://forum.openbazaar.org/index.php?p=/categories/beta-testing-issues" target="_blank">Report Bugs</a>
 </div>
 </body>
 </html>

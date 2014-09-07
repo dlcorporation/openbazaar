@@ -18,8 +18,9 @@ ioloop.install()
 
 
 class ProtocolHandler:
-    def __init__(self, transport, market, handler, db, loop_instance):
-        self.market = market
+    def __init__(self, transport, market_application, handler, db, loop_instance):
+        self.market_application = market_application
+        self.market = self.market_application.market
         self.transport = transport
         self.handler = handler
         self.db = db
@@ -55,6 +56,7 @@ class ProtocolHandler:
             "check_order_count": self.client_check_order_count,
             "query_orders": self.client_query_orders,
             "query_contracts": self.client_query_contracts,
+            "stop_server": self.client_stop_server,
             "query_messages": self.client_query_messages,
             "send_message": self.client_send_message,
             "update_settings": self.client_update_settings,
@@ -73,6 +75,7 @@ class ProtocolHandler:
             "read_log": self.client_read_log,
             "create_backup": self.client_create_backup,
             "get_backups": self.get_backups,
+            "undo_remove_contract": self.client_undo_remove_contract,
         }
 
         self.timeouts = []
@@ -183,6 +186,10 @@ class ProtocolHandler:
             "contract": msg
         })
 
+    def client_stop_server(self, socket_handler, msg):
+        self.log.error('Killing OpenBazaar')
+        self.market_application.shutdown()
+
     def client_load_page(self, socket_handler, msg):
         self.send_to_client(None, {"type": "load_page"})
 
@@ -232,6 +239,9 @@ class ProtocolHandler:
 
     def client_welcome_dismissed(self, socket_handler, msg):
         self.market.disable_welcome_screen()
+
+    def client_undo_remove_contract(self, socket_handler, msg):
+        self.market.undo_remove_contract(msg.get('contract_id'))
 
     def client_check_order_count(self, socket_handler, msg):
         self.log.debug('Checking order count')
@@ -815,7 +825,7 @@ class ProtocolHandler:
                     if contract_guid == self.transport.guid:
                         nickname = self.transport.nickname
                     else:
-                        routing_table = self.transport.dht._routingTable
+                        routing_table = self.transport.dht.routingTable
                         peer = routing_table.getContact(contract_guid)
                         nickname = peer.nickname if peer is not None else ""
 
@@ -932,14 +942,17 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     # Protects listeners
     listen_lock = threading.Lock()
 
-    def initialize(self, transport, market, db):
+    def initialize(self, transport, market_application, db):
         self.loop = tornado.ioloop.IOLoop.instance()
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info("Initialize websockethandler")
+        self.market_application = market_application
+        self.market = self.market_application.market
         self.app_handler = ProtocolHandler(
-            transport, market, self, db, self.loop
+            transport,
+            self.market_application,
+            self, db, self.loop
         )
-        self.market = market
         self.transport = transport
 
     def open(self):
@@ -948,6 +961,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         with WebSocketHandler.listen_lock:
             self.listeners.add(self)
         self.connected = True
+        # self.connected not used for any logic, might remove if unnecessary
 
     def on_close(self):
         self.log.info("Websocket closed")

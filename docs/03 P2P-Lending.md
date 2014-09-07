@@ -11,7 +11,7 @@ Peer-to-peer (P2P) lending has emerged as a means to decentralise the oligopolis
 
 ## Ricardian Loan Contracts
 
-As with other goods and services on *OpenBazaar*, the loan is drawn up as a [Ricardian-style contract](https://github.com/OpenBazaar/OpenBazaar/blob/master/docs/Ricardian-Contracts.md) that I will refer to as the **loan contract** for the rest of the article. The loan contract is initially written by the *borrower* and distributed/published on the *OpenBazaar* network, as the borrower is trying to convince the market to purchase their unmaterialized future good (a interest markup of the original loan amount).
+As with other goods and services on *OpenBazaar*, the loan is drawn up as a [Ricardian-style contract](https://github.com/OpenBazaar/OpenBazaar/blob/master/docs/01%20Ricardian-Contracts.md) that I will refer to as the **loan contract** for the rest of the article. The loan contract is initially written by the *borrower* and distributed/published on the *OpenBazaar* network, as the borrower is trying to convince the market to purchase their unmaterialized future good (a interest markup of the original loan amount).
 
 Let us imagine a *borrower*, Bob, and a *creditor*, Alice:
 
