@@ -32,7 +32,7 @@ class CryptoPeerConnection(PeerConnection):
         self.port = urlparse(address).port
         self.nickname = nickname
         self.sin = sin
-        self.connected = False
+        self.peer_alive = False # not used for any logic, might remove it later if unnecessary
         self.guid = guid
 
         PeerConnection.__init__(self, transport, address)
@@ -55,7 +55,7 @@ class CryptoPeerConnection(PeerConnection):
                     self.pub = msg['pubkey']
                     self.nickname = msg['senderNick']
 
-                    self._peer_alive = True
+                    self.peer_alive = True
 
                     # Add this peer to active peers list
                     for idx, peer in enumerate(self.transport.dht.activePeers):
@@ -69,7 +69,7 @@ class CryptoPeerConnection(PeerConnection):
                             return
 
                     self.transport.dht.activePeers.append(self)
-                    self.transport.dht._routingTable.addContact(self)
+                    self.transport.dht.routingTable.addContact(self)
 
                     if handshake_cb is not None:
                         handshake_cb()
@@ -613,7 +613,7 @@ class CryptoTransportLayer(TransportLayer):
         # Directed message
         if send_to is not None:
 
-            peer = self.dht._routingTable.getContact(send_to)
+            peer = self.dht.routingTable.getContact(send_to)
             if not peer:
                 for activePeer in self.dht.activePeers:
                     if activePeer.guid == send_to:
@@ -635,7 +635,7 @@ class CryptoTransportLayer(TransportLayer):
 
             for peer in self.dht.activePeers:
                 try:
-                    peer = self.dht._routingTable.getContact(peer.guid)
+                    peer = self.dht.routingTable.getContact(peer.guid)
                     data['senderGUID'] = self.guid
                     data['pubkey'] = self.pubkey
 

@@ -265,7 +265,7 @@ class Market(object):
         if online_only:
             notaries = {}
             for n in settings['notaries']:
-                peer = self.dht._routingTable.getContact(n.guid)
+                peer = self.dht.routingTable.getContact(n.guid)
             if peer is not None:
                 peer.start_handshake()
                 notaries.append(n)

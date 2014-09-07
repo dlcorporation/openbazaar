@@ -27,7 +27,7 @@ class DHT(object):
         self.market_id = market_id
 
         # Routing table
-        self._routingTable = routingtable.OptimizedTreeRoutingTable(
+        self.routingTable = routingtable.OptimizedTreeRoutingTable(
             self.settings['guid'], market_id)
         self._dataStore = datastore.SqliteDataStore(db_connection)
 
@@ -102,11 +102,11 @@ class DHT(object):
 
                 if active_peer_tuple == peer_tuple:
 
-                    old_peer = self._routingTable.getContact(guid)
+                    old_peer = self.routingTable.getContact(guid)
 
                     if old_peer and (old_peer.address != uri or old_peer.pub != pubkey):
-                        self._routingTable.removeContact(guid)
-                        self._routingTable.addContact(peer)
+                        self.routingTable.removeContact(guid)
+                        self.routingTable.addContact(peer)
 
                     self.log.info('Already in active peer list')
                     return
@@ -119,8 +119,8 @@ class DHT(object):
                         peer.pub = pubkey
                         peer.nickname = nickname
                         self.activePeers[idx] = peer
-                        self._routingTable.removeContact(guid)
-                        self._routingTable.addContact(peer)
+                        self.routingTable.removeContact(guid)
+                        self.routingTable.addContact(peer)
 
                         return
 
@@ -130,8 +130,8 @@ class DHT(object):
 
             def cb():
                 self.log.debug('Back from handshake')
-                self._routingTable.removeContact(new_peer.guid)
-                self._routingTable.addContact(new_peer)
+                self.routingTable.removeContact(new_peer.guid)
+                self.routingTable.addContact(new_peer)
                 self.knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer.guid))
                 self.transport.save_peer_to_db(peer_tuple)
 
@@ -185,7 +185,7 @@ class DHT(object):
         assert uri is not None
         assert pubkey is not None
 
-        new_peer = self._routingTable.getContact(guid)
+        new_peer = self.routingTable.getContact(guid)
 
         if new_peer is not None:
 
@@ -217,7 +217,7 @@ class DHT(object):
 
             else:
                 # Search for contact in routing table
-                foundContact = self._routingTable.getContact(key)
+                foundContact = self.routingTable.getContact(key)
 
                 if foundContact:
                     self.log.info('Found the node')
@@ -248,11 +248,11 @@ class DHT(object):
 
             if new_peer is None or new_peer.address != uri:
                 new_peer.address = uri
-                self._routingTable.removeContact(new_peer.guid)
-                self._routingTable.addContact(new_peer)
+                self.routingTable.removeContact(new_peer.guid)
+                self.routingTable.addContact(new_peer)
 
     def close_nodes(self, key, guid):
-        contacts = self._routingTable.findCloseNodes(key, constants.k, guid)
+        contacts = self.routingTable.findCloseNodes(key, constants.k, guid)
         contactTriples = []
         for contact in contacts:
             contactTriples.append((contact.guid, contact.address, contact.pub, contact.nickname))
@@ -372,7 +372,7 @@ class DHT(object):
         self.log.info('Started Refreshing Routing Table')
 
         # Get Random ID from every k-bucket
-        nodeIDs = self._routingTable.getRefreshList(0, False)
+        nodeIDs = self.routingTable.getRefreshList(0, False)
 
         def searchForNextNodeID():
             if len(nodeIDs) > 0:
@@ -476,7 +476,7 @@ class DHT(object):
         send back the missing or updated listings. This would save on queries for listings we already have.
         """
 
-        peer = self._routingTable.getContact(key)
+        peer = self.routingTable.getContact(key)
 
         if peer:
             peer.send({'type': 'query_listings', 'key': key})
@@ -620,7 +620,7 @@ class DHT(object):
 
             guid = node[2]
 
-            peer = self._routingTable.getContact(guid)
+            peer = self.routingTable.getContact(guid)
 
             if guid == self.transport.guid:
                 break
@@ -734,7 +734,7 @@ class DHT(object):
         if startupShortlist == [] or startupShortlist is None:
 
             # Retrieve closest nodes adn add them to the shortlist for the search
-            closeNodes = self._routingTable.findCloseNodes(key, constants.alpha, self.settings['guid'])
+            closeNodes = self.routingTable.findCloseNodes(key, constants.alpha, self.settings['guid'])
             shortlist = []
 
             for closeNode in closeNodes:
@@ -745,7 +745,7 @@ class DHT(object):
 
             # Refresh the k-bucket for this key
             if key != self.settings['guid']:
-                self._routingTable.touchKBucket(key)
+                self.routingTable.touchKBucket(key)
 
             # Abandon the search if the shortlist has no nodes
             if len(new_search.shortlist) == 0:
@@ -768,12 +768,12 @@ class DHT(object):
         new_search.slowNodeCount[0] = len(new_search.active_probes)
 
         # Sort shortlist from closest to farthest
-        # self.activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.guid, targetKey), self._routingTable.distance(secondContact.guid, targetKey)))
-        # new_search.shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self._routingTable.distance(firstContact.guid, targetKey), self._routingTable.distance(secondContact.guid, targetKey)))
+        # self.activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self.routingTable.distance(firstContact.guid, targetKey), self.routingTable.distance(secondContact.guid, targetKey)))
+        # new_search.shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self.routingTable.distance(firstContact.guid, targetKey), self.routingTable.distance(secondContact.guid, targetKey)))
 
         self.activePeers.sort(lambda firstNode, secondNode, targetKey=new_search.key: cmp(
-            self._routingTable.distance(firstNode.guid, targetKey),
-            self._routingTable.distance(secondNode.guid, targetKey)))
+            self.routingTable.distance(firstNode.guid, targetKey),
+            self.routingTable.distance(secondNode.guid, targetKey)))
 
         # while len(self.pendingIterationCalls):
         # del self.pendingIterationCalls[0]
@@ -809,8 +809,8 @@ class DHT(object):
             new_search.shortlist = self.dedupe(new_search.shortlist)
 
             new_search.shortlist.sort(lambda firstNode, secondNode, targetKey=new_search.key: cmp(
-                self._routingTable.distance(firstNode[2], targetKey),
-                self._routingTable.distance(secondNode[2], targetKey)))
+                self.routingTable.distance(firstNode[2], targetKey),
+                self.routingTable.distance(secondNode[2], targetKey)))
 
             new_search.prevShortlistLength = len(new_search.shortlist)
 
@@ -826,7 +826,7 @@ class DHT(object):
 
                     new_search.active_probes.append(node)
                     new_search.already_contacted.append(node)
-                    contact = self._routingTable.getContact(node[2])
+                    contact = self.routingTable.getContact(node[2])
 
                     if contact:
 

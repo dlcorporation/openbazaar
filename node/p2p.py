@@ -18,7 +18,7 @@ import errno
 class PeerConnection(object):
     def __init__(self, transport, address):
         # timeout in seconds
-        self._timeout = 10
+        self.timeout = 10
         self.transport = transport
         self.address = address
         self.nickname = ""
@@ -28,7 +28,7 @@ class PeerConnection(object):
         )
         self.ctx = zmq.Context()
 
-    def create_socket(self):
+    def create_zmq_socket(self):
         self.log.info('Creating Socket')
         socket = self.ctx.socket(zmq.REQ)
         socket.setsockopt(zmq.LINGER, 0)
@@ -49,7 +49,7 @@ class PeerConnection(object):
         compressed_data = zlib.compress(serialized, 9)
 
         try:
-            s = self.create_socket()
+            s = self.create_zmq_socket()
             try:
                 s.connect(self.address)
             except zmq.ZMQError as e:
@@ -88,7 +88,7 @@ class TransportLayer(object):
     def __init__(self, market_id, my_ip, my_port, my_guid, nickname=None):
 
         self.peers = {}
-        self._callbacks = defaultdict(list)
+        self.callbacks = defaultdict(list)
         self.timeouts = []
         self.port = my_port
         self.ip = my_ip
@@ -109,22 +109,22 @@ class TransportLayer(object):
 
     def add_callbacks(self, callbacks):
         for section, callback in callbacks:
-            self._callbacks[section] = []
+            self.callbacks[section] = []
             self.add_callback(section, callback)
 
     def add_callback(self, section, callback):
-        if callback not in self._callbacks[section]:
-            self._callbacks[section].append(callback)
+        if callback not in self.callbacks[section]:
+            self.callbacks[section].append(callback)
 
     def trigger_callbacks(self, section, *data):
         # Run all callbacks in specified section
-        for cb in self._callbacks[section]:
+        for cb in self.callbacks[section]:
             cb(*data)
 
         # Run all callbacks registered under the 'all' section. Don't duplicate
         # calls if the specified section was 'all'.
         if not section == 'all':
-            for cb in self._callbacks['all']:
+            for cb in self.callbacks['all']:
                 cb(*data)
 
     def get_profile(self):
@@ -215,7 +215,7 @@ class TransportLayer(object):
 
         # Directed message
         if send_to is not None:
-            peer = self.dht._routingTable.getContact(send_to)
+            peer = self.dht.routingTable.getContact(send_to)
             # self.log.debug(
             #     '%s %s %s' % (peer.guid, peer.address, peer._pub)
             # )
@@ -254,7 +254,7 @@ class TransportLayer(object):
         # we get a "clean" msg which is a dict holding whatever
         self.log.info("[On Message] Data received: %s" % msg)
 
-        # if not self._routingTable.getContact(msg['senderGUID']):
+        # if not self.routingTable.getContact(msg['senderGUID']):
         # Add to contacts if doesn't exist yet
         # self._addCryptoPeer(msg['uri'], msg['senderGUID'], msg['pubkey'])
         if msg['type'] != 'ok':
