@@ -99,7 +99,7 @@ class CryptoPeerConnection(PeerConnection):
                 s.settimeout(1)
                 s.connect((self.ip, self.port))
             except socket.error as e:
-                self.log.error("socket error on %s: %s" % (self.ip, e))
+                self.log.error("socket error on %s:%i %s" % (self.ip, self.port, e))
                 self.transport.dht.remove_active_peer(self.address)
                 return False
         except TypeError:
