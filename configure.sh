@@ -41,10 +41,14 @@ function installMac {
       echo ""
       read -p "Press [Enter] to continue anyway or [ctrl + c] to exit and do what the doctor says..."
     fi
-    brew upgrade
+    if ! brew upgrade; then
+      echo "There were errors when attempting to 'brew upgrade' and there could be issues with the installation of OpenBazaar."
+      echo ""
+      read -p "Press [Enter] to continue anyway or [ctrl + c] to exit and fix those errors."
+    fi
     brew prune
   fi
-
+  
   #install gpg/sqlite3/python/wget if they aren't installed
   for dep in gpg sqlite3 python wget
   do
