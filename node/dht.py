@@ -9,7 +9,7 @@ import os
 import routingtable
 import time
 import socket
-from threading import Thread
+from threading import Thread, Timer
 
 
 class DHT(object):
@@ -124,7 +124,17 @@ class DHT(object):
 
                         return
 
-            self.log.debug('New Peer')
+            if peer_tuple in self.knownNodes:
+                return
+
+            self.add_known_node(peer_tuple)
+
+            def timeout(peer=None):
+                self.log.debug("Unknowing peer after timeout: %s %s %s" % (peer[0], peer[2], peer[3]))
+                self.knownNodes.remove(peer)
+            Timer(60, timeout, [peer_tuple]).start()
+
+            self.log.info('New peer seen; starting handshake - %s %s %s' % (uri, guid, nickname))
 
             new_peer = self.transport.get_crypto_peer(guid, uri, pubkey, nickname)
 
@@ -132,7 +142,6 @@ class DHT(object):
                 self.log.debug('Back from handshake')
                 self._routingTable.removeContact(new_peer.guid)
                 self._routingTable.addContact(new_peer)
-                self.knownNodes.append((urlparse(uri).hostname, urlparse(uri).port, new_peer.guid))
                 self.transport.save_peer_to_db(peer_tuple)
 
             t = Thread(target=new_peer.start_handshake, args=(cb,))
