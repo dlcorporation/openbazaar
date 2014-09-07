@@ -157,7 +157,7 @@ class Obdb():
                 if limit is not None and limit_offset is None:
                     limit_clause = "LIMIT %s" % limit
                 elif limit is not None and limit_offset is not None:
-                    limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
+                    limit_clause = "LIMIT %s, %s" % (limit_offset, limit)
                 else:
                     limit_clause = ""
             where_part = operator.join(where_part)
