@@ -20,6 +20,7 @@ from orders import Orders
 from protocol import proto_page, query_page
 from transport import CryptoTransportLayer
 from threading import Thread
+from crypto_util import makePrivCryptor
 
 import random
 import json
@@ -330,7 +331,7 @@ class Market(object):
         # Sign listing index for validation and tamper resistance
         data_string = str({'guid': self.transport.guid,
                            'contracts': my_contracts})
-        signature = CryptoTransportLayer.makeCryptor(self.transport.settings['secret']).sign(data_string).encode('hex')
+        signature = makePrivCryptor(self.transport.settings['secret']).sign(data_string).encode('hex')
 
         value = {'signature': signature,
                  'data': {'guid': self.transport.guid,
