@@ -24,6 +24,24 @@ function command_exists {
   type "$1" &> /dev/null
 }
 
+function brewDoctor {
+    if ! brew doctor; then
+      echo ""
+      echo "'brew doctor' did not exit cleanly! This may be okay. Read above."
+      echo ""
+      read -p "Press [Enter] to continue anyway or [ctrl + c] to exit and do what the doctor says..."
+    fi
+}
+
+function brewUpgrade {
+    if ! brew upgrade; then
+      echo ""
+      echo "There were errors when attempting to 'brew upgrade' and there could be issues with the installation of OpenBazaar."
+      echo ""
+      read -p "Press [Enter] to continue anyway or [ctrl + c] to exit and fix those errors."
+    fi
+}
+
 function installMac {
   #print commands (useful for debugging)
   #set -x  #disabled because the echos and stdout are verbose enough to see progress
@@ -35,17 +53,8 @@ function installMac {
   else
     echo "updating, upgrading, checking brew..."
     brew update
-    if ! brew doctor; then
-      echo ""
-      echo "'brew doctor' did not exit cleanly! This may be okay. Read above."
-      echo ""
-      read -p "Press [Enter] to continue anyway or [ctrl + c] to exit and do what the doctor says..."
-    fi
-    if ! brew upgrade; then
-      echo "There were errors when attempting to 'brew upgrade' and there could be issues with the installation of OpenBazaar."
-      echo ""
-      read -p "Press [Enter] to continue anyway or [ctrl + c] to exit and fix those errors."
-    fi
+    brewDoctor
+    brewUpgrade 
     brew prune
   fi
   
