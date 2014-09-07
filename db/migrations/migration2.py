@@ -7,7 +7,6 @@
 # The docstrings in this module contain epytext markup; API documentation
 # may be created by processing this file with epydoc: http://epydoc.sf.net
 
-from os import path, remove
 from pysqlcipher import dbapi2 as sqlite
 import sys
 
@@ -16,10 +15,10 @@ import constants
 
 DB_PATH = constants.DB_PATH
 
+
 def upgrade(db_path):
 
     con = sqlite.connect(db_path)
-    print db_path
     with con:
         cur = con.cursor()
 
@@ -31,8 +30,10 @@ def upgrade(db_path):
                         "ADD COLUMN deleted INT DEFAULT 0")
             print 'Upgraded'
             con.commit()
-        except:
+        except sqlite.Error as e:
+            print 'Exception: %s' % e
             pass
+
 
 def downgrade(db_path):
 

@@ -25,7 +25,7 @@
         <pagination total-items="total_contracts" num-pages="contracts_pages" data-ng-change="contracts_page_changed()" data-ng-model="contracts_current_page" max-size="4" class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" boundary-links="true"></pagination>
             </div>
 
-    <div data-ng-show="undo_remove" class="alert alert-danger">Are you sure you wanted to delete that contract? <a data-ng-href="" data-ng-click="undoRemoveContract(undo_contract_id)">Undo</a></div>
+    <div data-ng-show="undo_remove" class="alert alert-danger">Are you sure you wanted to delete that contract? <a data-ng-href="" data-ng-click="undoRemoveContract(undo_contract_id)" class="alert-link" style="cursor:pointer">Undo</a></div>
 
     <div>
 

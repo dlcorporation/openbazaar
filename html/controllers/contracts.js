@@ -44,7 +44,7 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-            }
+            };
 
             $scope.removeContract = function(contract_id) {
                 $('#contract-row-'+contract_id).fadeOut({ "duration": 1000 });

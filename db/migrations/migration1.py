@@ -7,7 +7,6 @@
 # The docstrings in this module contain epytext markup; API documentation
 # may be created by processing this file with epydoc: http://epydoc.sf.net
 
-from os import path, remove
 from pysqlcipher import dbapi2 as sqlite
 import sys
 
@@ -15,6 +14,7 @@ sys.path.append('node/')
 import constants
 
 DB_PATH = constants.DB_PATH
+
 
 def upgrade(db_path):
 
@@ -35,8 +35,10 @@ def upgrade(db_path):
                         "updated INT, "
                         "created INT)")
             print 'Upgraded'
-        except:
-            pass # handle the error
+        except sqlite.Error as e:
+            print 'Exception: %s' % e
+            pass  # handle the error
+
 
 def downgrade(db_path):
 
@@ -46,7 +48,6 @@ def downgrade(db_path):
 
         # Use PRAGMA key to encrypt / decrypt database.
         cur.execute("PRAGMA key = 'passphrase';")
-
         cur.execute("DROP TABLE IF EXISTS events;")
 
         print 'Downgraded'
