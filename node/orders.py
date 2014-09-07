@@ -222,7 +222,10 @@ class Orders(object):
             for result in order_ids:
                 order = self.get_order(result['order_id'])
                 orders.append(order)
-            total_orders = len(orders)
+            total_orders = len(self.db.selectEntries(
+            "orders",
+            {"market_id": self.market_id}
+            ))
         else:
             if merchant:
                 order_ids = self.db.selectEntries(
@@ -237,7 +240,10 @@ class Orders(object):
                 for result in order_ids:
                     order = self.get_order(result['order_id'])
                     orders.append(order)
-                total_orders = len(orders)
+                total_orders = len(self.db.selectEntries(
+                "orders",
+                {"market_id": self.market_id}
+                ))
             else:
                 order_ids = self.db.selectEntries(
                     "orders",
@@ -247,10 +253,13 @@ class Orders(object):
                     limit_offset=page * 10
                 )
                 for result in order_ids:
-                    if result['merchant'] != self.transport._guid:
+                    if result['merchant'] != self.transport.guid:
                         order = self.get_order(result['order_id'])
                         orders.append(order)
-                total_orders = len(orders)
+                total_orders = len(self.db.selectEntries(
+                "orders",
+                {"market_id": self.market_id}
+                ))
 
         for order in orders:
             buyer = self.db.selectEntries("peers", {"guid": order['buyer']})

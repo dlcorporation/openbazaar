@@ -237,11 +237,10 @@ class ProtocolHandler:
         self.log.debug('Checking order count')
         self.send_to_client(None, {
             "type": "order_count",
-            "count": self.db.numEntries(
+            "count": len(self.db.selectEntries(
                 "orders",
-                "market_id = '%s' and state = '%s'" %
-                (self.transport.market_id, "Waiting for Payment")
-            )
+                {"market_id": self.transport.market_id, "state": "Waiting for Payment"}
+            ))
         })
 
     def refresh_peers(self):
