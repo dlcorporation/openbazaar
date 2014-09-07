@@ -185,7 +185,6 @@ class TransportLayer(object):
                     #    peer.send(data, callback)
                     # else:
                     print 'test %s' % peer
-
                     def cb(msg):
                         print msg
                     peer.send(data, cb)
@@ -222,7 +221,6 @@ class TransportLayer(object):
         msg_type = msg.get('type')
         if msg_type == 'hello_request' and msg.get('uri'):
             self._init_peer(msg)
->>>>>>> upstream/master:node/transport.py
         else:
             self._on_message(msg)
 

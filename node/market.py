@@ -408,7 +408,7 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self.log.info('Getting contracts for market: %s' % self.transport.market_id)
-        contracts = self.db.selectEntries("contracts", {"market_id": self.transport.market_id, "deleted":0},
+        contracts = self.db.selectEntries("contracts", {"market_id": self.transport.market_id, "deleted": 0},
                                            limit=10,
                                            limit_offset=(page * 10))
         my_contracts = []

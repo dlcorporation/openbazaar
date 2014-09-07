@@ -230,7 +230,7 @@ class Orders(object):
             if merchant:
                 order_ids = self.db.selectEntries(
                     "orders",
-                    {"market_id": self.market_id, "merchant": self.transport._guid},
+                    {"market_id": self.market_id, "merchant": self.transport.guid},
                     order_field="updated",
                     order="DESC",
                     limit=10,
