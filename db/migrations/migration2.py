@@ -17,27 +17,36 @@ import constants
 DB_PATH = constants.DB_PATH
 
 def upgrade(db_path):
-    if not path.isfile(db_path):
-        con = sqlite.connect(db_path)
-        with con:
-            cur = con.cursor()
 
-            # Use PRAGMA key to encrypt / decrypt database.
-            cur.execute("PRAGMA key = 'passphrase';")
+    con = sqlite.connect(db_path)
+    print db_path
+    with con:
+        cur = con.cursor()
 
-            cur.execute("ALTER TABLE products("
-                        "ADD COLUMN deleted INT)")
+        # Use PRAGMA key to encrypt / decrypt database.
+        cur.execute("PRAGMA key = 'passphrase';")
+
+        try:
+            cur.execute("ALTER TABLE contracts "
+                        "ADD COLUMN deleted INT DEFAULT 0")
+            print 'Upgraded'
+            con.commit()
+        except:
+            pass
 
 def downgrade(db_path):
-    if not path.isfile(db_path):
-        con = sqlite.connect(db_path)
-        with con:
-            cur = con.cursor()
 
-            # Use PRAGMA key to encrypt / decrypt database.
-            cur.execute("PRAGMA key = 'passphrase';")
+    con = sqlite.connect(db_path)
+    with con:
+        cur = con.cursor()
 
-            cur.execute("ALTER TABLE products DROP COLUMN deleted")
+        # Use PRAGMA key to encrypt / decrypt database.
+        cur.execute("PRAGMA key = 'passphrase';")
+
+        cur.execute("ALTER TABLE contracts DROP COLUMN deleted")
+
+        print 'Downgraded'
+        con.commit()
 
 if __name__ == "__main__":
 

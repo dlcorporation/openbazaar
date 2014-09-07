@@ -17,14 +17,15 @@ import constants
 DB_PATH = constants.DB_PATH
 
 def upgrade(db_path):
-    if not path.isfile(db_path):
-        con = sqlite.connect(db_path)
-        with con:
-            cur = con.cursor()
 
-            # Use PRAGMA key to encrypt / decrypt database.
-            cur.execute("PRAGMA key = 'passphrase';")
+    con = sqlite.connect(db_path)
+    with con:
+        cur = con.cursor()
 
+        # Use PRAGMA key to encrypt / decrypt database.
+        cur.execute("PRAGMA key = 'passphrase';")
+
+        try:
             cur.execute("CREATE TABLE events("
                         "id INTEGER PRIMARY KEY "
                         "AUTOINCREMENT, "
@@ -33,17 +34,22 @@ def upgrade(db_path):
                         "event_description TEXT, "
                         "updated INT, "
                         "created INT)")
+            print 'Upgraded'
+        except:
+            pass # handle the error
 
 def downgrade(db_path):
-    if not path.isfile(db_path):
-        con = sqlite.connect(db_path)
-        with con:
-            cur = con.cursor()
 
-            # Use PRAGMA key to encrypt / decrypt database.
-            cur.execute("PRAGMA key = 'passphrase';")
+    con = sqlite.connect(db_path)
+    with con:
+        cur = con.cursor()
 
-            cur.execute("DROP TABLE IF EXISTS events;")
+        # Use PRAGMA key to encrypt / decrypt database.
+        cur.execute("PRAGMA key = 'passphrase';")
+
+        cur.execute("DROP TABLE IF EXISTS events;")
+
+        print 'Downgraded'
 
 if __name__ == "__main__":
 
