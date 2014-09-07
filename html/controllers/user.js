@@ -106,10 +106,6 @@ angular.module('app')
                     $scope.page = msg;
                     $scope.page.reputation_pledge = 0;
 
-                    // Write in store content into the HTML
-                    var contentDiv = document.getElementById('page-content');
-                    contentDiv.innerHTML = msg.text;
-
                     if (!$scope.$$phase) {
                         $scope.$apply();
                     }
