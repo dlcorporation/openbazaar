@@ -82,31 +82,24 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
             sets = ()
             wheres = ()
+            where_part = []
+            set_part = []
             for key, value in set_dict.iteritems():
                 if type(value) == bool:
                     value = bool(value)
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-
                 sets = sets + (value, )
-                if first:
-                    set_part = "%s = ?" % (key)
-                    first = False
-                else:
-                    set_part = set_part + ", %s = ?" % (key)
-            first = True
+                set_part.append("%s = ?" % key)
+            set_part = ",".join(set_part)
             for key, value in where_dict.iteritems():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
                 wheres = wheres + (value, )
-                if first:
-                    where_part = "%s = ?" % (key)
-                    first = False
-                else:
-                    where_part = where_part + "%s %s = ?" % (operator, key)
+                where_part.append("%s = ?" % (key))
+            where_part = operator.join(where_part)
             query = "UPDATE %s SET %s WHERE %s" \
                     % (table, set_part, where_part)
             self.log.debug('query: %s' % query)
@@ -121,8 +114,9 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
             sets = ()
+            updatefield_part = []
+            setfield_part = []
             for key, value in update_dict.iteritems():
 
                 if type(value) == bool:
@@ -130,13 +124,10 @@ class Obdb():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
                 sets = sets + (value,)
-                if first:
-                    updatefield_part = "%s" % (key)
-                    setfield_part = "?"
-                    first = False
-                else:
-                    updatefield_part = updatefield_part + ", %s" % (key)
-                    setfield_part = setfield_part + ", ?"
+                updatefield_part.append(key)
+                setfield_part.append("?")
+            updatefield_part = ",".join(updatefield_part)
+            setfield_part = ",".join(setfield_part)
             query = "INSERT INTO %s(%s) VALUES(%s)"  \
                     % (table, updatefield_part, setfield_part)
             cur.execute(query, sets)
@@ -156,25 +147,20 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
             wheres = ()
+            where_part = []
             for key, value in where_dict.iteritems():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
                 wheres = wheres + (value, )
-                if first:
-                    where_part = "%s = ?" % (key)
-                    first = False
-                else:
-                    where_part = where_part + "%s %s = ?" % (operator, key)
-
+                where_part.append("%s = ?" % (key) )
                 if limit is not None and limit_offset is None:
                     limit_clause = "LIMIT %s" % limit
                 elif limit is not None and limit_offset is not None:
                     limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
                 else:
                     limit_clause = ""
-
+            where_part = operator.join(where_part)
             query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
                     % (table, where_part, order_field, order, limit_clause)
             self.log.debug("query: %s " % query)
@@ -195,33 +181,16 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
             dels = ()
+            where_part = []
             for key, value in where_dict.iteritems():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
                 dels = dels + (value, )
-                if first:
-                    where_part = "%s = ?" % (key)
-                    first = False
-                else:
-                    where_part = where_part + "%s %s = ?" % (operator, key)
+                where_part.append("%s = ?" % (key))
+            where_part = operator.join(where_part)
             query = "DELETE FROM %s WHERE %s" \
                     % (table, where_part)
             self.log.debug('Query: %s' % query)
             cur.execute(query, dels)
         self._disconnectFromDb()
-
-    def numEntries(self, table, where_clause="'1'='1'"):
-        self._connectToDb()
-        with self.con:
-            cur = self.con.cursor()
-
-            query = "SELECT count(*) as count FROM %s WHERE %s" \
-                    % (table, where_clause)
-            self.log.debug('query: %s' % query)
-            cur.execute(query)
-            rows = cur.fetchall()
-        self._disconnectFromDb()
-
-        return rows[0]['count']
