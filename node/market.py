@@ -4,10 +4,7 @@ This module manages all market related activities
 from StringIO import StringIO
 import ast
 from base64 import b64decode, b64encode
-import hashlib
-import json
 import logging
-import random
 import string
 import traceback
 
@@ -17,12 +14,16 @@ import tornado
 from zmq.eventloop import ioloop
 
 import constants
+from pybitcointools.main import privkey_to_pubkey
 from data_uri import DataURI
 from orders import Orders
 from protocol import proto_page, query_page
-from crypto2crypto import CryptoTransportLayer
-from pybitcointools import *
+from transport import CryptoTransportLayer
 from threading import Thread
+
+import random
+import json
+import hashlib
 
 ioloop.install()
 
@@ -266,7 +267,7 @@ class Market(object):
         if online_only:
             notaries = {}
             for n in settings['notaries']:
-                peer = self.dht._routingTable.getContact(n.guid)
+                peer = self.dht.routingTable.getContact(n.guid)
             if peer is not None:
                 peer.start_handshake()
                 notaries.append(n)
