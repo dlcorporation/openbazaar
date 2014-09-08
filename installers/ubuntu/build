@@ -11,40 +11,45 @@ developer toolkit to create a formal debian source package.
 import os
 import re
 
-OB_PROJECT_DIR=os.path.realpath('../..')
-USR_LOCAL_SHARE_OB_DIR='/usr/local/share/openbazaar'
-BIN_DIR='/usr/bin'
-SHARE_DIR='/usr/share'
-APP_DIR=SHARE_DIR + '/applications'
-HICOLOR_DIR=SHARE_DIR + '/icons/hicolor'
-DOC_DIR=SHARE_DIR + '/doc/openbazaar'
-MAN_DIR=SHARE_DIR + '/man/man1'
+OB_PROJECT_DIR = os.path.realpath('../..')
+BIN_DIR = '/usr/bin'
+SHARE_DIR = '/usr/share'
+USR_SHARE_OB_DIR = SHARE_DIR +'/openbazaar'
+APP_DIR = SHARE_DIR + '/applications'
+HICOLOR_DIR = SHARE_DIR + '/icons/hicolor'
+DOC_DIR = SHARE_DIR + '/doc/openbazaar'
+MAN_DIR = SHARE_DIR + '/man/man1'
+
 
 def assert_current_dir_is(dirname):
     assert(os.path.basename(os.path.realpath(os.path.curdir)) == dirname)
 
+
 def read_version_from_changelog():
     assert_current_dir_is('ubuntu')
-    f = open('../../changelog','r')
+    f = open('../../changelog', 'r')
     first_line = f.readline()
     f.close()
 
     m = re.search('openbazaar.*?([0-9]+\.[0-9]+\.[0-9]+).*', first_line)
     return m.group(1)
 
+
 def rm_rf(d):
-    #removes folders recursively
-    for path in (os.path.join(d,f) for f in os.listdir(d)):
+    # removes folders recursively
+    for path in (os.path.join(d, f) for f in os.listdir(d)):
         if os.path.isdir(path):
             rm_rf(path)
         else:
             os.unlink(path)
     os.rmdir(d)
 
+
 def delete_previous_package(packageName):
     assert_current_dir_is('ubuntu')
     if os.path.exists(packageName):
         os.unlink(packageName)
+
 
 def clean_debian_folder():
     '''clean everything but the files we'll take to build the installer'''
@@ -60,10 +65,11 @@ def clean_debian_folder():
 
         if os.path.isdir(item):
             rm_rf(item)
-            print '(deleted',item,'folder)'
+            print '(deleted', item, 'folder)'
         elif os.path.isfile(item):
             os.unlink(item)
-            print '(deleted',item,'file)'
+            print '(deleted', item, 'file)'
+
 
 def cleanup():
     assert_current_dir_is('ubuntu')
@@ -71,23 +77,22 @@ def cleanup():
     os.system('rm -f *.deb')
     os.system('rm -f *.rpm')
 
+
 def create_folder_structure():
     assert_current_dir_is('ubuntu')
     os.makedirs('./output')
     os.chdir('output')
     assert_current_dir_is('output')
 
-    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR)
-    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR + '/db')
-    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR + '/msig')
-    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR + '/html/backups')
-    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR + '/logs')
-    os.makedirs('.' + SHARE_DIR)
+    os.makedirs('.' + USR_SHARE_OB_DIR + '/db')
+    os.makedirs('.' + USR_SHARE_OB_DIR + '/msig')
+    os.makedirs('.' + USR_SHARE_OB_DIR + '/html/backups')
+    os.makedirs('.' + USR_SHARE_OB_DIR + '/logs')
     os.makedirs('.' + HICOLOR_DIR + '/16x16/apps')
     os.makedirs('.' + HICOLOR_DIR + '/32x32/apps')
     os.makedirs('.' + HICOLOR_DIR + '/48x48/apps')
     os.makedirs('.' + HICOLOR_DIR + '/64x64/apps')
-    os.makedirs('.' + HICOLOR_DIR + '/128x128/apps')  
+    os.makedirs('.' + HICOLOR_DIR + '/128x128/apps')
     os.makedirs('.' + APP_DIR)
     os.makedirs('.' + BIN_DIR)
     os.makedirs('.' + DOC_DIR)
@@ -96,56 +101,67 @@ def create_folder_structure():
     os.chdir('..')
     assert_current_dir_is('ubuntu')
 
+
 def copy_files():
     assert_current_dir_is('ubuntu')
     os.chdir('output')
     assert_current_dir_is('output')
 
-    #copy the launcher scripts and icon
-    os.system('cp ' + OB_PROJECT_DIR + '/run.sh .' +  USR_LOCAL_SHARE_OB_DIR)
-    os.system('cp ' + OB_PROJECT_DIR + '/stop.sh .' + USR_LOCAL_SHARE_OB_DIR)
-    os.system('cp ' + OB_PROJECT_DIR + '/requirements.txt .' + USR_LOCAL_SHARE_OB_DIR)
-    os.system('cp ' + OB_PROJECT_DIR + '/configure.sh .' +     USR_LOCAL_SHARE_OB_DIR)
-    
-    #copy man, gzip it, put it in the man dir
-    os.system('cp ' + OB_PROJECT_DIR + '/docs/openbazaar.1 .')
-    os.system('tar cvfz openbazaar.1.gz openbazaar.1')
-    os.unlink('openbazaar.1')
-    os.system('mv openbazaar.1.gz .' + MAN_DIR)
-    
-    #take care of the icons
-    os.system('cp ../icons/16x16.png .'+ HICOLOR_DIR +'/16x16/apps/openbazaar.png')
-    os.system('cp ../icons/32x32.png .'+ HICOLOR_DIR +'/32x32/apps/openbazaar.png')
-    os.system('cp ../icons/48x48.png .'+ HICOLOR_DIR +'/48x48/apps/openbazaar.png')
-    os.system('cp ../icons/64x64.png .'+ HICOLOR_DIR +'/64x64/apps/openbazaar.png')
-    os.system('cp ../icons/128x128.png .'+ HICOLOR_DIR +'/128x128/apps/openbazaar.png')
-    
-    #copy LICENSE.md as 'copyright' and changelog to /usr/share/doc/openbazaar
-    os.system('cp ' + OB_PROJECT_DIR + '/changelog .'+DOC_DIR)
-    os.system('cp ' + OB_PROJECT_DIR + '/LICENSE.md .'+DOC_DIR + '/copyright')
-    
-    #make sure launcher script is executable
-    os.system('cp ../openbazaar .' + BIN_DIR)
-    os.system('chmod +x .'+BIN_DIR+'/openbazaar')
+    # copy the launcher scripts and icon
+    os.system('cp ' + OB_PROJECT_DIR + '/run.sh .' + USR_SHARE_OB_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/stop.sh .' + USR_SHARE_OB_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/requirements.txt .' + USR_SHARE_OB_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/configure.sh .' + USR_SHARE_OB_DIR)
 
-    #copy DEBIAN files
+    # copy man, gzip it, put it in the man dir
+    os.system('cp ' + OB_PROJECT_DIR + '/docs/openbazaar.1 .')
+    os.system('gzip -9 openbazaar.1')
+    os.system('mv openbazaar.1.gz .' + MAN_DIR)
+
+    # take care of the icons
+    os.system('cp ../icons/16x16.png .' + HICOLOR_DIR + '/16x16/apps/openbazaar.png')
+    os.system('cp ../icons/32x32.png .' + HICOLOR_DIR + '/32x32/apps/openbazaar.png')
+    os.system('cp ../icons/48x48.png .' + HICOLOR_DIR + '/48x48/apps/openbazaar.png')
+    os.system('cp ../icons/64x64.png .' + HICOLOR_DIR + '/64x64/apps/openbazaar.png')
+    os.system('cp ../icons/128x128.png .' + HICOLOR_DIR + '/128x128/apps/openbazaar.png')
+
+    # copy LICENSE.md as 'copyright' and changelog to /usr/share/doc/openbazaar
+    os.system('cp ' + OB_PROJECT_DIR + '/changelog .' + DOC_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/LICENSE.md .' + DOC_DIR + '/copyright')
+    os.system('gzip -9 .' + DOC_DIR + '/changelog')
+
+    # make sure launcher script is executable
+    os.system('cp ../openbazaar .' + BIN_DIR)
+    os.system('chmod 0755 .' + BIN_DIR + '/openbazaar')
+
+    # copy DEBIAN files
     os.system('cp -R ../DEBIAN .')
-    
-    #copy the desktop launcher
-    os.system('cp ../openbazaar.desktop .'+APP_DIR)
-    os.system('chmod +x .'+APP_DIR+'/openbazaar.desktop')
-    
-    #copy server, web files and third party dependency sources we've been forced to include
-    #in our project because their pip scripts fail.
-    os.system('cp -R ' + OB_PROJECT_DIR + '/node .' + USR_LOCAL_SHARE_OB_DIR + '/')
-    os.system('cp -R ' + OB_PROJECT_DIR + '/html .' + USR_LOCAL_SHARE_OB_DIR + '/')
-    os.system('cp -R ' + OB_PROJECT_DIR + '/pysqlcipher .' + USR_LOCAL_SHARE_OB_DIR + '/')
-    
-    #make sure backup folder is empty
-    os.system('rm -f .' + USR_LOCAL_SHARE_OB_DIR + '/html/backups/*')
+
+    # copy the desktop launcher
+    os.system('cp ../openbazaar.desktop .' + APP_DIR)
+    os.system('chmod 0644 .' + APP_DIR + '/openbazaar.desktop')
+
+    # copy server, web files and third party dependency sources we've been forced to include
+    # in our project because their pip scripts fail.
+    os.system('cp -R ' + OB_PROJECT_DIR + '/node .' + USR_SHARE_OB_DIR + '/')
+    os.system('cp -R ' + OB_PROJECT_DIR + '/html .' + USR_SHARE_OB_DIR + '/')
+    os.system('cp -R ' + OB_PROJECT_DIR + '/pysqlcipher .' + USR_SHARE_OB_DIR + '/')
+
+    # fix permissions to avoid lintian errors
+    os.system('chmod -R 0755 .' + USR_SHARE_OB_DIR + '/node')
+    os.system('chmod -R 0755 .' + USR_SHARE_OB_DIR + '/html')
+    os.system('chmod -R 0755 .' + USR_SHARE_OB_DIR + '/pysqlcipher')
+
+    # get rid of as many binaries as you can
+    os.system('rm -f .' + USR_SHARE_OB_DIR + '/*/*.pyc')
+    os.system('rm -f .' + USR_SHARE_OB_DIR + '/*/*/*.pyc')
+
+    # make sure backup folder is empty
+    os.system('rm -f .' + USR_SHARE_OB_DIR + '/html/backups/*')
 
     os.chdir('..')
     assert_current_dir_is('ubuntu')
+
 
 def build_deb_package(packageName):
     '''builds the .deb'''
@@ -156,10 +172,12 @@ def build_deb_package(packageName):
 def build_rpm_package(packageName):
     '''creates an .rpm out of the .deb file'''
     assert_current_dir_is('ubuntu')
+    os.system('rm -fr openbazaar-' + read_version_from_changelog())
     os.system('fakeroot alien --to-rpm --scripts ' + packageName)
 
+
 if __name__ == '__main__':
-    dotDebName = 'openbazaar-'+read_version_from_changelog()+'.amd64.deb'
+    dotDebName = 'openbazaar-' + read_version_from_changelog() + '.amd64.deb'
 
     cleanup()
     delete_previous_package(dotDebName)

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 echo "[openbazaar] Installing OpenBazaar python dependencies..."
-pushd /usr/local/share/openbazaar
+pushd /usr/share/openbazaar
 sudo pip install -r requirements.txt
 
 pushd pysqlcipher
@@ -9,8 +9,8 @@ sudo python setup.py install
 popd
 popd
 
-sudo chmod -R 775 /usr/local/share/openbazaar
-sudo chown -R $SUDO_USER:$SUDO_USER /usr/local/share/openbazaar
+sudo chmod -R 775 /usr/share/openbazaar
+sudo chown -R $SUDO_USER:$SUDO_USER /usr/share/openbazaar
 
 echo
 echo
