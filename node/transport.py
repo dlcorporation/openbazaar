@@ -405,7 +405,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _ping(self, msg):
 
-        self.log.info('Pinged %s ' % pformat(msg))
+        self.log.info('Pinged %s ' % json.dumps(msg, ensure_ascii=False))
         #
         # pinger = CryptoPeerConnection(self, msg['uri'], msg['pubkey'], msg['senderGUID'])
         # pinger.send_raw(json.dumps(
@@ -789,7 +789,7 @@ class CryptoTransportLayer(TransportLayer):
         nickname = msg.get('senderNick')[:120]
 
         self.dht.add_known_node((ip, port, guid, nickname))
-        self.log.info('ON MESSAGE %s' % msg)
+        self.log.info('ON MESSAGE %s' % json.dumps(msg, ensure_ascii=False))
 
         self.dht.add_peer(self, uri, pubkey, guid, nickname)
 

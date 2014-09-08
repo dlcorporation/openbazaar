@@ -146,13 +146,12 @@ def start_node(my_market_ip,
                disable_open_browser=False):
 
     logging.basicConfig(level=int(log_level),
-                        format='%(asctime)s - %(name)s -  \
-                                %(levelname)s - %(message)s',
+                        format=u'%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         filename=log_file)
-
+    logging._defaultFormatter = logging.Formatter(u'%(message)s')
     locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
 
-    handler = logging.handlers.RotatingFileHandler(log_file,
+    handler = logging.handlers.RotatingFileHandler(log_file, encoding='utf-8',
                                                    maxBytes=50,
                                                    backupCount=0)
     locallogger.addHandler(handler)
