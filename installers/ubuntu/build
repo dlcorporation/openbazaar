@@ -12,9 +12,9 @@ import os
 import re
 
 OB_PROJECT_DIR=os.path.realpath('../..')
-USR_LOCAL_OB_DIR='/usr/local/share/openbazaar'
+USR_LOCAL_SHARE_OB_DIR='/usr/local/share/openbazaar'
 BIN_DIR='/usr/bin'
-SHARE_DIR='/usr/share/openbazaar'
+SHARE_DIR='/usr/share'
 APP_DIR=SHARE_DIR + '/applications'
 HICOLOR_DIR=SHARE_DIR + '/icons/hicolor'
 DOC_DIR=SHARE_DIR + '/doc/openbazaar'
@@ -77,11 +77,11 @@ def create_folder_structure():
     os.chdir('output')
     assert_current_dir_is('output')
 
-    os.makedirs('.' + USR_LOCAL_OB_DIR)
-    os.makedirs('.' + USR_LOCAL_OB_DIR + '/db')
-    os.makedirs('.' + USR_LOCAL_OB_DIR + '/msig')
-    os.makedirs('.' + USR_LOCAL_OB_DIR + '/html/backups')
-    os.makedirs('.' + USR_LOCAL_OB_DIR + '/logs')
+    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR)
+    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR + '/db')
+    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR + '/msig')
+    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR + '/html/backups')
+    os.makedirs('.' + USR_LOCAL_SHARE_OB_DIR + '/logs')
     os.makedirs('.' + SHARE_DIR)
     os.makedirs('.' + HICOLOR_DIR + '/16x16/apps')
     os.makedirs('.' + HICOLOR_DIR + '/32x32/apps')
@@ -102,10 +102,10 @@ def copy_files():
     assert_current_dir_is('output')
 
     #copy the launcher scripts and icon
-    os.system('cp ' + OB_PROJECT_DIR + '/run.sh .' +  SHARE_DIR)
-    os.system('cp ' + OB_PROJECT_DIR + '/stop.sh .' + SHARE_DIR)
-    os.system('cp ' + OB_PROJECT_DIR + '/requirements.txt .' + SHARE_DIR)
-    os.system('cp ' + OB_PROJECT_DIR + '/configure.sh .' +     SHARE_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/run.sh .' +  USR_LOCAL_SHARE_OB_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/stop.sh .' + USR_LOCAL_SHARE_OB_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/requirements.txt .' + USR_LOCAL_SHARE_OB_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/configure.sh .' +     USR_LOCAL_SHARE_OB_DIR)
     
     #copy man, gzip it, put it in the man dir
     os.system('cp ' + OB_PROJECT_DIR + '/docs/openbazaar.1 .')
@@ -120,9 +120,9 @@ def copy_files():
     os.system('cp ../icons/64x64.png .'+ HICOLOR_DIR +'/64x64/apps/openbazaar.png')
     os.system('cp ../icons/128x128.png .'+ HICOLOR_DIR +'/128x128/apps/openbazaar.png')
     
-    #copy License and changelog to /usr/share/doc/openbazaar
+    #copy LICENSE.md as 'copyright' and changelog to /usr/share/doc/openbazaar
     os.system('cp ' + OB_PROJECT_DIR + '/changelog .'+DOC_DIR)
-    os.system('cp ' + OB_PROJECT_DIR + '/LICENSE.txt .'+DOC_DIR)
+    os.system('cp ' + OB_PROJECT_DIR + '/LICENSE.md .'+DOC_DIR + '/copyright')
     
     #make sure launcher script is executable
     os.system('cp ../openbazaar .' + BIN_DIR)
@@ -137,12 +137,12 @@ def copy_files():
     
     #copy server, web files and third party dependency sources we've been forced to include
     #in our project because their pip scripts fail.
-    os.system('cp -R ' + OB_PROJECT_DIR + '/node .' + SHARE_DIR + '/')
-    os.system('cp -R ' + OB_PROJECT_DIR + '/html .' + SHARE_DIR + '/')
-    os.system('cp -R ' + OB_PROJECT_DIR + '/pysqlcipher .' + SHARE_DIR + '/')
+    os.system('cp -R ' + OB_PROJECT_DIR + '/node .' + USR_LOCAL_SHARE_OB_DIR + '/')
+    os.system('cp -R ' + OB_PROJECT_DIR + '/html .' + USR_LOCAL_SHARE_OB_DIR + '/')
+    os.system('cp -R ' + OB_PROJECT_DIR + '/pysqlcipher .' + USR_LOCAL_SHARE_OB_DIR + '/')
     
     #make sure backup folder is empty
-    os.system('rm -f .' + USR_LOCAL_OB_DIR + '/html/backups/*')
+    os.system('rm -f .' + USR_LOCAL_SHARE_OB_DIR + '/html/backups/*')
 
     os.chdir('..')
     assert_current_dir_is('ubuntu')
