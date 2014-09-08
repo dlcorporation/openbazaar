@@ -250,7 +250,7 @@ class Market(object):
                                self.settings)
 
     def republish_contracts(self):
-        listings = self.db.selectEntries("contracts")
+        listings = self.db.selectEntries("contracts", {"deleted": 0})
         for listing in listings:
             self.transport.dht.iterativeStore(self.transport,
                                                 listing['key'],
@@ -321,7 +321,8 @@ class Market(object):
 
         # Calculate index of contracts
         contract_ids = self.db.selectEntries("contracts",
-                                              {"market_id": self.transport.market_id})
+                                              {"market_id": self.transport.market_id,
+                                               "deleted": 0})
         my_contracts = []
         for contract_id in contract_ids:
             my_contracts.append(contract_id['key'])
@@ -338,9 +339,11 @@ class Market(object):
                           'contracts': my_contracts}}
 
         # Pass off to thread to keep GUI snappy
-        self.transport.dht.iterativeStore(self.transport,
-                                            contract_index_key,
-                                            value, self.transport.guid)
+        t = Thread(target=self.transport.dht.iterativeStore, args=(self.transport,
+                                                                   contract_index_key,
+                                                                   value,
+                                                                   self.transport.guid,))
+        t.start()
 
     def remove_contract(self, msg):
         self.log.info("Removing contract: %s" % msg)
