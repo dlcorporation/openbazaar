@@ -102,7 +102,7 @@ class MarketApplication(tornado.web.Application):
 
         result = result_tcp_p2p_mapping and result_udp_p2p_mapping
         if not result:
-          print("Warning: UPnP was not setup correctly. Try doing a port forward on %s and start the node again with -j" % p2p_port)
+            print("Warning: UPnP was not setup correctly. Try doing a port forward on %s and start the node again with -j" % p2p_port)
 
         return result
 
