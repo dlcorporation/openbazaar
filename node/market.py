@@ -283,7 +283,8 @@ class Market(object):
     def republish_listing(self, msg):
 
         listing_id = msg.get('productID')
-        listing = self.db.selectEntries("products", "id = '%s'" % listing_id.replace("'", "''"))
+        listing = self.db.selectEntries("products", {"id": listing_id})
+
         if listing:
             listing = listing[0]
         else:
@@ -319,8 +320,7 @@ class Market(object):
 
         # Calculate index of contracts
         contract_ids = self.db.selectEntries("contracts",
-                                              "market_id = '%s'" %
-                                              self.transport.market_id.replace("'", "''"))
+                                              {"market_id": self.transport.market_id})
         my_contracts = []
         for contract_id in contract_ids:
             my_contracts.append(contract_id['key'])
@@ -351,7 +351,7 @@ class Market(object):
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
-        contract = self.db.selectEntries("contracts", "id = '%s'" % contract_id)[0]
+        contract = self.db.selectEntries("contracts", {"id": contract_id})[0]
         contract_key = contract['key']
 
         contract = json.loads(contract['contract_body'])
@@ -408,7 +408,7 @@ class Market(object):
 
     def get_contracts(self, page=0):
         self.log.info('Getting contracts for market: %s' % self.transport.market_id)
-        contracts = self.db.selectEntries("contracts", "market_id == '%s' and deleted == 0" % self.transport.market_id.replace("'", "''"),
+        contracts = self.db.selectEntries("contracts", {"market_id": self.transport.market_id, "deleted": 0},
                                            limit=10,
                                            limit_offset=(page * 10))
         my_contracts = []
@@ -435,7 +435,7 @@ class Market(object):
                 self.log.error('Problem loading the contract body JSON')
 
         return {"contracts": my_contracts, "page": page,
-                "total_contracts": self.db.numEntries("contracts")}
+                "total_contracts": len(self.db.selectEntries("contracts"))}
 
     def undo_remove_contract(self, contract_id):
         self.log.info('Undo remove contract: %s' % contract_id)
@@ -477,7 +477,7 @@ class Market(object):
     def get_settings(self):
 
         self.log.info('Getting settings info for Market %s' % self.transport.market_id)
-        settings = self.db.getOrCreate("settings", "market_id = '%s'" % self.transport.market_id, {"market_id": self.transport.market_id})
+        settings = self.db.getOrCreate("settings", {"market_id": self.transport.market_id})
 
         if settings['arbiter'] == 1:
             settings['arbiter'] = True

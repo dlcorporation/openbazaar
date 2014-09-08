@@ -150,7 +150,8 @@ class MongoDataStore(DataStore):
 
     def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id=1):
 
-        rows = self.db.selectEntries("datastore", "key = '%s' and market_id = '%s'" % (key, market_id.replace("'", "''")))
+        rows = self.db.selectEntries("datastore", {"key": key, "market_id": market_id})
+
         if len(rows) == 0:
             # FIXME: Wrap text.
             self.db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
@@ -163,7 +164,8 @@ class MongoDataStore(DataStore):
         #     self._cursor.execute('UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?', (buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID, encodedKey))
 
     def _dbQuery(self, key, columnName):
-        row = self.db.selectEntries("datastore", "key = '%s'" % key.replace("'", "''"))
+
+        row = self.db.selectEntries("datastore", {"key": key})
 
         if len(row) != 0:
             value = row[0][columnName]
@@ -223,7 +225,7 @@ class SqliteDataStore(DataStore):
 
     def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id=1):
 
-        rows = self.db.selectEntries("datastore", "key = '%s' and market_id = '%s'" % (key, market_id.replace("'", "''")))
+        rows = self.db.selectEntries("datastore", {"key": key, "market_id": market_id})
         if len(rows) == 0:
             # FIXME: Wrap text.
             self.db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
@@ -236,7 +238,8 @@ class SqliteDataStore(DataStore):
         #     self._cursor.execute('UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?', (buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID, encodedKey))
 
     def _dbQuery(self, key, columnName):
-        row = self.db.selectEntries("datastore", "key = '%s'" % key.replace("'", "''"))
+
+        row = self.db.selectEntries("datastore", {"key": key})
 
         if len(row) != 0:
             value = row[0][columnName]

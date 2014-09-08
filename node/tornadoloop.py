@@ -100,9 +100,11 @@ class MarketApplication(tornado.web.Application):
         print ("UPnP UDP P2P Port Map configuration done (%s -> %s) => %s" %
                (str(p2p_port), str(p2p_port), str(result_udp_p2p_mapping)))
 
-        # return result_http_port_mapping and \
-        return result_tcp_p2p_mapping and \
-               result_udp_p2p_mapping
+        result = result_tcp_p2p_mapping and result_udp_p2p_mapping
+        if not result:
+          print("Warning: UPnP was not setup correctly. Try doing a port forward on %s and start the node again with -j" % p2p_port)
+
+        return result
 
     def cleanup_upnp_port_mapping(self):
         try:

@@ -58,16 +58,19 @@ class Obdb():
         """
         return unicode(value)
 
-    def getOrCreate(self, table, where_clause, data_dict):
+    def getOrCreate(self, table, where_dict, data_dict=False):
         """ This method attempts to grab the record first. If it fails to find it,
         it will create it.
         @param table: The table to search to
         @param get_where_dict: A dictionary with the WHERE/SET clauses
         """
-        entries = self.selectEntries(table, where_clause)
+        if not data_dict:
+            data_dict = where_dict
+
+        entries = self.selectEntries(table, where_dict)
         if len(entries) == 0:
             self.insertEntry(table, data_dict)
-        return self.selectEntries(table, where_clause)[0]
+        return self.selectEntries(table, where_dict)[0]
 
     def updateEntries(self, table, where_dict, set_dict, operator="AND"):
         """ A wrapper for the SQL UPDATE operation
@@ -75,39 +78,32 @@ class Obdb():
         @param whereDict: A dictionary with the WHERE clauses
         @param setDict: A dictionary with the SET clauses
         """
-
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
-            sets = ()
-            wheres = ()
+            sets = []
+            wheres = []
+            where_part = []
+            set_part = []
             for key, value in set_dict.iteritems():
                 if type(value) == bool:
                     value = bool(value)
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-
-                sets = sets + (value, )
-                if first:
-                    set_part = "%s = ?" % (key)
-                    first = False
-                else:
-                    set_part = set_part + ", %s = ?" % (key)
-            first = True
+                sets.append(value)
+                set_part.append("%s = ?" % key)
+            set_part = ",".join(set_part)
             for key, value in where_dict.iteritems():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-                wheres = wheres + (value, )
-                if first:
-                    where_part = "%s = ?" % (key)
-                    first = False
-                else:
-                    where_part = where_part + "%s %s = ?" % (operator, key)
+                wheres.append(value)
+                where_part.append("%s = ?" % (key))
+            operator = " " + operator + " "
+            where_part = operator.join(where_part)
             query = "UPDATE %s SET %s WHERE %s" \
                     % (table, set_part, where_part)
             self.log.debug('query: %s' % query)
-            cur.execute(query, sets + wheres)
+            cur.execute(query, tuple(sets + wheres))
         self._disconnectFromDb()
 
     def insertEntry(self, table, update_dict):
@@ -118,32 +114,30 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
-            sets = ()
+            sets = []
+            updatefield_part = []
+            setfield_part = []
             for key, value in update_dict.iteritems():
 
                 if type(value) == bool:
                     value = bool(value)
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-                sets = sets + (value,)
-                if first:
-                    updatefield_part = "%s" % (key)
-                    setfield_part = "?"
-                    first = False
-                else:
-                    updatefield_part = updatefield_part + ", %s" % (key)
-                    setfield_part = setfield_part + ", ?"
+                sets.append(value)
+                updatefield_part.append(key)
+                setfield_part.append("?")
+            updatefield_part = ",".join(updatefield_part)
+            setfield_part = ",".join(setfield_part)
             query = "INSERT INTO %s(%s) VALUES(%s)"  \
                     % (table, updatefield_part, setfield_part)
-            cur.execute(query, sets)
+            cur.execute(query, tuple(sets))
             lastrowid = cur.lastrowid
             self.log.debug("query: %s " % query)
         self._disconnectFromDb()
         if lastrowid:
             return lastrowid
 
-    def selectEntries(self, table, where_clause="'1'='1'", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
+    def selectEntries(self, table, where_dict={"\"1\"": "1"}, operator="AND", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
         """ A wrapper for the SQL SELECT operation. It will always return all the
             attributes for the selected rows.
         @param table: The table to search to
@@ -153,24 +147,25 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            if limit is not None and limit_offset is None:
-                limit_clause = "LIMIT %s" % limit
-            elif limit is not None and limit_offset is not None:
-                limit_clause = "LIMIT %s %s %s" % (limit_offset, ",", limit)
-            else:
-                limit_clause = ""
-
-            if select_fields is not "*":
-                columns = ",".join(select_fields)
-            else:
-                columns = "*"
-
-            query = "SELECT %s FROM %s WHERE %s ORDER BY %s %s %s" \
-                    % (columns, table, where_clause, order_field, order, limit_clause)
-
-            print query
+            wheres = []
+            where_part = []
+            for key, value in where_dict.iteritems():
+                key = self._beforeStoring(key)
+                value = self._beforeStoring(value)
+                wheres.append(value)
+                where_part.append("%s = ?" % (key))
+                if limit is not None and limit_offset is None:
+                    limit_clause = "LIMIT %s" % limit
+                elif limit is not None and limit_offset is not None:
+                    limit_clause = "LIMIT %s, %s" % (limit_offset, limit)
+                else:
+                    limit_clause = ""
+            operator = " " + operator + " "
+            where_part = operator.join(where_part)
+            query = "SELECT * FROM %s WHERE %s ORDER BY %s %s %s" \
+                    % (table, where_part, order_field, order, limit_clause)
             self.log.debug("query: %s " % query)
-            cur.execute(query)
+            cur.execute(query, tuple(wheres))
             rows = cur.fetchall()
         self._disconnectFromDb()
         return rows
@@ -187,33 +182,17 @@ class Obdb():
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
-            first = True
-            dels = ()
+            dels = []
+            where_part = []
             for key, value in where_dict.iteritems():
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
-                dels = dels + (value, )
-                if first:
-                    where_part = "%s = ?" % (key)
-                    first = False
-                else:
-                    where_part = where_part + "%s %s = ?" % (operator, key)
+                dels.append(value)
+                where_part.append("%s = ?" % (key))
+            operator = " " + operator + " "
+            where_part = operator.join(where_part)
             query = "DELETE FROM %s WHERE %s" \
                     % (table, where_part)
             self.log.debug('Query: %s' % query)
             cur.execute(query, dels)
         self._disconnectFromDb()
-
-    def numEntries(self, table, where_clause="'1'='1'"):
-        self._connectToDb()
-        with self.con:
-            cur = self.con.cursor()
-
-            query = "SELECT count(*) as count FROM %s WHERE %s" \
-                    % (table, where_clause)
-            self.log.debug('query: %s' % query)
-            cur.execute(query)
-            rows = cur.fetchall()
-        self._disconnectFromDb()
-
-        return rows[0]['count']

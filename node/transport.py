@@ -188,7 +188,6 @@ class TransportLayer(object):
 
                     def cb(msg):
                         print msg
-
                     peer.send(data, cb)
 
                 except:
@@ -428,7 +427,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _setup_settings(self):
 
-        self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))
+        self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})
         if len(self.settings) == 0:
             self.settings = None
             self.db.insertEntry("settings", {"market_id": self.market_id, "welcome": "enable"})
@@ -484,7 +483,7 @@ class CryptoTransportLayer(TransportLayer):
             if self.bitmessage_api is not None:
                 self._generate_new_bitmessage_address()
 
-            self.settings = self.db.selectEntries("settings", "market_id = '%s'" % self.market_id.replace("'", "''"))[0]
+            self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})[0]
 
         self.log.debug('Retrieved Settings: \n%s', pformat(self.settings))
 
@@ -560,7 +559,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def get_past_peers(self):
         peers = []
-        result = self.db.selectEntries("peers", "market_id = '%s'" % self.market_id.replace("'", "''"))
+        result = self.db.selectEntries("peers", {"market_id": self.market_id})
         for peer in result:
             peers.append(peer['uri'])
         return peers
@@ -627,10 +626,7 @@ class CryptoTransportLayer(TransportLayer):
     def get_profile(self):
         peers = {}
 
-        self.settings = \
-            self.db.selectEntries("settings", "market_id = '%s'" %
-                                  self.market_id.replace("'", "''"))[0]
-
+        self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})[0]
         for uri, peer in self.peers.iteritems():
             if peer.pub:
                 peers[uri] = peer.pub.encode('hex')
