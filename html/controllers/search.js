@@ -49,8 +49,8 @@ angular.module('app')
 
                 $scope.search_results = [];
                 $scope.awaitingShop = $scope.search;
-                Connection.send('search', query)
-                $scope.search = ""
+                Connection.send('search', query);
+                $scope.search = "";
                 $scope.showDashboardPanel('search');
 
             };
