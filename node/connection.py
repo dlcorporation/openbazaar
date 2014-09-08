@@ -190,29 +190,33 @@ class CryptoPeerConnection(PeerConnection):
 
         if hasattr(self, 'guid'):
 
-            # Include guid
-            data['guid'] = self.guid
-            data['senderGUID'] = self.transport.guid
-            data['uri'] = self.transport.uri
-            data['pubkey'] = self.transport.pubkey
-            data['senderNick'] = self.transport.nickname
+            if self.check_port():
 
-            self.log.debug('Sending to peer: %s %s' % (self.ip, pformat(data)))
+                # Include guid
+                data['guid'] = self.guid
+                data['senderGUID'] = self.transport.guid
+                data['uri'] = self.transport.uri
+                data['pubkey'] = self.transport.pubkey
+                data['senderNick'] = self.transport.nickname
 
-            if self.pub == '':
-                self.log.info('There is no public key for encryption')
+                self.log.debug('Sending to peer: %s %s' % (self.ip, pformat(data)))
+
+                if self.pub == '':
+                    self.log.info('There is no public key for encryption')
+                else:
+                    signature = self.sign(json.dumps(data))
+                    data = self.encrypt(json.dumps(data))
+
+                    try:
+                        if data is not None:
+                            encoded_data = data.encode('hex')
+                            self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
+                        else:
+                            self.log.error('Data was empty')
+                    except Exception as e:
+                        self.log.error("Was not able to encode empty data: %s" % e)
             else:
-                signature = self.sign(json.dumps(data))
-                data = self.encrypt(json.dumps(data))
-
-                try:
-                    if data is not None:
-                        encoded_data = data.encode('hex')
-                        self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
-                    else:
-                        self.log.error('Data was empty')
-                except Exception as e:
-                    self.log.error("Was not able to encode empty data: %s" % e)
+                self.log.error('Peer is not available for sending data')
         else:
             self.log.error('Cannot send to peer')
 
