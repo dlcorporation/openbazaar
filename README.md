@@ -56,7 +56,7 @@ After running the configure.sh script you should have an OpenBazaar installation
 ```
 ./run.sh
 ```
-Then point your web browser to http://localhost:8888
+OpenBazaar will open in a random port on your default web browser. Note that it may take several minutes for OpenBazaar to completely start.
 
 Read more at the [build instructions wiki](https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions).
 
