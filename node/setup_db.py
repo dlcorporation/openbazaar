@@ -45,12 +45,22 @@ def setup_db(db_path):
                         "signed_contract_body TEXT, "
                         "unit_price INT, "
                         "item_title TEXT, "
+                        "deleted INT DEFAULT 0,"
                         "item_desc TEXT, "
                         "item_condition TEXT, "
                         "item_quantity_available, "
                         "state TEXT, "
                         "key TEXT, "
                         "FOREIGN KEY(market_id) REFERENCES markets(id))")
+
+            cur.execute("CREATE TABLE events("
+                        "id INTEGER PRIMARY KEY "
+                        "AUTOINCREMENT, "
+                        "market_id TEXT, "
+                        "event_id TEXT, "
+                        "event_description TEXT, "
+                        "updated INT, "
+                        "created INT)")
 
             cur.execute("CREATE TABLE products("
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
