@@ -146,7 +146,7 @@ class Market(object):
 
             self.transport.dht.iterativeStore(self.transport,
                                                 keyword_key,
-                                                json.dumps({'keyword_index_add': key}),
+                                                json.dumps({'keyword_index_add': {"guid": self.transport.guid, "key": key}}),
                                                 self.transport.guid)
 
     def save_contract(self, msg):
@@ -268,9 +268,10 @@ class Market(object):
             notaries = {}
             for n in settings['notaries']:
                 peer = self.dht.routingTable.getContact(n.guid)
-            if peer is not None:
-                peer.start_handshake()
-                notaries.append(n)
+                if peer is not None:
+                    t = Thread(target=peer.start_handshake)
+                    t.start()
+                    notaries.append(n)
             return notaries
         # End of untested code
 
@@ -366,7 +367,7 @@ class Market(object):
 
             self.transport.dht.iterativeStore(self.transport,
                                                 keyword_key,
-                                                json.dumps({'keyword_index_remove': contract_key}),
+                                                json.dumps({'keyword_index_remove': {"guid": self.transport.guid, "key": contract_key}}),
                                                 self.transport.guid)
 
     def get_messages(self):
@@ -520,7 +521,8 @@ class Market(object):
                                                    nickname=peer['senderNick'])
 
         def send_page_query():
-            new_peer.start_handshake()
+            t = Thread(target=new_peer.start_handshake)
+            t.start()
 
             new_peer.send(proto_page(self.transport.uri,
                                      self.transport.pubkey,

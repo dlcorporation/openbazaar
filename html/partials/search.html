@@ -7,6 +7,7 @@
         <div>No results found yet{{search.length > 0 ?
             " for " + search + "." :
              "."}}
+        </div>
     </div>
 
 
@@ -21,14 +22,12 @@
         <tr data-ng-repeat="contract in search_results">
 
             <td width=100 style="border-right:none;"><img data-ng-show="contract.Contract.item_images" ng-src="{{contract.Contract.item_images}}" alt="" class="img-thumbnail" width=100 height=100></td>
-            <td  style="border-left:none;"><a href="#" onclick="return false"><span style="font-size:20px;">{{contract.Contract.item_title}}</span></a>
-                <br/>
-                <p style="padding:10px 0">{{contract.Contract.item_desc | limitTo:500}}</p>
+            <td  style="border-left:none;"><a data-ng-href="#user/{{contract.Seller.seller_GUID}}/products"><span style="font-size:20px;">{{contract.Contract.item_title}}</span></a>
                 <div style="padding:3px 0">
                     <span class="glyphicon glyphicon-tags"></span> <strong>Tags:</strong>
                 </div>
                 <div style="padding:3px 0">
-                    <span class="glyphicon glyphicon-user"></span> <strong data-ng-show="contract.nickname || contract.Seller.seller_GUID">Sold by:</strong> <a href="#" onclick="return false">{{contract.nickname ? contract.nickname : contract.Seller.seller_GUID}}</a></div>
+                    <span class="glyphicon glyphicon-user"></span> <strong data-ng-show="contract.nickname || contract.Seller.seller_GUID">Sold by:</strong> <a data-ng-href="#/user/{{contract.Seller.seller_GUID}}/products">{{contract.nickname ? contract.nickname : contract.Seller.seller_GUID}}</a></div>
                 <br/>
                 <!--<strong>Condition:</strong> {{contract.Contract.item_condition}}-->
             </td>
@@ -36,9 +35,11 @@
             <td width=50><span style="font-size:20px;">&#3647;{{contract.Contract.item_price}}</span></td>
             <td width=100 align="center">
                 <div class="listing-button">
-                    <button type="button" class="btn btn-success btn-sm" data-ng-click="">
-                        <span class="glyphicon glyphicon-shopping-cart"></span> View
+                    <a data-ng-href="#user/{{contract.Seller.seller_GUID}}/products">
+                    <button type="button" class="btn btn-success btn-sm">
+                        <span class="glyphicon glyphicon-shopping-cart"></span> View Item
                     </button>
+                    </a>
                 </div>
             </td>
         </tr>

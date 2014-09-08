@@ -595,7 +595,7 @@ class DHT(object):
 
                     value = {'listings': [value_json['keyword_index_add']]}
 
-                self.log.info('keyword %s' % existing_index)
+                self.log.info('Keyword %s' % existing_index)
 
             if 'keyword_index_remove' in value_json:
 

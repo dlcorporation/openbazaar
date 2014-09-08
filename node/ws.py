@@ -727,7 +727,7 @@ class ProtocolHandler:
                 # Go get listing metadata and then send it to the GUI
                 for contract in results['listings']:
                     self.transport.dht.iterativeFindValue(
-                        contract,
+                        contract.get('key'),
                         callback=lambda msg, key=contract: self.on_global_search_value(
                             msg, key
                         )
@@ -788,7 +788,7 @@ class ProtocolHandler:
     def on_global_search_value(self, results, key):
 
         self.log.info('global search: %s %s' % (results, key))
-        if results:
+        if results and type(results) is not list:
 
             self.log.debug('Listing Data: %s %s' % (results, key))
 
