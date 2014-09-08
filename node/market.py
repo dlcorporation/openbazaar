@@ -268,9 +268,10 @@ class Market(object):
             notaries = {}
             for n in settings['notaries']:
                 peer = self.dht.routingTable.getContact(n.guid)
-            if peer is not None:
-                peer.start_handshake()
-                notaries.append(n)
+                if peer is not None:
+                    t = Thread(target=peer.start_handshake)
+                    t.start()
+                    notaries.append(n)
             return notaries
         # End of untested code
 
@@ -520,7 +521,8 @@ class Market(object):
                                                    nickname=peer['senderNick'])
 
         def send_page_query():
-            new_peer.start_handshake()
+            t = Thread(target=new_peer.start_handshake)
+            t.start()
 
             new_peer.send(proto_page(self.transport.uri,
                                      self.transport.pubkey,
