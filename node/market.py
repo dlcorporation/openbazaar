@@ -146,7 +146,7 @@ class Market(object):
 
             self.transport.dht.iterativeStore(self.transport,
                                                 keyword_key,
-                                                json.dumps({'keyword_index_add': key}),
+                                                json.dumps({'keyword_index_add': {"guid": self.transport.guid, "key": key}}),
                                                 self.transport.guid)
 
     def save_contract(self, msg):
@@ -366,7 +366,7 @@ class Market(object):
 
             self.transport.dht.iterativeStore(self.transport,
                                                 keyword_key,
-                                                json.dumps({'keyword_index_remove': contract_key}),
+                                                json.dumps({'keyword_index_remove': {"guid": self.transport.guid, "key": contract_key}}),
                                                 self.transport.guid)
 
     def get_messages(self):

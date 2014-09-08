@@ -41,7 +41,6 @@ angular.module('app')
 
             $scope.searchNetwork = function() {
 
-                /*
                 var query = {
                     'type': 'search',
                     'key': url_json.searchterm
@@ -53,7 +52,7 @@ angular.module('app')
                 Connection.send('search', query)
                 $scope.search = ""
                 $scope.showDashboardPanel('search');
-                */
+
             };
 
             $scope.search_results = [];
@@ -63,9 +62,21 @@ angular.module('app')
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
                 contract_data.nickname = msg.nickname;
-                $scope.search_results.push(contract_data);
-                $scope.search_results = jQuery.unique($scope.search_results);
+
+                var contract_dupe = false;
                 $.each($scope.search_results, function(index, contract) {
+                    console.log(contract.key.key, msg.key.key);
+                    if(contract.key.key == msg.key.key) {
+                        contract_dupe = true;
+                    }
+                });
+
+                if(!contract_dupe) {
+                    $scope.search_results.push(contract_data);
+                }
+
+                $.each($scope.search_results, function(index, contract) {
+
                     if (jQuery.isEmptyObject(contract.Contract.item_images)) {
                         console.log('empty object');
                         contract.Contract.item_images = "img/no-photo.png";
