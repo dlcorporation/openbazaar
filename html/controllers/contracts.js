@@ -111,10 +111,13 @@ angular.module('app')
                 $scope.contract.productQuantity = 1;
                 $scope.contract.productCondition = 'New';
                 $scope.contracts_current_page = 0;
+                $scope.contract.productPrice = 0;
+                $scope.contract.productShippingPrice = 0;
 
                 $scope.createContract = function() {
 
-                    console.log($scope.contract);
+                    $scope.contract.productPrice = (String($scope.contract.productPrice).match(/^[+]?([0-9]+(?:[\.][0-9]*)?|\.[0-9]+)$/)) ? $scope.contract.productPrice : 0;
+                    $scope.contract.productShippingPrice = (String($scope.contract.productShippingPrice).match(/^[+]?([0-9]+(?:[\.][0-9]*)?|\.[0-9]+)$/)) ? $scope.contract.productShippingPrice : 0;
 
                     if (contract.contract) {
 
