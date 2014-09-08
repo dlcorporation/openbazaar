@@ -6,7 +6,7 @@
 
 **Zero** Fees. **Zero** Censorship.
 
-OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and licensed under the [MIT license](http://opensource.org/licenses/MIT).
+OpenBazaar is a decentralized marketplace proof of concept. It is based off of the POC code by the darkmarket team and is now licensed under the [MIT license](http://opensource.org/licenses/MIT).
 
 - **Official Site:** http://openbazaar.org
 - **Forums:**
