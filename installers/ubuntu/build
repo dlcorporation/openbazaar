@@ -139,7 +139,7 @@ def copy_files():
     os.system('chmod 0755 .' + BIN_DIR + '/openbazaar')
 
     # copy DEBIAN files
-    os.system('cp -R ../DEBIAN .')
+    os.system('cp -R ../debian .')
 
     # copy the desktop launcher
     os.system('cp ../openbazaar.desktop .' + APP_DIR)
