@@ -188,7 +188,7 @@ def build_rpm_package(packageName):
 
 
 if __name__ == '__main__':
-    dotDebName = 'openbazaar-' + read_version_from_changelog() + '.amd64.deb'
+    dotDebName = 'openbazaar-' + read_version_from_changelog() + '.all.deb'
 
     cleanup()
     delete_previous_package(dotDebName)
