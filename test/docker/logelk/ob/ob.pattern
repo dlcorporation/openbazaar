@@ -1,1 +1,4 @@
-OBLOG %{TIMESTAMP_ISO8601:time} - %{DATA:from} -\s*%{LOGLEVEL:level} - %{GREEDYDATA:logdata}
+BEFOREJSON [^{]*
+OBBASE %{TIMESTAMP_ISO8601:tstamp} - %{DATA:name} -\s*%{LOGLEVEL:level}
+OBLOG %{OBBASE} - %{GREEDYDATA:logdata}
+OBMESSAGE %{OBBASE} - ON MESSAGE %{GREEDYDATA:jsondata}

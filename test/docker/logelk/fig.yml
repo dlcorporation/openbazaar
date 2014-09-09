@@ -15,38 +15,34 @@ elk:
     - "9300"
     - "80"
     - "25826"
-
-ob1:
+#
+# production mode
+# uncomment volumes for run node from local source code
+#
+ob:
   image: obtest/ob
-  hostname: ob1
+  hostname: ob
+#  volumes:
+#    - /local_git_path/OpenBazaar/node:/bazaar/node
   ports:
-    - "8081:8888"
-    - "12341:12345"
+    - "8888:8888"
+    - "12345:12345"
   links:
     - elk
   expose:
     - "9300"
-
-ob2:
-  image: obtest/ob
-  hostname: ob2
-  ports:
-    - "8082:8888"
-    - "12342:12345"
-  links:
-    - elk
-  expose:
-    - "9300"
-
-seed1:
-  image: obtest/ob
-  hostname: seed1
-  ports:
-    - "8091:8888"
-    - "12351:12345"
-  links:
-    - elk
-  expose:
-    - "9300"
-  environment:
-    -  RUNSH_ARGS=-q 8888 -p 12345 -o
+#
+# seed mode
+#
+#seed:
+#  image: obtest/ob
+#  hostname: seed
+#  ports:
+#    - "8888:8888"
+#    - "12345:12345"
+#  links:
+#    - elk
+#  expose:
+#    - "9300"
+#  environment:
+#    -  RUNSH_ARGS=-q 8888 -p 12345 -o
