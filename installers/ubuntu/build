@@ -157,6 +157,9 @@ def copy_files():
     os.system('rm -f .' + USR_SHARE_OB_DIR + '/*/*.pyc')
     os.system('rm -f .' + USR_SHARE_OB_DIR + '/*/*/*.pyc')
 
+    # get rid of extra LICENSE files
+    os.system('find .' + USR_SHARE_OB_DIR + ' | grep -e LICENSE$ | xargs rm -f')
+
     # make sure backup folder is empty
     os.system('rm -f .' + USR_SHARE_OB_DIR + '/html/backups/*')
 
