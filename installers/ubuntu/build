@@ -148,9 +148,10 @@ def copy_files():
     os.system('cp -R ' + OB_PROJECT_DIR + '/pysqlcipher .' + USR_SHARE_OB_DIR + '/')
 
     # fix permissions to avoid lintian errors
-    os.system('chmod -R 0755 .' + USR_SHARE_OB_DIR + '/node')
-    os.system('chmod -R 0755 .' + USR_SHARE_OB_DIR + '/html')
-    os.system('chmod -R 0755 .' + USR_SHARE_OB_DIR + '/pysqlcipher')
+    os.system('chmod -R 0644 .' + USR_SHARE_OB_DIR + '/node')
+    os.system('chmod -R 0644 .' + USR_SHARE_OB_DIR + '/html')
+    os.system('chmod -R 0644 .' + USR_SHARE_OB_DIR + '/pysqlcipher')
+    os.system('find .' + USR_SHARE_OB_DIR + ' -type d | xargs chmod 0755')
 
     # get rid of as many binaries as you can
     os.system('rm -f .' + USR_SHARE_OB_DIR + '/*/*.pyc')
