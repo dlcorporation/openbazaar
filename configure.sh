@@ -125,7 +125,7 @@ function installUbuntu {
   sudo apt-get upgrade
   sudo apt-get install python-pip build-essential python-zmq rng-tools
   sudo apt-get install python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
-  sudo apt-get install alien libssl-dev python-virtualenv lintian
+  sudo apt-get install alien libssl-dev python-virtualenv lintian libjs-jquery
 
   if [ ! -d "./env" ]; then
     virtualenv env

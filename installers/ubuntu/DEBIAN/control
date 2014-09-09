@@ -3,7 +3,7 @@ Version: 0.1.0
 Section: net
 Priority: optional
 Architecture: amd64
-Depends: python, python2.7, python-pip, python-dev, g++, libjpeg-dev, zlib1g-dev, sqlite3, libssl-dev, openssl, build-essential, libzmq3, python-zmq, tor, privoxy, rng-tools, lintian
+Depends: python, python2.7, python-pip, python-dev, g++, libjpeg-dev, zlib1g-dev, sqlite3, libssl-dev, openssl, build-essential, libzmq3, python-zmq, tor, privoxy, rng-tools, lintian, libjs-jquery
 Pre-Depends:
 Recommends:
 Suggests:
