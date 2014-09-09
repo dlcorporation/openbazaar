@@ -19,7 +19,7 @@ RUN apt-get install -yq openjdk-7-jre-headless
 RUN apt-get -y update
 RUN apt-get install -y python-pip build-essential python-zmq rng-tools
 RUN apt-get install -y python-dev g++ libjpeg-dev zlib1g-dev sqlite3 openssl
-RUN apt-get install -y alien libssl-dev wget
+RUN apt-get install -y alien libssl-dev wget  lintian libjs-jquery
 ADD requirements.txt /opt/ob/requirements.txt
 RUN pip install -r /opt/ob/requirements.txt
 #
