@@ -85,9 +85,13 @@ def create_folder_structure():
     assert_current_dir_is('output')
 
     os.makedirs('.' + USR_SHARE_OB_DIR + '/db')
-    os.makedirs('.' + USR_SHARE_OB_DIR + '/msig')
-    os.makedirs('.' + USR_SHARE_OB_DIR + '/html/backups')
     os.makedirs('.' + USR_SHARE_OB_DIR + '/logs')
+    os.makedirs('.' + USR_SHARE_OB_DIR + '/html/backups')
+    os.system('chmod 0775 .' + USR_SHARE_OB_DIR + '/db')
+    os.system('chmod 0775 .' + USR_SHARE_OB_DIR + '/logs')
+    os.system('chmod 0775 .' + USR_SHARE_OB_DIR + '/html/backups')
+    os.makedirs('.' + USR_SHARE_OB_DIR + '/msig')
+
     os.makedirs('.' + HICOLOR_DIR + '/16x16/apps')
     os.makedirs('.' + HICOLOR_DIR + '/32x32/apps')
     os.makedirs('.' + HICOLOR_DIR + '/48x48/apps')
