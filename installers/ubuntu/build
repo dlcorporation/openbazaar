@@ -152,10 +152,10 @@ def copy_files():
     os.system('chmod -R 0644 .' + USR_SHARE_OB_DIR + '/html')
     os.system('chmod -R 0644 .' + USR_SHARE_OB_DIR + '/pysqlcipher')
     os.system('find .' + USR_SHARE_OB_DIR + ' -type d | xargs chmod 0755')
+    os.system('find .' + USR_SHARE_OB_DIR + ' | egrep "(\.sh)" | xargs chmod 0755')
 
     # get rid of as many binaries as you can
-    os.system('rm -f .' + USR_SHARE_OB_DIR + '/*/*.pyc')
-    os.system('rm -f .' + USR_SHARE_OB_DIR + '/*/*/*.pyc')
+    os.system('find .' + USR_SHARE_OB_DIR + ' | egrep "(\.pyc|\.o|\.so)" | xargs rm -f')
 
     # get rid of extra LICENSE files
     os.system('find .' + USR_SHARE_OB_DIR + ' | grep -e LICENSE$ | xargs rm -f')
