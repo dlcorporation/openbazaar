@@ -101,8 +101,8 @@ function installMac {
   export LDFLAGS="-L$(brew --prefix openssl)/lib"
 
   #install python deps inside our virtualenv
-  ./env/bin/pip install -r requirements.txt
   ./env/bin/pip install ./pysqlcipher
+  ./env/bin/pip install -r requirements.txt
 
   doneMessage
 }
@@ -130,8 +130,9 @@ function installUbuntu {
   if [ ! -d "./env" ]; then
     virtualenv env
   fi
-  ./env/bin/pip install -r requirements.txt
+
   ./env/bin/pip install ./pysqlcipher
+  ./env/bin/pip install -r requirements.txt
 
   doneMessage
 }
@@ -143,10 +144,10 @@ function installArch {
   sudo pacman -Sy
   sudo pacman -S base-devel python2 python2-pip python2-pyzmq rng-tools
   sudo pacman -S gcc libjpeg zlib sqlite3 openssl
-  sudo pip2 install -r requirements.txt
   pushd pysqlcipher
   sudo python2.7 setup.py install
   popd
+  sudo pip2 install -r requirements.txt
   doneMessage
 }
 
