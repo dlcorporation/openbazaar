@@ -4,7 +4,7 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get install -y python-pip build-essential python-zmq rng-tools
 RUN apt-get install -y python-dev g++ libjpeg-dev zlib1g-dev sqlite3 openssl
-RUN apt-get install -y alien libssl-dev wget
+RUN apt-get install -y alien libssl-dev wget lintian
 
 ADD . /bazaar
 RUN cd /bazaar && pip install -r requirements.txt &&\

@@ -37,7 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision "shell", inline: <<-SCRIPT
     apt-get update
-    apt-get install -y build-essential python-dev python-pip python-zmq sqlite3 libjpeg-dev zlib1g-dev tor privoxy gnupg rng-tools mongodb-clients libssl-dev
+    apt-get install -y build-essential python-dev python-pip python-zmq sqlite3 libjpeg-dev zlib1g-dev tor privoxy gnupg rng-tools mongodb-clients libssl-dev lintian
     pip install -r requirements.txt
     #easy_install sqlite3dbm websocket behave
     easy_install sqlite_dbm websocket behave pybitcointools
