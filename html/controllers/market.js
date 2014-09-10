@@ -428,19 +428,6 @@ angular.module('app')
                 trustedNotaries: {}
             };
 
-            //TODO: This should probably be moved to the settings controllers.
-            $scope.saveSettings = function(notify) {
-                console.log($scope.settings);
-                var query = {
-                    'type': 'update_settings',
-                    settings: $scope.settings
-                };
-                Connection.send('update_settings', query);
-                if (typeof notify === "undefined") {
-                    Notifier.success('Success', 'Settings saved successfully.');
-                }
-            };
-
             $scope.order_notify = function(msg) {
                 console.log(msg);
                 Notifier.info('Order Update', msg.msg);
