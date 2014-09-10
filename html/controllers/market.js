@@ -431,7 +431,7 @@ angular.module('app')
 
             $scope.order_notify = function(msg) {
                 console.log(msg);
-                Notifier.success('Order', msg.msg);
+                Notifier.info('Order Update', msg.msg);
             }
             
             // Create a new order and send to the network
