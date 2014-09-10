@@ -22,13 +22,13 @@ def usage():
 
 def main(argv):
     if len(argv) >= 2:
-        COMMANDS = {'start':'/usr/local/openbazaar/run.sh',
-                    'stop':'/usr/local/openbazaar/stop.sh',
-                    'restart':'/usr/local/openbazaar/stop.sh; /usr/local/openbazaar/run.sh'}
+        COMMANDS = {'start':'/usr/share/openbazaar/run.sh',
+                    'stop':'/usr/share/openbazaar/stop.sh',
+                    'restart':'/usr/share/openbazaar/stop.sh; /usr/share/openbazaar/run.sh'}
         try:
             command = argv[1]
             if command in COMMANDS:
-                os.chdir('/usr/local/openbazaar')
+                os.chdir('/usr/share/openbazaar')
                 os.system(COMMANDS[command])
             else:
                 usage()
