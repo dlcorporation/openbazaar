@@ -197,8 +197,10 @@ class Orders(object):
         # Generate QR code
         print offer_data_json
         qr = self.get_qr_code(offer_data_json['Contract']['item_title'], _order['address'], total_price)
-        merchant_bitmessage = offer_data_json.get('Seller').get('seller_Bitmessage') if 'Seller' in offer_data_json else ""
-        buyer_bitmessage = buyer_data_json.get('Buyer').get('buyer_Bitmessage') if 'Buyer' in buyer_data_json else ""
+        merchant_bitmessage = offer_data_json.get('Seller').get('seller_Bitmessage') if 'Seller' \
+                                                                                        in offer_data_json else ""
+        buyer_bitmessage = buyer_data_json.get('Buyer').get('buyer_Bitmessage') if 'Buyer' \
+                                                                                   in buyer_data_json else ""
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -228,32 +230,38 @@ class Orders(object):
 
         return order
 
-    def get_orders(self, page=0, merchant=None):
+    def get_orders(self, page=0, merchant=None, notarizations=False):
 
         orders = []
 
         if merchant is None:
-            order_ids = self.db.selectEntries(
-                "orders",
-                {"market_id": self.market_id},
-                order_field="updated",
-                order="DESC",
-                limit=10,
-                limit_offset=page * 10,
-                select_fields=['order_id']
-            )
-            for result in order_ids:
-                order = self.get_order(result['order_id'])
-                orders.append(order)
-            total_orders = len(self.db.selectEntries(
-                "orders",
-                {"market_id": self.market_id}
-            ))
-        else:
-            if merchant:
+            if notarizations:
+                self.log.info('Retrieving notarizations')
                 order_ids = self.db.selectEntries(
                     "orders",
-                    {"market_id": self.market_id, "merchant": self.transport.guid},
+                    {"market_id": self.market_id},
+                    order_field="updated",
+                    order="DESC",
+                    limit=10,
+                    limit_offset=page * 10,
+                    select_fields=['order_id']
+                )
+                for result in order_ids:
+                    if result['merchant'] != self.transport.guid and result['buyer'] != self.transport.guid:
+                        order = self.get_order(result['order_id'])
+                        orders.append(order)
+                all_orders = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id}
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['merchant'] != self.transport.guid and order['buyer'] != self.transport.guid:
+                        total_orders += 1
+            else:
+                order_ids = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id},
                     order_field="updated",
                     order="DESC",
                     limit=10,
@@ -267,6 +275,30 @@ class Orders(object):
                     "orders",
                     {"market_id": self.market_id}
                 ))
+        else:
+            if merchant:
+                order_ids = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id,
+                     "merchant": self.transport.guid},
+                    order_field="updated",
+                    order="DESC",
+                    limit=10,
+                    limit_offset=page * 10,
+                    select_fields=['order_id']
+                )
+                for result in order_ids:
+                    order = self.get_order(result['order_id'])
+                    orders.append(order)
+
+                all_orders = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id}
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['merchant'] == self.transport.guid:
+                        total_orders += 1
             else:
                 order_ids = self.db.selectEntries(
                     "orders",
@@ -276,13 +308,18 @@ class Orders(object):
                     limit_offset=page * 10
                 )
                 for result in order_ids:
-                    if result['merchant'] != self.transport.guid:
+                    if result['buyer'] == self.transport.guid:
                         order = self.get_order(result['order_id'])
                         orders.append(order)
-                total_orders = len(self.db.selectEntries(
+
+                all_orders = self.db.selectEntries(
                     "orders",
                     {"market_id": self.market_id}
-                ))
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['buyer'] == self.transport.guid:
+                        total_orders += 1
 
         for order in orders:
             buyer = self.db.selectEntries("peers", {"guid": order['buyer']})
@@ -555,8 +592,9 @@ class Orders(object):
 
         self.log.info('Bid Order: %s' % bid)
 
-        new_peer = self.transport.get_crypto_peer(bid.get('merchantGUID'), bid.get('merchantURI'),
-                                                   bid.get('merchantPubkey'))
+        new_peer = self.transport.get_crypto_peer(bid.get('merchantGUID'),
+                                                  bid.get('merchantURI'),
+                                                  bid.get('merchantPubkey'))
 
         # Generate unique id for this bid
         order_id = random.randint(0, 1000000)
@@ -716,9 +754,9 @@ class Orders(object):
         buyer_order_id = bid_data_json['Buyer']['buyer_GUID'] + '-' + str(bid_data_json['Buyer']['buyer_order_id'])
 
         self.db.updateEntries("orders", {'buyer_order_id': buyer_order_id}, {'state': Orders.State.BUYER_PAID,
-                                                                              'shipping_address': json.dumps(
-                                                                                  msg['shipping_address']),
-                                                                              "updated": time.time()})
+                                                                             'shipping_address': json.dumps(
+                                                                                 msg['shipping_address']),
+                                                                             "updated": time.time()})
         if self.transport.handler is not None:
             self.transport.handler.send_to_client(None, {"type": "order_notify",
                                                          "msg": "A buyer just paid for an order."})
