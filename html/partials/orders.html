@@ -1,7 +1,11 @@
 <!-- Orders -->
 <div class="animated fadeInLeft">
 
-    <h3>{{merchant == 1 ? 'My Sales' : 'My Purchases'}}</h3>
+    <h3>
+        {{merchant == 0 ? 'My Purchases': ''}}
+        {{merchant == 1 ? 'My Sales': ''}}
+        {{merchant == 2 ? 'My Notarizations': ''}}
+    </h3>
 
     <div data-ng-show="sentOrder" id="orderSuccessAlert" class="alert alert-success alert-dismissable">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
@@ -20,11 +24,14 @@
         </div>
 
 
-        <div class="col-sm-12" data-ng-show="merchant && orders_total == 0" style="padding:0">
+        <div class="col-sm-12" data-ng-show="merchant == 1 && orders_total == 0" style="padding:0">
             You have no orders at this time.
         </div>
-        <div class="col-sm-12" data-ng-show="!merchant && orders_total == 0" style="padding:0">
+        <div class="col-sm-12" data-ng-show="merchant == 0 && orders_total == 0" style="padding:0">
             You have no sales yet.
+        </div>
+        <div class="col-sm-12" data-ng-show="merchant == 2 && orders_total == 0" style="padding:0">
+            You have not notarized any contracts yet.
         </div>
 
 
