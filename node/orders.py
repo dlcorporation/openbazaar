@@ -228,32 +228,38 @@ class Orders(object):
 
         return order
 
-    def get_orders(self, page=0, merchant=None):
+    def get_orders(self, page=0, merchant=None, notarizations=False):
 
         orders = []
 
         if merchant is None:
-            order_ids = self.db.selectEntries(
-                "orders",
-                {"market_id": self.market_id},
-                order_field="updated",
-                order="DESC",
-                limit=10,
-                limit_offset=page * 10,
-                select_fields=['order_id']
-            )
-            for result in order_ids:
-                order = self.get_order(result['order_id'])
-                orders.append(order)
-            total_orders = len(self.db.selectEntries(
-                "orders",
-                {"market_id": self.market_id}
-            ))
-        else:
-            if merchant:
+            if notarizations:
+                self.log.info('Retrieving notarizations')
                 order_ids = self.db.selectEntries(
                     "orders",
-                    {"market_id": self.market_id, "merchant": self.transport.guid},
+                    {"market_id": self.market_id},
+                    order_field="updated",
+                    order="DESC",
+                    limit=10,
+                    limit_offset=page * 10,
+                    select_fields=['order_id']
+                )
+                for result in order_ids:
+                    if result['merchant'] != self.transport.guid and result['buyer'] != self.transport.guid:
+                        order = self.get_order(result['order_id'])
+                        orders.append(order)
+                all_orders = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id}
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['merchant'] != self.transport.guid and order['buyer'] != self.transport.guid:
+                        total_orders += 1
+            else:
+                order_ids = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id},
                     order_field="updated",
                     order="DESC",
                     limit=10,
@@ -266,7 +272,31 @@ class Orders(object):
                 total_orders = len(self.db.selectEntries(
                     "orders",
                     {"market_id": self.market_id}
-                ))
+            ))
+        else:
+            if merchant:
+                order_ids = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id,
+                     "merchant": self.transport.guid},
+                    order_field="updated",
+                    order="DESC",
+                    limit=10,
+                    limit_offset=page * 10,
+                    select_fields=['order_id']
+                )
+                for result in order_ids:
+                    order = self.get_order(result['order_id'])
+                    orders.append(order)
+
+                all_orders = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id}
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['merchant'] == self.transport.guid:
+                        total_orders += 1
             else:
                 order_ids = self.db.selectEntries(
                     "orders",
@@ -276,13 +306,18 @@ class Orders(object):
                     limit_offset=page * 10
                 )
                 for result in order_ids:
-                    if result['merchant'] != self.transport.guid:
+                    if result['buyer'] == self.transport.guid:
                         order = self.get_order(result['order_id'])
                         orders.append(order)
-                total_orders = len(self.db.selectEntries(
+
+                all_orders = self.db.selectEntries(
                     "orders",
                     {"market_id": self.market_id}
-                ))
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['buyer'] == self.transport.guid:
+                        total_orders += 1
 
         for order in orders:
             buyer = self.db.selectEntries("peers", {"guid": order['buyer']})

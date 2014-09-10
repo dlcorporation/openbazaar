@@ -28,6 +28,8 @@ angular.module('app')
                 console.log($scope.path);
                 if($scope.path === "/orders/sales") {
                     $scope.queryMyOrder(1);
+                } else if($scope.path === "/orders/notarizations") {
+                    $scope.queryMyOrder(2);
                 } else {
                     $scope.queryMyOrder(0);
 
@@ -40,7 +42,7 @@ angular.module('app')
                     'type': 'query_orders',
                     'merchant': merchant
                 };
-                $scope.merchant = merchant ? 1 : 0;
+                $scope.merchant = merchant;
                 Connection.send('query_orders', query);
                 if (!$scope.$$phase) {
                     $scope.$apply();
