@@ -39,7 +39,6 @@ class PeerConnection(object):
             raise
         # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
 
-
     def cleanup_context(self):
         self.ctx.destroy()
 

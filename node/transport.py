@@ -801,7 +801,6 @@ class CryptoTransportLayer(TransportLayer):
         t = Thread(target=self.trigger_callbacks, args=(msg['type'], msg,))
         t.start()
 
-
     def _on_raw_message(self, serialized):
         try:
 
