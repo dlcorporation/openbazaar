@@ -13,6 +13,7 @@
             <div class="col-sm-11" ng-controller="ComposeMessageCtrl">
                 {{page.nickname ? page.nickname : "No nickname"}}<br/>
                 <button data-ng-show="page.bitmessage != '' && settings.bitmessage != ''" class="btn btn-sm btn-info" data-ng-click="compose_message('lg', myself, page.bitmessage, null)">Bitmessage Me</button>
+                <a data-ng-href="mailto:{{page.email}}"><button data-ng-show="page.email != ''" class="btn btn-sm btn-info">Email Me</button></a>
             </div>
         </h2>
 
