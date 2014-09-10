@@ -55,7 +55,6 @@ class Market(object):
         self.log = logging.getLogger('[%s] %s' % (self.market_id,
                                                    self.__class__.__name__))
         self.settings = self.transport.settings
-
         self.gpg = gnupg.GPG()
 
         # Register callbacks for incoming events
@@ -208,6 +207,7 @@ class Market(object):
     def add_trusted_notary(self, guid, nickname=""):
         self.log.debug('%s %s' % (guid, nickname))
         notaries = self.settings.get('notaries')
+
         self.log.debug('notaries: %s' % notaries)
         if notaries == "" or notaries == []:
             notaries = []
@@ -233,6 +233,18 @@ class Market(object):
                                {'market_id': self.transport.market_id},
                                self.settings)
 
+    def _decode_list(self, data):
+        rv = []
+        for item in data:
+            if isinstance(item, unicode):
+                item = item.encode('utf-8')
+            elif isinstance(item, list):
+                item = self._decode_list(item)
+            elif isinstance(item, dict):
+                item = self._decode_dict(item)
+            rv.append(item)
+        return rv
+
     def remove_trusted_notary(self, guid):
 
         notaries = self.settings.get('notaries')
@@ -250,7 +262,7 @@ class Market(object):
                                self.settings)
 
     def republish_contracts(self):
-        listings = self.db.selectEntries("contracts")
+        listings = self.db.selectEntries("contracts", {"deleted": 0})
         for listing in listings:
             self.transport.dht.iterativeStore(self.transport,
                                                 listing['key'],
@@ -321,7 +333,8 @@ class Market(object):
 
         # Calculate index of contracts
         contract_ids = self.db.selectEntries("contracts",
-                                              {"market_id": self.transport.market_id})
+                                              {"market_id": self.transport.market_id,
+                                               "deleted": 0})
         my_contracts = []
         for contract_id in contract_ids:
             my_contracts.append(contract_id['key'])
@@ -338,9 +351,11 @@ class Market(object):
                           'contracts': my_contracts}}
 
         # Pass off to thread to keep GUI snappy
-        self.transport.dht.iterativeStore(self.transport,
-                                            contract_index_key,
-                                            value, self.transport.guid)
+        t = Thread(target=self.transport.dht.iterativeStore, args=(self.transport,
+                                                                   contract_index_key,
+                                                                   value,
+                                                                   self.transport.guid,))
+        t.start()
 
     def remove_contract(self, msg):
         self.log.info("Removing contract: %s" % msg)
@@ -436,7 +451,7 @@ class Market(object):
                 self.log.error('Problem loading the contract body JSON')
 
         return {"contracts": my_contracts, "page": page,
-                "total_contracts": len(self.db.selectEntries("contracts"))}
+                "total_contracts": len(self.db.selectEntries("contracts", {"deleted": "0"}))}
 
     def undo_remove_contract(self, contract_id):
         self.log.info('Undo remove contract: %s' % contract_id)

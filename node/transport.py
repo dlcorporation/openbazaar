@@ -47,6 +47,7 @@ class TransportLayer(object):
         self.guid = my_guid
         self.market_id = market_id
         self.nickname = nickname
+        self.handler = None
 
         try:
             socket.inet_pton(socket.AF_INET6, my_ip)
@@ -64,11 +65,15 @@ class TransportLayer(object):
             self.callbacks[section] = []
             self.add_callback(section, callback)
 
+    def set_websocket_handler(self, handler):
+        self.handler = handler
+
     def add_callback(self, section, callback):
         if callback not in self.callbacks[section]:
             self.callbacks[section].append(callback)
 
     def trigger_callbacks(self, section, *data):
+
         # Run all callbacks in specified section
         for cb in self.callbacks[section]:
             cb(*data)
@@ -792,8 +797,9 @@ class CryptoTransportLayer(TransportLayer):
         self.log.info('ON MESSAGE %s' % json.dumps(msg, ensure_ascii=False))
 
         self.dht.add_peer(self, uri, pubkey, guid, nickname)
-
-        self.trigger_callbacks(msg['type'], msg)
+        self.log.debug('Callbacks %s' % self.callbacks)
+        t = Thread(target=self.trigger_callbacks, args=(msg['type'], msg,))
+        t.start()
 
     def _on_raw_message(self, serialized):
         try:
