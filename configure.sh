@@ -155,7 +155,7 @@ function installPortage {
   #print commands
   set -x
 
-  sudo emerge -an dev-lang/python:2.7 dev-python/pip pyzmq rng-tools gcc jpeg zlib sqlite3 openssl virtualenv
+  sudo emerge -an dev-lang/python:2.7 dev-python/pip pyzmq rng-tools gcc jpeg zlib sqlite3 openssl dev-python/virtualenv
   # FIXME: on gentoo install as user, because otherwise
   # /usr/lib/python-exec/python-exec* gets overwritten by nose,
   # killing most Python programs.
