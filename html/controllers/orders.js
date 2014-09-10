@@ -23,6 +23,7 @@ angular.module('app')
             Connection.$on('order_count', function(e, msg){ $scope.parse_order_count(msg); });
             Connection.$on('myorders', function(e, msg){ $scope.parse_myorders(msg); });
             Connection.$on('orderinfo', function(e, msg){ $scope.parse_orderinfo(msg); });
+            Connection.$on('order_payment_amount', function(e, msg){ $scope.parse_payment_amount(msg); });
 
             $scope.load_page = function(msg) {
                 console.log($scope.path);
@@ -47,7 +48,6 @@ angular.module('app')
                 if (!$scope.$$phase) {
                     $scope.$apply();
                 }
-
             };
 
             /**
@@ -125,6 +125,16 @@ angular.module('app')
                 }
             };
 
+            $scope.parse_payment_amount = function(msg) {
+                if(msg.value && $scope.modalOrder) {
+                    $scope.modalOrder.payment_amount = parseInt(msg.value)/100000000;
+
+                    if (!$scope.$$phase) {
+                        $scope.$apply();
+                    }
+                }
+            }
+
             /**
              * Handles orders count message from the server
              * @msg - Message from server
@@ -181,6 +191,8 @@ angular.module('app')
                 $scope.order = order;
                 $scope.Market = scope;
                 $scope.settings = settings;
+
+
 
                 $scope.markOrderPaid = function(orderId) {
 
