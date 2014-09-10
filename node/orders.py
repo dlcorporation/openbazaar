@@ -11,6 +11,7 @@ import time
 import urllib
 from pybitcointools import *
 from decimal import Decimal
+import trust
 
 
 class Orders(object):
@@ -183,6 +184,22 @@ class Orders(object):
                                Orders.State.BUYER_PAID,
                                Orders.State.SHIPPED):
 
+            def cb(total):
+                if self.transport.handler is not None:
+                    self.transport.handler.send_to_client(None, {"type": "order_payment_amount",
+                                                                 "value": total})
+
+            pubkeys = [
+                offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
+                buyer_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
+                notary_json['Notary']['notary_BTC_uncompressed_pubkey']
+            ]
+
+            script = mk_multisig_script(pubkeys, 2, 3)
+            payment_address = scriptaddr(script)
+
+            trust.get_unspent(payment_address, cb)
+
             if 'shipping_price' in _order:
                 shipping_price = _order['shipping_price'] if _order['shipping_price'] != '' else 0
             else:
@@ -217,6 +234,7 @@ class Orders(object):
                  "buyer_bitmessage": buyer_bitmessage,
                  "notary": notary,
                  "payment_address": _order.get('payment_address'),
+                 "payment_address_amount": _order.get('payment_address_amount'),
                  "qrcode": 'data:image/png;base64,' + qr,
                  "item_title": offer_data_json['Contract']['item_title'],
                  "signed_contract_body": _order.get('signed_contract_body'),
@@ -227,6 +245,8 @@ class Orders(object):
             order['item_image'] = offer_data_json['Contract']['item_images']
         else:
             order['item_image'] = "img/no-photo.png"
+
+        self.log.debug('FULL ORDER: %s' % order)
 
         return order
 
@@ -322,6 +342,7 @@ class Orders(object):
                         total_orders += 1
 
         for order in orders:
+
             buyer = self.db.selectEntries("peers", {"guid": order['buyer']})
             if len(buyer) > 0:
                 order['buyer_nickname'] = buyer[0]['nickname']
@@ -354,6 +375,7 @@ class Orders(object):
         del order['item_title']
         del order['buyer_bitmessage']
         del order['merchant_bitmessage']
+        del order['payment_address_amount']
 
         order['state'] = Orders.State.SHIPPED
         order['payment_address'] = payment_address
@@ -413,6 +435,7 @@ class Orders(object):
         del new_order['item_title']
         del new_order['buyer_bitmessage']
         del new_order['merchant_bitmessage']
+        del new_order['payment_address_amount']
 
         self.db.updateEntries("orders", {"order_id": order_id}, new_order)
 

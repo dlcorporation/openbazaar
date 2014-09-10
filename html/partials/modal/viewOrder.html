@@ -12,6 +12,7 @@
                             <div style="float:left;margin:10px;"><img ng-src="{{Market.modalOrder.qrcode}}" width="150" height="150"/></div>
                             <div style="margin:10px;">You need to send <strong>&#3647;{{Market.modalOrder.total_price}}</strong> to the payment address <strong>{{Market.modalOrder.address}}</strong> and mark this order as paid before the merchant ships.
 
+                                 <p style="margin:10px 0">So far there is <strong>&#3647;{{Market.modalOrder.payment_amount}}</strong> in the address</p>
 
                                 <div data-ng-show="Market.modalOrder.state == 'Need to Pay'" id="payment_buttons2" style="margin-top:10px;">
                                     <a href="bitcoin:{{Market.modalOrder.address}}?amount={{Market.modalOrder.total_price}}&message={{Market.modalOrder.item_title}}"><button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-share-alt"></span> Pay in your Wallet</button></a>
@@ -76,6 +77,7 @@
           </div>
         </div>
 
+
       <table class="table table-striped">
                         <tr>
                             <td width=200><strong>Order Date:</strong></td>
@@ -96,6 +98,10 @@
                         <tr data-ng-show="Market.modalOrder.address">
                             <td><strong>Payment Address:</strong></td>
                             <td style="word-break:break-all"><a href="https://blockchain.info/address/{{Market.modalOrder.address}}" target="_blank">{{Market.modalOrder.address}}</a></td>
+                        </tr>
+                        <tr data-ng-show="Market.modalOrder.payment_amount">
+                            <td><strong>Amount in Payment Address:</strong></td>
+                            <td style="word-break:break-all">&#3647;{{Market.modalOrder.payment_amount}}</td>
                         </tr>
                         <tr>
                             <td><strong>Note to Merchant:</strong></td>
