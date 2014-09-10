@@ -133,7 +133,7 @@ angular.module('app')
                         $scope.$apply();
                     }
                 }
-            }
+            };
 
             /**
              * Handles orders count message from the server
