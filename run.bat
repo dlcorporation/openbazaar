@@ -13,4 +13,4 @@ if exist db\ob.db goto dbexists
 ..\WinPython\python-2.7.6.amd64\python node\setup_db.py db\ob.db
 
 :dbexists
-..\WinPython\python-2.7.6.amd64\python node\tornadoloop.py -p 12345 -l logs\production.log -u 1 %ip%
+..\WinPython\python-2.7.6.amd64\python node\openbazaar_daemon.py -p 12345 -l logs\production.log -u 1 %ip%
