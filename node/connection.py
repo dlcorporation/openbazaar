@@ -30,10 +30,15 @@ class PeerConnection(object):
 
     def create_zmq_socket(self):
         self.log.info('Creating Socket')
-        socket = self.ctx.socket(zmq.REQ)
-        socket.setsockopt(zmq.LINGER, 0)
+        try:
+            socket = self.ctx.socket(zmq.REQ)
+            socket.setsockopt(zmq.LINGER, 0)
+            return socket
+        except Exception as e:
+            self.log.error('Cannot create socket %s' % e)
+            raise
         # self._socket.setsockopt(zmq.SOCKS_PROXY, "127.0.0.1:9051");
-        return socket
+
 
     def cleanup_context(self):
         self.ctx.destroy()
@@ -165,7 +170,9 @@ class CryptoPeerConnection(PeerConnection):
             self.log.error("tried connecting to invalid address: %s" % self.ip)
             return False
 
-        s.close()
+        if s:
+            self.log.info('SOCKET %s' % s)
+            s.close()
         return True
 
     def sign(self, data):

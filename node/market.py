@@ -55,7 +55,6 @@ class Market(object):
         self.log = logging.getLogger('[%s] %s' % (self.market_id,
                                                    self.__class__.__name__))
         self.settings = self.transport.settings
-
         self.gpg = gnupg.GPG()
 
         # Register callbacks for incoming events
@@ -208,6 +207,7 @@ class Market(object):
     def add_trusted_notary(self, guid, nickname=""):
         self.log.debug('%s %s' % (guid, nickname))
         notaries = self.settings.get('notaries')
+
         self.log.debug('notaries: %s' % notaries)
         if notaries == "" or notaries == []:
             notaries = []
@@ -232,6 +232,18 @@ class Market(object):
         self.db.updateEntries("settings",
                                {'market_id': self.transport.market_id},
                                self.settings)
+
+    def _decode_list(self, data):
+        rv = []
+        for item in data:
+            if isinstance(item, unicode):
+                item = item.encode('utf-8')
+            elif isinstance(item, list):
+                item = self._decode_list(item)
+            elif isinstance(item, dict):
+                item = self._decode_dict(item)
+            rv.append(item)
+        return rv
 
     def remove_trusted_notary(self, guid):
 
@@ -439,7 +451,7 @@ class Market(object):
                 self.log.error('Problem loading the contract body JSON')
 
         return {"contracts": my_contracts, "page": page,
-                "total_contracts": len(self.db.selectEntries("contracts"))}
+                "total_contracts": len(self.db.selectEntries("contracts", {"deleted": "0"}))}
 
     def undo_remove_contract(self, contract_id):
         self.log.info('Undo remove contract: %s' % contract_id)

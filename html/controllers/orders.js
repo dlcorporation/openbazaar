@@ -54,6 +54,7 @@ angular.module('app')
              */
             $scope.parse_order = function(msg) {
 
+                $scope.myOrders = [];
                 if ($scope.myOrders.hasOwnProperty(msg.id)) {
                     console.log("Updating order!");
                     $scope.myOrders[msg.id].state = msg.state;

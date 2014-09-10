@@ -202,7 +202,10 @@ def start_node(my_market_ip,
     if not tornado.ioloop.IOLoop.instance():
         ioloop.install()
     else:
-        tornado.ioloop.IOLoop.instance().start()
+        try:
+            tornado.ioloop.IOLoop.instance().start()
+        except Exception as e:
+            pass
 
 # Run this if executed directly
 if __name__ == "__main__":

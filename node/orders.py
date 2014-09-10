@@ -36,7 +36,30 @@ class Orders(object):
         self.gpg = gnupg.GPG()
         self.db = db
         self.orders = self.get_orders()
-        self.transport.add_callback('order', self.on_order)
+        self.transport.add_callback("order", self.on_order)
+
+    def on_order(self, msg):
+
+        state = msg.get('state')
+
+        if state == self.State.NEW:
+            self.new_order(msg)
+
+        if state == self.State.BID:
+            self.log.info('GOT HERE')
+            self.handle_bid_order(msg)
+
+        if state == self.State.NOTARIZED:
+            self.log.info('You received a notarized contract')
+            self.handle_notarized_order(msg)
+
+        if state == self.State.PAID:
+            self.log.info('You received a payment notification')
+            self.handle_paid_order(msg)
+
+        if state == self.State.SHIPPED:
+            self.log.info('You received a shipping notification')
+            self.handle_shipped_order(msg)
 
     def get_offer_json(self, raw_contract, state):
 
@@ -652,14 +675,20 @@ class Orders(object):
         # Send order to seller and buyer
         self.log.info('Sending notarized contract to buyer and seller %s' % bid)
 
+        if self.transport.handler is not None:
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "You just auto-notarized a contract."})
+
         notarized_order = {
             "type": "order",
             "state": "Notarized",
             "rawContract": str(signed_data)
         }
 
-        new_peer.send(notarized_order)
+        if new_peer is not None:
+            new_peer.send(notarized_order)
         self.transport.send(notarized_order, bid_data_json['Buyer']['buyer_GUID'])
+
         self.log.info('Sent notarized contract to Seller and Buyer')
 
     def generate_order_id(self):
@@ -690,6 +719,9 @@ class Orders(object):
                                                                               'shipping_address': json.dumps(
                                                                                   msg['shipping_address']),
                                                                               "updated": time.time()})
+        if self.transport.handler is not None:
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "A buyer just paid for an order."})
 
     def handle_shipped_order(self, msg):
         self.log.info('Entering Shipped Order handling')
@@ -717,7 +749,13 @@ class Orders(object):
             }
         )
 
+        if self.transport.handler is not None:
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "The seller just shipped your order."})
+
     def handle_notarized_order(self, msg):
+
+        self.log.info('Handling notarized order')
 
         contract = msg['rawContract']
 
@@ -793,6 +831,9 @@ class Orders(object):
                 }
             )
 
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "You just received a new order."})
+
         else:
             self.log.info('I am the buyer')
             state = 'Need to Pay'
@@ -821,27 +862,5 @@ class Orders(object):
                 }
             )
 
-    # Order callbacks
-    def on_order(self, msg):
-
-        self.log.debug('ORDER %s' % msg)
-
-        state = msg.get('state')
-
-        if state == Orders.State.NEW:
-            self.new_order(msg)
-
-        if state == Orders.State.BID:
-            self.handle_bid_order(msg)
-
-        if state == Orders.State.NOTARIZED:
-            self.log.info('You received a notarized contract')
-            self.handle_notarized_order(msg)
-
-        if state == Orders.State.PAID:
-            self.log.info('You received a payment notification')
-            self.handle_paid_order(msg)
-
-        if state == Orders.State.SHIPPED:
-            self.log.info('You received a shipping notification')
-            self.handle_shipped_order(msg)
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "Your order requires payment now."})
