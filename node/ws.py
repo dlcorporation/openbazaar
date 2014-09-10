@@ -301,8 +301,10 @@ class ProtocolHandler:
         if msg is not None and 'merchant' in msg:
             if msg['merchant'] == 1:
                 orders = self.market.orders.get_orders(page, True)
+            elif msg['merchant'] == 2:
+                orders = self.market.orders.get_orders(page, merchant=None, notarizations=True)
             else:
-                orders = self.market.orders.get_orders(page, False)
+                orders = self.market.orders.get_orders(page, merchant=False)
         else:
             orders = self.market.orders.get_orders(page)
 
