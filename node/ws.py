@@ -483,16 +483,11 @@ class ProtocolHandler:
                 send_amount = total_amount - fee
 
                 payment_output = order['payment_address']
-                print payment_output
-                print 'PAYMENT OUTPUT', "16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt:%s" % send_amount
-                print 'inputs', inputs
                 tx = mktx(inputs, [str(payment_output) + ":" + str(send_amount)])
-                print 'TRANSACTION: %s' % tx
 
                 signatures = []
                 for x in range(0, len(inputs)):
                     ms = multisign(tx, x, script, private_key)
-                    print 'buyer sig', ms
                     signatures.append(ms)
 
                 print signatures

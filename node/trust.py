@@ -54,7 +54,6 @@ def burnaddr_from_guid(guid_hex):
 def get_global(guid, callback):
     get_unspent(burnaddr_from_guid(guid), callback)
 
-
 def get_unspent(addr, callback):
     _log.debug('get_unspent call')
     # def history_fetched(ec, history):
