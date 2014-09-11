@@ -11,6 +11,7 @@ import time
 import urllib
 from pybitcointools import *
 from decimal import Decimal
+import trust
 
 
 class Orders(object):
@@ -36,7 +37,30 @@ class Orders(object):
         self.gpg = gnupg.GPG()
         self.db = db
         self.orders = self.get_orders()
-        self.transport.add_callback('order', self.on_order)
+        self.transport.add_callback("order", self.on_order)
+
+    def on_order(self, msg):
+
+        state = msg.get('state')
+
+        if state == self.State.NEW:
+            self.new_order(msg)
+
+        if state == self.State.BID:
+            self.log.info('GOT HERE')
+            self.handle_bid_order(msg)
+
+        if state == self.State.NOTARIZED:
+            self.log.info('You received a notarized contract')
+            self.handle_notarized_order(msg)
+
+        if state == self.State.PAID:
+            self.log.info('You received a payment notification')
+            self.handle_paid_order(msg)
+
+        if state == self.State.SHIPPED:
+            self.log.info('You received a shipping notification')
+            self.handle_shipped_order(msg)
 
     def get_offer_json(self, raw_contract, state):
 
@@ -160,6 +184,22 @@ class Orders(object):
                                Orders.State.BUYER_PAID,
                                Orders.State.SHIPPED):
 
+            def cb(total):
+                if self.transport.handler is not None:
+                    self.transport.handler.send_to_client(None, {"type": "order_payment_amount",
+                                                                 "value": total})
+
+            pubkeys = [
+                offer_data_json['Seller']['seller_BTC_uncompressed_pubkey'],
+                buyer_data_json['Buyer']['buyer_BTC_uncompressed_pubkey'],
+                notary_json['Notary']['notary_BTC_uncompressed_pubkey']
+            ]
+
+            script = mk_multisig_script(pubkeys, 2, 3)
+            payment_address = scriptaddr(script)
+
+            trust.get_unspent(payment_address, cb)
+
             if 'shipping_price' in _order:
                 shipping_price = _order['shipping_price'] if _order['shipping_price'] != '' else 0
             else:
@@ -174,8 +214,10 @@ class Orders(object):
         # Generate QR code
         print offer_data_json
         qr = self.get_qr_code(offer_data_json['Contract']['item_title'], _order['address'], total_price)
-        merchant_bitmessage = offer_data_json.get('Seller').get('seller_Bitmessage') if 'Seller' in offer_data_json else ""
-        buyer_bitmessage = buyer_data_json.get('Buyer').get('buyer_Bitmessage') if 'Buyer' in buyer_data_json else ""
+        merchant_bitmessage = offer_data_json.get('Seller').get('seller_Bitmessage') if 'Seller' \
+                                                                                        in offer_data_json else ""
+        buyer_bitmessage = buyer_data_json.get('Buyer').get('buyer_Bitmessage') if 'Buyer' \
+                                                                                   in buyer_data_json else ""
 
         # Get order prototype object before storing
         order = {"id": _order['id'],
@@ -192,6 +234,7 @@ class Orders(object):
                  "buyer_bitmessage": buyer_bitmessage,
                  "notary": notary,
                  "payment_address": _order.get('payment_address'),
+                 "payment_address_amount": _order.get('payment_address_amount'),
                  "qrcode": 'data:image/png;base64,' + qr,
                  "item_title": offer_data_json['Contract']['item_title'],
                  "signed_contract_body": _order.get('signed_contract_body'),
@@ -203,34 +246,42 @@ class Orders(object):
         else:
             order['item_image'] = "img/no-photo.png"
 
+        self.log.debug('FULL ORDER: %s' % order)
+
         return order
 
-    def get_orders(self, page=0, merchant=None):
+    def get_orders(self, page=0, merchant=None, notarizations=False):
 
         orders = []
 
         if merchant is None:
-            order_ids = self.db.selectEntries(
-                "orders",
-                {"market_id": self.market_id},
-                order_field="updated",
-                order="DESC",
-                limit=10,
-                limit_offset=page * 10,
-                select_fields=['order_id']
-            )
-            for result in order_ids:
-                order = self.get_order(result['order_id'])
-                orders.append(order)
-            total_orders = len(self.db.selectEntries(
-                "orders",
-                {"market_id": self.market_id}
-            ))
-        else:
-            if merchant:
+            if notarizations:
+                self.log.info('Retrieving notarizations')
                 order_ids = self.db.selectEntries(
                     "orders",
-                    {"market_id": self.market_id, "merchant": self.transport.guid},
+                    {"market_id": self.market_id},
+                    order_field="updated",
+                    order="DESC",
+                    limit=10,
+                    limit_offset=page * 10,
+                    select_fields=['order_id']
+                )
+                for result in order_ids:
+                    if result['merchant'] != self.transport.guid and result['buyer'] != self.transport.guid:
+                        order = self.get_order(result['order_id'])
+                        orders.append(order)
+                all_orders = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id}
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['merchant'] != self.transport.guid and order['buyer'] != self.transport.guid:
+                        total_orders += 1
+            else:
+                order_ids = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id},
                     order_field="updated",
                     order="DESC",
                     limit=10,
@@ -244,6 +295,30 @@ class Orders(object):
                     "orders",
                     {"market_id": self.market_id}
                 ))
+        else:
+            if merchant:
+                order_ids = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id,
+                     "merchant": self.transport.guid},
+                    order_field="updated",
+                    order="DESC",
+                    limit=10,
+                    limit_offset=page * 10,
+                    select_fields=['order_id']
+                )
+                for result in order_ids:
+                    order = self.get_order(result['order_id'])
+                    orders.append(order)
+
+                all_orders = self.db.selectEntries(
+                    "orders",
+                    {"market_id": self.market_id}
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['merchant'] == self.transport.guid:
+                        total_orders += 1
             else:
                 order_ids = self.db.selectEntries(
                     "orders",
@@ -253,15 +328,21 @@ class Orders(object):
                     limit_offset=page * 10
                 )
                 for result in order_ids:
-                    if result['merchant'] != self.transport.guid:
+                    if result['buyer'] == self.transport.guid:
                         order = self.get_order(result['order_id'])
                         orders.append(order)
-                total_orders = len(self.db.selectEntries(
+
+                all_orders = self.db.selectEntries(
                     "orders",
                     {"market_id": self.market_id}
-                ))
+                )
+                total_orders = 0
+                for order in all_orders:
+                    if order['buyer'] == self.transport.guid:
+                        total_orders += 1
 
         for order in orders:
+
             buyer = self.db.selectEntries("peers", {"guid": order['buyer']})
             if len(buyer) > 0:
                 order['buyer_nickname'] = buyer[0]['nickname']
@@ -294,6 +375,7 @@ class Orders(object):
         del order['item_title']
         del order['buyer_bitmessage']
         del order['merchant_bitmessage']
+        del order['payment_address_amount']
 
         order['state'] = Orders.State.SHIPPED
         order['payment_address'] = payment_address
@@ -353,6 +435,7 @@ class Orders(object):
         del new_order['item_title']
         del new_order['buyer_bitmessage']
         del new_order['merchant_bitmessage']
+        del new_order['payment_address_amount']
 
         self.db.updateEntries("orders", {"order_id": order_id}, new_order)
 
@@ -532,8 +615,9 @@ class Orders(object):
 
         self.log.info('Bid Order: %s' % bid)
 
-        new_peer = self.transport.get_crypto_peer(bid.get('merchantGUID'), bid.get('merchantURI'),
-                                                   bid.get('merchantPubkey'))
+        new_peer = self.transport.get_crypto_peer(bid.get('merchantGUID'),
+                                                  bid.get('merchantURI'),
+                                                  bid.get('merchantPubkey'))
 
         # Generate unique id for this bid
         order_id = random.randint(0, 1000000)
@@ -652,14 +736,20 @@ class Orders(object):
         # Send order to seller and buyer
         self.log.info('Sending notarized contract to buyer and seller %s' % bid)
 
+        if self.transport.handler is not None:
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "You just auto-notarized a contract."})
+
         notarized_order = {
             "type": "order",
             "state": "Notarized",
             "rawContract": str(signed_data)
         }
 
-        new_peer.send(notarized_order)
+        if new_peer is not None:
+            new_peer.send(notarized_order)
         self.transport.send(notarized_order, bid_data_json['Buyer']['buyer_GUID'])
+
         self.log.info('Sent notarized contract to Seller and Buyer')
 
     def generate_order_id(self):
@@ -687,9 +777,12 @@ class Orders(object):
         buyer_order_id = bid_data_json['Buyer']['buyer_GUID'] + '-' + str(bid_data_json['Buyer']['buyer_order_id'])
 
         self.db.updateEntries("orders", {'buyer_order_id': buyer_order_id}, {'state': Orders.State.BUYER_PAID,
-                                                                              'shipping_address': json.dumps(
-                                                                                  msg['shipping_address']),
-                                                                              "updated": time.time()})
+                                                                             'shipping_address': json.dumps(
+                                                                                 msg['shipping_address']),
+                                                                             "updated": time.time()})
+        if self.transport.handler is not None:
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "A buyer just paid for an order."})
 
     def handle_shipped_order(self, msg):
         self.log.info('Entering Shipped Order handling')
@@ -717,7 +810,13 @@ class Orders(object):
             }
         )
 
+        if self.transport.handler is not None:
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "The seller just shipped your order."})
+
     def handle_notarized_order(self, msg):
+
+        self.log.info('Handling notarized order')
 
         contract = msg['rawContract']
 
@@ -793,6 +892,9 @@ class Orders(object):
                 }
             )
 
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "You just received a new order."})
+
         else:
             self.log.info('I am the buyer')
             state = 'Need to Pay'
@@ -821,27 +923,5 @@ class Orders(object):
                 }
             )
 
-    # Order callbacks
-    def on_order(self, msg):
-
-        self.log.debug('ORDER %s' % msg)
-
-        state = msg.get('state')
-
-        if state == Orders.State.NEW:
-            self.new_order(msg)
-
-        if state == Orders.State.BID:
-            self.handle_bid_order(msg)
-
-        if state == Orders.State.NOTARIZED:
-            self.log.info('You received a notarized contract')
-            self.handle_notarized_order(msg)
-
-        if state == Orders.State.PAID:
-            self.log.info('You received a payment notification')
-            self.handle_paid_order(msg)
-
-        if state == Orders.State.SHIPPED:
-            self.log.info('You received a shipping notification')
-            self.handle_shipped_order(msg)
+            self.transport.handler.send_to_client(None, {"type": "order_notify",
+                                                         "msg": "Your order requires payment now."})

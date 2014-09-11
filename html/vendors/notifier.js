@@ -6,6 +6,7 @@
     notificationStyles: {
       padding: "15px 20px",
       margin: "0 auto",
+      marginBottom: "5px",
       backgroundColor: "#000",
       opacity: 0.5,
       color: "#fff",

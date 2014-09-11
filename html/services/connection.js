@@ -1,7 +1,9 @@
 angular.module('app')
   .service('Connection', ['$rootScope', function($rootScope){
+
     var Connection = function(onMessage) {
       var socket_uri = document.URL.replace(/https?:(.*)\/html\/.*/, "ws:$1/ws");
+      console.log('Started websocket:', socket_uri);
       var websocket = new WebSocket(socket_uri);
 
       websocket.onopen = function(evt) {
@@ -23,16 +25,17 @@ angular.module('app')
       websocket.onmessage = function(evt) {
         var data = JSON.parse(evt.data);
         //console.log("Websocket.onMessage!");
-        //console.log(data);
+        console.log('On Message: ',data);
         onMessage(data.result);
       };
+
       this.websocket = websocket;
       var self = this;
 
       this.send = function(command, msg) {
-       if (msg === undefined) {
+        if (msg === undefined) {
          msg = {};
-       }
+        }
        
          var request = {
             "id": 42,

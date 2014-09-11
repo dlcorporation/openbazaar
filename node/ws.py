@@ -25,6 +25,8 @@ class ProtocolHandler:
         self.handler = handler
         self.db = db
 
+        self.transport.set_websocket_handler(self)
+
         # register on transport events to forward..
         self.transport.add_callbacks([
             ('peer', self.on_node_peer),
@@ -299,8 +301,10 @@ class ProtocolHandler:
         if msg is not None and 'merchant' in msg:
             if msg['merchant'] == 1:
                 orders = self.market.orders.get_orders(page, True)
+            elif msg['merchant'] == 2:
+                orders = self.market.orders.get_orders(page, merchant=None, notarizations=True)
             else:
-                orders = self.market.orders.get_orders(page, False)
+                orders = self.market.orders.get_orders(page, merchant=False)
         else:
             orders = self.market.orders.get_orders(page)
 
@@ -479,16 +483,11 @@ class ProtocolHandler:
                 send_amount = total_amount - fee
 
                 payment_output = order['payment_address']
-                print payment_output
-                print 'PAYMENT OUTPUT', "16uniUFpbhrAxAWMZ9qEkcT9Wf34ETB4Tt:%s" % send_amount
-                print 'inputs', inputs
                 tx = mktx(inputs, [str(payment_output) + ":" + str(send_amount)])
-                print 'TRANSACTION: %s' % tx
 
                 signatures = []
                 for x in range(0, len(inputs)):
                     ms = multisign(tx, x, script, private_key)
-                    print 'buyer sig', ms
                     signatures.append(ms)
 
                 print signatures
@@ -580,6 +579,9 @@ class ProtocolHandler:
 
                 print 'FINAL SCRIPT: %s' % tx2
                 print 'Sent', pybitcointools.eligius_pushtx(tx2)
+
+                self.send_to_client(None, {"type": "order_notify",
+                                           "msg": "Funds were released for your sale."})
 
             def get_history():
                 client.fetch_history(multi_addr, lambda ec, history, order=order: cb(ec, history, order))
@@ -891,6 +893,7 @@ class ProtocolHandler:
             "id": random.randint(0, 1000000),
             "result": result
         }
+        self.log.debug('SENDING TO CLIENT %s' % result)
         if error:
             response["error"] = error
         self.handler.queue_response(response)
@@ -951,7 +954,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.app_handler = ProtocolHandler(
             transport,
             self.market_application,
-            self, db, self.loop
+            self,
+            db,
+            self.loop
         )
         self.transport = transport
 
@@ -985,7 +990,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         # request.has_key("params") and type(request["params"]) == list
 
     def on_message(self, message):
-        # self.log.info('[On Message]: %s' % message)
+        self.log.info('[On Message]: %s' % message)
         try:
             request = json.loads(message)
         except:
@@ -1000,7 +1005,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def _send_response(self, response):
         if self.ws_connection:
-            # self.log.info('Response: %s' % response)
 
             self.write_message(json.dumps(response))
             # try:

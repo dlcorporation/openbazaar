@@ -32,17 +32,43 @@ angular.module('app')
              * Establish message handlers
              * @msg - message from websocket to pass on to handler
              */
-            Connection.$on('peer', function(e, msg){ $scope.add_peer(msg); });
-            Connection.$on('peers', function(e, msg){ $scope.update_peers(msg); });
-            Connection.$on('peer_remove', function(e, msg){ $scope.remove_peer(msg); });
-            Connection.$on('myself', function(e, msg){ $scope.parse_myself(msg); });
-            Connection.$on('shout', function(e, msg){ $scope.parse_shout(msg); });
-            Connection.$on('log_output', function(e, msg){ $scope.parse_log_output(msg); });
-            Connection.$on('messages', function(e, msg){ $scope.parse_messages(msg); });
-            Connection.$on('notaries', function(e, msg){ $scope.parse_notaries(msg); });
-            Connection.$on('reputation', function(e, msg){ $scope.parse_reputation(msg); });
-            Connection.$on('proto_response_pubkey', function(e, msg){ $scope.parse_response_pubkey(msg); });
-            Connection.$on('burn_info_available', function(e, msg){ $scope.parse_burn_info(msg); });
+            var listeners = Connection.$$listeners;
+            if(!listeners.hasOwnProperty('peer')) {
+                Connection.$on('peer', function(e, msg){ $scope.add_peer(msg); });
+            }
+            if(!listeners.hasOwnProperty('order_notify')) {
+                Connection.$on('order_notify', function(e, msg){ $scope.order_notify(msg); });
+            }
+            if(!listeners.hasOwnProperty('peers')) {
+                Connection.$on('peers', function(e, msg){ $scope.update_peers(msg); });
+            }
+            if(!listeners.hasOwnProperty('peer_remove')) {
+                Connection.$on('peer_remove', function(e, msg){ $scope.remove_peer(msg); });
+            }
+            if(!listeners.hasOwnProperty('myself')) {
+                Connection.$on('myself', function(e, msg){ $scope.parse_myself(msg); });
+            }
+            if(!listeners.hasOwnProperty('shout')) {
+                Connection.$on('shout', function(e, msg){ $scope.parse_shout(msg); });
+            }
+            if(!listeners.hasOwnProperty('log_output')) {
+                Connection.$on('log_output', function(e, msg){ $scope.parse_log_output(msg); });
+            }
+            if(!listeners.hasOwnProperty('messages')) {
+                Connection.$on('messages', function(e, msg){ $scope.parse_messages(msg); });
+            }
+            if(!listeners.hasOwnProperty('notaries')) {
+                Connection.$on('notaries', function(e, msg){ $scope.parse_notaries(msg); });
+            }
+            if(!listeners.hasOwnProperty('reputation')) {
+                Connection.$on('reputation', function(e, msg){ $scope.parse_reputation(msg); });
+            }
+            if(!listeners.hasOwnProperty('proto_response_pubkey')) {
+                Connection.$on('proto_response_pubkey', function(e, msg){ $scope.parse_response_pubkey(msg); });
+            }
+            if(!listeners.hasOwnProperty('burn_info_available')) {
+                Connection.$on('burn_info_available', function(e, msg){ $scope.parse_burn_info(msg); });
+            }
 
             // Listen for Sidebar mods
             $scope.$on('sidebar', function(event, visible) {
@@ -386,8 +412,6 @@ angular.module('app')
                 }
             };
 
-
-
             $scope.checkOrderCount = function() {
                 Connection.send('check_order_count', {});
             };
@@ -404,17 +428,9 @@ angular.module('app')
                 trustedNotaries: {}
             };
 
-            //TODO: This should probably be moved to the settings controllers.
-            $scope.saveSettings = function(notify) {
-                console.log($scope.settings);
-                var query = {
-                    'type': 'update_settings',
-                    settings: $scope.settings
-                };
-                Connection.send('update_settings', query);
-                if (typeof notify === "undefined") {
-                    Notifier.success('Success', 'Settings saved successfully.');
-                }
+            $scope.order_notify = function(msg) {
+                console.log(msg);
+                Notifier.info('Order Update', msg.msg);
             };
             
             // Create a new order and send to the network
@@ -424,6 +440,7 @@ angular.module('app')
                 listingKey: '',
                 productTotal: ''
             };
+
             $scope.createOrder = function() {
 
                 $scope.creatingOrder = false;

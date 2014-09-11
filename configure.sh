@@ -122,7 +122,6 @@ function installUbuntu {
   set -x
 
   sudo apt-get update
-  sudo apt-get upgrade
   sudo apt-get install python-pip build-essential python-zmq rng-tools
   sudo apt-get install python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
   sudo apt-get install alien libssl-dev python-virtualenv lintian libjs-jquery
@@ -151,11 +150,28 @@ function installArch {
   doneMessage
 }
 
+function installPortage {
+  #print commands
+  set -x
+
+  sudo emerge -an dev-lang/python:2.7 dev-python/pip pyzmq rng-tools gcc jpeg zlib sqlite3 openssl dev-python/virtualenv
+  # FIXME: on gentoo install as user, because otherwise
+  # /usr/lib/python-exec/python-exec* gets overwritten by nose,
+  # killing most Python programs.
+  pushd pysqlcipher
+  python2.7 setup.py install --user
+  popd
+  pip install --user -r requirements.txt
+  doneMessage
+}
+
 if [[ $OSTYPE == darwin* ]] ; then
   installMac
 elif [[ $OSTYPE == linux-gnu || $OSTYPE == linux-gnueabihf ]]; then
   if [ -f /etc/arch-release ]; then
     installArch
+  elif [ -f /etc/gentoo-release ]; then
+    installPortage
   else
     installUbuntu
   fi
