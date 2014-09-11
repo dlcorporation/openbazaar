@@ -563,7 +563,7 @@ class Orders(object):
         json_string = json.dumps(buyer, indent=0)
         seg_len = 52
         out_text = "\n".join(
-            json_string[x:x+seg_len]
+            json_string[x:x + seg_len]
             for x in range(0, len(json_string), seg_len)
         )
 
@@ -666,7 +666,7 @@ class Orders(object):
         json_string = json.dumps(notary, indent=0)
         seg_len = 52
         out_text = "\n".join(
-            json_string[x:x+seg_len],
+            json_string[x:x + seg_len]
             for x in range(0, len(json_string), seg_len)
         )
 

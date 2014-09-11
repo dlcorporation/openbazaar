@@ -116,7 +116,7 @@ class Market(object):
         json_string = json.dumps(data, indent=0)
         seg_len = 52
         out_text = "\n".join(
-            json_string[x:x+seg_len]
+            json_string[x:x + seg_len]
             for x in range(0, len(json_string), seg_len)
         )
         return out_text
