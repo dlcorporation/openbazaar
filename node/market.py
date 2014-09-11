@@ -115,8 +115,8 @@ class Market(object):
     def linebreak_signing_data(self, data):
         json_string = json.dumps(data, indent=0)
         seg_len = 52
-        out_text = string.join(map(lambda x: json_string[x:x + seg_len],
-                                   range(0, len(json_string), seg_len)), "\n")
+        out_text = "\n".join(map(lambda x: json_string[x:x + seg_len],
+                                   range(0, len(json_string), seg_len)))
         return out_text
 
     def generate_contract_key(self, signed_contract):
