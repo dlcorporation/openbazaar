@@ -113,7 +113,6 @@ class KBucket(object):
             except ValueError:
                 print('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
                 self.log.debug('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
-                pass
 
         return contactList
 

@@ -59,7 +59,6 @@ class BackupTool:
     @staticmethod
     def restore(backupTarFilepath):
         print "BackupTool.restore() NOT IMPLEMENTED"
-        pass
 
     @staticmethod
     def get_installation_path():
