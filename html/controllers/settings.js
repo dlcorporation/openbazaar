@@ -168,24 +168,36 @@ angular.module('app')
             
             $scope.onGetBackupsResponse = function (msg) {
               //console.log("executing onGetBackupsResponse!")
-            if (msg.result === 'success') {
-              //update UI with list of backups. (could be empty list)
-              if (msg.backups) {
-                $scope.backups = [];
-                //convert list of json objects into JS objects.
-                for (var i=0; i < msg.backups.length; i++) {
-                  $scope.backups[i] = $.parseJSON(msg.backups[i]);
+              if (msg.result === 'success') {
+                //update UI with list of backups. (could be empty list)
+                if (msg.backups) {
+                  $scope.backups = [];
+                  //convert list of json objects into JS objects.
+                  for (var i=0; i < msg.backups.length; i++) {
+                    $scope.backups[i] = $.parseJSON(msg.backups[i]);
+                  }
+                  if (!$scope.$$phase) {
+                    $scope.$apply();
+                  }
                 }
-                if (!$scope.$$phase) {
-                  $scope.$apply();
-                }
+              } else if (msg.result === 'failure') {
+                //console.log('onGetBackupsResponse: failure')
+                Notifier.error(msg.detail, 'Could not fetch list of backups, check your backup folder');
               }
-            } else if (msg.result === 'failure') {
-              //console.log('onGetBackupsResponse: failure')
-              Notifier.error(msg.detail, 'Could not fetch list of backups, check your backup folder');
-            }
             };
 
             $scope.load_page({});
+
+            $scope.saveSettings = function(notify) {
+              console.log($scope.settings);
+              var query = {
+                'type': 'update_settings',
+                settings: $scope.settings
+              };
+              Connection.send('update_settings', query);
+              if (typeof notify === "undefined") {
+                  Notifier.success('Success', 'Settings saved successfully.');
+              }
+            };
         }
     ]);
