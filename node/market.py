@@ -5,7 +5,6 @@ from StringIO import StringIO
 import ast
 from base64 import b64decode, b64encode
 import logging
-import string
 import traceback
 
 from PIL import Image, ImageOps
