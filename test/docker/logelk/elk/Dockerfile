@@ -28,6 +28,12 @@ RUN mkdir -p "$(dirname "$NGINX_RUN")" && echo '#!/bin/bash' > $NGINX_RUN &&\
 ADD nginx.conf /etc/nginx/nginx.conf
 
 #
+# update kibana default route schema json file
+#
+RUN cd /opt/kibana/app/dashboards && cp default.json default.json.bak
+ADD kibana-ob.json /opt/kibana/app/dashboards/default.json
+
+#
 # logstash conf
 #
 ADD logstash.conf $LS_CONF

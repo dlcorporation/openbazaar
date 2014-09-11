@@ -2,3 +2,4 @@ BEFOREJSON [^{]*
 OBBASE %{TIMESTAMP_ISO8601:tstamp} - %{DATA:name} -\s*%{LOGLEVEL:level}
 OBLOG %{OBBASE} - %{GREEDYDATA:logdata}
 OBMESSAGE %{OBBASE} - ON MESSAGE %{GREEDYDATA:jsondata}
+OBURI %{URIPROTO:oburi_proto}://%{IPORHOST:oburi_host}(?::%{POSINT:oburi_port})?
