@@ -6,7 +6,6 @@ import json
 import logging
 import qrcode
 import random
-import string
 import time
 import urllib
 from pybitcointools import *
@@ -563,8 +562,10 @@ class Orders(object):
         # Prepare contract body
         json_string = json.dumps(buyer, indent=0)
         seg_len = 52
-        out_text = string.join(map(lambda x: json_string[x:x + seg_len],
-                                   range(0, len(json_string), seg_len)), "\n")
+        out_text = "\n".join(
+            json_string[x:x + seg_len]
+            for x in range(0, len(json_string), seg_len)
+        )
 
         # Append new data to contract
         out_text = "%s\n%s" % (seed_contract, out_text)
@@ -664,8 +665,10 @@ class Orders(object):
         # Prepare contract body
         json_string = json.dumps(notary, indent=0)
         seg_len = 52
-        out_text = string.join(map(lambda x: json_string[x:x + seg_len],
-                                   range(0, len(json_string), seg_len)), "\n")
+        out_text = "\n".join(
+            json_string[x:x + seg_len]
+            for x in range(0, len(json_string), seg_len)
+        )
 
         # Append new data to contract
         out_text = "%s\n%s" % (contract, out_text)

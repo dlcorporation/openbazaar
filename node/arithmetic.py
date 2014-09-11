@@ -28,7 +28,7 @@ def get_code_string(base):
     elif base == 58:
         return "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
     elif base == 256:
-        return ''.join([chr(x) for x in range(256)])
+        return ''.join(chr(x) for x in range(256))
 
     raise ValueError("Invalid base!")
 

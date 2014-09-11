@@ -62,7 +62,7 @@ def step_impl(context, i, j):
 
     response = ws_receive_myself(i)['result']
     assert(response['type'] == 'myself')
-    assert(node_uri(j) in map(lambda x: x['uri'], response['peers']))
+    assert(node_uri(j) in [x['uri'] for x in response['peers']])
 
 
 @then('node {i} can query page of node {j}')

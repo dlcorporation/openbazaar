@@ -59,7 +59,7 @@ class DHT(object):
 
     def find_active_peer(self, uri, pubkey=None, guid=None, nickname=None):
         found_peer = False
-        for idx, peer in enumerate(self.activePeers):
+        for peer in self.activePeers:
             if (guid, uri, pubkey, nickname) == (peer.guid, peer.address, peer.pub, peer.nickname):
                 found_peer = peer
         return found_peer

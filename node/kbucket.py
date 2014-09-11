@@ -113,7 +113,6 @@ class KBucket(object):
             except ValueError:
                 print('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
                 self.log.debug('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
-                pass
 
         return contactList
 
@@ -127,7 +126,7 @@ class KBucket(object):
         @raise ValueError: The specified contact is not in this bucket
         """
         self.log.debug('Contacts %s %s' % (contact, self.contacts))
-        self.contacts[:] = [x for x in self.contacts if x.guid != contact]
+        self.contacts = [x for x in self.contacts if x.guid != contact]
         self.log.debug('Contacts %s %s' % (contact, self.contacts))
 
     def keyInRange(self, key):

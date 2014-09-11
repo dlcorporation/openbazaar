@@ -156,9 +156,8 @@ def start_node(my_market_ip,
                                                        maxBytes=50,
                                                        backupCount=0)
         locallogger.addHandler(handler)
-    except Exception, e:
+    except Exception as e:
         print "Could not setup logger, continuing: ", e.message
-        pass
 
     application = MarketApplication(my_market_ip,
                                     my_market_port,

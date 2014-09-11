@@ -870,9 +870,6 @@ class CryptoTransportLayer(TransportLayer):
 
         try:
             self.bitmessage_api.close()
-        except Exception, e:
+        except Exception as e:
             # might not even be open, not much more we can do on our way out if exception thrown here.
             self.log.error("Could not shutdown bitmessage_api's ServerProxy. " + e.message)
-            pass
-
-        pass

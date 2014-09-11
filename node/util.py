@@ -10,4 +10,3 @@ def open_default_webbrowser(url):
         system("%s %s" % (open_browser_cmds[uname()[0]], url))
     except:
         print "[openbazaar:utils.open_default_webbrowser] Could not open default web browser at", url
-        pass

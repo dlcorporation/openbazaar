@@ -5,7 +5,6 @@ from StringIO import StringIO
 import ast
 from base64 import b64decode, b64encode
 import logging
-import string
 import traceback
 
 from PIL import Image, ImageOps
@@ -115,8 +114,10 @@ class Market(object):
     def linebreak_signing_data(self, data):
         json_string = json.dumps(data, indent=0)
         seg_len = 52
-        out_text = string.join(map(lambda x: json_string[x:x + seg_len],
-                                   range(0, len(json_string), seg_len)), "\n")
+        out_text = "\n".join(
+            json_string[x:x + seg_len]
+            for x in range(0, len(json_string), seg_len)
+        )
         return out_text
 
     def generate_contract_key(self, signed_contract):
