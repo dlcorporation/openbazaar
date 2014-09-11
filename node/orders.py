@@ -6,7 +6,6 @@ import json
 import logging
 import qrcode
 import random
-import string
 import time
 import urllib
 from pybitcointools import *
