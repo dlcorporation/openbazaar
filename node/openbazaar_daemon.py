@@ -171,7 +171,7 @@ def start_node(my_market_ip,
                                     database)
 
     error = True
-    p2p_port = 12345
+    p2p_port = my_market_port
 
     if http_port == -1:
         http_port = get_random_free_tcp_port(8889, 8988)
