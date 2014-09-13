@@ -25,7 +25,9 @@ class KBucket(object):
         self.rangeMax = rangeMax
         self.contacts = []
 
-        self.log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
+        self.log = logging.getLogger(
+            '[%s] %s' % (market_id, self.__class__.__name__)
+        )
 
     def addContact(self, contact):
         """
