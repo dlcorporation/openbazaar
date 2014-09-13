@@ -2,6 +2,8 @@
 
 <img src="https://travis-ci.org/OpenBazaar/OpenBazaar.svg?branch=master" />
 
+Seed Uptime Status: (http://status.openbazaar.org/)
+
 ======
 
 **Zero** Fees. **Zero** Censorship.
