@@ -4,18 +4,19 @@ import constants
 
 
 class BucketFull(Exception):
-    """ Raised when the bucket is full """
+    """Raised when the bucket is full."""
 
 
 class KBucket(object):
-    """ Description - later
-    """
+    """FILLME"""
+
     def __init__(self, rangeMin, rangeMax, market_id=1):
         """
         @param rangeMin: The lower boundary for the range in the 160-bit ID
                          space covered by this k-bucket
         @param rangeMax: The upper boundary for the range in the ID space
                          covered by this k-bucket
+        @param market_id: FILLME
         """
 
         self.lastAccessed = 0
@@ -26,12 +27,12 @@ class KBucket(object):
         self.log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
     def addContact(self, contact):
-        """ Add contact to _contact list in the right order. This will move the
+        """
+        Add contact to _contact list in the right order. This will move the
         contact to the end of the k-bucket if it is already present.
 
-        @raise kademlia.kbucket.BucketFull: Raised when the bucket is full and
-                                            the contact isn't in the bucket
-                                            already
+        @raise node.kbucket.BucketFull: Raised when the bucket is full and
+                                        the contact isn't already in the bucket
 
         @param contact: The contact to add
         @type contact: p2p.PeerConnection
@@ -55,7 +56,7 @@ class KBucket(object):
             raise BucketFull("No space in bucket to insert contact")
 
     def getContact(self, contactID):
-        """ Get the contact specified node ID"""
+        """Get the contact with the specified node ID"""
         self.log.debug('[getContact] %s' % contactID)
         self.log.debug('contacts %s' % self.contacts)
         for contact in self.contacts:
@@ -77,11 +78,10 @@ class KBucket(object):
                                contact's ID.
         @type excludeContact: kademlia.contact.Contact or str
 
-
         @raise IndexError: If the number of requested contacts is too large
 
-        @return: Return up to the first count number of contacts in a list
-                If no contacts are present an empty is returned
+        @return: Return up to the first count number of contacts in a list.
+                 If no contacts are present, return empty list.
         @rtype: list
         """
         # Return all contacts in bucket
@@ -144,8 +144,7 @@ class KBucket(object):
         @param key: The key to test
         @type key: str or int
 
-        @return: C{True} if the key is in this k-bucket's range, or C{False}
-                 if not.
+        @return: C{True} if key is in this k-bucket's range, C{False} otherwise.
         @rtype: bool
         """
         if isinstance(key, string_types):
