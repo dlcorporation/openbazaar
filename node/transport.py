@@ -253,7 +253,11 @@ class TransportLayer(object):
 
         return True
 
-
+    def shutdown(self):
+        if self.ctx is not None:
+            print "TransportLayer.shutdown() destroying zmq ctx sockets."
+            self.ctx.destroy(linger=None)
+        
 class CryptoTransportLayer(TransportLayer):
 
     def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None,
@@ -864,9 +868,14 @@ class CryptoTransportLayer(TransportLayer):
             self.log.error('Received a message with no type')
 
     def shutdown(self):
-        print "CryptoTransportLayer.shutdown() : TODO: Not implemented."
-        # shutdown DHT?
-        # release sockets and shutdown all connections to peers
+        print "CryptoTransportLayer.shutdown()!"
+        try:
+            TransportLayer.shutdown(self)
+            print "CryptoTransportLayer.shutdown(): ZMQ sockets destroyed."
+        except Exception as e:
+            self.log.error("Transport shutdown error: " + e.message)
+
+        print "Notice: explicit DHT Shutdown not implemented."
 
         try:
             self.bitmessage_api.close()
