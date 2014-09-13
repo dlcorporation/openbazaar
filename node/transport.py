@@ -257,7 +257,8 @@ class TransportLayer(object):
         if self.ctx is not None:
             print "TransportLayer.shutdown() destroying zmq ctx sockets."
             self.ctx.destroy(linger=None)
-        
+
+
 class CryptoTransportLayer(TransportLayer):
 
     def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None,

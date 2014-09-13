@@ -140,7 +140,7 @@ class DHT(object):
                 self.knownNodes.remove(peer)
             Timer(60, timeout, [peer_tuple]).start()
 
-            self.log.info('New peer seen; starting handshake - %s %s %s' % 
+            self.log.info('New peer seen; starting handshake - %s %s %s' %
                           (uri, guid, nickname))
 
             new_peer = self.transport.get_crypto_peer(guid,
