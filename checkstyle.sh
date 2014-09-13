@@ -7,7 +7,7 @@ ERR=false
 function python_check() {
     for file in $(find . -iname "*.py" -not -path "./env/*"|grep -v pybitmessage|grep -v pysqlcipher); do
         echo "Checking python source: $file"
-        if ! flake8 --ignore=E501,E127,F811,F821,F403 $file; then
+        if ! flake8 --ignore=E501,F811,F821,F403 $file; then
             ERR=true
         fi
     done
