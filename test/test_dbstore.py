@@ -157,5 +157,4 @@ class TestDbOperations(unittest.TestCase):
         self.assertEqual(len(retrieved_review), 0)
 
 if __name__ == '__main__':
-    # Run tests.
     unittest.main()

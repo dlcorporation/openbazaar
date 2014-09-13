@@ -1,37 +1,79 @@
-import pyelliptic
+import unittest
 
-# Symmetric encryption
-iv = pyelliptic.Cipher.gen_IV('aes-256-cfb')
-ctx = pyelliptic.Cipher("secretkey", iv, 1, ciphername='aes-256-cfb')
+import pyelliptic as ec
 
-ciphertext = ctx.update('test1')
-ciphertext += ctx.update('test2')
-ciphertext += ctx.final()
 
-ctx2 = pyelliptic.Cipher("secretkey", iv, 0, ciphername='aes-256-cfb')
-print ctx2.ciphering(ciphertext)
+class TestPyellipticSymmetric(unittest.TestCase):
 
-# Asymmetric encryption
-alice = pyelliptic.ECC(curve='secp256k1')
-bob = pyelliptic.ECC(curve='secp256k1')
+    @classmethod
+    def setUpClass(cls):
+        cls.ciphername = "aes-256-cfb"
+        cls.secret_key = "YELLOW SUBMARINE"
 
-ciphertext = alice.encrypt("Hello bbBob", bob.get_pubkey())
-print bob.decrypt(ciphertext)
+    def test_symmetric_one_pass(self):
+        encrypt, decrypt = 1, 0
 
-signature = bob.sign("Hello Alice")
-# alice's job :
-print pyelliptic.ECC(pubkey=bob.get_pubkey()).verify(signature, "Hello Alice")
+        iv = ec.Cipher.gen_IV(self.ciphername)
+        enc_cipher = ec.Cipher(
+            self.secret_key,
+            iv,
+            encrypt,
+            ciphername=self.ciphername
+        )
 
-# ERROR !!!
-try:
-    key = alice.get_ecdh_key(bob.get_pubkey())
-except:
-    print(
-        "For ECDH key agreement, the keys must be defined on the same curve!"
-    )
+        plaintext_part1 = "Test plaintext part 1"
+        plaintext_part2 = "Test plaintext part 2"
+        plaintext = plaintext_part1 + plaintext_part2
 
-alice = pyelliptic.ECC(curve='secp256k1')
-print alice.get_ecdh_key(bob.get_pubkey()).encode('hex')
-print bob.get_ecdh_key(alice.get_pubkey()).encode('hex')
+        ciphertext_part1 = enc_cipher.update(plaintext_part1)
+        ciphertext_part2 = enc_cipher.update(plaintext_part2)
+        ciphertext_final = enc_cipher.final()
+        ciphertext = "".join((ciphertext_part1, ciphertext_part2, ciphertext_final))
 
-print bob.get_pubkey().encode('hex')
+        dec_cipher = ec.Cipher(
+            self.secret_key,
+            iv,
+            decrypt,
+            ciphername=self.ciphername
+        )
+
+        self.assertEqual(plaintext, dec_cipher.ciphering(ciphertext))
+
+
+class TestPyellipticAsymmetric(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ecc_curve = "secp256k1"
+        cls.alice = ec.ECC(curve=cls.ecc_curve)
+        cls.bob = ec.ECC(curve=cls.ecc_curve)
+        cls.bob_pubkey = cls.bob.get_pubkey()
+        cls.alice_pubkey = cls.alice.get_pubkey()
+
+    def test_asymmetric_enc_dec(self):
+        plaintext = "Hello Bob"
+        ciphertext = self.alice.encrypt(plaintext, self.bob_pubkey)
+        self.assertEqual(plaintext, self.bob.decrypt(ciphertext))
+
+    def test_asymmetric_sing_ver(self):
+        signature = self.bob.sign("Hello Alice")
+
+        bob_pubkey = self.bob.get_pubkey()
+        self.assertTrue(
+            ec.ECC(pubkey=bob_pubkey).verify(signature, "Hello Alice")
+        )
+
+    def test_key_agreement(self):
+        key1 = self.alice.get_ecdh_key(self.bob_pubkey).encode("hex")
+        key2 = self.bob.get_ecdh_key(self.alice_pubkey).encode("hex")
+        self.assertEqual(key1, key2)
+
+    def test_curve_mismatch(self):
+        agent1 = ec.ECC(curve="sect571r1")
+        agent2 = self.alice  # working on another curve
+        with self.assertRaises(Exception):
+            agent2.get_ecdh_key(agent1.get_pubkey())
+
+
+if __name__ == "__main__":
+    unittest.main()
