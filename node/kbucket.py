@@ -38,23 +38,21 @@ class KBucket(object):
         @param contact: The contact to add
         @type contact: p2p.PeerConnection
         """
-        found = False
-
-        for idx, old_contact in enumerate(self.contacts):
-            if contact.guid == old_contact.guid:
-                found = True
-                foundId = idx
-                break
-
-        if found:
-            # Move the existing contact to the end of the list
-            # - using the new contact to allow add-on data (e.g. optimization-specific stuff) to be updated as well
-            del self.contacts[foundId]
+        try:
+            # Assume contact exists. Attempt to remove it and add
+            # a new one at the end of the list. Use the fresh contact
+            # to allow updates to add-on data
+            # (e.g. optimization-specific stuff).
+            #
+            # If the following code looks bizarre, remember that
+            # Contact.__eq__ compares only GUIDs, not the entire object.
+            self.contacts.remove(contact)
             self.contacts.append(contact)
-        elif len(self.contacts) < constants.k:
-            self.contacts.append(contact)
-        else:
-            raise BucketFull("No space in bucket to insert contact")
+        except ValueError:
+            if len(self.contacts) < constants.k:
+                self.contacts.append(contact)
+            else:
+                raise BucketFull("No space in bucket to insert contact")
 
     def getContact(self, contactID):
         """Get the contact with the specified node ID"""
@@ -132,7 +130,7 @@ class KBucket(object):
         except ValueError:
             self.log.debug(
                 '[kbucket.removeContact() warning] '
-                'Attempted removing non-existing contact (%s)' % excludeContact
+                'tried to remove non-existing contact (%s)' % contact
             )
         self.log.debug('Contacts %s %s' % (contact, self.contacts))
 
