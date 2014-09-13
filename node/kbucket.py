@@ -41,16 +41,20 @@ class KBucket(object):
         @type contact: p2p.PeerConnection
         """
         try:
-            # Assume contact exists. Attempt to remove it and add
-            # a new one at the end of the list. Use the fresh contact
-            # to allow updates to add-on data
-            # (e.g. optimization-specific stuff).
-            #
-            # If the following code looks bizarre, remember that
-            # Contact.__eq__ compares only GUIDs, not the entire object.
+            # Assume contact exists. Attempt to remove the old one...
             self.contacts.remove(contact)
+            # ... and add the new one at the end of the list.
             self.contacts.append(contact)
+
+            # The code above works as follows:
+            # Assume C1 is the existing contact and C2 is the new contact.
+            # Iff C1 is equal to C2, it will be removed from the list.
+            # Since Contact.__eq__ compares only GUIDs, contact C1 will
+            # be replaced even if it's not exactly the same as C2.
+            # This is the intended behaviour; the fresh contact may have
+            # updated add-on data (e.g. optimization-specific stuff).
         except ValueError:
+            # The contact wasn't there after all, so add it.
             if len(self.contacts) < constants.k:
                 self.contacts.append(contact)
             else:
