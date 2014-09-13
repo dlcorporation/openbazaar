@@ -83,36 +83,28 @@ class KBucket(object):
                  If no contacts are present, return empty list.
         @rtype: list
         """
-        # Return all contacts in bucket
-        if count <= 0:
-            count = len(self.contacts)
 
-        # Get current contact number
-        currentLen = len(self.contacts)
-
-        # If count greater than k - return only k contacts
-        if count > constants.k:
-            count = constants.k
-
-        # Check if count value in range and,
-        # if count number of contacts are available
+        currentLen = len(self)
         if not currentLen:
-            contactList = list()
+            return []
 
-        # length of list less than requested amount
-        elif currentLen < count:
-            contactList = self.contacts[0:currentLen]
-        # enough contacts in list
+        if count <= 0:
+            count = currentLen
         else:
-            contactList = self.contacts[0:count]
+            count = min(count, currentLen)
 
-        if excludeContact in contactList:
+        # Return no more contacts than bucket size.
+        count = min(count, constants.k)
+
+        contactList = self.contacts[0:count]
+        if excludeContact is not None:
             try:
                 contactList.remove(excludeContact)
             except ValueError:
-                print('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
-                self.log.debug('[kbucket.getContacts() warning] tried to exclude non-existing contact (%s)' % str(excludeContact))
-
+                self.log.debug(
+                    '[kbucket.getContacts() warning] '
+                    'tried to exclude non-existing contact (%s)' % excludeContact
+                )
         return contactList
 
     def removeContact(self, contact):
