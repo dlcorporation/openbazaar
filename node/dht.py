@@ -30,7 +30,7 @@ class DHT(object):
         # Routing table
         self.routingTable = routingtable.OptimizedTreeRoutingTable(
             self.settings['guid'], market_id)
-        self._dataStore = datastore.SqliteDataStore(db_connection)
+        self.dataStore = datastore.SqliteDataStore(db_connection)
 
     def getActivePeers(self):
         return self.activePeers
@@ -202,7 +202,7 @@ class DHT(object):
         if new_peer is not None:
 
             if msg['findValue'] is True:
-                if key in self._dataStore and self._dataStore[key] is not None:
+                if key in self.dataStore and self.dataStore[key] is not None:
 
                     # Found key in local data store
                     new_peer.send(
@@ -210,7 +210,7 @@ class DHT(object):
                          "senderGUID": self.transport.guid,
                          "uri": self.transport.uri,
                          "pubkey": self.transport.pubkey,
-                         "foundKey": self._dataStore[key],
+                         "foundKey": self.dataStore[key],
                          "senderNick": self.transport.nickname,
                          "findID": findID})
                 else:
@@ -410,7 +410,7 @@ class DHT(object):
         self.log.debug('Republishing Data')
         expiredKeys = []
 
-        for key in self._dataStore.keys():
+        for key in self.dataStore.keys():
 
             # Filter internal variables stored in the data store
             if key == 'nodeState':
@@ -418,14 +418,14 @@ class DHT(object):
 
             now = int(time.time())
             key = key.encode('hex')
-            originalPublisherID = self._dataStore.originalPublisherID(key)
-            age = now - self._dataStore.originalPublishTime(key) + 500000
+            originalPublisherID = self.dataStore.originalPublisherID(key)
+            age = now - self.dataStore.originalPublishTime(key) + 500000
 
             if originalPublisherID == self.settings['guid']:
                 # This node is the original publisher; it has to republish
                 # the data before it expires (24 hours in basic Kademlia)
                 if age >= constants.dataExpireTimeout:
-                    self.iterativeStore(self.transport, key, self._dataStore[key])
+                    self.iterativeStore(self.transport, key, self.dataStore[key])
 
             else:
                 # This node needs to replicate the data at set intervals,
@@ -435,11 +435,11 @@ class DHT(object):
                     # This key/value pair has expired (and it has not been republished by the original publishing node
                     # - remove it
                     expiredKeys.append(key)
-                elif now - self._dataStore.lastPublished(key) >= constants.replicateInterval:
-                    self.iterativeStore(self.transport, key, self._dataStore[key], originalPublisherID, age)
+                elif now - self.dataStore.lastPublished(key) >= constants.replicateInterval:
+                    self.iterativeStore(self.transport, key, self.dataStore[key], originalPublisherID, age)
 
         for key in expiredKeys:
-            del self._dataStore[key]
+            del self.dataStore[key]
 
     def extendShortlist(self, transport, findID, foundNodes):
 
@@ -559,7 +559,7 @@ class DHT(object):
 
             # Add Notary GUID to index
             if 'notary_index_add' in value_json:
-                existing_index = self._dataStore[key]
+                existing_index = self.dataStore[key]
                 if existing_index is not None:
                     if not value_json['notary_index_add'] in existing_index['notaries']:
                         existing_index['notaries'].append(value_json['notary_index_add'])
@@ -569,7 +569,7 @@ class DHT(object):
                 self.log.info('Notaries: %s' % existing_index)
 
             if 'notary_index_remove' in value_json:
-                existing_index = self._dataStore[key]
+                existing_index = self.dataStore[key]
                 if existing_index is not None:
                     if value_json['notary_index_remove'] in existing_index['notaries']:
                         existing_index['notaries'].remove(value_json['notary_index_remove'])
@@ -582,7 +582,7 @@ class DHT(object):
             # Add listing to keyword index
             if 'keyword_index_add' in value_json:
 
-                existing_index = self._dataStore[key]
+                existing_index = self.dataStore[key]
 
                 if existing_index is not None:
 
@@ -599,7 +599,7 @@ class DHT(object):
 
             if 'keyword_index_remove' in value_json:
 
-                existing_index = self._dataStore[key]
+                existing_index = self.dataStore[key]
 
                 if existing_index is not None:
 
@@ -620,7 +620,7 @@ class DHT(object):
         originallyPublished = now - age
 
         # Store it in your own node
-        self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, market_id=self.market_id)
+        self.dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, market_id=self.market_id)
 
         for node in nodes:
 
@@ -656,7 +656,7 @@ class DHT(object):
         originallyPublished = now - age
 
         if value:
-            self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self.market_id)
+            self.dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, self.market_id)
         else:
             self.log.info('No value to store')
 
@@ -697,7 +697,7 @@ class DHT(object):
 
         now = int(time.time())
         originallyPublished = now - age
-        self._dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, market_id=self.market_id)
+        self.dataStore.setItem(key, value, now, originallyPublished, originalPublisherID, market_id=self.market_id)
         return 'OK'
 
     def iterativeFindNode(self, key, callback=None):
