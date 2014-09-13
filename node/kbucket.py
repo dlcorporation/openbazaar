@@ -22,7 +22,7 @@ class KBucket(object):
         self.lastAccessed = 0
         self.rangeMin = rangeMin
         self.rangeMax = rangeMax
-        self.contacts = list()
+        self.contacts = []
 
         self.log = logging.getLogger('[%s] %s' % (market_id, self.__class__.__name__))
 
