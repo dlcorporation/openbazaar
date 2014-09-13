@@ -123,6 +123,15 @@ class TestDbOperations(unittest.TestCase):
         all_reviews = db.selectEntries("reviews")
         self.assertEqual(len(all_reviews), 2)
 
+        # Use the <> operator. This should return the review with pubKey 123.
+        retrieved_review = db.selectEntries("reviews", {"pubkey": {"value":"321", "sign":"<>"}})
+        self.assertEqual(len(retrieved_review), 1)
+        retrieved_review = retrieved_review[0]
+        self.assertEqual(
+            retrieved_review["pubKey"],
+            "123"
+        )
+
     def test_update_operation(self):
 
         # Initialize our db instance
