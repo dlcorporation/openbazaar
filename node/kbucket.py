@@ -123,10 +123,7 @@ class KBucket(object):
         try:
             self.contacts.remove(contact)
         except ValueError:
-            self.log.debug(
-                '[kbucket.removeContact() warning] '
-                'tried to remove non-existing contact (%s)' % contact
-            )
+            raise ValueError('Contact was not found in this bucket')
         self.log.debug('Contacts %s %s' % (contact, self.contacts))
 
     def keyInRange(self, key):
