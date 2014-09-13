@@ -80,7 +80,8 @@ class PeerConnection(object):
             stream.on_recv_stream(cb)
         except Exception as e:
             self.log.error(e)
-            # shouldn't we raise the exception here???? I think not doing this could cause buggy behavior on top
+            # Shouldn't we raise the exception here?
+            # I think not doing this could cause buggy behavior on top.
             raise
 
 
@@ -95,13 +96,14 @@ class CryptoPeerConnection(PeerConnection):
         self.port = urlparse(address).port
         self.nickname = nickname
         self.sin = sin
-        self.peer_alive = False  # not used for any logic, might remove it later if unnecessary
+        self.peer_alive = False  # unused; might remove it later if unnecessary
         self.guid = guid
 
         PeerConnection.__init__(self, transport, address)
 
-        self.log = logging.getLogger('[%s] %s' % (transport.market_id,
-                                                   self.__class__.__name__))
+        self.log = logging.getLogger(
+            '[%s] %s' % (transport.market_id, self.__class__.__name__)
+        )
 
     def start_handshake(self, handshake_cb=None):
         if self.check_port():
@@ -124,11 +126,13 @@ class CryptoPeerConnection(PeerConnection):
                     for idx, peer in enumerate(self.transport.dht.activePeers):
                         if peer.guid == self.guid or peer.address == self.address:
                             self.transport.dht.activePeers[idx] = self
-                            self.transport.dht.add_peer(self.transport,
-                                                          self.address,
-                                                          self.pub,
-                                                          self.guid,
-                                                          self.nickname)
+                            self.transport.dht.add_peer(
+                                self.transport,
+                                self.address,
+                                self.pub,
+                                self.guid,
+                                self.nickname
+                            )
                             return
 
                     self.transport.dht.activePeers.append(self)
@@ -137,16 +141,23 @@ class CryptoPeerConnection(PeerConnection):
                     if handshake_cb is not None:
                         handshake_cb()
 
-            self.send_raw(json.dumps({'type': 'hello',
-                                      'pubkey': self.transport.pubkey,
-                                      'uri': self.transport.uri,
-                                      'senderGUID': self.transport.guid,
-                                      'senderNick': self.transport.nickname}), cb)
+            self.send_raw(
+                json.dumps({
+                    'type': 'hello',
+                    'pubkey': self.transport.pubkey,
+                    'uri': self.transport.uri,
+                    'senderGUID': self.transport.guid,
+                    'senderNick': self.transport.nickname
+                }),
+                cb
+            )
         else:
             self.log.error('CryptoPeerConnection.check_port() failed.')
 
     def __repr__(self):
-        return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (self.guid, self.ip, self.port, self.pub)
+        return '{ guid: %s, ip: %s, port: %s, pubkey: %s }' % (
+            self.guid, self.ip, self.port, self.pub
+        )
 
     def generate_sin(self, guid):
         return obelisk.EncodeBase58Check('\x0F\x02%s' + guid.decode('hex'))
@@ -182,10 +193,8 @@ class CryptoPeerConnection(PeerConnection):
     def encrypt(self, data):
         try:
             if self.pub is not None:
-                result = ec.ECC(curve='secp256k1').encrypt(data,
-                                                           hexToPubkey(self.pub))
-
-                return result
+                hexkey = hexToPubkey(self.pub)
+                return ec.ECC(curve='secp256k1').encrypt(data, hexkey)
             else:
                 self.log.error('Public Key is missing')
                 return False
@@ -205,7 +214,9 @@ class CryptoPeerConnection(PeerConnection):
                 data['pubkey'] = self.transport.pubkey
                 data['senderNick'] = self.transport.nickname
 
-                self.log.debug('Sending to peer: %s %s' % (self.ip, pformat(data)))
+                self.log.debug(
+                    'Sending to peer: %s %s' % (self.ip, pformat(data))
+                )
 
                 if self.pub == '':
                     self.log.info('There is no public key for encryption')
@@ -215,12 +226,19 @@ class CryptoPeerConnection(PeerConnection):
 
                     try:
                         if data is not None:
-                            encoded_data = data.encode('hex')
-                            self.send_raw(json.dumps({'sig': signature.encode('hex'), 'data': encoded_data}), callback)
+                            self.send_raw(
+                                json.dumps({
+                                    'sig': signature.encode('hex'),
+                                    'data': data.encode('hex')
+                                }),
+                                callback
+                            )
                         else:
                             self.log.error('Data was empty')
                     except Exception as e:
-                        self.log.error("Was not able to encode empty data: %s" % e)
+                        self.log.error(
+                            "Was not able to encode empty data: %s" % e
+                        )
             else:
                 self.log.error('Peer is not available for sending data')
         else:

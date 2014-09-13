@@ -28,7 +28,11 @@ class TestPyellipticSymmetric(unittest.TestCase):
         ciphertext_part1 = enc_cipher.update(plaintext_part1)
         ciphertext_part2 = enc_cipher.update(plaintext_part2)
         ciphertext_final = enc_cipher.final()
-        ciphertext = "".join((ciphertext_part1, ciphertext_part2, ciphertext_final))
+        ciphertext = "".join((
+            ciphertext_part1,
+            ciphertext_part2,
+            ciphertext_final
+        ))
 
         dec_cipher = ec.Cipher(
             self.secret_key,

@@ -103,14 +103,23 @@ class ProtocolHandler:
 
         # TODO: allow async calling in different thread
         def reputation_pledge_retrieved(amount, page):
-            self.log.debug('Received reputation pledge amount %s for guid %s' % (amount, guid))
+            self.log.debug(
+                'Received reputation pledge amount %s for guid %s' % (
+                    amount, guid
+                )
+            )
             SATOSHIS_IN_BITCOIN = 100000000
             bitcoins = float(amount) / SATOSHIS_IN_BITCOIN
             bitcoins = round(bitcoins, 4)
             self.market.pages[sin]['reputation_pledge'] = bitcoins
-            self.send_to_client(None, {'type': 'reputation_pledge_update', 'value': bitcoins})
+            self.send_to_client(
+                None, {'type': 'reputation_pledge_update', 'value': bitcoins}
+            )
 
-        trust.get_global(guid, lambda amount, page=page: reputation_pledge_retrieved(amount, page))
+        trust.get_global(
+            guid,
+            lambda amount, page=page: reputation_pledge_retrieved(amount, page)
+        )
 
     def send_opening(self):
         peers = self.get_peers()
@@ -247,13 +256,18 @@ class ProtocolHandler:
 
     def client_check_order_count(self, socket_handler, msg):
         self.log.debug('Checking order count')
-        self.send_to_client(None, {
-            "type": "order_count",
-            "count": len(self.db.selectEntries(
-                "orders",
-                {"market_id": self.transport.market_id, "state": "Waiting for Payment"}
-            ))
-        })
+        orders = self.db.selectEntries(
+            "orders",
+            {
+                "market_id": self.transport.market_id,
+                "state": "Waiting for Payment"
+            }
+        )
+
+        self.send_to_client(
+            None,
+            {"type": "order_count", "count": len(orders)}
+        )
 
     def refresh_peers(self):
         self.log.info("Peers command")
@@ -302,7 +316,9 @@ class ProtocolHandler:
             if msg['merchant'] == 1:
                 orders = self.market.orders.get_orders(page, True)
             elif msg['merchant'] == 2:
-                orders = self.market.orders.get_orders(page, merchant=None, notarizations=True)
+                orders = self.market.orders.get_orders(
+                    page, merchant=None, notarizations=True
+                )
             else:
                 orders = self.market.orders.get_orders(page, merchant=False)
         else:
@@ -474,7 +490,9 @@ class ProtocolHandler:
                 inputs = []
                 for row in unspent:
                     assert len(row) == 4
-                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
+                    inputs.append(
+                        str(row[0].encode('hex')) + ":" + str(row[1])
+                    )
                     value = row[3]
                     total_amount += value
 
@@ -483,7 +501,9 @@ class ProtocolHandler:
                 send_amount = total_amount - fee
 
                 payment_output = order['payment_address']
-                tx = mktx(inputs, [str(payment_output) + ":" + str(send_amount)])
+                tx = mktx(
+                    inputs, [str(payment_output) + ":" + str(send_amount)]
+                )
 
                 signatures = []
                 for x in range(0, len(inputs)):
@@ -492,10 +512,17 @@ class ProtocolHandler:
 
                 print signatures
 
-                self.market.release_funds_to_merchant(buyer['buyer_order_id'], tx, script, signatures, order.get('merchant'))
+                self.market.release_funds_to_merchant(
+                    buyer['buyer_order_id'],
+                    tx, script, signatures,
+                    order.get('merchant')
+                )
 
             def get_history():
-                client.fetch_history(multi_address, lambda ec, history, order=order: cb(ec, history, order))
+                client.fetch_history(
+                    multi_address,
+                    lambda ec, history, order=order: cb(ec, history, order)
+                )
 
             reactor.callFromThread(get_history)
 
@@ -566,25 +593,39 @@ class ProtocolHandler:
                 inputs = []
                 for row in unspent:
                     assert len(row) == 4
-                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
+                    inputs.append(
+                        str(row[0].encode('hex')) + ":" + str(row[1])
+                    )
 
                 seller_signatures = []
                 print 'private key ', self.transport.settings['privkey']
                 for x in range(0, len(inputs)):
-                    ms = multisign(tx, x, script, self.transport.settings['privkey'])
+                    ms = multisign(
+                        tx, x, script, self.transport.settings['privkey']
+                    )
                     print 'seller sig', ms
                     seller_signatures.append(ms)
 
-                tx2 = pybitcointools.apply_multisignatures(tx, 0, script, seller_signatures[0], msg['signatures'][0])
+                tx2 = pybitcointools.apply_multisignatures(
+                    tx, 0, script, seller_signatures[0], msg['signatures'][0]
+                )
 
                 print 'FINAL SCRIPT: %s' % tx2
                 print 'Sent', pybitcointools.eligius_pushtx(tx2)
 
-                self.send_to_client(None, {"type": "order_notify",
-                                           "msg": "Funds were released for your sale."})
+                self.send_to_client(
+                    None,
+                    {
+                        "type": "order_notify",
+                        "msg": "Funds were released for your sale."
+                    }
+                )
 
             def get_history():
-                client.fetch_history(multi_addr, lambda ec, history, order=order: cb(ec, history, order))
+                client.fetch_history(
+                    multi_addr,
+                    lambda ec, history, order=order: cb(ec, history, order)
+                )
 
             reactor.callFromThread(get_history)
 

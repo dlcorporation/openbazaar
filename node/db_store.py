@@ -23,7 +23,9 @@ class Obdb():
     def _connectToDb(self):
         """ Opens a db connection
         """
-        self.con = sqlite.connect(self.db_path, detect_types=sqlite.PARSE_DECLTYPES)
+        self.con = sqlite.connect(
+            self.db_path, detect_types=sqlite.PARSE_DECLTYPES
+        )
         sqlite.register_adapter(bool, int)
         sqlite.register_converter("bool", lambda v: bool(int(v)))
         self.con.row_factory = self._dictFactory
@@ -141,11 +143,12 @@ class Obdb():
             return lastrowid
 
     def selectEntries(self, table, where_dict={"\"1\"": "1"}, operator="AND", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
-        """ A wrapper for the SQL SELECT operation. It will always return all the
-            attributes for the selected rows.
-        @param table: The table to search to
-        @param whereDict: A dictionary with the WHERE clauses. If ommited it will
-        return all the rows of the table
+        """
+        A wrapper for the SQL SELECT operation. It will always return all the
+        attributes for the selected rows.
+        @param table: The table to search
+        @param whereDict: A dictionary with the WHERE clauses.
+                          If ommited it will return all the rows of the table.
         """
         self._connectToDb()
         with self.con:
@@ -178,12 +181,12 @@ class Obdb():
         return rows
 
     def deleteEntries(self, table, where_dict={"\"1\"": "1"}, operator="AND"):
-        """ A wrapper for the SQL DELETE operation. It will always return all the
-            attributes for the selected rows.
-        @param table: The table to search to
-        @param whereDict: A dictionary with the WHERE clauses. If ommited it will
-        delete all the rows of the table
-
+        """
+        A wrapper for the SQL DELETE operation. It will always return all the
+        attributes for the selected rows.
+        @param table: The table to search
+        @param whereDict: A dictionary with the WHERE clauses.
+                          If ommited it will delete all the rows of the table.
         """
 
         self._connectToDb()

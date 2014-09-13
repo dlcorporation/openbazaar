@@ -113,11 +113,12 @@ class MarketApplication(tornado.web.Application):
                     self.upnp_mapper.clean_my_mappings()
         except AttributeError:
             print "[openbazaar] MarketApplication.clean_upnp_port_mapping() failed!"
-            pass
 
     def shutdown(self, x=None, y=None):
         print "MarketApplication.shutdown!"
-        locallogger = logging.getLogger('[%s] %s' % (self.market.market_id, 'root'))
+        locallogger = logging.getLogger(
+            '[%s] %s' % (self.market.market_id, 'root')
+        )
         locallogger.info("Received TERMINATE, exiting...")
 
         # application.get_transport().broadcast_goodbye()
@@ -146,15 +147,20 @@ def start_node(my_market_ip,
                disable_open_browser=False):
 
     try:
-        logging.basicConfig(level=int(log_level),
-                            format=u'%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            filename=log_file)
+        logging.basicConfig(
+            level=int(log_level),
+            format=u'%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            filename=log_file
+        )
         logging._defaultFormatter = logging.Formatter(u'%(message)s')
         locallogger = logging.getLogger('[%s] %s' % (market_id, 'root'))
 
-        handler = logging.handlers.RotatingFileHandler(log_file, encoding='utf-8',
-                                                       maxBytes=50,
-                                                       backupCount=0)
+        handler = logging.handlers.RotatingFileHandler(
+            log_file,
+            encoding='utf-8',
+            maxBytes=50,
+            backupCount=0
+        )
         locallogger.addHandler(handler)
     except Exception as e:
         print "Could not setup logger, continuing: ", e.message
