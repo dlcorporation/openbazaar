@@ -94,10 +94,14 @@ class Obdb():
                 set_part.append("%s = ?" % key)
             set_part = ",".join(set_part)
             for key, value in where_dict.iteritems():
+                sign = "="
+                if type(value) is dict:
+                    sign = value["sign"]
+                    value = value["value"]
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
                 wheres.append(value)
-                where_part.append("%s = ?" % (key))
+                where_part.append("%s %s ?" % (key, sign))
             operator = " " + operator + " "
             where_part = operator.join(where_part)
             query = "UPDATE %s SET %s WHERE %s" \
@@ -118,7 +122,6 @@ class Obdb():
             updatefield_part = []
             setfield_part = []
             for key, value in update_dict.iteritems():
-
                 if type(value) == bool:
                     value = bool(value)
                 key = self._beforeStoring(key)
@@ -150,10 +153,14 @@ class Obdb():
             wheres = []
             where_part = []
             for key, value in where_dict.iteritems():
+                sign = "="
+                if type(value) is dict:
+                    sign = value["sign"]
+                    value = value["value"]
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
                 wheres.append(value)
-                where_part.append("%s = ?" % (key))
+                where_part.append("%s %s ?" % (key, sign))
                 if limit is not None and limit_offset is None:
                     limit_clause = "LIMIT %s" % limit
                 elif limit is not None and limit_offset is not None:
@@ -185,10 +192,14 @@ class Obdb():
             dels = []
             where_part = []
             for key, value in where_dict.iteritems():
+                sign = "="
+                if type(value) is dict:
+                    sign = value["sign"]
+                    value = value["value"]
                 key = self._beforeStoring(key)
                 value = self._beforeStoring(value)
                 dels.append(value)
-                where_part.append("%s = ?" % (key))
+                where_part.append("%s %s ?" % (key, sign))
             operator = " " + operator + " "
             where_part = operator.join(where_part)
             query = "DELETE FROM %s WHERE %s" \
