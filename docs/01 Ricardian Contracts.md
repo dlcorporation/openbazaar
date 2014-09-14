@@ -1,10 +1,11 @@
-# The Use of Ricardian Contracts in *OpenBazaar*
+![0](https://blog.openbazaar.org/wp-content/uploads/2014/07/logo.png)
+
+# Ricardian Contracts in *OpenBazaar*
 
 ## What is a Ricardian Contract
 
-> A Ricardian Contract can be defined as a single document that is a) a contract offered by an issuer to holders, b) for a valuable right held by holders, and managed by the issuer, c) easily readable by people (like a contract on paper), d) readable by programs (parsable like a database), e) digitally signed, f) carries the keys and server information, and g) allied with a unique and secure identifier.
-
-[Source](http://iang.org/papers/ricardian_contract.html)
+> A *Ricardian Contract* can be defined as a single document that is **a)** a contract offered by an issuer to holders, **b)** for a valuable right held by holders, and managed by the issuer, **c)** easily readable by people (like a contract on paper), **d)** readable by programs (parsable like a database), **e)** digitally signed, **f)** carries the keys and server information, and **g)** allied with a unique and secure identifier.  
+[- Ian Grigg](http://iang.org/papers/ricardian_contract.html)
 
 The Ricardian contract is a means of tracking the liability of one party to another when selling goods to each other in *OpenBazaar*. Fundamentally, a contract represents a single unit of a good or service. Ricardian contracts should be used in *OpenBazaar* as they are means of effectively tracking legitimately signed agreements between two parties, which cannot be forged after the contract has been signed.
 
