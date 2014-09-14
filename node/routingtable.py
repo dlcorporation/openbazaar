@@ -534,7 +534,7 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
             return
 
         if contact:
-            self.buckets[bucketIndex].removeContact(contactID)
+            self.buckets[bucketIndex].removeContact(contact)
             # Replace this stale contact with one from our replacement
             # cache, if we have any
             if bucketIndex in self.replacementCache:
