@@ -172,7 +172,7 @@ class PortMapper(object):
                 if m.description.startswith(PortMapper.OPEN_BAZAAR_DESCRIPTION):
                     self.debug('delete_port_mapping -> Found:', str(m))
                     try:
-                        self.delete_port_mapping(m.port)
+                        self.delete_port_mapping(m.port, m.protocol)
                     except:
                         pass
 
