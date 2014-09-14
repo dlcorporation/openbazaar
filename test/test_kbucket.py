@@ -271,7 +271,6 @@ class Test(unittest.TestCase):
             )
         )
 
-    @unittest.skip("Check me again after #535 is resolved.")
     def testRemoveContact_absent(self):
         prev_list = self.bucket.getContacts()
 
