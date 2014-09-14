@@ -122,22 +122,21 @@ class PortMapper(object):
 
     def delete_port_mapping(self, port, protocol='TCP'):
         result = False
-
         if self.UPNP_DEVICE_AVAILABLE:
             try:
                 result = self.upnp.deleteportmapping(port, protocol)
                 self.debug(
-                    "PortMapper.delete_port_mapping(%d, %s):" % (port, protocol)
+                    "PortMapper.delete_port_mapping(%d, %s):" % (
+                        port, protocol
+                    )
                 )
                 self.debug(result)
             except:
                 self.debug(
-                    "Could not delete mapping on port",
-                    port,
-                    "protocol",
-                    protocol
+                    "Could not delete mapping on port %d protocol %s" % (
+                        port, protocol
+                    )
                 )
-
         return result
 
     def get_mapping_list(self):

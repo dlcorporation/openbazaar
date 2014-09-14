@@ -16,8 +16,9 @@ from threading import Timer
 class DHT(object):
     def __init__(self, transport, market_id, settings, db_connection):
 
-        self.log = logging.getLogger('[%s] %s' % (market_id,
-                                                   self.__class__.__name__))
+        self.log = logging.getLogger(
+            '[%s] %s' % (market_id, self.__class__.__name__)
+        )
         self.settings = settings
         self.knownNodes = []
         self.searches = []
@@ -76,9 +77,9 @@ class DHT(object):
         self.log.debug(new_peer)
 
         def start_handshake_cb():
-            self.knownNodes.append((urlparse(uri).hostname,
-                                     urlparse(uri).port,
-                                     new_peer.guid))
+            self.knownNodes.append(
+                (urlparse(uri).hostname, urlparse(uri).port, new_peer.guid)
+            )
             self.log.debug('Known Nodes: %s' % self.knownNodes)
 
         t = Thread(target=new_peer.start_handshake, args=(start_handshake_cb,))
@@ -527,10 +528,11 @@ class DHT(object):
 
         # Find appropriate storage nodes and save key value
         if value_to_store:
-            self.iterativeFindNode(key, lambda msg, findKey=key, value=value_to_store,
-                                               originalPublisherID=originalPublisherID,
-                                               age=age: self.storeKeyValue(msg, findKey, value, originalPublisherID,
-                                                                           age))
+            def findKeyValue(msg, findKey=key, value=value_to_store, originalPublisherID=originalPublisherID, age=age):
+                return self.storeKeyValue(
+                    msg, findKey, value, originalPublisherID, age
+                )
+            self.iterativeFindNode(key, findKeyValue)
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
@@ -886,8 +888,9 @@ class DHTSearch(object):
         self.dhtCallbacks = []  # Callback list
         self.prevShortlistLength = 0
 
-        self.log = logging.getLogger('[%s] %s' % (market_id,
-                                                   self.__class__.__name__))
+        self.log = logging.getLogger(
+            '[%s] %s' % (market_id, self.__class__.__name__)
+        )
 
         # Create a unique ID (SHA1) for this _iterativeFind request to support parallel searches
         self.findID = hashlib.sha1(os.urandom(128)).hexdigest()

@@ -103,7 +103,9 @@ def point_to_hex(p):
 
 
 def multiply(privkey, pubkey):
-    return point_to_hex(base10_multiply(hex_to_point(pubkey), decode(privkey, 16)))
+    return point_to_hex(
+        base10_multiply(hex_to_point(pubkey), decode(privkey, 16))
+    )
 
 
 def privtopub(privkey):

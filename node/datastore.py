@@ -49,8 +49,10 @@ class DataStore(UserDict.DictMixin):
         """ Get the value identified by C{key} """
 
     def __setitem__(self, key, value):
-        """ Convenience wrapper to C{setItem}; this accepts a tuple in the
-        format: (value, lastPublished, originallyPublished, originalPublisherID) """
+        """
+        Convenience wrapper to C{setItem}; this accepts a tuple in the format:
+        (value, lastPublished, originallyPublished, originalPublisherID).
+        """
         self.setItem(key, *value)
 
     def __delitem__(self, key):
@@ -61,7 +63,12 @@ class DictDataStore(DataStore):
     """ A datastore using an in-memory Python dictionary """
     def __init__(self):
         # Dictionary format:
-        # { <key>: (<value>, <lastPublished>, <originallyPublished> <originalPublisherID>) }
+        # <key>: (
+        #     <value>,
+        #     <lastPublished>,
+        #     <originallyPublished>,
+        #     <originalPublisherID>
+        # )
         self.dict = {}
         self.log = logging.getLogger(self.__class__.__name__)
 
@@ -96,7 +103,12 @@ class DictDataStore(DataStore):
         pair to the current time
         """
         print 'Here is the key: %s' % key
-        self.dict[key] = (value, lastPublished, originallyPublished, originalPublisherID)
+        self.dict[key] = (
+            value,
+            lastPublished,
+            originallyPublished,
+            originalPublisherID
+        )
 
     def __getitem__(self, key):
         """ Get the value identified by C{key} """
@@ -150,18 +162,62 @@ class MongoDataStore(DataStore):
 
     def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id=1):
 
-        rows = self.db.selectEntries("datastore", {"key": key, "market_id": market_id})
+        rows = self.db.selectEntries(
+            "datastore",
+            {"key": key, "market_id": market_id}
+        )
 
         if len(rows) == 0:
-            # FIXME: Wrap text.
-            self.db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
+            self.db.insertEntry(
+                "datastore",
+                {
+                    'key': key,
+                    'value': value,
+                    'lastPublished': lastPublished,
+                    'originallyPublished': originallyPublished,
+                    'originalPublisherID': originalPublisherID,
+                    'market_id': market_id
+                }
+            )
         else:
-            self.db.updateEntries("datastore", {'key': key, 'market_id': market_id}, {'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
+            self.db.updateEntries(
+                "datastore",
+                {
+                    'key': key,
+                    'market_id': market_id
+                },
+                {
+                    'key': key,
+                    'value': value,
+                    'lastPublished': lastPublished,
+                    'originallyPublished': originallyPublished,
+                    'originalPublisherID': originalPublisherID,
+                    'market_id': market_id
+                }
+            )
 
-        # if self._cursor.fetchone() == None:
-        #     self._cursor.execute('INSERT INTO data(key, value, lastPublished, originallyPublished, originalPublisherID) VALUES (?, ?, ?, ?, ?)', (encodedKey, buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID))
+        # if self._cursor.fetchone() is None:
+        #     self._cursor.execute(
+        #         'INSERT INTO data(key, value, lastPublished, originallyPublished, originalPublisherID) VALUES (?, ?, ?, ?, ?)',
+        #         (
+        #             encodedKey,
+        #             buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)),
+        #             lastPublished,
+        #             originallyPublished,
+        #             originalPublisherID
+        #         )
+        #     )
         # else:
-        #     self._cursor.execute('UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?', (buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID, encodedKey))
+        #     self._cursor.execute(
+        #         'UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?',
+        #         (
+        #             buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)),
+        #             lastPublished,
+        #             originallyPublished,
+        #             originalPublisherID,
+        #             encodedKey
+        #         )
+        #     )
 
     def _dbQuery(self, key, columnName):
 
@@ -225,17 +281,61 @@ class SqliteDataStore(DataStore):
 
     def setItem(self, key, value, lastPublished, originallyPublished, originalPublisherID, market_id=1):
 
-        rows = self.db.selectEntries("datastore", {"key": key, "market_id": market_id})
+        rows = self.db.selectEntries(
+            "datastore",
+            {"key": key, "market_id": market_id}
+        )
         if len(rows) == 0:
-            # FIXME: Wrap text.
-            self.db.insertEntry("datastore", {'key': key, 'market_id': market_id, 'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
+            self.db.insertEntry(
+                "datastore",
+                {
+                    'key': key,
+                    'value': value,
+                    'lastPublished': lastPublished,
+                    'originallyPublished': originallyPublished,
+                    'originalPublisherID': originalPublisherID,
+                    'market_id': market_id
+                }
+            )
         else:
-            self.db.updateEntries("datastore", {'key': key, 'market_id': market_id}, {'key': key, 'value': value, 'lastPublished': lastPublished, 'originallyPublished': originallyPublished, 'originalPublisherID': originalPublisherID, 'market_id': market_id})
+            self.db.updateEntries(
+                "datastore",
+                {
+                    'key': key,
+                    'market_id': market_id
+                },
+                {
+                    'key': key,
+                    'value': value,
+                    'lastPublished': lastPublished,
+                    'originallyPublished': originallyPublished,
+                    'originalPublisherID': originalPublisherID,
+                    'market_id': market_id
+                }
+            )
 
-        # if self._cursor.fetchone() == None:
-        #     self._cursor.execute('INSERT INTO data(key, value, lastPublished, originallyPublished, originalPublisherID) VALUES (?, ?, ?, ?, ?)', (encodedKey, buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID))
+        # if self._cursor.fetchone() is None:
+        #     self._cursor.execute(
+        #         'INSERT INTO data(key, value, lastPublished, originallyPublished, originalPublisherID) VALUES (?, ?, ?, ?, ?)',
+        #         (
+        #             encodedKey,
+        #             buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)),
+        #             lastPublished,
+        #             originallyPublished,
+        #             originalPublisherID
+        #         )
+        #     )
         # else:
-        #     self._cursor.execute('UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?', (buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)), lastPublished, originallyPublished, originalPublisherID, encodedKey))
+        #     self._cursor.execute(
+        #         'UPDATE data SET value=?, lastPublished=?, originallyPublished=?, originalPublisherID=? WHERE key=?',
+        #         (
+        #             buffer(pickle.dumps(value, pickle.HIGHEST_PROTOCOL)),
+        #             lastPublished,
+        #             originallyPublished,
+        #             originalPublisherID,
+        #             encodedKey
+        #         )
+        #     )
 
     def _dbQuery(self, key, columnName):
 

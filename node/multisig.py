@@ -121,7 +121,10 @@ class Multisig:
     @staticmethod
     def make_request(*args):
         opener = urllib2.build_opener()
-        opener.addheaders = [('User-agent', 'Mozilla/5.0' + str(random.randrange(1000000)))]
+        opener.addheaders = [(
+            'User-agent',
+            'Mozilla/5.0' + str(random.randrange(1000000))
+        )]
         try:
             return opener.open(*args).read().strip()
         except Exception as e:
@@ -134,7 +137,10 @@ class Multisig:
     @staticmethod
     def eligius_pushtx(tx):
         print 'FINAL TRANSACTION: %s' % tx
-        s = Multisig.make_request('http://eligius.st/~wizkid057/newstats/pushtxn.php', 'transaction=' + tx + '&send=Push')
+        s = Multisig.make_request(
+            'http://eligius.st/~wizkid057/newstats/pushtxn.php',
+            'transaction=' + tx + '&send=Push'
+        )
         strings = re.findall('string[^"]*"[^"]*"', s)
         for string in strings:
             quote = re.findall('"[^"]*"', string)[0]
@@ -228,13 +234,16 @@ def main():
 
     def finished(tx):
 
-        buyer_sigs = escrow.release_funds(tx,
-                                          "b28c7003a7b6541cd1cd881928863abac0eff85f5afb40ff5561989c9fb95fb2".decode(
-                                              "hex"))
-        completed_tx = escrow.claim_funds(tx,
-                                          "5b05667dac199c48051932f14736e6f770e7a5917d2994a15a1508daa43bc9b0".decode(
-                                              "hex"),
-                                          buyer_sigs)
+        buyer_sigs = escrow.release_funds(
+            tx,
+            "b28c7003a7b6541cd1cd881928863abac0eff85f5afb40ff5561989c9fb95fb2".decode("hex")
+        )
+
+        completed_tx = escrow.claim_funds(
+            tx,
+            "5b05667dac199c48051932f14736e6f770e7a5917d2994a15a1508daa43bc9b0".decode("hex"),
+            buyer_sigs
+        )
         print 'COMPLETED TX: ', completed_tx.serialize().encode("hex")
 
     # TODO: Send to the bitcoin network
@@ -252,10 +261,15 @@ def main():
         print ''
         print tx.serialize().encode("hex")
         print ''
-        sigs1 = msig.sign_all_inputs(tx,
-                                     "b28c7003a7b6541cd1cd881928863abac0eff85f5afb40ff5561989c9fb95fb2".decode("hex"))
-        sigs3 = msig.sign_all_inputs(tx,
-                                     "b74dbef0909c96d5c2d6971b37c8c71d300e41cad60aeddd6b900bba61c49e70".decode("hex"))
+        sigs1 = msig.sign_all_inputs(
+            tx,
+            "b28c7003a7b6541cd1cd881928863abac0eff85f5afb40ff5561989c9fb95fb2".decode("hex")
+        )
+
+        sigs3 = msig.sign_all_inputs(
+            tx,
+            "b74dbef0909c96d5c2d6971b37c8c71d300e41cad60aeddd6b900bba61c49e70".decode("hex")
+        )
         for i, input in enumerate(tx.inputs):
             sigs = (sigs1[i], sigs3[i])
             script = "\x00"
@@ -269,7 +283,10 @@ def main():
         print tx
         print tx.serialize().encode("hex")
 
-    msig.create_unsigned_transaction("1Fufjpf9RM2aQsGedhSpbSCGRHrmLMJ7yY", finished)
+    msig.create_unsigned_transaction(
+        "1Fufjpf9RM2aQsGedhSpbSCGRHrmLMJ7yY",
+        finished
+    )
     reactor.run()
 
 if __name__ == "__main__":

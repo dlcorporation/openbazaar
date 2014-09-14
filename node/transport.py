@@ -245,8 +245,10 @@ class TransportLayer(object):
 
         if network_util.is_private_ip_address(self_addr):
             if not network_util.is_private_ip_address(other_addr):
-                self.log.warning(('Trying to connect to external '
-                                   'network with a private ip address.'))
+                self.log.warning((
+                    'Trying to connect to external '
+                    'network with a private ip address.'
+                ))
         else:
             if network_util.is_private_ip_address(other_addr):
                 return False
@@ -264,8 +266,9 @@ class CryptoTransportLayer(TransportLayer):
     def __init__(self, my_ip, my_port, market_id, db, bm_user=None, bm_pass=None,
                  bm_port=None, seed_mode=0, dev_mode=False):
 
-        self.log = logging.getLogger('[%s] %s' % (market_id,
-                                                   self.__class__.__name__))
+        self.log = logging.getLogger(
+            '[%s] %s' % (market_id, self.__class__.__name__)
+        )
         requests_log = logging.getLogger("requests")
         requests_log.setLevel(logging.WARNING)
 
@@ -515,11 +518,17 @@ class CryptoTransportLayer(TransportLayer):
         self.guid = ripe_hash.digest().encode('hex')
         self.sin = obelisk.EncodeBase58Check('\x0F\x02%s' + ripe_hash.digest())
 
-        self.db.updateEntries("settings", {"market_id": self.market_id}, {"secret": self.secret,
-                                                                            "pubkey": self.pubkey,
-                                                                            "privkey": self.privkey,
-                                                                            "guid": self.guid,
-                                                                            "sin": self.sin})
+        self.db.updateEntries(
+            "settings",
+            {"market_id": self.market_id},
+            {
+                "secret": self.secret,
+                "pubkey": self.pubkey,
+                "privkey": self.privkey,
+                "guid": self.guid,
+                "sin": self.sin
+            }
+        )
 
     def _generate_new_bitmessage_address(self):
         # Use the guid generated previously as the key
@@ -664,8 +673,11 @@ class CryptoTransportLayer(TransportLayer):
     def pubkey_exists(self, pub):
 
         for uri, peer in self.peers.iteritems():
-            self.log.info('PEER: %s Pub: %s' %
-                           (peer.pub.encode('hex'), pub.encode('hex')))
+            self.log.info(
+                'PEER: %s Pub: %s' % (
+                    peer.pub.encode('hex'), pub.encode('hex')
+                )
+            )
             if peer.pub.encode('hex') == pub.encode('hex'):
                 return True
 
@@ -734,13 +746,19 @@ class CryptoTransportLayer(TransportLayer):
 
         # Now send a hello message to the peer
         if pub:
-            self.log.info("Sending encrypted [%s] message to %s"
-                           % (msg['type'], uri))
+            self.log.info(
+                "Sending encrypted [%s] message to %s" % (
+                    msg['type'], uri
+                )
+            )
             peer.send(msg)
         else:
             # Will send clear profile on initial if no pub
-            self.log.info("Sending unencrypted [%s] message to %s"
-                           % (msg['type'], uri))
+            self.log.info(
+                "Sending unencrypted [%s] message to %s" % (
+                    msg['type'], uri
+                )
+            )
             self.peers[uri].send_raw(json.dumps(msg))
 
     def _init_peer(self, msg):
