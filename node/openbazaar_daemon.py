@@ -83,7 +83,7 @@ class MarketApplication(tornado.web.Application):
         #    upnp_mapper.cleanMyMappings()
 
         # for now let's always clean mappings every time.
-        self.upnp_mapper.clean_my_mappings()
+        self.upnp_mapper.clean_my_mappings(p2p_port)
         # result_http_port_mapping = self.upnp_mapper.add_port_mapping(http_port,
         #                                                             http_port)
         # print ("UPnP HTTP Port Map configuration done (%s -> %s) => %s" %
@@ -110,7 +110,7 @@ class MarketApplication(tornado.web.Application):
         try:
             if self.upnp_mapper is not None:
                 print "Cleaning UPnP Port Mapping -> ", \
-                    self.upnp_mapper.clean_my_mappings()
+                    self.upnp_mapper.clean_my_mappings(self.transport.port)
         except AttributeError:
             print "[openbazaar] MarketApplication.clean_upnp_port_mapping() failed!"
 
