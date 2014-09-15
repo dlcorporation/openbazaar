@@ -17,13 +17,16 @@ def usage():
 
   restart
 
+  port
+
   """
 
 def main(argv):
     if len(argv) >= 2:
         COMMANDS = {'start':'/usr/share/openbazaar/run.sh',
                     'stop':'/usr/share/openbazaar/stop.sh',
-                    'restart':'/usr/share/openbazaar/stop.sh; /usr/share/openbazaar/run.sh'}
+                    'restart':'/usr/share/openbazaar/stop.sh; /usr/share/openbazaar/run.sh',
+                    'port':'/usr/share/openbazaar/port.sh'} 
         try:
             command = argv[1]
             if command in COMMANDS:
