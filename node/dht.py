@@ -535,12 +535,11 @@ class DHT(object):
         if value_to_store:
             self.log.debug('Value to store: %s %s' % (key, value_to_store))
             self.iterativeFindNode(key, lambda msg, findKey=key, value=value_to_store,
-                                               originalPublisherID=originalPublisherID,
-                                               age=age: self.storeKeyValue(msg,
-                                                                           findKey,
-                                                                           value,
-                                                                           originalPublisherID,
-                                                                           age))
+                                   originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg,
+                                                                                                        findKey,
+                                                                                                        value,
+                                                                                                        originalPublisherID,
+                                                                                                        age))
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
