@@ -11,8 +11,7 @@ def usage():
   Usage: openbazaar <command>
 
   COMMANDS:
-  start      - Once the server has been started access it 
-               at http://localhost:8888
+  start     
 
   stop
 
