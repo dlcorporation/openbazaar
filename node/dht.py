@@ -68,7 +68,7 @@ class DHT(object):
     def remove_active_peer(self, uri):
         for idx, peer in enumerate(self.activePeers):
             if uri == peer.address:
-                self.activePeers[idx].cleanup_context()
+                # self.activePeers[idx].cleanup_context()
                 del self.activePeers[idx]
 
     def add_seed(self, transport, uri):
@@ -276,7 +276,8 @@ class DHT(object):
             for idx, s in enumerate(self.searches):
                 if s.findID == msg['findID']:
                     s.callback(msg['foundKey'])
-                    del self.searches[idx]
+                    if idx in self.searches:
+                        del self.searches[idx]
                     # self.searches[msg['findID']].callback(msg['foundKey'])
 
                     # Remove active search
@@ -326,13 +327,17 @@ class DHT(object):
                     # Get current shortlist length
                     shortlist_length = len(search.shortlist)
 
+                    nodes_to_extend = []
+
                     # Extends shortlist if necessary
                     for node in msg['foundNodes']:
                         self.log.info('FOUND NODE: %s' % node)
                         if node[0] != self.transport.guid and node[2] != self.transport.pubkey \
                                 and node[1] != self.transport.uri:
                             self.log.info('Found it %s %s' % (node[0], self.transport.guid))
-                            self.extendShortlist(transport, msg['findID'], [node])
+                            nodes_to_extend.append(node)
+
+                    self.extendShortlist(transport, msg['findID'], nodes_to_extend)
 
                     # Remove active probe to this node for this findID
                     search_ip = urlparse(msg['uri']).hostname
@@ -528,11 +533,14 @@ class DHT(object):
 
         # Find appropriate storage nodes and save key value
         if value_to_store:
-            def findKeyValue(msg, findKey=key, value=value_to_store, originalPublisherID=originalPublisherID, age=age):
-                return self.storeKeyValue(
-                    msg, findKey, value, originalPublisherID, age
-                )
-            self.iterativeFindNode(key, findKeyValue)
+            self.log.debug('Value to store: %s %s' % (key, value_to_store))
+            self.iterativeFindNode(key, lambda msg, findKey=key, value=value_to_store,
+                                               originalPublisherID=originalPublisherID,
+                                               age=age: self.storeKeyValue(msg,
+                                                                           findKey,
+                                                                           value,
+                                                                           originalPublisherID,
+                                                                           age))
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
@@ -566,21 +574,16 @@ class DHT(object):
 
             # Add listing to keyword index
             if 'keyword_index_add' in value_json:
-
                 existing_index = self.dataStore[key]
 
                 if existing_index is not None:
-
                     if not value_json['keyword_index_add'] in existing_index['listings']:
                         existing_index['listings'].append(value_json['keyword_index_add'])
-
                     value = existing_index
-
                 else:
-
                     value = {'listings': [value_json['keyword_index_add']]}
 
-                self.log.info('Keyword %s' % existing_index)
+                self.log.info('Keyword Index: %s' % value)
 
             if 'keyword_index_remove' in value_json:
 
@@ -609,6 +612,8 @@ class DHT(object):
 
         for node in nodes:
 
+            self.log.debug('Sending data to store in DHT: %s' % str(node))
+
             try:
                 socket.inet_pton(socket.AF_INET6, node[0])
                 uri = 'tcp://[%s]:%s' % (node[0], node[1])
@@ -630,7 +635,7 @@ class DHT(object):
 
     def _on_storeValue(self, msg):
 
-        self.log.debug('Received Store Command')
+        self.log.debug('Received Store Command %s' % msg)
 
         key = msg['key']
         value = msg['value']

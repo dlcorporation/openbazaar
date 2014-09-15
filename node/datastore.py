@@ -283,7 +283,8 @@ class SqliteDataStore(DataStore):
 
         rows = self.db.selectEntries(
             "datastore",
-            {"key": key, "market_id": market_id}
+            {"key": key,
+             "market_id": market_id}
         )
         if len(rows) == 0:
             self.db.insertEntry(
