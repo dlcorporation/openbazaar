@@ -1,7 +1,8 @@
 class Contact(object):
-    """ Encapsulation for remote contact
+    """
+    A remote contact
 
-    This class contains information on a single remote contact
+    Encapsulates information about a single remote contact.
     """
     def __init__(self, guid, uri, firstComm=0):
         self.guid = guid
@@ -15,16 +16,15 @@ class Contact(object):
             return self.guid == other.guid
         elif isinstance(other, str):
             return self.guid == other
-        else:
-            return False
+        return False
 
     def __ne__(self, other):
-        if isinstance(other, Contact):
-            return self.guid != other.guid
-        elif isinstance(other, str):
-            return self.guid != other
-        else:
-            return True
+        return not (self == other)
 
-    def __str__(self):
-        return '<%s.%s object; GUID: %s, URI: %s>' % (self.__module__, self.__class__.__name__, self.guid, self.uri)
+    def __repr__(self):
+        return '<%s.%s object; GUID: %s, URI: %s>' % (
+            self.__module__,
+            self.__class__.__name__,
+            self.guid,
+            self.uri
+        )
