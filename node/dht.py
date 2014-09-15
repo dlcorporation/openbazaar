@@ -94,7 +94,7 @@ class DHT(object):
         TODO: Refactor to just pass a peer object. evil tuples.
         """
 
-        assert(uri)
+        assert uri
 
         if uri is not None:
 
@@ -494,7 +494,8 @@ class DHT(object):
         self.iterativeFindValue(listing_index_key, callback)
 
         # Find appropriate storage nodes and save key value
-        # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
+        # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID,
+        # age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
 
     def find_listings_by_keyword(self, transport, keyword, listingFilter=None, callback=None):
 
@@ -508,7 +509,8 @@ class DHT(object):
         self.iterativeFindValue(listing_index_key, callback)
 
         # Find appropriate storage nodes and save key value
-        # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID, age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
+        # self.iterativeFindNode(key, lambda msg, key=key, value=value, originalPublisherID=originalPublisherID,
+        # age=age: self.storeKeyValue(msg, key, value, originalPublisherID, age))
 
     def iterativeStore(self, transport, key, value_to_store=None, originalPublisherID=None, age=0):
         """ The Kademlia store operation
@@ -517,8 +519,6 @@ class DHT(object):
 
         @param key: The hashtable key of the data
         @type key: str
-        @param value: The actual data (the value associated with C{key})
-        @type value: str
         @param originalPublisherID: The node ID of the node that is the
                                     B{original} publisher of the data
         @type originalPublisherID: str
@@ -535,12 +535,12 @@ class DHT(object):
         if value_to_store:
             self.log.debug('Value to store: %s %s' % (key, value_to_store))
             self.iterativeFindNode(key, lambda msg, findKey=key, value=value_to_store,
-                                               originalPublisherID=originalPublisherID,
-                                               age=age: self.storeKeyValue(msg,
-                                                                           findKey,
-                                                                           value,
-                                                                           originalPublisherID,
-                                                                           age))
+                                   originalPublisherID=originalPublisherID,
+                                   age=age: self.storeKeyValue(msg,
+                                   findKey,
+                                   value,
+                                   originalPublisherID,
+                                   age))
 
     def storeKeyValue(self, nodes, key, value, originalPublisherID, age):
 
@@ -770,8 +770,10 @@ class DHT(object):
         new_search.slowNodeCount[0] = len(new_search.active_probes)
 
         # Sort shortlist from closest to farthest
-        # self.activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self.routingTable.distance(firstContact.guid, targetKey), self.routingTable.distance(secondContact.guid, targetKey)))
-        # new_search.shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self.routingTable.distance(firstContact.guid, targetKey), self.routingTable.distance(secondContact.guid, targetKey)))
+        # self.activePeers.sort(lambda firstContact, secondContact, targetKey=key: cmp(self.routingTable.distance(firstContact.guid,
+        # targetKey), self.routingTable.distance(secondContact.guid, targetKey)))
+        # new_search.shortlist.sort(lambda firstContact, secondContact, targetKey=key: cmp(self.routingTable.distance(firstContact.guid,
+        # targetKey), self.routingTable.distance(secondContact.guid, targetKey)))
 
         self.activePeers.sort(lambda firstNode, secondNode, targetKey=new_search.key: cmp(
             self.routingTable.distance(firstNode.guid, targetKey),
