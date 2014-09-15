@@ -165,6 +165,24 @@ function installPortage {
   doneMessage
 }
 
+function installFedora {
+  #print commands
+  set -x
+
+  sudo yum install python-pip python-zmq rng-tools openssl \
+  openssl-devel alien python-virtualenv make automake gcc gcc-c++ \
+  kernel-devel python-devel openjpeg-devel zlib-devel sqlite 
+
+  if [ ! -d "./env" ]; then
+    virtualenv env
+  fi
+
+  ./env/bin/pip install ./pysqlcipher
+  ./env/bin/pip install -r requirements.txt
+
+  doneMessage
+}
+
 if [[ $OSTYPE == darwin* ]] ; then
   installMac
 elif [[ $OSTYPE == linux-gnu || $OSTYPE == linux-gnueabihf ]]; then
@@ -172,6 +190,8 @@ elif [[ $OSTYPE == linux-gnu || $OSTYPE == linux-gnueabihf ]]; then
     installArch
   elif [ -f /etc/gentoo-release ]; then
     installPortage
+  elif [ -f /etc/fedora-release ]; then
+    installFedora
   else
     installUbuntu
   fi
