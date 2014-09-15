@@ -22,6 +22,7 @@ DB_PATH = constants.DB_PATH
 def setup_db(db_path):
     if not path.isfile(db_path):
         con = sqlite.connect(db_path)
+        print 'Created database file'
         with con:
             cur = con.cursor()
 
@@ -91,7 +92,7 @@ def setup_db(db_path):
                         "shipping_address TEXT, "
                         "refund_requested INT DEFAULT 0, "
                         "refund_address TEXT, "
-                        "cancelled INT 0, "
+                        "cancelled INT DEFAULT 0, "
                         "buyer TEXT, "
                         "merchant TEXT, "
                         "note_for_merchant TEXT, "
