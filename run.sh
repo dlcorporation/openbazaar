@@ -43,6 +43,11 @@ fi
 if [[ "$OSTYPE" == "darwin"* ]]; then
   export DYLD_LIBRARY_PATH=$(brew --prefix openssl)/lib:${DYLD_LIBRARY_PATH}
 fi
+if [[ $OSTYPE == linux-gnu || $OSTYPE == linux-gnueabihf ]]; then
+  if [ -f /etc/fedora-release ]; then
+    export LD_LIBRARY_PATH="/opt/openssl-compat-bitcoin/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  fi
+fi
 
 # Default values
 SERVER_PORT=12345

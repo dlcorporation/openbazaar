@@ -169,9 +169,12 @@ function installFedora {
   #print commands
   set -x
 
-  sudo yum install python-pip python-zmq rng-tools openssl \
+  sudo yum install -y http://linux.ringingliberty.com/bitcoin/f18/x86_64/bitcoin-release-1-4.noarch.rpm
+
+  sudo yum -y install python-pip python-zmq rng-tools openssl \
   openssl-devel alien python-virtualenv make automake gcc gcc-c++ \
-  kernel-devel python-devel openjpeg-devel zlib-devel sqlite 
+  kernel-devel python-devel openjpeg-devel zlib-devel sqlite \
+   zeromq-devel zeromq python python-qt4 openssl-compat-bitcoin-libs
 
   if [ ! -d "./env" ]; then
     virtualenv env
