@@ -1,6 +1,7 @@
-import pyelliptic as ec
 import json
-import arithmetic
+
+import pyelliptic as ec
+from pybitcointools import main as arithmetic
 
 
 def pubkey_to_pyelliptic(pubkey):
@@ -31,11 +32,11 @@ def load_crypto_details(store_file):
         data["pubkey"].decode("hex")
 
 
-def makePrivCryptor(privkey):
-    privkey_bin = '\x02\xca\x00 ' + arithmetic.changebase(privkey,
+def makePrivCryptor(privkey_hex):
+    privkey_bin = '\x02\xca\x00 ' + arithmetic.changebase(privkey_hex,
                                                           16, 256, minlen=32)
-    pubkey = arithmetic.changebase(arithmetic.privtopub(privkey),
-                                   16, 256, minlen=65)[1:]
+    pubkey_hex = arithmetic.privkey_to_pubkey(privkey_hex)
+    pubkey_bin = arithmetic.changebase(pubkey_hex, 16, 256, minlen=65)[1:]
     pubkey_bin = '\x02\xca\x00 ' + pubkey[:32] + '\x00 ' + pubkey[32:]
     cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
     return cryptor
