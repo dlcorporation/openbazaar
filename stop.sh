@@ -6,7 +6,7 @@ for pid in `ps aux | grep "python.*openbazaar_daemon.py" | grep -v grep | awk '{
   do
     if ps -p $pid > /dev/null
     then
-      sleep 0.1s
+      { usleep 100000 || sleep 0.1; } &>/dev/null
     else
       break
     fi
