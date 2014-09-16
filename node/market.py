@@ -267,7 +267,7 @@ class Market(object):
             rv.append(item)
         return rv
 
-    def _decode_dict(data):
+    def _decode_dict(self, data):
         rv = {}
         for key, value in data.iteritems():
             if isinstance(key, unicode):
@@ -275,9 +275,9 @@ class Market(object):
             if isinstance(value, unicode):
                 value = value.encode('utf-8')
             elif isinstance(value, list):
-                value = _decode_list(value)
+                value = self._decode_list(value)
             elif isinstance(value, dict):
-                value = _decode_dict(value)
+                value = self._decode_dict(value)
             rv[key] = value
         return rv
 
