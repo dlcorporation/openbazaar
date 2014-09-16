@@ -95,8 +95,9 @@ class CryptoPeerConnection(PeerConnection):
         self.pub = pub
 
         # Convert URI over
-        self.ip = urlparse(address).hostname
-        self.port = urlparse(address).port
+        parseResult = urlparse(address)
+        self.ip = parseResult.hostname
+        self.port = parseResult.port
         self.host_to_ip()
 
         self.nickname = nickname
