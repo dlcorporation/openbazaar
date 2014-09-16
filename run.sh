@@ -24,6 +24,7 @@ OPTIONS:
   -u                        Market ID
   -j                        Disable upnp
   -s                        List of additional seeds
+  -f                        Path to database file (default db/ob.db)
   --disable-open-browser    Don't open the default web browser when OpenBazaar starts
 EOF
 }
@@ -82,7 +83,7 @@ TOR_HASHED_CONTROL_PASSWORD=
 TOR_PROXY_IP=127.0.0.1
 TOR_PROXY_PORT=7000
 
-while getopts "hp:l:dn:a:b:c:u:oi:jk:q:s:-:" OPTION
+while getopts "hp:l:dn:a:b:c:u:oi:jk:q:s:-:f:" OPTION
 do
      case ${OPTION} in
          h)
@@ -131,6 +132,9 @@ do
          s)
              SEED_URI_ADD=$OPTARG
              ;;
+         f)
+             DATABASE_FILE=$OPTARG
+             ;;
          -)
          	 case "${OPTARG}" in
          	     disable-open-browser)
@@ -156,11 +160,14 @@ if [ -z "$SERVER_IP" ]; then
 fi
 
 if [ ! -d "$LOGDIR" ]; then
-  mkdir $LOGDIR
+    mkdir $LOGDIR
 fi
 
-if [ ! -d "$DBDIR" ]; then
-  mkdir $DBDIR
+if [ -z "$DATABASE_FILE" ]; then
+    if [ ! -d "$DBDIR" ]; then
+        mkdir "$DBDIR"
+    fi
+    DATABASE_FILE="$DBDIR/$DBFILE"
 fi
 
 if [ "$DISABLE_UPNP" == 1 ]; then
@@ -181,32 +188,32 @@ echo "OpenBazaar is starting..."
 if [ "$SEED_MODE" == 1 ]; then
     echo "Seed Mode $SERVER_IP"
 
-    if [ ! -f $DBDIR/$DBFILE ]; then
-       echo "File $DBFILE does not exist. Running setup script."
-       $PYTHON node/setup_db.py db/ob.db
+    if [ ! -f "$DATABASE_FILE" ]; then
+       echo "File $DATABASE_FILE does not exist. Running setup script."
+       $PYTHON node/setup_db.py "$DATABASE_FILE"
        wait
     fi
 
-    $PYTHON node/openbazaar_daemon.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
+    $PYTHON node/openbazaar_daemon.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --database "$DATABASE_FILE" -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
 
 elif [ "$DEVELOPMENT" == 0 ]; then
     echo "Production Mode"
 
-    if [ ! -f $DBDIR/$DBFILE ]; then
-       echo "File $DBFILE does not exist. Running setup script."
+    if [ ! -f "$DATABASE_FILE" ]; then
+       echo "File $DATABASE_FILE does not exist. Running setup script."
        export PYTHONPATH=$PYTHONPATH:`pwd`
-       $PYTHON node/setup_db.py db/ob.db
+       $PYTHON node/setup_db.py "$DATABASE_FILE"
        wait
     fi
 
-	$PYTHON node/openbazaar_daemon.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
+	$PYTHON node/openbazaar_daemon.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --database "$DATABASE_FILE" --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
 
 else
 	# Primary Market - No SEED_URI specified
 	echo "Development Mode"
 
 	if [ ! -f $DBDIR/ob-dev.db ]; then
-       echo "File $DBFILE does not exist. Running setup script."
+       echo "File db/ob-dev.db does not exist. Running setup script."
        export PYTHONPATH=$PYTHONPATH:`pwd`
        $PYTHON node/setup_db.py db/ob-dev.db
        wait
