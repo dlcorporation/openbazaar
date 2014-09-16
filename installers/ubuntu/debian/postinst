@@ -24,7 +24,7 @@ echo
 echo
 echo "[openbazaar] Installation finished."
 echo "[openbazaar] Now type 'openbazaar start' to start OpenBazaar"
-echo "[openbazaar] then open 'http://localhost:8888' with your favorite web browser"
+echo "[openbazaar] then open it in your favorite web browser"
 echo
 echo
 echo
