@@ -15,6 +15,7 @@ from pybitcointools.main import random_key
 from crypto_util import pubkey_to_pyelliptic
 from crypto_util import makePrivCryptor
 from crypto_util import makePubCryptor
+from pysqlcipher.dbapi2 import OperationalError, DatabaseError
 import gnupg
 import xmlrpclib
 import logging
@@ -441,7 +442,12 @@ class CryptoTransportLayer(TransportLayer):
 
     def _setup_settings(self):
 
-        self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})
+        try:
+            self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})
+        except (OperationalError, DatabaseError) as e:
+            print e
+            raise SystemExit("database file %s corrupt or empty - cannot continue" % self.db.db_path)
+
         if len(self.settings) == 0:
             self.settings = {"market_id": self.market_id, "welcome": "enable"}
             self.db.insertEntry("settings", self.settings)
