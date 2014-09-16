@@ -206,7 +206,7 @@ class CryptoPeerConnection(PeerConnection):
         try:
             if self.pub is not None:
                 hexkey = hexToPubkey(self.pub)
-                return ec.ECC(curve='secp256k1').encrypt(data, hexkey)
+                return ec.ECC.encrypt(data, hexkey)
             else:
                 self.log.error('Public Key is missing')
                 return False
