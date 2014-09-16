@@ -442,15 +442,16 @@ class CryptoTransportLayer(TransportLayer):
 
         self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})
         if len(self.settings) == 0:
-            self.settings = None
-            self.db.insertEntry("settings", {"market_id": self.market_id, "welcome": "enable"})
+            self.settings = {"market_id": self.market_id, "welcome": "enable"}
+            self.db.insertEntry("settings", self.settings)
         else:
             self.settings = self.settings[0]
 
         # Generate PGP key during initial setup or if previous PGP gen failed
-        if not self.settings or not ('PGPPubKey' in self.settings and self.settings["PGPPubKey"]):
+        if not ('PGPPubKey' in self.settings and self.settings["PGPPubKey"]):
             try:
                 self.log.info('Generating PGP keypair. This may take several minutes...')
+                print 'Generating PGP keypair. This may take several minutes...'
                 gpg = gnupg.GPG()
                 input_data = gpg.gen_key_input(key_type="RSA",
                                                key_length=2048,
@@ -462,41 +463,42 @@ class CryptoTransportLayer(TransportLayer):
                 assert key is not None
 
                 pubkey_text = gpg.export_keys(key.fingerprint)
-                pgp_dict = {"PGPPubKey": pubkey_text, "PGPPubkeyFingerprint": key.fingerprint}
-                self.db.updateEntries("settings", {"market_id": self.market_id}, pgp_dict)
-                if self.settings:
-                    self.settings.update(pgp_dict)
+                newsettings = {"PGPPubKey": pubkey_text, "PGPPubkeyFingerprint": key.fingerprint}
+                self.db.updateEntries("settings", {"market_id": self.market_id}, newsettings)
+                self.settings.update(newsettings)
 
                 self.log.info('PGP keypair generated.')
             except Exception as e:
                 self.log.error("Encountered a problem with GPG: %s" % e)
 
-        if self.settings:
-            self.nickname = self.settings['nickname'] if 'nickname' in self.settings else ""
-            self.secret = self.settings['secret'] if 'secret' in self.settings else ""
-            self.pubkey = self.settings['pubkey'] if 'pubkey' in self.settings else ""
-            self.privkey = self.settings.get('privkey')
-            self.btc_pubkey = privkey_to_pubkey(self.privkey)
-            self.guid = self.settings['guid'] if 'guid' in self.settings else ""
-            self.sin = self.settings['sin'] if 'sin' in self.settings else ""
-            self.bitmessage = self.settings['bitmessage'] if 'bitmessage' in self.settings else ""
-
-            self._myself = ec.ECC(
-                pubkey=pubkey_to_pyelliptic(self.pubkey).decode('hex'),
-                raw_privkey=self.secret.decode('hex'),
-                curve='secp256k1'
-            )
-        else:
-            self.nickname = 'Default'
-
+        if not ('pubkey' in self.settings and self.settings['pubkey']):
             # Generate Bitcoin keypair
             self._generate_new_keypair()
 
+        if not ('bitmessage' in self.settings and self.settings['bitmessage']):
             # Generate Bitmessage address
             if self.bitmessage_api is not None:
                 self._generate_new_bitmessage_address()
 
-            self.settings = self.db.selectEntries("settings", {"market_id": self.market_id})[0]
+        if not ('nickname' in self.settings and self.settings['nickname']):
+            newsettings = {'nickname': 'Default'}
+            self.db.updateEntries('settings', {"market_id": self.market_id}, newsettings)
+            self.settings.update(newsettings)
+
+        self.nickname = self.settings['nickname'] if 'nickname' in self.settings else ""
+        self.secret = self.settings['secret'] if 'secret' in self.settings else ""
+        self.pubkey = self.settings['pubkey'] if 'pubkey' in self.settings else ""
+        self.privkey = self.settings.get('privkey')
+        self.btc_pubkey = privkey_to_pubkey(self.privkey)
+        self.guid = self.settings['guid'] if 'guid' in self.settings else ""
+        self.sin = self.settings['sin'] if 'sin' in self.settings else ""
+        self.bitmessage = self.settings['bitmessage'] if 'bitmessage' in self.settings else ""
+
+        self._myself = ec.ECC(
+            pubkey=pubkey_to_pyelliptic(self.pubkey).decode('hex'),
+            raw_privkey=self.secret.decode('hex'),
+            curve='secp256k1'
+        )
 
         self.log.debug('Retrieved Settings: \n%s', pformat(self.settings))
 
@@ -518,17 +520,15 @@ class CryptoTransportLayer(TransportLayer):
         self.guid = ripe_hash.digest().encode('hex')
         self.sin = obelisk.EncodeBase58Check('\x0F\x02%s' + ripe_hash.digest())
 
-        self.db.updateEntries(
-            "settings",
-            {"market_id": self.market_id},
-            {
-                "secret": self.secret,
-                "pubkey": self.pubkey,
-                "privkey": self.privkey,
-                "guid": self.guid,
-                "sin": self.sin
-            }
-        )
+        newsettings = {
+            "secret": self.secret,
+            "pubkey": self.pubkey,
+            "privkey": self.privkey,
+            "guid": self.guid,
+            "sin": self.sin
+        }
+        self.db.updateEntries("settings", {"market_id": self.market_id}, newsettings)
+        self.settings.update(newsettings)
 
     def _generate_new_bitmessage_address(self):
         # Use the guid generated previously as the key
@@ -538,13 +538,9 @@ class CryptoTransportLayer(TransportLayer):
             1.05,
             1.1111
         )
-        self.db.updateEntries(
-            "settings", {
-                "market_id": self.market_id
-            }, {
-                "bitmessage": self.bitmessage
-            }
-        )
+        newsettings = {"bitmessage": self.bitmessage}
+        self.db.updateEntries("settings", {"market_id": self.market_id}, newsettings)
+        self.settings.update(newsettings)
 
     def join_network(self, seed_peers=[], callback=lambda msg: None):
 
