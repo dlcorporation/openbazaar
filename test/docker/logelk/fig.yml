@@ -5,7 +5,7 @@
 # 9300 : logstash node port
 #
 elk:
-  image: obtest/elk
+  image: obtest/elk:latest
   hostname: elk
   ports:
     - "9280:80"
@@ -20,10 +20,9 @@ elk:
 # uncomment volumes for run node from local source code
 #
 ob:
-  image: obtest/ob
+  image: obtest/ob:latest
   hostname: ob
-#  volumes:
-#    - /local_git_path/OpenBazaar/node:/bazaar/node
+  command: /sbin/my_init
   ports:
     - "8888:8888"
     - "12345:12345"

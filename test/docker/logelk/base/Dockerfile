@@ -1,27 +1,24 @@
 FROM phusion/baseimage:0.9.13
 MAINTAINER Y12STUDIO <y12studio@gmail.com>
 
-ENV HOME /root
+RUN locale-gen --no-purge en_US.UTF-8
 ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 RUN update-locale
 ENV DEBIAN_FRONTEND noninteractive
+
 # Use the phusion baseimage's insecure key
 RUN /usr/sbin/enable_insecure_key
 
+ENV HOME /root
 RUN apt-get -y update
 RUN apt-get -y upgrade
-RUN apt-get install -yq curl wget git golang python
+RUN apt-get install -yq curl wget git python
 RUN apt-get install -yq openjdk-7-jre-headless
 
-# 
-# prebuild for OB
-#
-RUN apt-get -y update
-RUN apt-get install -y python-pip build-essential python-zmq rng-tools
-RUN apt-get install -y python-dev g++ libjpeg-dev zlib1g-dev sqlite3 openssl
-RUN apt-get install -y alien libssl-dev wget  lintian libjs-jquery
-ADD requirements.txt /opt/ob/requirements.txt
-RUN pip install -r /opt/ob/requirements.txt
+ENV JAVA_HOME  /usr/lib/jvm/java-7-openjdk-amd64/
+
 #
 # collectd install
 #
@@ -46,7 +43,6 @@ RUN chmod +x $CTD_RUN
 ADD logstash.sh $LS_RUN
 RUN chmod +x $LS_RUN
 
-ENV JAVA_HOME  /usr/lib/jvm/java-7-openjdk-amd64/
 
 CMD ["/sbin/my_init"]
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
