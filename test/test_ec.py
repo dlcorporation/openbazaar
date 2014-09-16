@@ -52,7 +52,9 @@ class TestPyellipticAsymmetric(unittest.TestCase):
         cls.alice = ec.ECC(curve=cls.ecc_curve)
         cls.bob = ec.ECC(curve=cls.ecc_curve)
         cls.bob_pubkey = cls.bob.get_pubkey()
+        cls.bob_privkey = cls.bob.get_privkey()
         cls.alice_pubkey = cls.alice.get_pubkey()
+        cls.data = "YELLOW SUBMARINE"
 
     def test_asymmetric_enc_dec(self):
         plaintext = "Hello Bob"
@@ -77,6 +79,22 @@ class TestPyellipticAsymmetric(unittest.TestCase):
         agent2 = self.alice  # working on another curve
         with self.assertRaises(Exception):
             agent2.get_ecdh_key(agent1.get_pubkey())
+
+    def test_encrypt_is_static(self):
+        obj_agent1 = ec.ECC(curve=self.ecc_curve)
+        obj_agent2 = ec.ECC(curve='sect283k1')
+        cls_agent3 = ec.ECC
+
+        encd1 = obj_agent1.encrypt(self.data, self.bob_pubkey)
+        encd2 = obj_agent2.encrypt(self.data, self.bob_pubkey)
+        encd3 = cls_agent3.encrypt(self.data, self.bob_pubkey)
+
+        dcd1 = self.bob.decrypt(encd1)
+        dcd2 = self.bob.decrypt(encd2)
+        dcd3 = self.bob.decrypt(encd3)
+
+        self.assertEqual(dcd1, dcd2)
+        self.assertEqual(dcd2, dcd3)
 
 
 if __name__ == "__main__":
