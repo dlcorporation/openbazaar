@@ -141,12 +141,16 @@ function installArch {
   set -x
 
   sudo pacman -Sy
-  sudo pacman -S base-devel python2 python2-pip python2-pyzmq rng-tools
-  sudo pacman -S gcc libjpeg zlib sqlite3 openssl
-  pushd pysqlcipher
-  sudo python2.7 setup.py install
-  popd
-  sudo pip2 install -r requirements.txt
+  #sudo pacman -S --needed base-devel #Can conflict with multilib packages. Uncomment this line if you don't already have base-devel installed
+  sudo pacman -S --needed python2 python2-pip python2-virtualenv python2-pyzmq rng-tools libjpeg zlib sqlite3 openssl
+
+  if [ ! -d "./env" ]; then
+    virtualenv2 env
+  fi
+
+  ./env/bin/pip install ./pysqlcipher
+  ./env/bin/pip install -r requirements.txt
+
   doneMessage
 }
 
