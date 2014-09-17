@@ -48,7 +48,7 @@ class DataURI(str):
 
     def __new__(cls, *args, **kwargs):
         uri = super(DataURI, cls).__new__(cls, *args, **kwargs)
-        uri._parse  # Trigger any ValueErrors on instantiation and access to a protected member _parse of a client class (protected-access).
+        uri._parse  # Trigger any ValueErrors.
         return uri
 
     def __repr__(self):
