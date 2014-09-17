@@ -113,9 +113,10 @@ class TransportLayer(object):
 
         else:
             try:
+                socket.inet_pton(socket.AF_INET6, self.ip)
                 self.socket.ipv6 = True
                 self.socket.bind('tcp://[*]:%s' % self.port)
-            except AttributeError:
+            except (AttributeError, socket.error):
                 self.socket.bind('tcp://*:%s' % self.port)
 
         self.stream = zmqstream.ZMQStream(
