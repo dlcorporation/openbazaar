@@ -477,6 +477,7 @@ class CryptoTransportLayer(TransportLayer):
                 self.log.info('PGP keypair generated.')
             except Exception as e:
                 self.log.error("Encountered a problem with GPG: %s" % e)
+                raise SystemExit("Encountered a problem with GPG: %s" % e)
 
         if not ('pubkey' in self.settings and self.settings['pubkey']):
             # Generate Bitcoin keypair
