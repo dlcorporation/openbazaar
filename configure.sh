@@ -108,13 +108,13 @@ function installMac {
 }
 
 function doneMessage {
-echo ""
-echo "OpenBazaar configuration finished."
-echo "type './run.sh; tail -f logs/production.log' to start your OpenBazaar servent instance and monitor logging output."
-echo ""
-echo ""
-echo ""
-echo ""
+  echo ""
+  echo "OpenBazaar configuration finished."
+  echo "type './run.sh; tail -f logs/production.log' to start your OpenBazaar servent instance and monitor logging output."
+  echo ""
+  echo ""
+  echo ""
+  echo ""
 }
 
 function installUbuntu {
@@ -154,6 +154,13 @@ function installArch {
   doneMessage
 }
 
+function installRaspiArch {
+  # pacman -S sudo first
+  sudo pacman -S --needed base-devel curl wget python2 python2-pip rng-tools libjpeg zlib sqlite3 openssl libunistring
+  pip2 install -r requirements.txt
+  doneMessage
+}
+
 function installPortage {
   #print commands
   set -x
@@ -190,11 +197,19 @@ function installFedora {
   doneMessage
 }
 
+UNAME=`uname -a`
+
 if [[ $OSTYPE == darwin* ]] ; then
   installMac
 elif [[ $OSTYPE == linux-gnu || $OSTYPE == linux-gnueabihf ]]; then
   if [ -f /etc/arch-release ]; then
-    installArch
+      if [[ "$UNAME" =~ "alarmpi" ]]; then
+          echo Found Raspberry Pi Arch Linux
+          echo $UNAME
+          installRaspiArch
+      else
+          installArch
+      fi
   elif [ -f /etc/gentoo-release ]; then
     installPortage
   elif [ -f /etc/fedora-release ]; then
