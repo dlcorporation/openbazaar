@@ -199,7 +199,7 @@ def start_node(my_market_ip,
 
     print "Started OpenBazaar Web App at http://%s:%s" % (http_ip, http_port)
 
-    if disable_open_browser == "0":
+    if not disable_open_browser:
         open_default_webbrowser('http://%s:%s' % (http_ip, http_port))
 
     try:
@@ -248,6 +248,7 @@ if __name__ == "__main__":
     parser.add_argument("--disable_upnp",
                         action='store_true')
     parser.add_argument("--disable_open_browser",
+                        action='store_true',
                         default=False)
 
     args = parser.parse_args()

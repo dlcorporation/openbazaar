@@ -183,9 +183,9 @@ else
 fi
 
 if [ "$DISABLE_OPEN_DEFAULT_WEBBROWSER" == 1 ]; then
-    DISABLE_OPEN_DEFAULT_WEBBROWSER="--disable_open_browser 1"
+    DISABLE_OPEN_DEFAULT_WEBBROWSER="--disable_open_browser"
 else
-    DISABLE_OPEN_DEFAULT_WEBBROWSER="--disable_open_browser 0"
+    DISABLE_OPEN_DEFAULT_WEBBROWSER=""
 fi
 
 echo "OpenBazaar is starting..."
