@@ -216,8 +216,8 @@ def start_node(my_market_ip,
         except Exception as e:
             pass
 
-# Run this if executed directly
-if __name__ == "__main__":
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("my_market_ip")
     parser.add_argument("-p", "--my_market_port",
@@ -268,3 +268,7 @@ if __name__ == "__main__":
                args.database,
                args.disable_upnp,
                args.disable_open_browser)
+
+# Run this if executed directly
+if __name__ == "__main__":
+    main()
