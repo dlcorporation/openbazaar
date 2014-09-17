@@ -1,5 +1,3 @@
-import json
-
 import pyelliptic as ec
 from pybitcointools import main as arithmetic
 
@@ -15,21 +13,6 @@ def pubkey_to_pyelliptic(pubkey):
     # Add pyelliptic content
     print "02ca0020" + pub_x + "0020" + pub_y
     return "02ca0020" + pub_x + "0020" + pub_y
-
-
-# UNUSED IN THE PROJECT
-def load_crypto_details(store_file):
-    with open(store_file) as f:
-        data = json.loads(f.read())
-        f.close()
-    assert "nickname" in data
-    assert "secret" in data
-    assert "pubkey" in data
-    assert len(data["secret"]) == 2 * 32
-    assert len(data["pubkey"]) == 2 * 33
-
-    return data["nickname"], data["secret"].decode("hex"), \
-        data["pubkey"].decode("hex")
 
 
 def makePrivCryptor(privkey_hex):
