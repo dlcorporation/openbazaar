@@ -198,6 +198,7 @@ def start_node(my_market_ip,
                      (http_ip, http_port))
 
     print "Started OpenBazaar Web App at http://%s:%s" % (http_ip, http_port)
+    print "Use ./stop.sh to stop"
 
     if disable_open_browser == "0":
         open_default_webbrowser('http://%s:%s' % (http_ip, http_port))
