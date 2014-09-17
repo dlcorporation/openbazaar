@@ -1,6 +1,5 @@
 import pyelliptic as ec
-import json
-import arithmetic
+from pybitcointools import main as arithmetic
 
 
 def pubkey_to_pyelliptic(pubkey):
@@ -16,26 +15,11 @@ def pubkey_to_pyelliptic(pubkey):
     return "02ca0020" + pub_x + "0020" + pub_y
 
 
-# UNUSED IN THE PROJECT
-def load_crypto_details(store_file):
-    with open(store_file) as f:
-        data = json.loads(f.read())
-        f.close()
-    assert "nickname" in data
-    assert "secret" in data
-    assert "pubkey" in data
-    assert len(data["secret"]) == 2 * 32
-    assert len(data["pubkey"]) == 2 * 33
-
-    return data["nickname"], data["secret"].decode("hex"), \
-        data["pubkey"].decode("hex")
-
-
-def makePrivCryptor(privkey):
-    privkey_bin = '\x02\xca\x00 ' + arithmetic.changebase(privkey,
+def makePrivCryptor(privkey_hex):
+    privkey_bin = '\x02\xca\x00 ' + arithmetic.changebase(privkey_hex,
                                                           16, 256, minlen=32)
-    pubkey = arithmetic.changebase(arithmetic.privtopub(privkey),
-                                   16, 256, minlen=65)[1:]
+    pubkey_hex = arithmetic.privkey_to_pubkey(privkey_hex)
+    pubkey_bin = arithmetic.changebase(pubkey_hex, 16, 256, minlen=65)[1:]
     pubkey_bin = '\x02\xca\x00 ' + pubkey[:32] + '\x00 ' + pubkey[32:]
     cryptor = ec.ECC(curve='secp256k1', privkey=privkey_bin, pubkey=pubkey_bin)
     return cryptor
