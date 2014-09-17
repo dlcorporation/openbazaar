@@ -95,6 +95,7 @@ class Market(object):
     def on_listing_results(self, results):
         self.log.debug('Listings %s' % results)
 
+    @staticmethod
     def process_contract_image(image):
         uri = DataURI(image)
         imageData = uri.data
