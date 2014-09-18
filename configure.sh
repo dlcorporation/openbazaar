@@ -123,7 +123,7 @@ function installUbuntu {
 
   sudo apt-get update
   sudo apt-get install python-pip build-essential python-zmq rng-tools
-  sudo apt-get install python-dev python-pip g++ libjpeg-dev zlib1g-dev sqlite3 openssl
+  sudo apt-get install python-dev g++ libjpeg-dev zlib1g-dev sqlite3 openssl
   sudo apt-get install alien libssl-dev python-virtualenv lintian libjs-jquery
 
   if [ ! -d "./env" ]; then
@@ -154,11 +154,47 @@ function installArch {
   doneMessage
 }
 
+function confirm {
+    # call with a prompt string or use a default Y
+    read -r -p "Are you sure? [Y/n] " response
+    if [[ $response =~ [nN](o)* ]]; then
+      return 1
+    else
+      return 0
+    fi
+}
+
 function installRaspiArch {
-  # pacman -S sudo first
+  # pacman -S sudo
+  sudo pacman -Sy
   sudo pacman -S --needed base-devel curl wget python2 python2-pip rng-tools libjpeg zlib sqlite3 openssl libunistring
-  pip2 install -r requirements.txt
-  doneMessage
+  echo " "
+  echo "Notice : pip install requires 10~30 minutes to complete."
+  if confirm ; then
+    pip2 install -r requirements.txt
+    doneMessage
+    echo "Run OpenBazaar on Raspberry Pi Arch without HDMI/VideoOut/UPnP"
+    echo "Type the following shell command to start."
+    echo " "
+    echo "IP=\$(/sbin/ifconfig eth0 | grep 'inet ' | awk '{print \$2}')"
+    echo "./run.sh -j --disable-open-browser -k \$IP -q 8888 -p 12345; tail -f logs/production.log"
+  fi
+}
+
+function installRaspbian {
+  sudo apt-get -y install python-pip build-essential rng-tools alien
+  sudo apt-get -y install openssl libssl-dev gcc python-dev libjpeg-dev zlib1g-dev sqlite3
+  echo " "
+  echo "Notice : pip install requires 2~3 hours to complete."
+  if confirm ; then
+    sudo pip install -r requirements.txt
+    doneMessage
+    echo "Run OpenBazaar on Raspberry Pi Raspbian without HDMI/VideoOut/UPnP"
+    echo "Type the following shell command to start."
+    echo " "
+    echo "IP=\$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print \$1}')"
+    echo "./run.sh -j --disable-open-browser -k \$IP -q 8888 -p 12345; tail -f logs/production.log"
+  fi
 }
 
 function installPortage {
@@ -197,16 +233,16 @@ function installFedora {
   doneMessage
 }
 
-UNAME=`uname -a`
 
 if [[ $OSTYPE == darwin* ]] ; then
   installMac
 elif [[ $OSTYPE == linux-gnu || $OSTYPE == linux-gnueabihf ]]; then
+  UNAME=$(uname -a)
   if [ -f /etc/arch-release ]; then
-      if [[ "$UNAME" =~ "alarmpi" ]]; then
+      if [[ "$UNAME" =~ alarmpi ]]; then
+          echo "$UNAME"
           echo Found Raspberry Pi Arch Linux
-          echo $UNAME
-          installRaspiArch
+          installRaspiArch "$@"
       else
           installArch
       fi
@@ -214,6 +250,9 @@ elif [[ $OSTYPE == linux-gnu || $OSTYPE == linux-gnueabihf ]]; then
     installPortage
   elif [ -f /etc/fedora-release ]; then
     installFedora
+  elif grep Raspbian /etc/os-release ; then
+    echo Found Raspberry Pi Raspbian
+    installRaspbian "$@"
   else
     installUbuntu
   fi
