@@ -4,13 +4,14 @@ Install [docker/docker](https://github.com/docker/docker) and [fig](https://gith
 
 ```
 $ git clone https://github.com/OpenBazaar/OpenBazaar && cd OpenBazaar
-$ cd test/docker/logelk
+$ cd util/docker/logelk
 $ bash build.sh -a
 ```
 
 ## Run a node base on github offical repo master branch with a elk container.
 
 ```
+$ bash build.sh -o
 $ sudo fig up -d
 $ sudo fig logs
 ```
@@ -20,8 +21,22 @@ $ sudo fig logs
 example git_url = https://github.com/y12studio/OpenBazaar and branch = hello_ob_fix
 
 ```
-$ sudo fig stop
 $ bash build.sh -k "https://github.com/y12studio/OpenBazaar hello_ob_fix"
+$ sudo fig stop
+$ sudo fig up -d
+$ sudo fig logs
+```
+
+## Run a node base on your local dev branch with a elk container.
+
+example git_url = https://github.com/y12studio/OpenBazaar and branch = hello_ob_fix
+
+```
+$ git clone https://github.com/OpenBazaar/OpenBazaar && cd OpenBazaar
+$ git checkout -b dev-branch
+$ vi something
+$ cd uitl/docker/logelk
+$ bash build.sh -c "/home/your_git_path/OpenBazaar"
 $ sudo fig up -d
 $ sudo fig logs
 ```
