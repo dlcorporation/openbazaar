@@ -57,7 +57,7 @@ angular.module('app')
 
             $scope.search_results = [];
             $scope.parse_search_result = function(msg) {
-                console.log(msg);
+                console.log('Global Search Result', msg);
                 var contract_data = msg.data;
                 contract_data.key = msg.key;
                 contract_data.rawContract = msg.rawContract;
@@ -65,8 +65,7 @@ angular.module('app')
 
                 var contract_dupe = false;
                 $.each($scope.search_results, function(index, contract) {
-                    console.log(contract.key.key, msg.key.key);
-                    if(contract.key.key == msg.key.key) {
+                    if(contract.key == msg.key) {
                         contract_dupe = true;
                     }
                 });

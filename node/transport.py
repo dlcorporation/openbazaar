@@ -569,13 +569,14 @@ class CryptoTransportLayer(TransportLayer):
 
         known_peers = list(set(seed_peers)) + list(set(db_peers))
 
-        print 'known_peers', known_peers
-
         self.connect_to_peers(known_peers)
 
+        # TODO: This needs rethinking. Normally we can search for ourselves
+        #       but because we are not connected to them quick enough this
+        #       will always fail. Need @gubatron to review
         # Populate routing table by searching for self
-        if len(known_peers) > 0:
-            self.search_for_my_node()
+        # if len(known_peers) > 0:
+        #     self.search_for_my_node()
 
         if callback is not None:
             callback('Joined')

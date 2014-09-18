@@ -528,13 +528,11 @@ class OptimizedTreeRoutingTable(TreeRoutingTable):
         """
         bucketIndex = self.kbucketIndex(contactID)
         try:
-            contact = self.buckets[bucketIndex].getContact(contactID)
+            self.buckets[bucketIndex].removeContact(contactID)
         except ValueError:
+            pass
             # print 'removeContact(): Contact not in routing table'
-            return
-
-        if contact:
-            self.buckets[bucketIndex].removeContact(contact)
+        else:
             # Replace this stale contact with one from our replacement
             # cache, if we have any
             if bucketIndex in self.replacementCache:

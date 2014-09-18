@@ -63,7 +63,6 @@ class KBucket(object):
     def getContact(self, contactID):
         """Get the contact with the specified node ID."""
         self.log.debug('[getContact] %s' % contactID)
-        self.log.debug('contacts %s' % self.contacts)
         for contact in self.contacts:
             if contact.guid == contactID:
                 self.log.debug('[getContact] Found %s' % contact)
@@ -125,12 +124,10 @@ class KBucket(object):
 
         @raise ValueError: The specified contact is not in this bucket
         """
-        self.log.debug('Contacts %s %s' % (contact, self.contacts))
         try:
             self.contacts.remove(contact)
         except ValueError:
             raise ValueError('Contact was not found in this bucket')
-        self.log.debug('Contacts %s %s' % (contact, self.contacts))
 
     def keyInRange(self, key):
         """
