@@ -53,7 +53,7 @@ class TransportLayer(object):
         try:
             socket.inet_pton(socket.AF_INET6, my_ip)
             my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
-        except socket.error:
+        except (socket.error, ValueError):
             my_uri = 'tcp://%s:%s' % (self.ip, self.port)
         self.uri = my_uri
 
@@ -117,7 +117,7 @@ class TransportLayer(object):
                 socket.inet_pton(socket.AF_INET6, self.ip)
                 self.socket.ipv6 = True
                 self.socket.bind('tcp://[*]:%s' % self.port)
-            except (AttributeError, socket.error):
+            except (AttributeError, socket.error, ValueError):
                 self.socket.bind('tcp://*:%s' % self.port)
 
         self.stream = zmqstream.ZMQStream(
@@ -285,7 +285,7 @@ class CryptoTransportLayer(TransportLayer):
         try:
             socket.inet_pton(socket.AF_INET6, my_ip)
             my_uri = "tcp://[%s]:%s" % (my_ip, my_port)
-        except socket.error:
+        except (socket.error, ValueError):
             my_uri = "tcp://%s:%s" % (my_ip, my_port)
 
         self.market_id = market_id
@@ -336,7 +336,7 @@ class CryptoTransportLayer(TransportLayer):
                     try:
                         socket.inet_pton(socket.AF_INET6, self.ip)
                         my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
-                    except socket.error:
+                    except (socket.error, ValueError):
                         my_uri = 'tcp://%s:%s' % (self.ip, self.port)
                     self.uri = my_uri
                     self.stream.close()
@@ -561,7 +561,7 @@ class CryptoTransportLayer(TransportLayer):
             try:
                 socket.inet_pton(socket.AF_INET6, seed)
                 seed_peers[idx] = "tcp://[%s]:12345" % seed
-            except socket.error:
+            except (socket.error, ValueError):
                 seed_peers[idx] = "tcp://%s:12345" % seed
 
         # Connect to persisted peers

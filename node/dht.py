@@ -612,7 +612,7 @@ class DHT(object):
             try:
                 socket.inet_pton(socket.AF_INET6, node[0])
                 uri = 'tcp://[%s]:%s' % (node[0], node[1])
-            except socket.error:
+            except (socket.error, ValueError):
                 uri = 'tcp://%s:%s' % (node[0], node[1])
 
             guid = node[2]
