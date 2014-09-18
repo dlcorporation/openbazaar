@@ -178,7 +178,7 @@ class PortMapper(object):
                         pass
 
 
-class PortMappingEntry:
+class PortMappingEntry(object):
     '''POPO to represent a port mapping entry, tuples are evil when
        used for abstractions'''
     def __init__(self, port, protocol, internalHost, internalPort,

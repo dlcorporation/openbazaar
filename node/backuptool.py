@@ -5,7 +5,7 @@ import os
 import json
 
 
-class BackupTool:
+class BackupTool(object):
     """
     Simple backup utility.
 

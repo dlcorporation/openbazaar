@@ -14,7 +14,7 @@ from node import trust
 
 
 class Orders(object):
-    class State:
+    class State(object):
         """Enum inner class. Python introduces enums in Python 3.0, but this should be good enough"""
         SENT = 'Sent'
         ACCEPTED = 'accepted'

@@ -17,7 +17,7 @@ from node import trust
 ioloop.install()
 
 
-class ProtocolHandler:
+class ProtocolHandler(object):
     def __init__(self, transport, market_application, handler, db, loop_instance):
         self.market_application = market_application
         self.market = self.market_application.market

@@ -36,7 +36,7 @@ def build_output_info_list(unspent_rows):
     return unspent_infos
 
 
-class Multisig:
+class Multisig(object):
     def __init__(self, client, number_required, pubkeys):
         if number_required > len(pubkeys):
             raise Exception("number_required > len(pubkeys)")
@@ -180,7 +180,7 @@ def generate_signature_hash(parent_tx, input_index, script_code):
     return obelisk.Hash(raw_tx)
 
 
-class Escrow:
+class Escrow(object):
     def __init__(self, client, buyer_pubkey, seller_pubkey, arbit_pubkey):
         pubkeys = (buyer_pubkey, seller_pubkey, arbit_pubkey)
         self.multisig = Multisig(client, 2, pubkeys)

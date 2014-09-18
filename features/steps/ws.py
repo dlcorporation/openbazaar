@@ -74,7 +74,7 @@ def step_impl(context, i, j):
     j = int(j)
 
     response = ws_receive_myself(i)['result']
-    assert(response['type'] == 'myself')
+    assert response['type'] == 'myself'
     assert(node_uri(j) in [x['uri'] for x in response['peers']])
 
 
