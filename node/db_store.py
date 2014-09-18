@@ -144,7 +144,7 @@ class Obdb():
         if lastrowid:
             return lastrowid
 
-    def selectEntries(self, table, where_dict={"\"1\"": "1"}, operator="AND", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
+    def selectEntries(self, table, where_dict=None, operator="AND", order_field="id", order="ASC", limit=None, limit_offset=None, select_fields="*"):
         """
         A wrapper for the SQL SELECT operation. It will always return all the
         attributes for the selected rows.
@@ -152,6 +152,8 @@ class Obdb():
         @param whereDict: A dictionary with the WHERE clauses.
                           If ommited it will return all the rows of the table.
         """
+        if where_dict is None:
+            where_dict = {"\"1\"": "1"}
         self._connectToDb()
         with self.con:
             cur = self.con.cursor()
@@ -182,7 +184,7 @@ class Obdb():
         self._disconnectFromDb()
         return rows
 
-    def deleteEntries(self, table, where_dict={"\"1\"": "1"}, operator="AND"):
+    def deleteEntries(self, table, where_dict=None, operator="AND"):
         """
         A wrapper for the SQL DELETE operation. It will always return all the
         attributes for the selected rows.
@@ -190,6 +192,8 @@ class Obdb():
         @param whereDict: A dictionary with the WHERE clauses.
                           If ommited it will delete all the rows of the table.
         """
+        if where_dict is None:
+            where_dict = {"\"1\"": "1"}
 
         self._connectToDb()
         with self.con:

@@ -1,7 +1,7 @@
 import logging
 
 from six import string_types
-import constants
+from node import constants
 
 
 class BucketFull(Exception):

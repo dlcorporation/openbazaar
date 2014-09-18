@@ -1,9 +1,9 @@
-import connection
-from dht import DHT
-from protocol import hello_request
-from protocol import hello_response
-from protocol import goodbye
-from protocol import proto_response_pubkey
+from node import connection
+from node.dht import DHT
+from node.protocol import hello_request
+from node.protocol import hello_response
+from node.protocol import goodbye
+from node.protocol import proto_response_pubkey
 from urlparse import urlparse
 from zmq.eventloop import ioloop, zmqstream
 from zmq.eventloop.ioloop import PeriodicCallback
@@ -12,9 +12,9 @@ from pprint import pformat
 from pybitcointools.main import privkey_to_pubkey
 from pybitcointools.main import privtopub
 from pybitcointools.main import random_key
-from crypto_util import pubkey_to_pyelliptic
-from crypto_util import makePrivCryptor
-from crypto_util import makePubCryptor
+from node.crypto_util import pubkey_to_pyelliptic
+from node.crypto_util import makePrivCryptor
+from node.crypto_util import makePubCryptor
 from pysqlcipher.dbapi2 import OperationalError, DatabaseError
 import gnupg
 import xmlrpclib
@@ -27,7 +27,7 @@ import traceback
 from threading import Thread
 import zlib
 import obelisk
-import network_util
+from node import network_util
 import zmq
 import random
 import hashlib
@@ -234,8 +234,7 @@ class TransportLayer(object):
 
     def valid_peer_uri(self, uri):
         try:
-            [self_protocol, self_addr, self_port] = \
-                network_util.uri_parts(self.uri)
+            [_, self_addr, _] = network_util.uri_parts(self.uri)
             [other_protocol, other_addr, other_port] = \
                 network_util.uri_parts(uri)
         except RuntimeError:
@@ -550,7 +549,9 @@ class CryptoTransportLayer(TransportLayer):
         self.db.updateEntries("settings", {"market_id": self.market_id}, newsettings)
         self.settings.update(newsettings)
 
-    def join_network(self, seed_peers=[], callback=lambda msg: None):
+    def join_network(self, seed_peers=None, callback=lambda msg: None):
+        if seed_peers is None:
+            seed_peers = []
 
         self.log.info('Joining network')
 
@@ -676,7 +677,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def pubkey_exists(self, pub):
 
-        for uri, peer in self.peers.iteritems():
+        for peer in self.peers.itervalues():
             self.log.info(
                 'PEER: %s Pub: %s' % (
                     peer.pub.encode('hex'), pub.encode('hex')

@@ -1,7 +1,7 @@
 import threading
 import logging
 import subprocess
-import protocol
+from node import protocol
 import pycountry
 import gnupg
 import obelisk
@@ -11,8 +11,8 @@ from pybitcointools import *
 import tornado.websocket
 from zmq.eventloop import ioloop
 from twisted.internet import reactor
-from backuptool import BackupTool, Backup, BackupJSONEncoder
-import trust
+from node.backuptool import BackupTool, Backup, BackupJSONEncoder
+from node import trust
 
 ioloop.install()
 
@@ -287,21 +287,20 @@ class ProtocolHandler:
             lambda msg, query_id=query_id: cb(msg, query_id)
         )
 
-        def unreachable_market(query_id):
-            self.log.info('Cannot reach market, try port forwarding')
-            if query_id in self.timeouts:
-                self.log.info('Unreachable Market: %s' % msg)
+        # UNUSED
+        # def unreachable_market(query_id):
+        #     self.log.info('Cannot reach market, try port forwarding')
+        #     if query_id in self.timeouts:
+        #         self.log.info('Unreachable Market: %s' % msg)
+        #         for peer in self.transport.dht.activePeers:
+        #             if peer.guid == findGUID:
+        #                 self.transport.dht.activePeers.remove(peer)
+        #         self.refresh_peers()
 
-                for peer in self.transport.dht.activePeers:
-                    if peer.guid == findGUID:
-                        self.transport.dht.activePeers.remove(peer)
-
-                self.refresh_peers()
-
-        # self.loop.add_timeout(
-        #     time.time() + .5,
-        #     lambda query_id=query_id: unreachable_market(query_id)
-        # )
+        #  self.loop.add_timeout(
+        #        time.time() + .5,
+        #        lambda query_id=query_id: unreachable_market(query_id)
+        #  )
 
     def client_query_orders(self, socket_handler=None, msg=None):
 

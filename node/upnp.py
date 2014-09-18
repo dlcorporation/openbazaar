@@ -165,8 +165,8 @@ class PortMapper(object):
         return mappings
 
     def clean_my_mappings(self, port):
+        '''Delete previous OpenBazaar UPnP Port mappings if found.'''
         if self.UPNP_DEVICE_AVAILABLE:
-            '''Delete previous OpenBazaar UPnP Port mappings if found.'''
             mappings = self.get_mapping_list()
             for m in mappings:
                 if m.description.startswith(PortMapper.OPEN_BAZAAR_DESCRIPTION) \

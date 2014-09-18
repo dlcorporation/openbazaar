@@ -111,7 +111,7 @@ class Multisig:
         key = obelisk.EllipticCurveKey()
         key.set_secret(secret)
 
-        for i, input in enumerate(tx.inputs):
+        for i, _ in enumerate(tx.inputs):
             sighash = generate_signature_hash(tx, i, self.script)
             # Add sighash::all to end of signature.
             signature = key.sign(sighash) + "\x01"
@@ -156,10 +156,10 @@ class Multisig:
 
 
 def add_input(tx, prevout):
-    input = obelisk.TxIn()
-    input.previous_output.hash = prevout.hash
-    input.previous_output.index = prevout.index
-    tx.inputs.append(input)
+    tx_input = obelisk.TxIn()
+    tx_input.previous_output.hash = prevout.hash
+    tx_input.previous_output.index = prevout.index
+    tx.inputs.append(tx_input)
 
 
 def add_output(tx, address, value):
@@ -173,8 +173,8 @@ def generate_signature_hash(parent_tx, input_index, script_code):
     tx = obelisk.copy_tx(parent_tx)
     if input_index >= len(tx.inputs):
         return None
-    for input in tx.inputs:
-        input.script = ""
+    for tx_input in tx.inputs:
+        tx_input.script = ""
     tx.inputs[input_index].script = script_code
     raw_tx = tx.serialize() + "\x01\x00\x00\x00"
     return obelisk.Hash(raw_tx)
@@ -208,7 +208,7 @@ class Escrow:
 
     @staticmethod
     def complete(tx, buyer_sigs, seller_sigs, script_code):
-        for i, input in enumerate(tx.inputs):
+        for i, _ in enumerate(tx.inputs):
             sigs = (buyer_sigs[i], seller_sigs[i])
             script = "\x00"
             for sig in sigs:
@@ -270,7 +270,7 @@ def main():
             tx,
             "b74dbef0909c96d5c2d6971b37c8c71d300e41cad60aeddd6b900bba61c49e70".decode("hex")
         )
-        for i, input in enumerate(tx.inputs):
+        for i, _ in enumerate(tx.inputs):
             sigs = (sigs1[i], sigs3[i])
             script = "\x00"
             for sig in sigs:
