@@ -7,27 +7,26 @@
 # The docstrings in this module contain epytext markup; API documentation
 # may be created by processing this file with epydoc: http://epydoc.sf.net
 
+import argparse
 from os import path, remove
 from pysqlcipher import dbapi2 as sqlite
-import sys
 
 import constants
-
-DB_PATH = constants.DB_PATH
 
 # TODO: Use indexes.
 # TODO: Maybe it makes sense to put tags on a different table
 
 
-def setup_db(db_path):
+def setup_db(db_path, disable_sqlite_crypt=False):
     if not path.isfile(db_path):
         con = sqlite.connect(db_path)
         print 'Created database file'
         with con:
             cur = con.cursor()
 
-            # Use PRAGMA key to encrypt / decrypt database.
-            cur.execute("PRAGMA key = 'passphrase';")
+            if not disable_sqlite_crypt:
+                # Use PRAGMA key to encrypt / decrypt database.
+                cur.execute("PRAGMA key = 'passphrase';")
 
             cur.execute("CREATE TABLE markets("
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -180,8 +179,14 @@ def remove_db(db_path):
     remove(db_path)
 
 if __name__ == "__main__":
-    if sys.argv[1:] is not None:
-        DB_PATH = sys.argv[1:][0]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("db_path",
+                        default=constants.DB_PATH)
+    parser.add_argument("--disable_sqlite_crypt",
+                        action='store_true',
+                        default=False)
 
-    print 'DB_PATH', DB_PATH
-    setup_db(DB_PATH)
+    args = parser.parse_args()
+
+    print 'db_path', args.db_path
+    setup_db(args.db_path, args.disable_sqlite_crypt)
