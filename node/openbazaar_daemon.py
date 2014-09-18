@@ -31,9 +31,9 @@ class OpenBazaarStaticHandler(tornado.web.StaticFileHandler):
 class MarketApplication(tornado.web.Application):
     def __init__(self, market_ip, market_port, market_id=1,
                  bm_user=None, bm_pass=None, bm_port=None, seed_peers=[],
-                 seed_mode=0, dev_mode=False, db_path='db/ob.db'):
+                 seed_mode=0, dev_mode=False, db_path='db/ob.db', disable_sqlite_crypt=False):
 
-        db = Obdb(db_path)
+        db = Obdb(db_path, disable_sqlite_crypt)
 
         self.transport = CryptoTransportLayer(market_ip,
                                               market_port,
@@ -144,7 +144,8 @@ def start_node(my_market_ip,
                log_level=None,
                database='db/ob.db',
                disable_upnp=False,
-               disable_open_browser=False):
+               disable_open_browser=False,
+               disable_sqlite_crypt=False):
 
     try:
         logging.basicConfig(
@@ -174,7 +175,8 @@ def start_node(my_market_ip,
                                     seed_peers,
                                     seed_mode,
                                     dev_mode,
-                                    database)
+                                    database,
+                                    disable_sqlite_crypt)
 
     error = True
     p2p_port = my_market_port
@@ -251,6 +253,9 @@ def main():
     parser.add_argument("--disable_open_browser",
                         action='store_true',
                         default=False)
+    parser.add_argument("--disable_sqlite_crypt",
+                        action='store_true',
+                        default=False)
 
     args = parser.parse_args()
     start_node(args.my_market_ip,
@@ -268,7 +273,8 @@ def main():
                args.log_level,
                args.database,
                args.disable_upnp,
-               args.disable_open_browser)
+               args.disable_open_browser,
+               args.disable_sqlite_crypt)
 
 # Run this if executed directly
 if __name__ == "__main__":

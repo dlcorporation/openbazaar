@@ -15,10 +15,11 @@ class Obdb():
     """ Interface for db storage. Serves as segregation of the persistence layer
     and the application logic
     """
-    def __init__(self, db_path):
+    def __init__(self, db_path, disable_sqlite_crypt=False):
         self.db_path = db_path
         self.con = False
         self.log = logging.getLogger('DB')
+        self.disable_sqlite_crypt = disable_sqlite_crypt
 
     def _connectToDb(self):
         """ Opens a db connection
@@ -30,9 +31,10 @@ class Obdb():
         sqlite.register_converter("bool", lambda v: bool(int(v)))
         self.con.row_factory = self._dictFactory
 
-        # Use PRAGMA key to encrypt / decrypt database.
-        cur = self.con.cursor()
-        cur.execute("PRAGMA key = 'passphrase';")
+        if not self.disable_sqlite_crypt:
+            # Use PRAGMA key to encrypt / decrypt database.
+            cur = self.con.cursor()
+            cur.execute("PRAGMA key = 'passphrase';")
 
     def _disconnectFromDb(self):
         """ Close the db connection

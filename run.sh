@@ -26,6 +26,7 @@ OPTIONS:
   -s                        List of additional seeds
   -f                        Path to database file (default db/ob.db)
   --disable-open-browser    Don't open the default web browser when OpenBazaar starts
+  --disable-sqlite-crypt    Disable encryption on sqlite database
 EOF
 }
 
@@ -145,6 +146,9 @@ do
          	     disable-open-browser)
                      DISABLE_OPEN_DEFAULT_WEBBROWSER=1
                      ;;
+                 disable-sqlite-crypt)
+                     DISABLE_SQLITE_CRYPT=1
+                     ;;
                  *)
                      usage
                      exit
@@ -188,6 +192,12 @@ else
     DISABLE_OPEN_DEFAULT_WEBBROWSER=""
 fi
 
+if [ "$DISABLE_SQLITE_CRYPT" == 1 ]; then
+    DISABLE_SQLITE_CRYPT="--disable_sqlite_crypt"
+else
+    DISABLE_SQLITE_CRYPT=""
+fi
+
 echo "OpenBazaar is starting..."
 
 if [ "$SEED_MODE" == 1 ]; then
@@ -195,11 +205,11 @@ if [ "$SEED_MODE" == 1 ]; then
 
     if [ ! -f "$DATABASE_FILE" ]; then
        echo "File $DATABASE_FILE does not exist. Running setup script."
-       $PYTHON node/setup_db.py "$DATABASE_FILE"
+       $PYTHON node/setup_db.py "$DATABASE_FILE" $DISABLE_SQLITE_CRYPT
        wait
     fi
 
-    $PYTHON node/openbazaar_daemon.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --database "$DATABASE_FILE" -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
+    $PYTHON node/openbazaar_daemon.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --database "$DATABASE_FILE" -s 1 --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER $DISABLE_SQLITE_CRYPT &
 
 elif [ "$DEVELOPMENT" == 0 ]; then
     echo "Production Mode"
@@ -207,11 +217,11 @@ elif [ "$DEVELOPMENT" == 0 ]; then
     if [ ! -f "$DATABASE_FILE" ]; then
        echo "File $DATABASE_FILE does not exist. Running setup script."
        export PYTHONPATH=$PYTHONPATH:`pwd`
-       $PYTHON node/setup_db.py "$DATABASE_FILE"
+       $PYTHON node/setup_db.py "$DATABASE_FILE" $DISABLE_SQLITE_CRYPT
        wait
     fi
 
-	$PYTHON node/openbazaar_daemon.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --database "$DATABASE_FILE" --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
+	$PYTHON node/openbazaar_daemon.py $SERVER_IP $HTTP_OPTS -p $SERVER_PORT $DISABLE_UPNP --database "$DATABASE_FILE" --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S $SEED_URI -l $LOGDIR/production.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER $DISABLE_SQLITE_CRYPT &
 
 else
 	# Primary Market - No SEED_URI specified
@@ -220,11 +230,11 @@ else
 	if [ ! -f $DBDIR/ob-dev.db ]; then
        echo "File db/ob-dev.db does not exist. Running setup script."
        export PYTHONPATH=$PYTHONPATH:`pwd`
-       $PYTHON node/setup_db.py db/ob-dev.db
+       $PYTHON node/setup_db.py db/ob-dev.db $DISABLE_SQLITE_CRYPT
        wait
     fi
 
-	$PYTHON node/openbazaar_daemon.py 127.0.0.1 $HTTP_OPTS $DISABLE_UPNP --database db/ob-dev.db -s 1 --bmuser $BM_USERNAME -d --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
+	$PYTHON node/openbazaar_daemon.py 127.0.0.1 $HTTP_OPTS $DISABLE_UPNP --database db/ob-dev.db -s 1 --bmuser $BM_USERNAME -d --bmpass $BM_PASSWORD --bmport $BM_PORT -l $LOGDIR/development.log -u 1 --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER $DISABLE_SQLITE_CRYPT &
     ((NODES=NODES+1))
     i=2
     while [[ $i -le $NODES ]]
@@ -233,10 +243,10 @@ else
         if [ ! -f db/ob-dev-$i.db ]; then
            echo "File db/ob-dev-$i.db does not exist. Running setup script."
            export PYTHONPATH=$PYTHONPATH:`pwd`
-           $PYTHON node/setup_db.py db/ob-dev-$i.db
+           $PYTHON node/setup_db.py db/ob-dev-$i.db $DISABLE_SQLITE_CRYPT
            wait
         fi
-	    $PYTHON node/openbazaar_daemon.py 127.0.0.$i $HTTP_OPTS $DISABLE_UPNP --database db/ob-dev-$i.db -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER &
+	    $PYTHON node/openbazaar_daemon.py 127.0.0.$i $HTTP_OPTS $DISABLE_UPNP --database db/ob-dev-$i.db -d --bmuser $BM_USERNAME --bmpass $BM_PASSWORD --bmport $BM_PORT -S 127.0.0.1 -l $LOGDIR/development.log -u $i --log_level $LOG_LEVEL $DISABLE_OPEN_DEFAULT_WEBBROWSER $DISABLE_SQLITE_CRYPT &
 	    ((i=i+1))
     done
 fi
