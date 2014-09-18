@@ -7,17 +7,27 @@ set -e
 
 SUBJECT=logelk-build-image-id
 VERSION=0.1.0
-USAGE="Usage: build.sh -vhoebapk: args"
+USAGE="Usage: build.sh -vhoebapk:c: args"
 DOCKER='sudo docker'
 TARGET=/tmp/obgit
+OBIMG=obtest/ob
 
 # --- Option processing --------------------------------------------
 if [ $# == 0 ] ; then
-    echo $USAGE
+    echo "$USAGE"
     exit 1;
 fi
 
-while getopts ":vhoebapk:" optname; do
+function updateimg {
+  $DOCKER run -t -v $TARGET:$TARGET "$OBIMG:gmaster" /opt/update.sh
+  CID=$($DOCKER ps -q -l)
+  $DOCKER commit "$CID" "$OBIMG:$1" > /dev/null
+  $DOCKER tag "$OBIMG:$1" "$OBIMG:latest"
+  echo [DOCKER] tag "$OBIMG:$1" "$OBIMG:latest"
+  $DOCKER rm "$CID"
+} 
+
+while getopts ":vhoebapk:c:" optname; do
   case "$optname" in
     "v")
       echo "Version $VERSION"
@@ -25,13 +35,13 @@ while getopts ":vhoebapk:" optname; do
       ;;
     "o")
       echo "build the openbazaar image"
-      $DOCKER build -t obtest/ob:gmaster --rm=true ob
-      $DOCKER tag obtest/ob:gmaster obtest/ob:latest
+      $DOCKER build -t "$OBIMG":gmaster --rm=true ob
+      $DOCKER tag "$OBIMG":gmaster "$OBIMG":latest
       exit 0;
       ;;
     "k")
       #  bash build.sh -k "https://github.com/y12studio/OpenBazaar master"
-      echo "build the openbazaar image" $OPTARG
+      echo build the openbazaar image "$OPTARG"
       ADDR=($OPTARG)
       GURL=${ADDR[0]}
       GBRANCH=${ADDR[1]}
@@ -41,15 +51,17 @@ while getopts ":vhoebapk:" optname; do
          rm -rf $TARGET
       fi
       git clone --depth 1 -b $GBRANCH $GURL $TARGET
-      $DOCKER run -t -v $TARGET:$TARGET obtest/ob /opt/update.sh
-      CID=$($DOCKER ps -q -l)
-      # Configuration changes to be applied when the image is launched with docker run
-      # https://github.com/docker/docker/issues/4362
-      # $DOCKER commit $CID -run='{"Cmd": ["/sbin/my_init"]' obtest/ob:fbranch > /dev/null
-      # Use fig to privide cmd.
-      $DOCKER commit $CID obtest/ob:fbranch > /dev/null
-      $DOCKER tag obtest/ob:fbranch obtest/ob:latest
-      $DOCKER rm $CID
+      updateimg fbranch
+      exit 0;
+      ;;
+    "c")
+      #  bash build.sh -c "/home/ob/git/OpenBazaar"
+      echo build the local dev branch openbazaar image "$OPTARG"
+      if [ -d $TARGET ]; then 
+         rm -rf $TARGET
+      fi
+      /bin/cp -R "$OPTARG" $TARGET
+      updateimg dev
       exit 0;
       ;;
     "e")
@@ -75,7 +87,7 @@ while getopts ":vhoebapk:" optname; do
       exit 0;
       ;;
     "h")
-      echo $USAGE
+      echo "$USAGE"
       exit 0;
       ;;
     "?")
@@ -93,7 +105,7 @@ while getopts ":vhoebapk:" optname; do
   esac
 done
 
-shift $(($OPTIND - 1))
+shift "$($OPTIND - 1)"
 
 # -----------------------------------------------------------------
 
@@ -105,5 +117,5 @@ exit
 fi
 
 # -----------------------------------------------------------------
-trap "rm -f $LOCK_FILE" EXIT
+trap 'rm -f $LOCK_FILE' EXIT
 touch $LOCK_FILE 
