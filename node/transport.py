@@ -483,11 +483,6 @@ class CryptoTransportLayer(TransportLayer):
             # Generate Bitcoin keypair
             self._generate_new_keypair()
 
-        if not ('bitmessage' in self.settings and self.settings['bitmessage']):
-            # Generate Bitmessage address
-            if self.bitmessage_api is not None:
-                self._generate_new_bitmessage_address()
-
         if not ('nickname' in self.settings and self.settings['nickname']):
             newsettings = {'nickname': 'Default'}
             self.db.updateEntries('settings', {"market_id": self.market_id}, newsettings)
@@ -501,6 +496,11 @@ class CryptoTransportLayer(TransportLayer):
         self.guid = self.settings['guid'] if 'guid' in self.settings else ""
         self.sin = self.settings['sin'] if 'sin' in self.settings else ""
         self.bitmessage = self.settings['bitmessage'] if 'bitmessage' in self.settings else ""
+
+        if not ('bitmessage' in self.settings and self.settings['bitmessage']):
+            # Generate Bitmessage address
+            if self.bitmessage_api is not None:
+                self._generate_new_bitmessage_address()
 
         self._myself = ec.ECC(
             pubkey=pubkey_to_pyelliptic(self.pubkey).decode('hex'),
