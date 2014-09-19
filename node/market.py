@@ -28,6 +28,9 @@ ioloop.install()
 
 
 class Market(object):
+    """This class manages the active market for the application"""
+
+    # Class constructor defines the basic attributes and callbacks
     def __init__(self, transport, db):
 
         """This class manages the active market for the application
@@ -87,6 +90,7 @@ class Market(object):
                                                     io_loop=loop)
         refreshCB.start()
 
+    # Set up nickname by args.market_id in start_node(...) and db
     def load_page(self):
         nickname = self.settings['nickname'] \
             if 'nickname' in self.settings else ""
@@ -94,6 +98,7 @@ class Market(object):
         #    if 'storeDescription' self.settings else ""
         self.nickname = nickname
 
+    # Update market_id in db
     def disable_welcome_screen(self):
         self.db.updateEntries(
             "settings",
@@ -101,9 +106,11 @@ class Market(object):
             {"welcome": "disable"}
         )
 
+    # Get private key
     def private_key(self):
         return self.settings['secret']
 
+    # Add listing result to debug log file
     def on_listing_results(self, results):
         self.log.debug('Listings %s' % results)
 
@@ -148,6 +155,7 @@ class Market(object):
         hash_value.update(contract_hash)
         return hash_value.hexdigest()
 
+    # Insert contract to db
     def save_contract_to_db(self, contract_id, body, signed_body, key):
         self.db.insertEntry(
             "contracts",
