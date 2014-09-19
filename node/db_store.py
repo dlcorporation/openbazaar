@@ -46,7 +46,8 @@ class Obdb(object):
                 pass
         self.con = False
 
-    def _dictFactory(self, cursor, row):
+    @staticmethod
+    def _dictFactory(cursor, row):
         """ A factory that allows sqlite to return a dictionary instead of a tuple
         """
         d = {}
@@ -57,7 +58,8 @@ class Obdb(object):
                 d[col[0]] = row[idx]
         return d
 
-    def _beforeStoring(self, value):
+    @staticmethod
+    def _beforeStoring(value):
         """ Method called before executing SQL identifiers.
         """
         return unicode(value)

@@ -20,7 +20,8 @@ class PortMapper(object):
     OPEN_BAZAAR_DESCRIPTION = 'OpenBazaar Server'
     UPNP_DEVICE_AVAILABLE = False
 
-    def debug(self, *s):
+    @staticmethod
+    def debug(*s):
         if PortMapper.DEBUG:
             print str(s)
 
