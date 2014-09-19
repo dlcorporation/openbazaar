@@ -240,7 +240,7 @@ class ProtocolHandler:
 
     # Requests coming from the client
     def client_connect(self, socket_handler, msg):
-        self.log.info("Connection command: ", msg)
+        self.log.info("Connection command: %s", msg)
         self.transport.connect(msg['uri'], lambda x: None)
         self.send_ok()
 

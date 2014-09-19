@@ -376,7 +376,7 @@ class CryptoTransportLayer(TransportLayer):
             self.log.info('[_connect_to_bitmessage] Connecting to Bitmessage on port %s' % bm_port)
             self.bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
             result = self.bitmessage_api.add(2, 3)
-            self.log.info("[_connect_to_bitmessage] Bitmessage API is live".format(result))
+            self.log.info("[_connect_to_bitmessage] Bitmessage API is live: %s", result)
         # If we failed, fall back to starting our own
         except Exception as e:
             self.log.info("Failed to connect to bitmessage instance: {}".format(e))

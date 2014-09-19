@@ -1,6 +1,19 @@
-from behave import *
-from test_util import *
 import logging
+
+from behave import given, then, when
+
+from node.openbazaar_daemon import MarketApplication
+from test_util import (
+    get_db_path,
+    ip_address,
+    node_uri,
+    node_to_ws_port,
+    set_store_description,
+    storeDescription,
+    ws_connect,
+    ws_receive_myself,
+    ws_send
+)
 
 
 @given('there is a node')

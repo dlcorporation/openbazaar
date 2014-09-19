@@ -1,9 +1,10 @@
-from behave import *
-from zmq.eventloop import ioloop
+from behave import given, then, when
 from tornado.testing import *
-from node.crypto2crypto import *
+from zmq.eventloop import ioloop
+
 from node.db_store import Obdb
-from util.setup_db import *
+from node.setup_db import setup_db
+from node.transport import CryptoTransportLayer
 from test_util import ip_address, nickname, get_db_path
 
 port = 12345
