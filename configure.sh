@@ -101,8 +101,8 @@ function installMac {
   export LDFLAGS="-L$(brew --prefix openssl)/lib"
 
   #install python deps inside our virtualenv
-  ./env/bin/pip install ./pysqlcipher
   ./env/bin/pip install -r requirements.txt
+  ./env/bin/pip install ./pysqlcipher
 
   doneMessage
 }
