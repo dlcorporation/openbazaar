@@ -8,9 +8,7 @@ function python_check() {
     echo "Checking python source files..."
     count=0;
     for file in $(find . -iname "*.py" -not -path "./env/*"|grep -v pybitmessage|grep -v pysqlcipher); do
-        if ! flake8 --ignore=E501,F811,F821,F403 $file; then
-            ERR=true
-        elif ! pylint --rcfile .pylintrc $file; then
+        if ! pylint --rcfile .pylintrc $file; then
             ERR=true
         fi
         count=$((count+1));
