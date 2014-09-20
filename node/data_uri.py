@@ -48,8 +48,7 @@ class DataURI(str):
 
     def __new__(cls, *args, **kwargs):
         uri = super(DataURI, cls).__new__(cls, *args, **kwargs)
-        # Trigger any ValueErrors.
-        uri._parse # pylint: disable=pointless-statement
+        uri._parse  # Trigger any ValueErrors.
         return uri
 
     def __repr__(self):

@@ -12,13 +12,13 @@ import gnupg
 import tornado
 from zmq.eventloop import ioloop
 
-from node import constants
+import constants
 from pybitcointools.main import privkey_to_pubkey
-from node.data_uri import DataURI
-from node.orders import Orders
-from node.protocol import proto_page, query_page
+from data_uri import DataURI
+from orders import Orders
+from protocol import proto_page, query_page
 from threading import Thread
-from node.crypto_util import makePrivCryptor
+from crypto_util import makePrivCryptor
 
 import random
 import json
@@ -115,12 +115,10 @@ class Market(object):
 
         return new_uri
 
-    @staticmethod
-    def get_contract_id():
+    def get_contract_id(self):
         return random.randint(0, 1000000)
 
-    @staticmethod
-    def linebreak_signing_data(data):
+    def linebreak_signing_data(self, data):
         json_string = json.dumps(data, indent=0)
         seg_len = 52
         out_text = "\n".join(
@@ -129,8 +127,7 @@ class Market(object):
         )
         return out_text
 
-    @staticmethod
-    def generate_contract_key(signed_contract):
+    def generate_contract_key(self, signed_contract):
         contract_hash = hashlib.sha1(str(signed_contract)).hexdigest()
         hash_value = hashlib.new('ripemd160')
         hash_value.update(contract_hash)

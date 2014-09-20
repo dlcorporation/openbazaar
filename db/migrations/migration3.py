@@ -36,6 +36,7 @@ def upgrade(db_path):
             con.commit()
         except sqlite.Error as e:
             print 'Exception: %s' % e
+            pass
 
 
 def downgrade(db_path):

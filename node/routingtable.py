@@ -8,8 +8,8 @@
 import time
 import random
 import logging
-from node import constants
-from node import kbucket
+import constants
+import kbucket
 
 
 class RoutingTable(object):

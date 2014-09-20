@@ -37,6 +37,7 @@ def upgrade(db_path):
             print 'Upgraded'
         except sqlite.Error as e:
             print 'Exception: %s' % e
+            pass  # handle the error
 
 
 def downgrade(db_path):
