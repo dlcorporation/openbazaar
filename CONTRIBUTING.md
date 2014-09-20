@@ -62,7 +62,7 @@ There are four ways to find something to do on the project:
 
 1. You have a problem with the project, or an idea of your own. In this case,
 simply go ahead and implement your idea! It's not necessary that we have
-thought of this idea - it can be your own. However, before you do that, please
+thought of this idea – it can be your own. However, before you do that, please
 talk to us on #openbazaar on IRC.
 This is important, because we may already have plans for this feature. In that
 case, the plans may detail how we envision to build your idea and you may want
@@ -122,8 +122,9 @@ As an example, see the [Beta 1.0 tag](https://github.com/OpenBazaar/OpenBazaar/t
 
 ## Security
 OpenBazaar is security-related software. We make heavy use of cryptography and
-the blockchain. We employ Ricardian contracts, 2-of-3 multisig, proof-of-burn,
-trust-as-risk, webs-of-trust, anonymity-preserving transport layers, and more
+the blockchain. We employ [Ricardian contracts](https://github.com/OpenBazaar/OpenBazaar/wiki/Contracts-and-Listings),
+2-of-3 [multisig](http://bitcoin.stackexchange.com/a/3729/1587), [proof-of-burn](https://blog.openbazaar.org/proof-of-burn-and-reputation-pledges/),
+trust-as-risk, [webs-of-trust](https://gist.github.com/dionyziz/e3b296861175e0ebea4b), anonymity-preserving transport layers, and more
 features that are of critical importance to the network.
 
 We take our users' security and anonymity seriously, and it is our first priority
@@ -140,7 +141,7 @@ gets merged.
 
 ## Reviewing pull requests
 If you make a pull request with your change, we promise to review it within
-3 days. Hopefully we will review it within 1 day - we try to be responsive.
+3 days. Hopefully we will review it within 1 day – we try to be responsive.
 
 Reviewing means you'll either get a comment with a request to change something,
 or we'll merge your pull request. If we request a change and you make it, we'll
@@ -158,7 +159,7 @@ you're a collaborator, you can also merge pull requests directly in this case.
 Try to make one pull request per issue. If you want to make two changes,
 make *two* different branches **from develop** and pull request. If multiple
 changes depend on each other, then you should *still* make a different branch
-for each change - but base the dependent branch on the branch it depends on
+for each change – but base the dependent branch on the branch it depends on
 instead of develop. After you make your changes, you should make two different
 pull requests. First, make a pull request from the base branch (that the other
 branch was based on). Finally, make a pull request for the dependent
@@ -179,11 +180,11 @@ wrote it and someone else.
 Also, never push directly to the upstream repo, only your fork. All code changes
 **must** go through pull requests.
 
-Again, please note that we merge to develop, not directly to master. The 'master' branch is
+Again, please note that we merge to develop, not directly to master. The `master` branch is
 reserved for stable releases, and we update it on every release cycle, or for
 important security fixes or other critical bug fixes.
 
-'develop' is our working branch. Anything that is merged into 'develop' will be
+`develop` is our working branch. Anything that is merged into `develop` will be
 deployed to production within the next release cycle.
 
 If you want to show your work to others, but your pull request is not yet ready
@@ -224,7 +225,7 @@ We recommend that you follow
 principles and write tests before you implement.
 
 1. **The tests pass.** This includes tests that were not written for the
-specific change - all tests must pass. We do not merge a failing build. You can
+specific change – all tests must pass. We do not merge a failing build. You can
 run all tests using `make`.  We use
 [travis](https://travis-ci.org/OpenBazaar/OpenBazaar)
 to automatically run tests on every pull request and on every merge. You should
@@ -275,7 +276,7 @@ for more information.
 
 ## Communications
 We maintain a [blog](https://blog.openbazaar.org/). Check back often for
-important release and feature announcement.
+important release and feature announcements.
 
 We don't often use a development mailing list like most open source projects.
 The best way to reach the development team is through IRC, on #openbazaar at Freenode.
