@@ -6,9 +6,19 @@ ERR=false
 
 function python_check() {
     echo "Checking python source files..."
+
+    if type pylint2 &>/dev/null; then
+        PYLINT=pylint2
+    elif type pylint &>/dev/null; then
+        PYLINT=pylint
+    else
+        echo "pylint not found"
+        exit
+    fi
+
     count=0;
     for file in $(find . -iname "*.py" -not -path "./env/*"|grep -v pybitmessage|grep -v pysqlcipher); do
-        if ! pylint --rcfile .pylintrc $file; then
+        if ! $PYLINT --rcfile .pylintrc $file; then
             ERR=true
         fi
         count=$((count+1));
