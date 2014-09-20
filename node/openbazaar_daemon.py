@@ -3,17 +3,17 @@ import tornado.web
 from zmq.eventloop import ioloop
 ioloop.install()
 
-from node.transport import CryptoTransportLayer
-from node.db_store import Obdb
-from node.market import Market
-from node.ws import WebSocketHandler
+from transport import CryptoTransportLayer
+from db_store import Obdb
+from market import Market
+from ws import WebSocketHandler
 import logging
 import signal
 from threading import Thread
 from twisted.internet import reactor
-from node.util import open_default_webbrowser
-from node.network_util import get_random_free_tcp_port
-from node import upnp
+from util import open_default_webbrowser
+from network_util import get_random_free_tcp_port
+import upnp
 import os
 
 
@@ -30,10 +30,8 @@ class OpenBazaarStaticHandler(tornado.web.StaticFileHandler):
 
 class MarketApplication(tornado.web.Application):
     def __init__(self, market_ip, market_port, market_id=1,
-                 bm_user=None, bm_pass=None, bm_port=None, seed_peers=None,
+                 bm_user=None, bm_pass=None, bm_port=None, seed_peers=[],
                  seed_mode=0, dev_mode=False, db_path='db/ob.db', disable_sqlite_crypt=False):
-        if seed_peers is None:
-            seed_peers = []
 
         db = Obdb(db_path, disable_sqlite_crypt)
 
@@ -49,10 +47,9 @@ class MarketApplication(tornado.web.Application):
 
         self.market = Market(self.transport, db)
 
-        # UNUSED
-        # def post_joined():
-        #     self.transport.dht._refreshNode()
-        #     self.market.republish_contracts()
+        def post_joined():
+            self.transport.dht._refreshNode()
+            self.market.republish_contracts()
 
         peers = seed_peers if seed_mode == 0 else []
         self.transport.join_network(peers)
@@ -105,7 +102,7 @@ class MarketApplication(tornado.web.Application):
 
         result = result_tcp_p2p_mapping and result_udp_p2p_mapping
         if not result:
-            print "Warning: UPnP was not setup correctly. Try doing a port forward on %s and start the node again with -j" % p2p_port
+            print("Warning: UPnP was not setup correctly. Try doing a port forward on %s and start the node again with -j" % p2p_port)
 
         return result
 
@@ -141,7 +138,7 @@ def start_node(my_market_ip,
                bm_user=None,
                bm_pass=None,
                bm_port=None,
-               seed_peers=None,
+               seed_peers=[],
                seed_mode=0,
                dev_mode=False,
                log_level=None,
@@ -149,8 +146,6 @@ def start_node(my_market_ip,
                disable_upnp=False,
                disable_open_browser=False,
                disable_sqlite_crypt=False):
-    if seed_peers is None:
-        seed_peers = []
 
     try:
         logging.basicConfig(

@@ -2,7 +2,7 @@ import miniupnpc
 
 
 class PortMapper(object):
-    """
+    '''
     UPnP Port Mapping tool, so we don't need to manually forward ports on a
     router.
 
@@ -14,14 +14,13 @@ class PortMapper(object):
 
     Created on Aug 14, 2014
     @author: gubatron
-    """
+    '''
     DEBUG = False  # boolean
     upnp = None  # miniupnpc.UPnP
     OPEN_BAZAAR_DESCRIPTION = 'OpenBazaar Server'
     UPNP_DEVICE_AVAILABLE = False
 
-    @staticmethod
-    def debug(*s):
+    def debug(self, *s):
         if PortMapper.DEBUG:
             print str(s)
 
@@ -39,6 +38,9 @@ class PortMapper(object):
             pass
 
     def __init__(self):
+        '''
+        Constructor
+        '''
         self.upnp = miniupnpc.UPnP()
 
         self.debug('inital(default) values :')
@@ -80,10 +82,10 @@ class PortMapper(object):
 
     def add_port_mapping(self, externalPort, internalPort,
                          protocol='TCP', ipToBind=None):
-        """
+        '''
         Valid protocol values are: 'TCP', 'UDP'
         Usually you'll pass externalPort and internalPort as the same number.
-        """
+        '''
         result = False
 
         if self.UPNP_DEVICE_AVAILABLE:
@@ -138,7 +140,7 @@ class PortMapper(object):
         return result
 
     def get_mapping_list(self):
-        """Return [PortMappingEntry]."""
+        ''' Returns -> [PortMappingEntry]'''
         mappings = []
 
         if self.UPNP_DEVICE_AVAILABLE:
@@ -163,8 +165,8 @@ class PortMapper(object):
         return mappings
 
     def clean_my_mappings(self, port):
-        """Delete previous OpenBazaar UPnP Port mappings if found."""
         if self.UPNP_DEVICE_AVAILABLE:
+            '''Delete previous OpenBazaar UPnP Port mappings if found.'''
             mappings = self.get_mapping_list()
             for m in mappings:
                 if m.description.startswith(PortMapper.OPEN_BAZAAR_DESCRIPTION) \
@@ -176,11 +178,9 @@ class PortMapper(object):
                         pass
 
 
-class PortMappingEntry(object):
-    """
-    POPO to represent a port mapping entry;
-    tuples are evil when used for abstractions.
-    """
+class PortMappingEntry:
+    '''POPO to represent a port mapping entry, tuples are evil when
+       used for abstractions'''
     def __init__(self, port, protocol, internalHost, internalPort,
                  description, expiration):
         self.port = port

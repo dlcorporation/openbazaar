@@ -1,9 +1,9 @@
-from node import connection
-from node.dht import DHT
-from node.protocol import hello_request
-from node.protocol import hello_response
-from node.protocol import goodbye
-from node.protocol import proto_response_pubkey
+import connection
+from dht import DHT
+from protocol import hello_request
+from protocol import hello_response
+from protocol import goodbye
+from protocol import proto_response_pubkey
 from urlparse import urlparse
 from zmq.eventloop import ioloop, zmqstream
 from zmq.eventloop.ioloop import PeriodicCallback
@@ -12,9 +12,9 @@ from pprint import pformat
 from pybitcointools.main import privkey_to_pubkey
 from pybitcointools.main import privtopub
 from pybitcointools.main import random_key
-from node.crypto_util import pubkey_to_pyelliptic
-from node.crypto_util import makePrivCryptor
-from node.crypto_util import makePubCryptor
+from crypto_util import pubkey_to_pyelliptic
+from crypto_util import makePrivCryptor
+from crypto_util import makePubCryptor
 from pysqlcipher.dbapi2 import OperationalError, DatabaseError
 import gnupg
 import xmlrpclib
@@ -27,7 +27,7 @@ import traceback
 from threading import Thread
 import zlib
 import obelisk
-from node import network_util
+import network_util
 import zmq
 import random
 import hashlib
@@ -234,7 +234,8 @@ class TransportLayer(object):
 
     def valid_peer_uri(self, uri):
         try:
-            [_, self_addr, _] = network_util.uri_parts(self.uri)
+            [self_protocol, self_addr, self_port] = \
+                network_util.uri_parts(self.uri)
             [other_protocol, other_addr, other_port] = \
                 network_util.uri_parts(uri)
         except RuntimeError:
@@ -375,7 +376,7 @@ class CryptoTransportLayer(TransportLayer):
             self.log.info('[_connect_to_bitmessage] Connecting to Bitmessage on port %s' % bm_port)
             self.bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
             result = self.bitmessage_api.add(2, 3)
-            self.log.info("[_connect_to_bitmessage] Bitmessage API is live: %s", result)
+            self.log.info("[_connect_to_bitmessage] Bitmessage API is live".format(result))
         # If we failed, fall back to starting our own
         except Exception as e:
             self.log.info("Failed to connect to bitmessage instance: {}".format(e))
@@ -549,9 +550,7 @@ class CryptoTransportLayer(TransportLayer):
         self.db.updateEntries("settings", {"market_id": self.market_id}, newsettings)
         self.settings.update(newsettings)
 
-    def join_network(self, seed_peers=None, callback=lambda msg: None):
-        if seed_peers is None:
-            seed_peers = []
+    def join_network(self, seed_peers=[], callback=lambda msg: None):
 
         self.log.info('Joining network')
 
@@ -677,7 +676,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def pubkey_exists(self, pub):
 
-        for peer in self.peers.itervalues():
+        for uri, peer in self.peers.iteritems():
             self.log.info(
                 'PEER: %s Pub: %s' % (
                     peer.pub.encode('hex'), pub.encode('hex')

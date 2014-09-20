@@ -1,8 +1,8 @@
 from pprint import pformat
 from urlparse import urlparse
 from zmq.eventloop import ioloop, zmqstream
-from node.crypto_util import makePrivCryptor
-from node.crypto_util import hexToPubkey
+from crypto_util import makePrivCryptor
+from crypto_util import hexToPubkey
 import logging
 import pyelliptic as ec
 import socket
@@ -170,8 +170,7 @@ class CryptoPeerConnection(PeerConnection):
             self.guid, self.ip, self.port, self.pub
         )
 
-    @staticmethod
-    def generate_sin(guid):
+    def generate_sin(self, guid):
         return obelisk.EncodeBase58Check('\x0F\x02%s' + guid.decode('hex'))
 
     def check_port(self):

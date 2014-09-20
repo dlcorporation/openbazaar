@@ -11,7 +11,7 @@ import argparse
 from os import path, remove
 from pysqlcipher import dbapi2 as sqlite
 
-from node import constants
+import constants
 
 # TODO: Use indexes.
 # TODO: Maybe it makes sense to put tags on a different table

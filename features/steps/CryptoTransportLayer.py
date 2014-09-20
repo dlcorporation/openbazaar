@@ -1,10 +1,9 @@
-from behave import given, then, when
-from tornado.testing import *
+from behave import *
 from zmq.eventloop import ioloop
-
+from tornado.testing import *
+from node.crypto2crypto import *
 from node.db_store import Obdb
-from node.setup_db import setup_db
-from node.transport import CryptoTransportLayer
+from util.setup_db import *
 from test_util import ip_address, nickname, get_db_path
 
 port = 12345
@@ -50,7 +49,7 @@ def step_impl(context, i, j):
     iLayer = context.layers[i]
     jLayer = context.layers[j]
 
-    assert (ip_address(j), port, jLayer.guid, nickname(j)) in iLayer.dht.knownNodes
+    assert((ip_address(j), port, jLayer.guid, nickname(j)) in iLayer.dht.knownNodes)
 
     # j is not necessarily in the database of i
     # db_peers = iLayer._db.selectEntries("peers")

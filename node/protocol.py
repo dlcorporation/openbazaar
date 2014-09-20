@@ -51,12 +51,12 @@ def query_page(guid):
     return data
 
 
-def order(order_id, buyer, seller, state, text, escrows=None, tx=None):
+def order(id, buyer, seller, state, text, escrows=None, tx=None):
     if not escrows:
         escrows = []
     data = {
         'type': 'order',
-        'order_id': order_id,
+        'order_id': id,
         'buyer': buyer.encode('hex'),
         'seller': seller.encode('hex'),
         'escrows': escrows
