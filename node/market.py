@@ -28,14 +28,27 @@ ioloop.install()
 
 
 class Market(object):
+    """This class manages the active market for the application"""
+
     def __init__(self, transport, db):
 
-        """This class manages the active market for the application
+        """Class constructor defines the basic attributes and callbacks
 
         Attributes:
-          transport (CryptoTransportLayer): Transport layer for messaging between nodes.
+          transport (CryptoTransportLayer): Transport layer
+              for messaging between nodes.
           dht (DHT): For storage across the network.
           market_id (int): Indicates which local market we're working with.
+          peers:
+          db: database ORM handler
+          orders:
+          pages:
+          mypage:
+          signature: Digitial signature
+          nickname:
+          log: log handler
+          settings:
+          gpg: Public PGP key class
 
         """
 
@@ -77,12 +90,15 @@ class Market(object):
         refreshCB.start()
 
     def load_page(self):
+        """Set up nickname by args.market_id in start_node(...) and db"""
         nickname = self.settings['nickname'] \
             if 'nickname' in self.settings else ""
-        # store_description = self.settings['storeDescription'] if 'storeDescription' self.settings else ""
+        # store_description = self.settings['storeDescription']
+        #    if 'storeDescription' self.settings else ""
         self.nickname = nickname
 
     def disable_welcome_screen(self):
+        """Update market_id in db"""
         self.db.updateEntries(
             "settings",
             {'market_id': self.transport.market_id},
@@ -90,9 +106,11 @@ class Market(object):
         )
 
     def private_key(self):
+        """Get private key"""
         return self.settings['secret']
 
     def on_listing_results(self, results):
+        """Add incoming information through a socket to log file with debug marker for control info in future"""
         self.log.debug('Listings %s' % results)
 
     @staticmethod
@@ -115,10 +133,12 @@ class Market(object):
 
         return new_uri
 
-    def get_contract_id(self):
+    @staticmethod
+    def get_contract_id():
         return random.randint(0, 1000000)
 
-    def linebreak_signing_data(self, data):
+    @staticmethod
+    def linebreak_signing_data(data):
         json_string = json.dumps(data, indent=0)
         seg_len = 52
         out_text = "\n".join(
@@ -127,13 +147,15 @@ class Market(object):
         )
         return out_text
 
-    def generate_contract_key(self, signed_contract):
+    @staticmethod
+    def generate_contract_key(signed_contract):
         contract_hash = hashlib.sha1(str(signed_contract)).hexdigest()
         hash_value = hashlib.new('ripemd160')
         hash_value.update(contract_hash)
         return hash_value.hexdigest()
 
     def save_contract_to_db(self, contract_id, body, signed_body, key):
+        """Insert contract to db"""
         self.db.insertEntry(
             "contracts",
             {
@@ -174,8 +196,10 @@ class Market(object):
         # Refresh market settings
         self.settings = self.get_settings()
 
-        msg['Seller']['seller_PGP'] = self.gpg.export_keys(self.settings['PGPPubkeyFingerprint'])
-        msg['Seller']['seller_BTC_uncompressed_pubkey'] = self.settings['btc_pubkey']
+        msg['Seller']['seller_PGP'] = self.gpg.export_keys(
+            self.settings['PGPPubkeyFingerprint'])
+        msg['Seller']['seller_BTC_uncompressed_pubkey'] = \
+            self.settings['btc_pubkey']
         msg['Seller']['seller_GUID'] = self.settings['guid']
         msg['Seller']['seller_Bitmessage'] = self.settings['bitmessage']
 
@@ -190,9 +214,10 @@ class Market(object):
         out_text = self.linebreak_signing_data(msg)
 
         # Sign the contract
-        signed_data = self.gpg.sign(out_text,
-                                    passphrase='P@ssw0rd',
-                                    keyid=self.settings.get('PGPPubkeyFingerprint'))
+        signed_data = self.gpg.sign(
+            out_text,
+            passphrase='P@ssw0rd',
+            keyid=self.settings.get('PGPPubkeyFingerprint'))
 
         # Save contract to DHT
         contract_key = self.generate_contract_key(signed_data)
@@ -215,15 +240,16 @@ class Market(object):
 
     def shipping_address(self):
         settings = self.get_settings()
-        shipping_address = {"recipient_name": settings.get('recipient_name'),
-                            "street1": settings.get('street1'),
-                            "street2": settings.get('street2'),
-                            "city": settings.get('city'),
-                            "stateRegion": settings.get('stateRegion'),
-                            "stateProvinceRegion": settings.get('stateProvinceRegion'),
-                            "zip": settings.get('zip'),
-                            "country": settings.get('country'),
-                            "countryCode": settings.get('countryCode')}
+        shipping_address = {
+            "recipient_name": settings.get('recipient_name'),
+            "street1": settings.get('street1'),
+            "street2": settings.get('street2'),
+            "city": settings.get('city'),
+            "stateRegion": settings.get('stateRegion'),
+            "stateProvinceRegion": settings.get('stateProvinceRegion'),
+            "zip": settings.get('zip'),
+            "country": settings.get('country'),
+            "countryCode": settings.get('countryCode')}
         return shipping_address
 
     def add_trusted_notary(self, guid, nickname=""):
@@ -270,6 +296,16 @@ class Market(object):
         return rv
 
     def _decode_dict(self, data):
+        """so this receives a dictionary:
+
+        iterates over the key,value pairs...
+        if the key is unicode, it re-encodes the key in utf.
+        if the value is unicode, it re-encodes it utf-8
+        else if the value is a list, it calls a decode_list method
+        if the value is a dict, it does a recursive call
+        then updates the dictionary as it iterates
+
+        """
         rv = {}
         for key, value in data.iteritems():
             if isinstance(key, unicode):
@@ -364,7 +400,10 @@ class Market(object):
         #     hash_value.update('keyword-%s' % keyword)
         #     keyword_key = hash_value.hexdigest()
         #
-        #     self.transport.dht.iterativeStore(self.transport, keyword_key, json.dumps({'keyword_index_add': contract_key}), self.transport.guid)
+        #     self.transport.dht.iterativeStore(self.transport,
+        #         keyword_key,
+        #         json.dumps({'keyword_index_add': contract_key}),
+        #         self.transport.guid)
 
     def update_listings_index(self):
 
@@ -389,17 +428,21 @@ class Market(object):
         # Sign listing index for validation and tamper resistance
         data_string = str({'guid': self.transport.guid,
                            'contracts': my_contracts})
-        signature = makePrivCryptor(self.transport.settings['secret']).sign(data_string).encode('hex')
+        signature = makePrivCryptor(
+            self.transport.settings['secret']).sign(data_string).encode('hex')
 
         value = {'signature': signature,
                  'data': {'guid': self.transport.guid,
                           'contracts': my_contracts}}
 
         # Pass off to thread to keep GUI snappy
-        t = Thread(target=self.transport.dht.iterativeStore, args=(self.transport,
-                                                                   contract_index_key,
-                                                                   value,
-                                                                   self.transport.guid,))
+        t = Thread(
+            target=self.transport.dht.iterativeStore,
+            args=(
+                self.transport,
+                contract_index_key,
+                value,
+                self.transport.guid,))
         t.start()
 
     def remove_contract(self, msg):
@@ -408,7 +451,10 @@ class Market(object):
         # Remove from DHT keyword indices
         self.remove_from_keyword_indexes(msg['contract_id'])
 
-        self.db.updateEntries("contracts", {"id": msg["contract_id"]}, {"deleted": 1})
+        self.db.updateEntries(
+            "contracts",
+            {"id": msg["contract_id"]},
+            {"deleted": 1})
         self.update_listings_index()
 
     def remove_from_keyword_indexes(self, contract_id):
@@ -438,12 +484,14 @@ class Market(object):
             )
 
     def get_messages(self):
-        self.log.info("Listing messages for market: %s" % self.transport.market_id)
+        self.log.info(
+            "Listing messages for market: %s" % self.transport.market_id)
         settings = self.get_settings()
         try:
             # Request all messages for our address
-            inboxmsgs = json.loads(self.transport.bitmessage_api.getInboxMessagesByReceiver(
-                settings['bitmessage']))
+            inboxmsgs = json.loads(
+                self.transport.bitmessage_api.getInboxMessagesByReceiver(
+                    settings['bitmessage']))
             for m in inboxmsgs['inboxMessages']:
                 # Base64 decode subject and content
                 m['subject'] = b64decode(m['subject'])
@@ -457,7 +505,8 @@ class Market(object):
             return {}
 
     def send_message(self, msg):
-        self.log.info("Sending message for market: %s" % self.transport.market_id)
+        self.log.info(
+            "Sending message for market: %s" % self.transport.market_id)
         settings = self.get_settings()
         try:
             # Base64 decode subject and content
@@ -475,7 +524,8 @@ class Market(object):
             return {}
 
     def get_contracts(self, page=0):
-        self.log.info('Getting contracts for market: %s' % self.transport.market_id)
+        self.log.info(
+            'Getting contracts for market: %s' % self.transport.market_id)
         contracts = self.db.selectEntries(
             "contracts",
             {"market_id": self.transport.market_id, "deleted": 0},
@@ -487,34 +537,46 @@ class Market(object):
             try:
                 print contract
                 contract_body = json.loads(u"%s" % contract['contract_body'])
-                item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
-                shipping_price = contract_body.get('Contract').get('item_delivery').get('shipping_price') if contract_body.get('Contract').get('item_delivery').get('shipping_price') > 0 else 0
-                my_contracts.append({"key": contract['key'] if 'key' in contract else "",
-                                     "id": contract['id'] if 'id' in contract else "",
-                                     "item_images": contract_body.get('Contract').get('item_images'),
-                                     "signed_contract_body": contract['signed_contract_body'] if 'signed_contract_body' in contract else "",
-                                     "contract_body": contract_body,
-                                     "unit_price": item_price,
-                                     "deleted": contract.get('deleted'),
-                                     "shipping_price": shipping_price,
-                                     "item_title": contract_body.get('Contract').get('item_title'),
-                                     "item_desc": contract_body.get('Contract').get('item_desc'),
-                                     "item_condition": contract_body.get('Contract').get('item_condition'),
-                                     "item_quantity_available": contract_body.get('Contract').get('item_quantity')})
+                if contract_body.get('Contract').get('item_price') > 0:
+                    item_price = contract_body.get('Contract').get('item_price')
+                else:
+                    0
+
+                if contract_body.get('Contract').get('item_delivery').get('shipping_price') > 0:
+                    shipping_price = contract_body.get('Contract').get('item_delivery').get('shipping_price')
+                else:
+                    0
+
+                my_contracts.append({
+                    "key": contract['key'] if 'key' in contract else "",
+                    "id": contract['id'] if 'id' in contract else "",
+                    "item_images": contract_body.get('Contract').get('item_images'),
+                    "signed_contract_body": contract['signed_contract_body'] if 'signed_contract_body' in contract else "",
+                    "contract_body": contract_body,
+                    "unit_price": item_price,
+                    "deleted": contract.get('deleted'),
+                    "shipping_price": shipping_price,
+                    "item_title": contract_body.get('Contract').get('item_title'),
+                    "item_desc": contract_body.get('Contract').get('item_desc'),
+                    "item_condition": contract_body.get('Contract').get('item_condition'),
+                    "item_quantity_available": contract_body.get('Contract').get('item_quantity')})
             except:
                 self.log.error('Problem loading the contract body JSON')
 
-        return {"contracts": my_contracts, "page": page,
-                "total_contracts": len(self.db.selectEntries("contracts", {"deleted": "0"}))}
+        return {
+            "contracts": my_contracts, "page": page,
+            "total_contracts": len(
+                self.db.selectEntries("contracts", {"deleted": "0"}))}
 
     def undo_remove_contract(self, contract_id):
         self.log.info('Undo remove contract: %s' % contract_id)
-        self.db.updateEntries("contracts",
-                              {"market_id": self.transport.market_id.replace("'", "''"), "id": contract_id},
-                              {"deleted": "0"})
+        self.db.updateEntries(
+            "contracts",
+            {"market_id": self.transport.market_id.replace("'", "''"), "id": contract_id},
+            {"deleted": "0"})
 
-    # SETTINGS
     def save_settings(self, msg):
+        """SETTINGS"""
         self.log.debug("Settings to save %s" % msg)
 
         # Check for any updates to arbiter or notary status to push to the DHT
@@ -527,11 +589,18 @@ class Market(object):
             if msg['notary'] is True:
                 self.log.info('Letting the network know you are now a notary')
                 data = json.dumps({'notary_index_add': self.transport.guid})
-                self.transport.dht.iterativeStore(self.transport, key, data, self.transport.guid)
+                self.transport.dht.iterativeStore(
+                    self.transport,
+                    key, data,
+                    self.transport.guid)
             else:
                 self.log.info('Letting the network know you are not a notary')
                 data = json.dumps({'notary_index_remove': self.transport.guid})
-                self.transport.dht.iterativeStore(self.transport, key, data, self.transport.guid)
+                self.transport.dht.iterativeStore(
+                    self.transport,
+                    key,
+                    data,
+                    self.transport.guid)
 
         # Update nickname
         self.transport.nickname = msg['nickname']
@@ -542,23 +611,34 @@ class Market(object):
             del msg['burnAddr']
 
         # Update local settings
-        self.db.updateEntries("settings", {'market_id': self.transport.market_id}, msg)
+        self.db.updateEntries(
+            "settings",
+            {'market_id': self.transport.market_id},
+            msg)
 
     def get_settings(self):
 
-        self.log.info('Getting settings info for Market %s' % self.transport.market_id)
-        settings = self.db.getOrCreate("settings", {"market_id": self.transport.market_id})
+        self.log.info(
+            'Getting settings info for Market %s' % self.transport.market_id)
+        settings = self.db.getOrCreate(
+            "settings",
+            {"market_id": self.transport.market_id})
 
         if settings['arbiter'] == 1:
             settings['arbiter'] = True
         if settings['notary'] == 1:
             settings['notary'] = True
 
-        settings['notaries'] = ast.literal_eval(settings['notaries']) if settings['notaries'] != "" else []
-        settings['trustedArbiters'] = ast.literal_eval(settings['trustedArbiters']) if settings['trustedArbiters'] != "" else []
-        settings['privkey'] = settings['privkey'] if 'secret' in settings else ""
+        settings['notaries'] = ast.literal_eval(settings['notaries']) \
+            if settings['notaries'] != "" else []
+        settings['trustedArbiters'] = \
+            ast.literal_eval(settings['trustedArbiters']) \
+            if settings['trustedArbiters'] != "" else []
+        settings['privkey'] = settings['privkey'] \
+            if 'secret' in settings else ""
         settings['btc_pubkey'] = privkey_to_pubkey(settings.get('privkey'))
-        settings['secret'] = settings['secret'] if 'secret' in settings else ""
+        settings['secret'] = settings['secret'] \
+            if 'secret' in settings else ""
 
         self.log.info('SETTINGS: %s' % settings)
 
@@ -567,8 +647,8 @@ class Market(object):
         else:
             return {}
 
-    # PAGE QUERYING
     def query_page(self, find_guid, callback=lambda msg: None):
+        """PAGE QUERYING"""
 
         self.log.info('Searching network for node: %s' % find_guid)
         msg = query_page(find_guid)
@@ -579,8 +659,8 @@ class Market(object):
 
         self.transport.send(msg, find_guid, callback)
 
-    # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
+        """Return your page info if someone requests it on the network"""
         self.log.info("Someone is querying for your page")
         settings = self.get_settings()
 
@@ -595,19 +675,20 @@ class Market(object):
             t = Thread(target=new_peer.start_handshake)
             t.start()
 
-            new_peer.send(proto_page(self.transport.uri,
-                                     self.transport.pubkey,
-                                     self.transport.guid,
-                                     settings['storeDescription'],
-                                     self.signature,
-                                     settings['nickname'],
-                                     settings['PGPPubKey'] if 'PGPPubKey' in settings else '',
-                                     settings['email'] if 'email' in settings else '',
-                                     settings['bitmessage'] if 'bitmessage' in settings else '',
-                                     settings['arbiter'] if 'arbiter' in settings else '',
-                                     settings['notary'] if 'notary' in settings else '',
-                                     settings['arbiterDescription'] if 'arbiterDescription' in settings else '',
-                                     self.transport.sin))
+            new_peer.send(proto_page(
+                self.transport.uri,
+                self.transport.pubkey,
+                self.transport.guid,
+                settings['storeDescription'],
+                self.signature,
+                settings['nickname'],
+                settings['PGPPubKey'] if 'PGPPubKey' in settings else '',
+                settings['email'] if 'email' in settings else '',
+                settings['bitmessage'] if 'bitmessage' in settings else '',
+                settings['arbiter'] if 'arbiter' in settings else '',
+                settings['notary'] if 'notary' in settings else '',
+                settings['arbiterDescription'] if 'arbiterDescription' in settings else '',
+                self.transport.sin))
 
         t = Thread(target=send_page_query)
         t.start()
@@ -620,7 +701,9 @@ class Market(object):
         contracts = self.get_contracts(page)
 
         if len(contracts['contracts']) == 0:
-            self.transport.send({"type": "no_listing_result"}, peer['senderGUID'])
+            self.transport.send(
+                {"type": "no_listing_result"},
+                peer['senderGUID'])
             return
         else:
             for contract in contracts['contracts']:
