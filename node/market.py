@@ -30,10 +30,9 @@ ioloop.install()
 class Market(object):
     """This class manages the active market for the application"""
 
-    # Class constructor defines the basic attributes and callbacks
     def __init__(self, transport, db):
 
-        """This class manages the active market for the application
+        """Class constructor defines the basic attributes and callbacks
 
         Attributes:
           transport (CryptoTransportLayer): Transport layer
@@ -90,28 +89,28 @@ class Market(object):
                                                     io_loop=loop)
         refreshCB.start()
 
-    # Set up nickname by args.market_id in start_node(...) and db
     def load_page(self):
+        """Set up nickname by args.market_id in start_node(...) and db"""
         nickname = self.settings['nickname'] \
             if 'nickname' in self.settings else ""
         # store_description = self.settings['storeDescription']
         #    if 'storeDescription' self.settings else ""
         self.nickname = nickname
 
-    # Update market_id in db
     def disable_welcome_screen(self):
+        """Update market_id in db"""
         self.db.updateEntries(
             "settings",
             {'market_id': self.transport.market_id},
             {"welcome": "disable"}
         )
 
-    # Get private key
     def private_key(self):
+        """Get private key"""
         return self.settings['secret']
 
-    # Add listing result to debug log file
     def on_listing_results(self, results):
+        """Add incoming information through a socket to log file with debug marker for control info in future"""
         self.log.debug('Listings %s' % results)
 
     @staticmethod
@@ -155,8 +154,8 @@ class Market(object):
         hash_value.update(contract_hash)
         return hash_value.hexdigest()
 
-    # Insert contract to db
     def save_contract_to_db(self, contract_id, body, signed_body, key):
+        """Insert contract to db"""
         self.db.insertEntry(
             "contracts",
             {
@@ -297,6 +296,16 @@ class Market(object):
         return rv
 
     def _decode_dict(self, data):
+        """so this receives a dictionary:
+
+        iterates over the key,value pairs...
+        if the key is unicode, it re-encodes the key in utf.
+        if the value is unicode, it re-encodes it utf-8
+        else if the value is a list, it calls a decode_list method
+        if the value is a dict, it does a recursive call
+        then updates the dictionary as it iterates
+
+        """
         rv = {}
         for key, value in data.iteritems():
             if isinstance(key, unicode):
@@ -566,8 +575,8 @@ class Market(object):
             {"market_id": self.transport.market_id.replace("'", "''"), "id": contract_id},
             {"deleted": "0"})
 
-    # SETTINGS
     def save_settings(self, msg):
+        """SETTINGS"""
         self.log.debug("Settings to save %s" % msg)
 
         # Check for any updates to arbiter or notary status to push to the DHT
@@ -638,8 +647,8 @@ class Market(object):
         else:
             return {}
 
-    # PAGE QUERYING
     def query_page(self, find_guid, callback=lambda msg: None):
+        """PAGE QUERYING"""
 
         self.log.info('Searching network for node: %s' % find_guid)
         msg = query_page(find_guid)
@@ -650,8 +659,8 @@ class Market(object):
 
         self.transport.send(msg, find_guid, callback)
 
-    # Return your page info if someone requests it on the network
     def on_query_page(self, peer):
+        """Return your page info if someone requests it on the network"""
         self.log.info("Someone is querying for your page")
         settings = self.get_settings()
 
