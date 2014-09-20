@@ -5,12 +5,17 @@ set -o pipefail
 ERR=false
 
 function python_check() {
+    echo "Checking python source files..."
+    count=0;
     for file in $(find . -iname "*.py" -not -path "./env/*"|grep -v pybitmessage|grep -v pysqlcipher); do
-        echo "Checking python source: $file"
-        if ! flake8 --ignore=E501,F811,F821,F403 $file; then
+        if ! pylint --rcfile .pylintrc $file; then
             ERR=true
         fi
+        count=$((count+1));
     done
+    if ! $ERR; then
+        echo "Successfully checked $count files."
+    fi
 }
 
 function js_check() {

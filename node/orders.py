@@ -1,4 +1,4 @@
-from multisig import Multisig
+from node.multisig import Multisig
 import StringIO
 import gnupg
 import hashlib
@@ -10,11 +10,11 @@ import time
 import urllib
 from pybitcointools import *
 from decimal import Decimal
-import trust
+from node import trust
 
 
 class Orders(object):
-    class State:
+    class State(object):
         """Enum inner class. Python introduces enums in Python 3.0, but this should be good enough"""
         SENT = 'Sent'
         ACCEPTED = 'accepted'
@@ -61,7 +61,8 @@ class Orders(object):
             self.log.info('You received a shipping notification')
             self.handle_shipped_order(msg)
 
-    def get_offer_json(self, raw_contract, state):
+    @staticmethod
+    def get_offer_json(raw_contract, state):
 
         if state == Orders.State.SENT:
             offer_data = ''.join(raw_contract.split('\n')[5:])
@@ -106,7 +107,8 @@ class Orders(object):
 
         return offer_data_json
 
-    def get_buyer_json(self, raw_contract, state):
+    @staticmethod
+    def get_buyer_json(raw_contract, state):
 
         if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
             start_line = 8
@@ -128,7 +130,8 @@ class Orders(object):
 
         return buyer_data_json
 
-    def get_notary_json(self, raw_contract, state):
+    @staticmethod
+    def get_notary_json(raw_contract, state):
 
         if state in [Orders.State.NOTARIZED, Orders.State.NEED_TO_PAY]:
             start_line = 8
@@ -150,7 +153,8 @@ class Orders(object):
 
         return notary_data_json
 
-    def get_qr_code(self, item_title, address, total):
+    @staticmethod
+    def get_qr_code(item_title, address, total):
         qr_url = urllib.urlencode({"url": item_title.decode('utf-8', 'ignore')})
         qr = qrcode.make("bitcoin:" + address + "?amount=" + str(total) + "&message=" + qr_url)
         output = StringIO.StringIO()
@@ -600,7 +604,8 @@ class Orders(object):
         # Send order to seller
         self.send_order(order_id, str(signed_data), msg['notary'])
 
-    def get_seed_contract_from_doublesigned(self, contract):
+    @staticmethod
+    def get_seed_contract_from_doublesigned(contract):
         start_index = contract.find('- -----BEGIN PGP SIGNED MESSAGE-----', 0, len(contract))
         end_index = contract.find('- -----END PGP SIGNATURE-----', start_index, len(contract))
         contract = contract[start_index:end_index + 29]
