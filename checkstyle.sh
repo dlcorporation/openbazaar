@@ -13,7 +13,7 @@ function python_check() {
         PYLINT=pylint
     else
         echo "pylint not found"
-        exit
+        return
     fi
 
     count=0;
