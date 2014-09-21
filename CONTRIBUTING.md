@@ -118,9 +118,12 @@ if you helped us. Just go to the
 pick an issue that you think is worthy, and start working on it. Leave a
 comment indicating your intention or assign the issue to yourself. Double-check
 that no one else is doing the same work; if they are, please collaborate!
-If the issue is new and you manage to fix it alright, then please submit
-the issue and the patch in the form of a Pull Request. See the Workflow and the
-Reviewing Pull Requests sections for details on how to go about it. Once again,
+If the issue is new and you manage to fix it, then please submit
+the issue and the patch in the form of a Pull Request. See the
+[Workflow](https://github.com/OpenBazaar/OpenBazaar/blob/master/CONTRIBUTING.md#workflow)
+and the
+[Reviewing Pull Requests](https://github.com/OpenBazaar/OpenBazaar/blob/master/CONTRIBUTING.md#reviewing-pull-requests)
+sections for details on how to go about it. Once again,
 thank you for contributing!
 
 1. **Look at the code and see if you can refactor something**. Look for
