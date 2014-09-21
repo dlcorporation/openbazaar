@@ -44,7 +44,7 @@ that you want to fix.
    ```
    git push origin *my_feature*
    ```
-1. Submit a pull request to `develop`:
+1. [Submit](https://github.com/github/hub) a pull request to `develop`:
 
    ```
    hub pull-request
