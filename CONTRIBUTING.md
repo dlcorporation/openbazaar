@@ -248,7 +248,9 @@ follows our overall vision for OpenBazaar.
 
 1. The change **fixes one problem** and not multiple problems.
 Or that it introduces one feature, not multiple. If the pull request can be
-split up to multiple ones, we'll ask you to do so.
+split up to multiple ones, we'll ask you to do so. If it's one big feature,
+you may want to split it up into several pull requests introducing it
+partially so that reviews can be expedited.
 
 1. **The change is architecturally sound.** We want to keep our code organized
 based on correct software design principles and maintain modularity,
