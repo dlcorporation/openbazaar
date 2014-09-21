@@ -165,7 +165,7 @@ SEED_URI+=" $SEED_URI_ADD"
 HTTP_OPTS="-k $HTTP_IP -q $HTTP_PORT"
 
 if [ -z "$SERVER_IP" ]; then
-    SERVER_IP=$(wget -qO- icanhazip.com)
+    SERVER_IP=$(wget -qO- ipv4.icanhazip.com)
     DISABLE_IP_UPDATE=""
 else
     DISABLE_IP_UPDATE="--disable-ip-update"
