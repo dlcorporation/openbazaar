@@ -1,12 +1,12 @@
-from protocol import proto_store
+from node.protocol import proto_store
 from urlparse import urlparse
-import constants
-import datastore
+from node import constants
+from node import datastore
 import hashlib
 import json
 import logging
 import os
-import routingtable
+from node import routingtable
 import time
 import socket
 from threading import Thread

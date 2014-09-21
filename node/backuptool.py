@@ -5,7 +5,7 @@ import os
 import json
 
 
-class BackupTool:
+class BackupTool(object):
     """
     Simple backup utility.
 
@@ -84,6 +84,7 @@ class Backup(json.JSONEncoder):
                  full_file_path=None,
                  created_timestamp_millis=None,
                  size_in_bytes=None):
+        super(Backup, self).__init__()
         self.file_name = file_name
         self.full_file_path = full_file_path
         self.created_timestamp_millis = created_timestamp_millis
