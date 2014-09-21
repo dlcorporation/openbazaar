@@ -173,11 +173,11 @@ function installRaspiArch {
   if confirm ; then
     pip2 install -r requirements.txt
     doneMessage
-    echo "Run OpenBazaar on Raspberry Pi Arch without HDMI/VideoOut/UPnP"
+    echo "Run OpenBazaar on Raspberry Pi Arch without HDMI/VideoOut"
     echo "Type the following shell command to start."
     echo " "
     echo "IP=\$(/sbin/ifconfig eth0 | grep 'inet ' | awk '{print \$2}')"
-    echo "./run.sh -j --disable-open-browser -k \$IP -q 8888 -p 12345; tail -f logs/production.log"
+    echo "./run.sh --disable-open-browser -k \$IP -q 8888 -p 12345; tail -f logs/production.log"
   fi
 }
 
@@ -189,11 +189,11 @@ function installRaspbian {
   if confirm ; then
     sudo pip install -r requirements.txt
     doneMessage
-    echo "Run OpenBazaar on Raspberry Pi Raspbian without HDMI/VideoOut/UPnP"
+    echo "Run OpenBazaar on Raspberry Pi Raspbian without HDMI/VideoOut"
     echo "Type the following shell command to start."
     echo " "
     echo "IP=\$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print \$1}')"
-    echo "./run.sh -j --disable-open-browser -k \$IP -q 8888 -p 12345; tail -f logs/production.log"
+    echo "./run.sh --disable-open-browser -k \$IP -q 8888 -p 12345; tail -f logs/production.log"
   fi
 }
 
