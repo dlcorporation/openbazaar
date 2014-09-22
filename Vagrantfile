@@ -16,9 +16,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   #This stanza makes use of the vagrant-cachier tool to cache apt updates while refreshing virtual machines -sbl
   if Vagrant.has_plugin?("vagrant-cachier")
-     # Configure cached packages to be shared between instances of the same base box.
-     # More info on the "Usage" link above
-     config.cache.scope = :box
+     # Cached packages are not longer shared between instances of the same base box.
+     # See: https://github.com/OpenBazaar/OpenBazaar/issues/650
+     config.cache.scope = :machine
 
      # If you are using VirtualBox, you might want to use that to enable NFS for
      # shared folders. This is also very useful for vagrant-libvirt if you want
