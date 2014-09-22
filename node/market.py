@@ -159,6 +159,8 @@ class Market(object):
             hash_value.update(keyword_key.encode('utf-8'))
             keyword_key = hash_value.hexdigest()
 
+            self.log.debug('Sending keyword to network: %s' % keyword_key)
+
             self.transport.dht.iterativeStore(
                 self.transport,
                 keyword_key,
@@ -186,8 +188,11 @@ class Market(object):
         if 'item_images' in msg['Contract']:
             if 'image1' in msg['Contract']['item_images']:
                 img = msg['Contract']['item_images']['image1']
+                self.log.debug('Contract Image %s' % img)
                 new_uri = self.process_contract_image(img)
                 msg['Contract']['item_images'] = new_uri
+        else:
+            self.log.debug('No image for contract')
 
         # Line break the signing data
         out_text = self.linebreak_signing_data(msg)
@@ -204,17 +209,21 @@ class Market(object):
         self.save_contract_to_db(contract_id, msg, signed_data, contract_key)
 
         # Store listing
-        self.transport.dht.iterativeStore(
-            self.transport,
-            contract_key,
-            str(signed_data),
-            self.transport.guid
-        )
-        self.update_listings_index()
+        t = Thread(target=self.transport.dht.iterativeStore, args=(self.transport,
+                                            contract_key,
+                                            str(signed_data),
+                                            self.transport.guid))
+        t.start()
+
+        t2 = Thread(target=self.update_listings_index)
+        t2.start()
 
         # If keywords are present
         keywords = msg['Contract']['item_keywords']
-        self.update_keywords_on_network(contract_key, keywords)
+
+        t3 = Thread(target=self.update_keywords_on_network, args=(contract_key, keywords,))
+        t3.start()
+
 
     def shipping_address(self):
         settings = self.get_settings()
@@ -313,6 +322,14 @@ class Market(object):
                 listing.get('signed_contract_body'),
                 self.transport.guid
             )
+
+            # Push keyword index out again
+            contract = listing.get('Contract')
+            keywords = contract.get('item_keywords') if contract is not None else []
+
+            t3 = Thread(target=self.update_keywords_on_network, args=(listings.get('key'), keywords,))
+            t3.start()
+
         self.update_listings_index()
 
     def get_notaries(self, online_only=False):
@@ -488,7 +505,6 @@ class Market(object):
         my_contracts = []
         for contract in contracts:
             try:
-                print contract
                 contract_body = json.loads(u"%s" % contract['contract_body'])
                 item_price = contract_body.get('Contract').get('item_price') if contract_body.get('Contract').get('item_price') > 0 else 0
                 shipping_price = contract_body.get('Contract').get('item_delivery').get('shipping_price') if contract_body.get('Contract').get('item_delivery').get('shipping_price') > 0 else 0

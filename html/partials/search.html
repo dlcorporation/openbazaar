@@ -25,6 +25,9 @@
             <td  style="border-left:none;"><a data-ng-href="#user/{{contract.Seller.seller_GUID}}/products"><span style="font-size:20px;">{{contract.Contract.item_title}}</span></a>
                 <div style="padding:3px 0">
                     <span class="glyphicon glyphicon-tags"></span> <strong>Tags:</strong>
+                    <span data-ng-repeat="keyword in contract.Contract.item_keywords">
+                        <a href="/html/index.html?searchterm={{keyword}}#/search">{{keyword}}</a>{{$last ? '' : ', '}}
+                    </span>
                 </div>
                 <div style="padding:3px 0">
                     <span class="glyphicon glyphicon-user"></span> <strong data-ng-show="contract.nickname || contract.Seller.seller_GUID">Sold by:</strong> <a data-ng-href="#/user/{{contract.Seller.seller_GUID}}/products">{{contract.nickname ? contract.nickname : contract.Seller.seller_GUID}}</a></div>

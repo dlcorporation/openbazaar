@@ -66,6 +66,7 @@ class ProtocolHandler(object):
             "pay_order": self.client_pay_order,
             "ship_order": self.client_ship_order,
             "release_payment": self.client_release_payment,
+            "refund_order": self.client_refund_order,
             "remove_contract": self.client_remove_contract,
             "generate_secret": self.client_generate_secret,
             "welcome_dismissed": self.client_welcome_dismissed,
@@ -411,6 +412,105 @@ class ProtocolHandler(object):
         self.market.orders.ship_order(
             order, msg['orderId'], msg['paymentAddress']
         )
+
+    def client_refund_order(self, socket_handler, msg):
+        self.log.info('Refunding payment and cancelling order')
+
+        # Get Order
+        order = self.market.orders.get_order(msg['orderId'])
+
+        contract = order['signed_contract_body']
+
+        # Find Seller Data in Contract
+        offer_data = ''.join(contract.split('\n')[8:])
+        index_of_seller_signature = offer_data.find(
+            '- - -----BEGIN PGP SIGNATURE-----', 0, len(offer_data)
+        )
+        offer_data_json = offer_data[:index_of_seller_signature]
+        offer_data_json = json.loads(offer_data_json)
+        self.log.info('Offer Data: %s' % offer_data_json)
+
+        # Find Buyer Data in Contract
+        bid_data_index = offer_data.find(
+            '"Buyer"', index_of_seller_signature, len(offer_data)
+        )
+        end_of_bid_index = offer_data.find(
+            '- -----BEGIN PGP SIGNATURE', bid_data_index, len(offer_data)
+        )
+        bid_data_json = "{"
+        bid_data_json += offer_data[bid_data_index:end_of_bid_index]
+        bid_data_json = json.loads(bid_data_json)
+
+        # Find Notary Data in Contract
+        notary_data_index = offer_data.find(
+            '"Notary"', end_of_bid_index, len(offer_data)
+        )
+        end_of_notary_index = offer_data.find(
+            '-----BEGIN PGP SIGNATURE', notary_data_index, len(offer_data)
+        )
+        notary_data_json = "{"
+        notary_data_json += offer_data[notary_data_index:end_of_notary_index]
+        notary_data_json = json.loads(notary_data_json)
+
+        try:
+            client = obelisk.ObeliskOfLightClient(
+                'tcp://obelisk2.airbitz.co:9091'
+            )
+
+            seller = offer_data_json['Seller']
+            buyer = bid_data_json['Buyer']
+            notary = notary_data_json['Notary']
+
+            pubkeys = [
+                seller['seller_BTC_uncompressed_pubkey'],
+                buyer['buyer_BTC_uncompressed_pubkey'],
+                notary['notary_BTC_uncompressed_pubkey']
+            ]
+
+            script = mk_multisig_script(pubkeys, 2, 3)
+            multi_address = scriptaddr(script)
+
+            def cb(ec, history, order):
+
+                settings = self.market.get_settings()
+                private_key = settings.get('privkey')
+
+                if ec is not None:
+                    self.log.error("Error fetching history: %s" % ec)
+                    # TODO: Send error message to GUI
+                    return
+
+                # Create unsigned transaction
+                unspent = [row[:4] for row in history if row[4] is None]
+
+                # Send all unspent outputs (everything in the address) minus the fee
+                total_amount = 0
+                inputs = []
+                for row in unspent:
+                    assert len(row) == 4, 'Obelisk returned a wonky row'
+                    inputs.append(str(row[0].encode('hex')) + ":" + str(row[1]))
+                    value = row[3]
+                    total_amount += value
+
+                # Constrain fee so we don't get negative amount to send
+                fee = min(total_amount, 10000)
+                send_amount = total_amount - fee
+
+                payment_output = order['payment_address']
+                tx = mktx(inputs, ["%s:%s" % (payment_output, send_amount)])
+
+                signatures = [multisign(tx, x, script, private_key) for x in range(len(inputs))]
+
+                self.market.release_funds_to_merchant(buyer['buyer_order_id'], tx, script, signatures, order.get('merchant'))
+
+            def get_history():
+                client.fetch_history(multi_address, lambda ec, history, order=order: cb(ec, history, order))
+
+            reactor.callFromThread(get_history)
+
+        except Exception as e:
+            self.log.error('%s' % e)
+
 
     def client_release_payment(self, socket_handler, msg):
         self.log.info('Releasing payment to Merchant %s' % msg)
@@ -768,9 +868,12 @@ class ProtocolHandler(object):
 
                 # Go get listing metadata and then send it to the GUI
                 for contract in results['listings']:
+                    self.log.debug('Results contract %s' % contract)
+                    key = contract.get('key', contract)
+
                     self.transport.dht.iterativeFindValue(
-                        contract.get('key'),
-                        callback=lambda msg, key=contract: self.on_global_search_value(
+                        key,
+                        callback=lambda msg, key=key: self.on_global_search_value(
                             msg, key
                         )
                     )
@@ -958,8 +1061,6 @@ class ProtocolHandler(object):
 
         for peer in self.transport.dht.activePeers:
 
-            self.log.debug('get peer %s' % peer)
-
             if hasattr(peer, 'address'):
                 peer_item = {'uri': peer.address}
                 if peer.pub:
@@ -973,7 +1074,7 @@ class ProtocolHandler(object):
                         '\x0F\x02%s' + peer.guid.decode('hex')
                     )
                 peer_item['nick'] = peer.nickname
-                self.log.info('Peer Nick %s ' % peer)
+                self.log.debug('Peer Nick %s ' % peer)
                 peers.append(peer_item)
 
         return peers

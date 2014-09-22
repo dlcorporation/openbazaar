@@ -166,7 +166,7 @@ def start_node(my_market_ip,
         handler = logging.handlers.RotatingFileHandler(
             log_file,
             encoding='utf-8',
-            maxBytes=50,
+            maxBytes=50000000,
             backupCount=0
         )
         locallogger.addHandler(handler)

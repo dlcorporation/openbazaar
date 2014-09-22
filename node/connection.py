@@ -29,8 +29,6 @@ class PeerConnection(object):
         self.ctx = zmq.Context()
 
     def create_zmq_socket(self):
-        self.log.info('Creating Socket')
-
         try:
             socket = self.ctx.socket(zmq.REQ)
             socket.setsockopt(zmq.LINGER, 0)
@@ -95,10 +93,9 @@ class CryptoPeerConnection(PeerConnection):
         self.pub = pub
 
         # Convert URI over
-        parseResult = urlparse(address)
-        self.ip = parseResult.hostname
-        self.port = parseResult.port
-        self.host_to_ip()
+        url = urlparse(address)
+        self.ip = url.hostname
+        self.port = url.port
 
         self.nickname = nickname
         self.sin = sin
@@ -112,13 +109,10 @@ class CryptoPeerConnection(PeerConnection):
             '[%s] %s' % (transport.market_id, self.__class__.__name__)
         )
 
-    def host_to_ip(self):
-        addr_info = socket.getaddrinfo(str(self.ip), self.port)
-        self.ip = addr_info[0][4][0]
-
     def start_handshake(self, handshake_cb=None):
+
         if self.check_port():
-            def cb(msg):
+            def cb(msg, handshake_cb=None):
                 if msg:
 
                     self.log.debug('ALIVE PEER %s' % msg[0])
@@ -178,28 +172,25 @@ class CryptoPeerConnection(PeerConnection):
 
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1)
+            s.settimeout(10)
             s.connect((self.ip, self.port))
         except socket.error:
             try:
                 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-                s.settimeout(1)
+                s.settimeout(10)
                 s.connect((self.ip, self.port))
             except socket.error as e:
                 self.log.error("socket error on %s: %s" % (self.ip, e))
-                self.transport.dht.remove_active_peer(self.address)
                 return False
         except TypeError:
             self.log.error("tried connecting to invalid address: %s" % self.ip)
             return False
 
         if s:
-            self.log.info('SOCKET %s' % s)
             s.close()
         return True
 
     def sign(self, data):
-        self.log.info('secret %s' % self.transport.settings['secret'])
         cryptor = makePrivCryptor(self.transport.settings['secret'])
         return cryptor.sign(data)
 
