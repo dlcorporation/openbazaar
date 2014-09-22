@@ -1,9 +1,9 @@
-from node import connection
-from node.dht import DHT
-from node.protocol import hello_request
-from node.protocol import hello_response
-from node.protocol import goodbye
-from node.protocol import proto_response_pubkey
+import connection
+from dht import DHT
+from protocol import hello_request
+from protocol import hello_response
+from protocol import goodbye
+from protocol import proto_response_pubkey
 from urlparse import urlparse
 from zmq.eventloop import ioloop, zmqstream
 from zmq.eventloop.ioloop import PeriodicCallback
@@ -12,9 +12,9 @@ from pprint import pformat
 from pybitcointools.main import privkey_to_pubkey
 from pybitcointools.main import privtopub
 from pybitcointools.main import random_key
-from node.crypto_util import pubkey_to_pyelliptic
-from node.crypto_util import makePrivCryptor
-from node.crypto_util import makePubCryptor
+from crypto_util import pubkey_to_pyelliptic
+from crypto_util import makePrivCryptor
+from crypto_util import makePubCryptor
 from pysqlcipher.dbapi2 import OperationalError, DatabaseError
 import gnupg
 import xmlrpclib
@@ -27,7 +27,7 @@ import traceback
 from threading import Thread
 import zlib
 import obelisk
-from node import network_util
+import network_util
 import zmq
 import random
 import hashlib

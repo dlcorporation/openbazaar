@@ -1,7 +1,7 @@
 import threading
 import logging
 import subprocess
-from node import protocol
+import protocol
 import pycountry
 import gnupg
 import obelisk
@@ -11,8 +11,8 @@ from pybitcointools import *
 import tornado.websocket
 from zmq.eventloop import ioloop
 from twisted.internet import reactor
-from node.backuptool import BackupTool, Backup, BackupJSONEncoder
-from node import trust
+from backuptool import BackupTool, Backup, BackupJSONEncoder
+import trust
 
 ioloop.install()
 

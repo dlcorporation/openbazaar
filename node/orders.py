@@ -1,4 +1,4 @@
-from node.multisig import Multisig
+from multisig import Multisig
 import StringIO
 import gnupg
 import hashlib
@@ -10,7 +10,7 @@ import time
 import urllib
 from pybitcointools import *
 from decimal import Decimal
-from node import trust
+import trust
 
 
 class Orders(object):

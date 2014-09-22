@@ -3,17 +3,17 @@ import tornado.web
 from zmq.eventloop import ioloop
 ioloop.install()
 
-from node.transport import CryptoTransportLayer
-from node.db_store import Obdb
-from node.market import Market
-from node.ws import WebSocketHandler
+from transport import CryptoTransportLayer
+from db_store import Obdb
+from market import Market
+from ws import WebSocketHandler
 import logging
 import signal
 from threading import Thread
 from twisted.internet import reactor
-from node.util import open_default_webbrowser
-from node.network_util import get_random_free_tcp_port
-from node import upnp
+from util import open_default_webbrowser
+from network_util import get_random_free_tcp_port
+import upnp
 import os
 
 

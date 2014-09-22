@@ -12,13 +12,13 @@ import gnupg
 import tornado
 from zmq.eventloop import ioloop
 
-from node import constants
+import constants
 from pybitcointools.main import privkey_to_pubkey
-from node.data_uri import DataURI
-from node.orders import Orders
-from node.protocol import proto_page, query_page
+from data_uri import DataURI
+from orders import Orders
+from protocol import proto_page, query_page
 from threading import Thread
-from node.crypto_util import makePrivCryptor
+from crypto_util import makePrivCryptor
 
 import random
 import json

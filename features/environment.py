@@ -1,7 +1,7 @@
 import os
 from zmq.eventloop import ioloop
 from distutils.util import strtobool as _bool
-from features.test_util import remove_peers_from_db
+from test_util import remove_peers_from_db
 
 BEHAVE_DEBUG_ON_ERROR = _bool(os.environ.get("BEHAVE_DEBUG_ON_ERROR", "no"))
 
