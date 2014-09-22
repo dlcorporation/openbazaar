@@ -17,7 +17,7 @@ import trust
 ioloop.install()
 
 
-class ProtocolHandler:
+class ProtocolHandler(object):
     def __init__(self, transport, market_application, handler, db, loop_instance):
         self.market_application = market_application
         self.market = self.market_application.market
@@ -240,7 +240,7 @@ class ProtocolHandler:
 
     # Requests coming from the client
     def client_connect(self, socket_handler, msg):
-        self.log.info("Connection command: ", msg)
+        self.log.info("Connection command: %s", msg)
         self.transport.connect(msg['uri'], lambda x: None)
         self.send_ok()
 
@@ -287,21 +287,20 @@ class ProtocolHandler:
             lambda msg, query_id=query_id: cb(msg, query_id)
         )
 
-        def unreachable_market(query_id):
-            self.log.info('Cannot reach market, try port forwarding')
-            if query_id in self.timeouts:
-                self.log.info('Unreachable Market: %s' % msg)
+        # UNUSED
+        # def unreachable_market(query_id):
+        #     self.log.info('Cannot reach market, try port forwarding')
+        #     if query_id in self.timeouts:
+        #         self.log.info('Unreachable Market: %s' % msg)
+        #         for peer in self.transport.dht.activePeers:
+        #             if peer.guid == findGUID:
+        #                 self.transport.dht.activePeers.remove(peer)
+        #         self.refresh_peers()
 
-                for peer in self.transport.dht.activePeers:
-                    if peer.guid == findGUID:
-                        self.transport.dht.activePeers.remove(peer)
-
-                self.refresh_peers()
-
-        # self.loop.add_timeout(
-        #     time.time() + .5,
-        #     lambda query_id=query_id: unreachable_market(query_id)
-        # )
+        #  self.loop.add_timeout(
+        #        time.time() + .5,
+        #        lambda query_id=query_id: unreachable_market(query_id)
+        #  )
 
     def client_query_orders(self, socket_handler=None, msg=None):
 

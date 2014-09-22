@@ -115,10 +115,12 @@ class Market(object):
 
         return new_uri
 
-    def get_contract_id(self):
+    @staticmethod
+    def get_contract_id():
         return random.randint(0, 1000000)
 
-    def linebreak_signing_data(self, data):
+    @staticmethod
+    def linebreak_signing_data(data):
         json_string = json.dumps(data, indent=0)
         seg_len = 52
         out_text = "\n".join(
@@ -127,7 +129,8 @@ class Market(object):
         )
         return out_text
 
-    def generate_contract_key(self, signed_contract):
+    @staticmethod
+    def generate_contract_key(signed_contract):
         contract_hash = hashlib.sha1(str(signed_contract)).hexdigest()
         hash_value = hashlib.new('ripemd160')
         hash_value.update(contract_hash)

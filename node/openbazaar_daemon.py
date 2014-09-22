@@ -30,8 +30,10 @@ class OpenBazaarStaticHandler(tornado.web.StaticFileHandler):
 
 class MarketApplication(tornado.web.Application):
     def __init__(self, market_ip, market_port, market_id=1,
-                 bm_user=None, bm_pass=None, bm_port=None, seed_peers=[],
+                 bm_user=None, bm_pass=None, bm_port=None, seed_peers=None,
                  seed_mode=0, dev_mode=False, db_path='db/ob.db', disable_sqlite_crypt=False):
+        if seed_peers is None:
+            seed_peers = []
 
         db = Obdb(db_path, disable_sqlite_crypt)
 
@@ -47,9 +49,10 @@ class MarketApplication(tornado.web.Application):
 
         self.market = Market(self.transport, db)
 
-        def post_joined():
-            self.transport.dht._refreshNode()
-            self.market.republish_contracts()
+        # UNUSED
+        # def post_joined():
+        #     self.transport.dht._refreshNode()
+        #     self.market.republish_contracts()
 
         peers = seed_peers if seed_mode == 0 else []
         self.transport.join_network(peers)
@@ -102,7 +105,7 @@ class MarketApplication(tornado.web.Application):
 
         result = result_tcp_p2p_mapping and result_udp_p2p_mapping
         if not result:
-            print("Warning: UPnP was not setup correctly. Try doing a port forward on %s and start the node again with -j" % p2p_port)
+            print "Warning: UPnP was not setup correctly. Try doing a port forward on %s and start the node again with -j" % p2p_port
 
         return result
 
@@ -138,7 +141,7 @@ def start_node(my_market_ip,
                bm_user=None,
                bm_pass=None,
                bm_port=None,
-               seed_peers=[],
+               seed_peers=None,
                seed_mode=0,
                dev_mode=False,
                log_level=None,
@@ -146,6 +149,8 @@ def start_node(my_market_ip,
                disable_upnp=False,
                disable_open_browser=False,
                disable_sqlite_crypt=False):
+    if seed_peers is None:
+        seed_peers = []
 
     try:
         logging.basicConfig(

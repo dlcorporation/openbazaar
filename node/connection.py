@@ -170,7 +170,8 @@ class CryptoPeerConnection(PeerConnection):
             self.guid, self.ip, self.port, self.pub
         )
 
-    def generate_sin(self, guid):
+    @staticmethod
+    def generate_sin(guid):
         return obelisk.EncodeBase58Check('\x0F\x02%s' + guid.decode('hex'))
 
     def check_port(self):

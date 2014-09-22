@@ -234,8 +234,7 @@ class TransportLayer(object):
 
     def valid_peer_uri(self, uri):
         try:
-            [self_protocol, self_addr, self_port] = \
-                network_util.uri_parts(self.uri)
+            [_, self_addr, _] = network_util.uri_parts(self.uri)
             [other_protocol, other_addr, other_port] = \
                 network_util.uri_parts(uri)
         except RuntimeError:
@@ -376,7 +375,7 @@ class CryptoTransportLayer(TransportLayer):
             self.log.info('[_connect_to_bitmessage] Connecting to Bitmessage on port %s' % bm_port)
             self.bitmessage_api = xmlrpclib.ServerProxy("http://{}:{}@localhost:{}/".format(bm_user, bm_pass, bm_port), verbose=0)
             result = self.bitmessage_api.add(2, 3)
-            self.log.info("[_connect_to_bitmessage] Bitmessage API is live".format(result))
+            self.log.info("[_connect_to_bitmessage] Bitmessage API is live: %s", result)
         # If we failed, fall back to starting our own
         except Exception as e:
             self.log.info("Failed to connect to bitmessage instance: {}".format(e))
@@ -550,7 +549,9 @@ class CryptoTransportLayer(TransportLayer):
         self.db.updateEntries("settings", {"market_id": self.market_id}, newsettings)
         self.settings.update(newsettings)
 
-    def join_network(self, seed_peers=[], callback=lambda msg: None):
+    def join_network(self, seed_peers=None, callback=lambda msg: None):
+        if seed_peers is None:
+            seed_peers = []
 
         self.log.info('Joining network')
 
@@ -676,7 +677,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def pubkey_exists(self, pub):
 
-        for uri, peer in self.peers.iteritems():
+        for peer in self.peers.itervalues():
             self.log.info(
                 'PEER: %s Pub: %s' % (
                     peer.pub.encode('hex'), pub.encode('hex')
