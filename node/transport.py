@@ -612,8 +612,7 @@ class CryptoTransportLayer(TransportLayer):
                                                uri,
                                                pubkey,
                                                guid=guid,
-                                               nickname=nickname,
-                                               callback=callback)
+                                               nickname=nickname)
 
     def addCryptoPeer(self, peer_to_add):
 
