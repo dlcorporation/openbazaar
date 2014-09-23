@@ -16,7 +16,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   #This stanza makes use of the vagrant-cachier tool to cache apt updates while refreshing virtual machines -sbl
   if Vagrant.has_plugin?("vagrant-cachier")
-     # Cached packages are not longer shared between instances of the same base box.
+     # Cached packages are no longer shared between instances of the same base box.
      # See: https://github.com/OpenBazaar/OpenBazaar/issues/650
      config.cache.scope = :machine
 
