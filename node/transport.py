@@ -325,7 +325,7 @@ class CryptoTransportLayer(TransportLayer):
 
     def _ip_updater_periodic_callback(self):
         try:
-            r = requests.get('https://icanhazip.com')
+            r = requests.get('http://ipv4.icanhazip.com')
 
             if r and hasattr(r, 'text'):
                 ip = r.text
