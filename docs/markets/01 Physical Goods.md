@@ -2,8 +2,8 @@
 
 #### Dependencies
 
-1. [Ricardian Contracts on OpenBazaar](https://github.com/Ignat99/OpenBazaar/blob/master/docs/01%20Ricardian%20Contracts.md)
-2. [P2P Lending on OpenBazaar](https://github.com/OpenBazaar/OpenBazaar/blob/master/docs/03%20P2P-Lending.md)
+1. [Ricardian Contracts on OpenBazaar](https://github.com/OpenBazaar/OpenBazaar/blob/master/docs/01%20Ricardian%20Contracts.md)
+2. [P2P Lending on OpenBazaar](https://github.com/OpenBazaar/OpenBazaar/blob/master/docs/markets/03%20P2P%20Lending.md)
 
 ## Introduction
 
