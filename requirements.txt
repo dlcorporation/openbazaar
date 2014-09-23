@@ -1,7 +1,6 @@
 IPy==0.81
 Pillow==2.5.3
 Twisted==14.0.0
-argparse==1.2.1
 backports.ssl-match-hostname==3.4.0.2
 certifi==14.05.14
 ecdsa==0.11
