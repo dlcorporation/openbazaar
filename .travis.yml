@@ -9,4 +9,8 @@ install:
     - pip install pysqlcipher
     - npm install -g jshint
 
-script: make
+script:
+    - make
+
+after_success:
+    - coveralls
