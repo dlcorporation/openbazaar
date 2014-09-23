@@ -3,7 +3,7 @@
 all: test style
 
 test:
-	nosetests
+	nosetests --with-coverage --cover-package=node --cover-inclusive
 
 style:
 	./checkstyle.sh
