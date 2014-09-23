@@ -1,14 +1,27 @@
 import random
 import unittest
 
-from node import kbucket, contact, constants
+from node import constants, kbucket
+
+
+class AbstractGUID(object):
+    def __init__(self, guid, address):
+        self.guid = guid
+        self.address = address
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.guid == other.guid
+        elif isinstance(other, str):
+            return self.guid == other
+        return False
 
 
 class Test(unittest.TestCase):
 
     @staticmethod
     def _mk_contact_by_num(i):
-        return contact.Contact(str(i), 'http://foo/%d' % i)
+        return AbstractGUID(str(i), 'http://foo/%d' % i)
 
     @classmethod
     def setUpClass(cls):

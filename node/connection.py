@@ -17,16 +17,18 @@ ioloop.install()
 
 class PeerConnection(object):
     def __init__(self, transport, address, nickname=""):
-        # timeout in seconds
-        self.timeout = 10
+
+        self.timeout = 10  # [seconds]
         self.transport = transport
         self.address = address
         self.nickname = nickname
         self.responses_received = {}
+
+        self.ctx = zmq.Context()
+
         self.log = logging.getLogger(
             '[%s] %s' % (self.transport.market_id, self.__class__.__name__)
         )
-        self.ctx = zmq.Context()
 
     def create_zmq_socket(self):
         try:
@@ -86,8 +88,8 @@ class PeerConnection(object):
 
 class CryptoPeerConnection(PeerConnection):
 
-    def __init__(self, transport, address, pub=None, guid=None, nickname=None,
-                 sin=None, callback=lambda msg: None):
+    def __init__(self, transport, address, pub=None, guid=None, nickname="",
+            sin=None):
 
         # self._priv = transport._myself
         self.pub = pub
@@ -97,17 +99,19 @@ class CryptoPeerConnection(PeerConnection):
         self.ip = url.hostname
         self.port = url.port
 
-        self.nickname = nickname
         self.sin = sin
-        self.peer_alive = False  # unused; might remove it later if unnecessary
+        self._peer_alive = False  # unused; might remove later if unnecessary
         self.guid = guid
         self.address = "tcp://%s:%s" % (self.ip, self.port)
 
-        PeerConnection.__init__(self, transport, address)
+        PeerConnection.__init__(self, transport, address, nickname)
 
-        self.log = logging.getLogger(
-            '[%s] %s' % (transport.market_id, self.__class__.__name__)
-        )
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.guid == other.guid
+        elif isinstance(other, str):
+            return self.guid == other
+        return False
 
     def start_handshake(self, handshake_cb=None):
 
@@ -125,7 +129,7 @@ class CryptoPeerConnection(PeerConnection):
                     self.pub = msg['pubkey']
                     self.nickname = msg['senderNick']
 
-                    self.peer_alive = True
+                    self._peer_alive = True
 
                     # Add this peer to active peers list
                     for idx, peer in enumerate(self.transport.dht.activePeers):
