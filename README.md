@@ -36,11 +36,9 @@ You can financially support the project by either:
 - Identity/Reputation system
 
 ## Project Status
-- All features are currently in *alpha* stage. 
-- Current functionality includes:
-  1. Starting a connection to the distributed marketplace
-  2. Viewing content in a browser
-- Transactions are **not possible** for the moment.
+- *OpenBazaar* is currently in **beta 1.0**
+- New versions are scheduled for release at the end of each month
+- [Development Roadmap](https://github.com/OpenBazaar/OpenBazaar/wiki/Development-Roadmap)
 
 ## Build Instructions
 
@@ -101,7 +99,7 @@ Here are some screenshots of the *alpha* UI so far:
 - **The Guardian**
   - [Silk Road successor DarkMarket rebrands as OpenBazaar](http://www.theguardian.com/technology/2014/apr/30/silk-road-darkmarket-openbazaar-online-drugs-marketplace)
 - **Medium**
-  - [Wired Misses the Point of OpenBazaar](https://medium.com/theprotocol-tv/wired-misses-the-point-of-openbazaar-c1adf8752cff) 
+  - [Wired Misses the Point of OpenBazaar](https://medium.com/theprotocol-tv/wired-misses-the-point-of-openbazaar-c1adf8752cff)
 - **DeepDotWeb**
   - [OpenBazaar: A Decentralized Alternative](https://www.deepdotweb.com/2014/06/23/openbazaar-a-decentralized-alternative/)
 - **CoinTelegraph**
