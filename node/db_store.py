@@ -25,7 +25,9 @@ class Obdb(object):
         """ Opens a db connection
         """
         self.con = sqlite.connect(
-            self.db_path, detect_types=sqlite.PARSE_DECLTYPES
+            self.db_path,
+            detect_types=sqlite.PARSE_DECLTYPES,
+            timeout=10
         )
         sqlite.register_adapter(bool, int)
         sqlite.register_converter("bool", lambda v: bool(int(v)))
