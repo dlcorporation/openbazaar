@@ -1,17 +1,18 @@
 #!/usr/bin/python
-import sys
 import os
+import sys
+
 
 def usage():
     print """
 
-  openbazaar - A decentralized marketplace for instantly trading with anyone 
+  openbazaar - A decentralized marketplace for instantly trading with anyone
                using Bitcoin.
 
   Usage: openbazaar <command>
 
   COMMANDS:
-  start     
+  start
 
   stop
 
@@ -21,23 +22,23 @@ def usage():
 
   """
 
+
 def main(argv):
-    if len(argv) >= 2:
-        COMMANDS = {'start':'/usr/share/openbazaar/run.sh',
-                    'stop':'/usr/share/openbazaar/stop.sh',
-                    'restart':'/usr/share/openbazaar/stop.sh; /usr/share/openbazaar/run.sh',
-                    'port':'/usr/share/openbazaar/port.sh'} 
-        try:
-            command = argv[1]
-            if command in COMMANDS:
-                os.chdir('/usr/share/openbazaar')
-                os.system(COMMANDS[command])
-            else:
-                usage()
-        except Exception:
-            usage()
-    else:
+    if len(argv) < 2:
         usage()
+        return
+    COMMANDS = {'start': '/usr/share/openbazaar/run.sh',
+                'stop': '/usr/share/openbazaar/stop.sh',
+                'restart': '/usr/share/openbazaar/stop.sh; '
+                           '/usr/share/openbazaar/run.sh',
+                'port': '/usr/share/openbazaar/port.sh'}
+    command = argv[1]
+    if command not in COMMANDS:
+        print 'Wrong command: %s' % command
+        usage()
+        return
+    os.chdir('/usr/share/openbazaar')
+    os.system(COMMANDS[command])
 
 
 if __name__=='__main__':
