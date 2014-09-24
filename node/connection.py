@@ -25,7 +25,7 @@ class PeerConnection(object):
         self.nickname = nickname
         self.responses_received = {}
 
-        self.ctx = zmq.Context()
+        self.ctx = transport.ctx
 
         self.log = logging.getLogger(
             '[%s] %s' % (self.transport.market_id, self.__class__.__name__)

@@ -50,6 +50,9 @@ class TransportLayer(object):
         self.nickname = nickname
         self.handler = None
 
+        # Create one ZeroMQ context to be reused and reduce overhead
+        self.ctx = zmq.Context()
+
         try:
             socket.inet_pton(socket.AF_INET6, my_ip)
             my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
