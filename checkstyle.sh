@@ -49,7 +49,7 @@ function new_line_check() {
 
 function execute_bit_check() {
     echo "Test for non-executable files with execute bit set..."
-    for file in $(find . -executable -and '('\
+    for file in $(find . -not -path "./env/*" -perm -111 -and '('\
         -name "LICENSE"\
         -name "README"\
         -o -name "*.cpp"\
