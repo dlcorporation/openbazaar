@@ -105,7 +105,7 @@ class Market(object):
         )
 
     def private_key(self):
-        """Returns private key from settings of node"""
+        """Returns private key for local node"""
         return self.settings['secret']
 
     def on_listing_results(self, results):
@@ -176,7 +176,7 @@ class Market(object):
         )
 
     def update_keywords_on_network(self, key, keywords):
-        """Update keyword and sharing it for nodes"""
+        """Update keyword for sharing it with nodes"""
         for keyword in keywords:
             keyword = keyword.upper()
             hash_value = hashlib.new('ripemd160')
