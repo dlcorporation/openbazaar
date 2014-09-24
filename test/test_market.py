@@ -28,5 +28,4 @@ class TestMarket(unittest.TestCase):
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.getLogger("TestMarket.test_on_listing_results").setLevel(logging.DEBUG)
-    logging.getLogger("TestMarket.test_on_listing_results").debug('Listings ')
     unittest.main()
