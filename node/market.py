@@ -109,12 +109,12 @@ class Market(object):
         return self.settings['secret']
 
     def on_listing_results(self, results):
-        """Add incoming information through a socket to log file with debug marker for control info in future"""
+        """Add incoming information to log"""
         self.log.debug("Listings %s", results)
 
     @staticmethod
     def process_contract_image(image):
-        """Get image from web client in JSON format for use on server side"""
+        """Get image from web client for use on server side"""
         uri = DataURI(image)
         imageData = uri.data
         # mime_type = uri.mimetype
@@ -135,7 +135,7 @@ class Market(object):
 
     @staticmethod
     def get_contract_id():
-        """Choice of random number of new contract to prevent guessing the sequence of contract' id.
+        """Choice of number of new contract to prevent guessing the sequence of contract' id.
            Other members not to be able to extract order volume from peers by viewing the latest order id.
 
         """
@@ -143,7 +143,7 @@ class Market(object):
 
     @staticmethod
     def linebreak_signing_data(data):
-        """For sign with gpg, the width of the text is formatted 52 characters long"""
+        """For signing with gpg, the width of the text is formatted 52 characters long"""
         json_string = json.dumps(data, indent=0)
         seg_len = 52
         out_text = "\n".join(
@@ -257,7 +257,7 @@ class Market(object):
 
 
     def shipping_address(self):
-        """Get shipping address from settings"""
+        """Get shipping address"""
         settings = self.get_settings()
         shipping_address = {
             "recipient_name": settings.get('recipient_name'),
@@ -272,7 +272,7 @@ class Market(object):
         return shipping_address
 
     def add_trusted_notary(self, guid, nickname=""):
-        """Add a trusted notary to the list"""
+        """Add selected trusted notary to the local list"""
         self.log.debug("%s %s", guid, nickname)
         notaries = self.settings.get('notaries')
 
@@ -304,7 +304,7 @@ class Market(object):
         )
 
     def _decode_list(self, data):
-        """Receives a data and decode to list"""
+        """Receives data and decode to list"""
         rv = []
         for item in data:
             if isinstance(item, unicode):
@@ -341,7 +341,7 @@ class Market(object):
         return rv
 
     def remove_trusted_notary(self, guid):
-        """Remove a trusted notary from the list"""
+        """Not trusted to selected notary. Dlete notary from the local list"""
         notaries = self.settings.get('notaries')
         notaries = ast.literal_eval(notaries)
 
@@ -380,7 +380,7 @@ class Market(object):
         self.update_listings_index()
 
     def get_notaries(self, online_only=False):
-        """Getting notaries and exchange contact in network by new thread"""
+        """Getting notaries and exchange contact in network"""
         self.log.debug('Getting notaries')
         notaries = []
         settings = self.get_settings()
@@ -548,7 +548,7 @@ class Market(object):
             return {}
 
     def send_message(self, msg):
-        """Sending message for market by bitmessage"""
+        """Send message for market by bitmessage"""
         self.log.info(
             "Sending message for market: %s", self.transport.market_id)
         settings = self.get_settings()
