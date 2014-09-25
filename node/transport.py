@@ -93,7 +93,6 @@ class TransportLayer(object):
 
     def listen(self, pubkey):
         self.log.info("Listening at: %s:%s" % (self.ip, self.port))
-        self.ctx = zmq.Context()
         self.socket = self.ctx.socket(zmq.REP)
 
         if network_util.is_loopback_addr(self.ip):
