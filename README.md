@@ -77,6 +77,7 @@ contributed by Dean Masley
 8. [OpenBazaar Genesis Contract](https://gist.github.com/drwasho/76e1161db1e5b860598a) by Dr Washington Sanchez (arbiter), Brian Hoffman (buyer), and Samuel Patterson (seller)
 9. [A pseudonymous trust system for a decentralized anonymous marketplace](https://gist.github.com/dionyziz/e3b296861175e0ebea4b) by Dionysis Zindros
 10. [Dispute Resolution in OpenBazaar - Arbitration Market](https://gist.github.com/drwasho/405d51bd1b1a32e38145) by Dr Washington Sanchez
+11. [Notary Selection in OpenBazaar](https://gist.github.com/drwasho/a0225f5455e508095ac2) by Dr Washington Sanchez
 
 ## Screenshots
 Here are some screenshots of the *alpha* UI so far:
