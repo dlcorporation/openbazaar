@@ -62,7 +62,7 @@ Read more at the [build instructions wiki](https://github.com/OpenBazaar/OpenBaz
 
 ## Artwork Contributions
 <img src="https://blog.openbazaar.org/wp-content/uploads/2014/07/logo.png" width="500px"/>  
-contributed by Jacob Payne
+contributed by Jacob Payne  
 <img src="http://i.imgur.com/WwPUXGS.png" width="500px"/>  
 contributed by Dean Masley
 
