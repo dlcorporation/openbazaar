@@ -49,7 +49,7 @@ function installMac {
   #install brew if it is not installed, otherwise upgrade it
   if ! command_exists brew ; then
     echo "installing brew..."
-    ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   else
     echo "updating, upgrading, checking brew..."
     brew update
