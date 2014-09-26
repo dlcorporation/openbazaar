@@ -61,9 +61,9 @@ OpenBazaar will open in a random port on your default web browser. Note that it 
 Read more at the [build instructions wiki](https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions).
 
 ## Artwork Contributions
-![](https://github.com/OpenBazaar/OpenBazaar/blob/gh-pages/img/logo_alt1-b-h.png?raw=true)  
+<img src="https://blog.openbazaar.org/wp-content/uploads/2014/07/logo.png" width="500px"/>
 contributed by Jacob Payne
-![](http://i.imgur.com/WwPUXGS.png)  
+<img src="http://i.imgur.com/WwPUXGS.png" width="500px"/>
 contributed by Dean Masley
 
 ## Theory Work
@@ -78,6 +78,7 @@ contributed by Dean Masley
 9. [A pseudonymous trust system for a decentralized anonymous marketplace](https://gist.github.com/dionyziz/e3b296861175e0ebea4b) by Dionysis Zindros
 10. [Dispute Resolution in OpenBazaar - Arbitration Market](https://gist.github.com/drwasho/405d51bd1b1a32e38145) by Dr Washington Sanchez
 11. [Notary Selection in OpenBazaar](https://gist.github.com/drwasho/a0225f5455e508095ac2) by Dr Washington Sanchez
+12. [Risk and Insurance in OpenBazaar](https://gist.github.com/drwasho/9759924342859872851e) by Dr Washington Sanchez
 
 ## Screenshots
 Here are some screenshots of the *alpha* UI so far:
