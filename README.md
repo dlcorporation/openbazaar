@@ -61,9 +61,9 @@ OpenBazaar will open in a random port on your default web browser. Note that it 
 Read more at the [build instructions wiki](https://github.com/OpenBazaar/OpenBazaar/wiki/Build-Instructions).
 
 ## Artwork Contributions
-<img src="https://blog.openbazaar.org/wp-content/uploads/2014/07/logo.png" width="500px"/>
+<img src="https://blog.openbazaar.org/wp-content/uploads/2014/07/logo.png" width="500px"/>  
 contributed by Jacob Payne
-<img src="http://i.imgur.com/WwPUXGS.png" width="500px"/>
+<img src="http://i.imgur.com/WwPUXGS.png" width="500px"/>  
 contributed by Dean Masley
 
 ## Theory Work
