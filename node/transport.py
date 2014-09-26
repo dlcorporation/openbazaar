@@ -50,6 +50,9 @@ class TransportLayer(object):
         self.nickname = nickname
         self.handler = None
 
+        # Create one ZeroMQ context to be reused and reduce overhead
+        self.ctx = zmq.Context()
+
         try:
             socket.inet_pton(socket.AF_INET6, my_ip)
             my_uri = 'tcp://[%s]:%s' % (self.ip, self.port)
@@ -90,7 +93,6 @@ class TransportLayer(object):
 
     def listen(self, pubkey):
         self.log.info("Listening at: %s:%s" % (self.ip, self.port))
-        self.ctx = zmq.Context()
         self.socket = self.ctx.socket(zmq.REP)
 
         if network_util.is_loopback_addr(self.ip):
